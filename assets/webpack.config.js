@@ -6,14 +6,11 @@ const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = (env, options) => ({
-  optimization: {
-    minimizer: [
-      new TerserPlugin({ cache: true, parallel: true, sourceMap: false }),
-      new OptimizeCSSAssetsPlugin({})
-    ]
+  resolve: {
+    extensions: [".ts", ".tsx"]
   },
   entry: {
-    './js/app.js': glob.sync('./vendor/**/*.js').concat(['./js/app.js'])
+    './src/app.ts': ['./src/app.ts']
   },
   output: {
     filename: 'app.js',
@@ -21,6 +18,20 @@ module.exports = (env, options) => ({
   },
   module: {
     rules: [
+      {
+        test: /\.ts(x?)$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: "ts-loader"
+          }
+        ]
+      },
+      {
+        enforce: "pre",
+        test: /\.js$/,
+        loader: "source-map-loader"
+      },
       {
         test: /\.css$/,
         use: [MiniCssExtractPlugin.loader, 'css-loader']
@@ -30,5 +41,12 @@ module.exports = (env, options) => ({
   plugins: [
     new MiniCssExtractPlugin({ filename: '../css/app.css' }),
     new CopyWebpackPlugin([{ from: 'static/', to: '../' }])
-  ]
+  ],
+  devtool: "source-map",
+  optimization: {
+    minimizer: [
+      new TerserPlugin({ cache: true, parallel: true, sourceMap: false }),
+      new OptimizeCSSAssetsPlugin({})
+    ]
+  },
 });
