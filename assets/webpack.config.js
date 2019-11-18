@@ -33,9 +33,17 @@ module.exports = (env, options) => ({
         loader: "source-map-loader"
       },
       {
-        test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader']
-      }
+        test: /\.s?css$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          {
+            loader: "css-loader",
+          },
+          {
+            loader: "sass-loader",
+          },
+        ],
+      },
     ]
   },
   plugins: [
