@@ -18,7 +18,9 @@ defmodule Arrow.MixProject do
           :unmatched_returns
         ],
         ignore_warnings: ".dialyzer.ignore-warnings"
-      ]
+      ],
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [coveralls: :test]
     ]
   end
 
@@ -42,6 +44,7 @@ defmodule Arrow.MixProject do
   defp deps do
     [
       {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false},
+      {:excoveralls, "~> 0.10", only: :test},
       {:phoenix, "~> 1.4.11"},
       {:phoenix_pubsub, "~> 1.1"},
       {:phoenix_ecto, "~> 4.0"},
