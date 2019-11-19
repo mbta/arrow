@@ -4,7 +4,11 @@
   "scripts": {
     "deploy": "webpack --mode production",
     "test": "jest",
-    "watch": "webpack --mode development --watch"
+    "watch": "webpack --mode development --watch",
+    "lint": "tslint --fix -p .",
+    "lint:check": "tslint -p .",
+    "format": "prettier --write \"{.,**}/*.{js,json,ts,tsx,css,scss}\"",
+    "format:check": "prettier --check \"{.,**}/*.{js,json,ts,tsx,css,scss}\""
   },
   "dependencies": {
     "phoenix": "file:../deps/phoenix",
@@ -18,11 +22,14 @@
     "mini-css-extract-plugin": "^0.4.0",
     "node-sass": "^4.13.0",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
+    "prettier": "^1.19.1",
     "sass-loader": "^8.0.0",
     "source-map-loader": "^0.2.4",
     "terser-webpack-plugin": "^1.1.0",
     "ts-jest": "^24.1.0",
     "ts-loader": "^6.2.1",
+    "tslint": "^5.20.1",
+    "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.7.2",
     "webpack": "4.41.2",
     "webpack-cli": "^3.3.2"
