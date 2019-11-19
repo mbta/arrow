@@ -9,3 +9,11 @@ To start your Phoenix server:
   * Start Phoenix endpoint with `mix phx.server`
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+
+Useful when developing:
+
+  * Test elixir code with `mix test`
+  * Format elixir code with `mix format`
+  * Test frontend code with `npm run test`
+  * Format frontend code with `npm run format`
+  * Lint frontend code with `npm run lint`
