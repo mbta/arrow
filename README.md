@@ -14,6 +14,7 @@ Useful when developing:
 
   * Test elixir code with `mix test`
   * Format elixir code with `mix format`
+  * Lint elixir code with `mix dialyzer`
   * Test frontend code with `npm run test`
   * Format frontend code with `npm run format`
   * Lint frontend code with `npm run lint`
