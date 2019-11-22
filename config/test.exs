@@ -2,8 +2,8 @@ use Mix.Config
 
 # Configure your database
 config :arrow, Arrow.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: System.get_env("DATABASE_POSTGRESQL_USERNAME"),
+  password: System.get_env("DATABASE_POSTGRESQL_PASSWORD"),
   database: "arrow_test",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
