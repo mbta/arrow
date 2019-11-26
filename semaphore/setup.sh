@@ -27,4 +27,4 @@ mix local.hex --force
 mix local.rebar --force
 mix deps.get
 
-pushd assets && npm ci && popd
+npm --prefix assets ci

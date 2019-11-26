@@ -2,5 +2,5 @@
 set -e
 
 mix coveralls.json &&
-pushd assets && npm test && popd &&
-bash <(curl -s https://codecov.io/bash)
+npm --prefix assets test
+bash <(curl -s https://codecov.io/bash) -t $ARROW_CODECOV_TOKEN
