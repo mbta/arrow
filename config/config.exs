@@ -13,7 +13,6 @@ config :arrow,
 # Configures the endpoint
 config :arrow, ArrowWeb.Endpoint,
   url: [host: "localhost"],
-  secret_key_base: "ZUmLLfB6cMGDCmYizfJ2beVZ1jAQmNYfo/LCH71ggRd8JxIMV1Gq0VL2ZR6BO2wb",
   render_errors: [view: ArrowWeb.ErrorView, accepts: ~w(html json)],
   pubsub: [name: Arrow.PubSub, adapter: Phoenix.PubSub.PG2]
 
