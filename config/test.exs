@@ -12,6 +12,7 @@ config :arrow, Arrow.Repo,
 # you can enable the server option below.
 config :arrow, ArrowWeb.Endpoint,
   http: [port: 4002],
+  secret_key_base: "local_secret_key_base_at_least_64_bytes_________________________________",
   server: false
 
 # Print only warnings and errors during test
