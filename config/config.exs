@@ -8,7 +8,8 @@
 use Mix.Config
 
 config :arrow,
-  ecto_repos: [Arrow.Repo]
+  ecto_repos: [Arrow.Repo],
+  aws_rds_mod: ExAws.RDS
 
 # Configures the endpoint
 config :arrow, ArrowWeb.Endpoint,
@@ -23,6 +24,8 @@ config :logger, :console,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+
+config :ex_aws, json_codec: Jason
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

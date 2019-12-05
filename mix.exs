@@ -47,12 +47,15 @@ defmodule Arrow.MixProject do
   defp deps do
     [
       {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false},
+      {:ex_aws, "~> 2.1"},
+      {:ex_aws_rds, "~> 2.0"},
       {:excoveralls, "~> 0.10", only: :test},
       {:phoenix, "~> 1.4.11"},
       {:phoenix_pubsub, "~> 1.1"},
       {:phoenix_ecto, "~> 4.0"},
       {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false},
       {:ecto_sql, "~> 3.1"},
+      {:hackney, "~> 1.9"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 2.11"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
