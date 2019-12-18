@@ -19,6 +19,8 @@ config :arrow, ArrowWeb.Endpoint,
 
 config :arrow, :redirect_http?, true
 
+config :arrow, ArrowWeb.AuthManager, issuer: "arrow"
+
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",

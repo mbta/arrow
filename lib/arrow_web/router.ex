@@ -19,8 +19,16 @@ defmodule ArrowWeb.Router do
     end
   end
 
+  pipeline :auth do
+    plug(ArrowWeb.AuthManager.Pipeline)
+  end
+
+  pipeline :ensure_auth do
+    plug(Guardian.Plug.EnsureAuthenticated)
+  end
+
   scope "/", ArrowWeb do
-    pipe_through [:redirect_prod_http, :browser]
+    pipe_through [:redirect_prod_http, :browser, :auth, :ensure_auth]
 
     get "/", PageController, :index
   end

@@ -31,6 +31,8 @@ config :arrow, ArrowWeb.Endpoint,
     ]
   ]
 
+config :arrow, ArrowWeb.AuthManager, secret_key: "test key"
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed
