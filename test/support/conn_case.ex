@@ -16,6 +16,7 @@ defmodule ArrowWeb.ConnCase do
   """
 
   use ExUnit.CaseTemplate
+  import Plug.Test
 
   using do
     quote do
@@ -35,7 +36,20 @@ defmodule ArrowWeb.ConnCase do
       Ecto.Adapters.SQL.Sandbox.mode(Arrow.Repo, {:shared, self()})
     end
 
-    {:ok,
-     conn: Phoenix.ConnTest.build_conn() |> Plug.Conn.put_req_header("x-forwarded-proto", "https")}
+    if tags[:authenticated] do
+      user = "test_user"
+
+      conn =
+        Phoenix.ConnTest.build_conn()
+        |> Plug.Conn.put_req_header("x-forwarded-proto", "https")
+        |> init_test_session(%{})
+        |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{})
+
+      {:ok, conn: conn}
+    else
+      {:ok,
+       conn:
+         Phoenix.ConnTest.build_conn() |> Plug.Conn.put_req_header("x-forwarded-proto", "https")}
+    end
   end
 end

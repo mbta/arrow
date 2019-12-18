@@ -15,5 +15,7 @@ config :arrow, ArrowWeb.Endpoint,
   secret_key_base: "local_secret_key_base_at_least_64_bytes_________________________________",
   server: false
 
+config :arrow, ArrowWeb.AuthManager, secret_key: "test key"
+
 # Print only warnings and errors during test
 config :logger, level: :warn

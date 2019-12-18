@@ -15,6 +15,8 @@ config :arrow, ArrowWeb.Endpoint,
   cache_static_manifest: "priv/static/cache_manifest.json",
   server: true
 
+config :arrow, ArrowWeb.AuthManager, secret_key: {System, :get_env, ["ARROW_AUTH_SECRET"]}
+
 # Do not print debug messages in production
 config :logger, level: :info
 
