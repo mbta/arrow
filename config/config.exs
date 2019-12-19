@@ -21,6 +21,11 @@ config :arrow, :redirect_http?, true
 
 config :arrow, ArrowWeb.AuthManager, issuer: "arrow"
 
+config :ueberauth, Ueberauth,
+  providers: [
+    cognito: {Arrow.Ueberauth.Strategy.Fake, []}
+  ]
+
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",

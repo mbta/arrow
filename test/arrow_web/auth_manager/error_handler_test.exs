@@ -3,13 +3,13 @@ defmodule ArrowWeb.AuthManager.ErrorHandlerTest do
   use Plug.Test
 
   describe "auth_error/3" do
-    test "returns 401 response with error", %{conn: conn} do
+    test "redirects to Cognito login if there's no refresh key", %{conn: conn} do
       conn =
         conn
         |> init_test_session(%{})
         |> ArrowWeb.AuthManager.ErrorHandler.auth_error({:some_type, :reason}, [])
 
-      assert text_response(conn, 401) =~ "some_type"
+      assert html_response(conn, 302) =~ "\"/auth/cognito\""
     end
   end
 end
