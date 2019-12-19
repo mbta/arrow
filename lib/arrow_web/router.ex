@@ -37,6 +37,13 @@ defmodule ArrowWeb.Router do
     get "/_health", HealthController, :index
   end
 
+  scope "/auth", ArrowWeb do
+    pipe_through([:browser])
+
+    get("/:provider", AuthController, :request)
+    get("/:provider/callback", AuthController, :callback)
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", ArrowWeb do
   #   pipe_through :api
