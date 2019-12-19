@@ -27,8 +27,18 @@ defmodule ArrowWeb.Router do
     plug(Guardian.Plug.EnsureAuthenticated)
   end
 
+  pipeline :ensure_arrow_group do
+    plug(ArrowWeb.EnsureArrowGroup)
+  end
+
   scope "/", ArrowWeb do
-    pipe_through [:redirect_prod_http, :browser, :auth, :ensure_auth]
+    pipe_through([:redirect_prod_http, :browser, :auth, :ensure_auth])
+
+    get("/unauthorized", UnauthorizedController, :index)
+  end
+
+  scope "/", ArrowWeb do
+    pipe_through [:redirect_prod_http, :browser, :auth, :ensure_auth, :ensure_arrow_group]
 
     get "/", PageController, :index
   end

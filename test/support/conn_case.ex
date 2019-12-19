@@ -39,11 +39,13 @@ defmodule ArrowWeb.ConnCase do
     if tags[:authenticated] do
       user = "test_user"
 
+      arrow_group = Application.get_env(:arrow, :cognito_group)
+
       conn =
         Phoenix.ConnTest.build_conn()
         |> Plug.Conn.put_req_header("x-forwarded-proto", "https")
         |> init_test_session(%{})
-        |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{})
+        |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{groups: [arrow_group]})
 
       {:ok, conn: conn}
     else

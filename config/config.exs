@@ -17,7 +17,9 @@ config :arrow, ArrowWeb.Endpoint,
   render_errors: [view: ArrowWeb.ErrorView, accepts: ~w(html json)],
   pubsub: [name: Arrow.PubSub, adapter: Phoenix.PubSub.PG2]
 
-config :arrow, :redirect_http?, true
+config :arrow,
+  redirect_http?: true,
+  cognito_group: "arrow-admin"
 
 config :arrow, ArrowWeb.AuthManager, issuer: "arrow"
 
