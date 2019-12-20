@@ -17,5 +17,10 @@ config :arrow, ArrowWeb.Endpoint,
 
 config :arrow, ArrowWeb.AuthManager, secret_key: "test key"
 
+config :ueberauth, Ueberauth,
+  providers: [
+    cognito: {Arrow.Ueberauth.Strategy.Fake, []}
+  ]
+
 # Print only warnings and errors during test
 config :logger, level: :warn
