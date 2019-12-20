@@ -14,7 +14,7 @@ coverage:
   round: down
   status:
     changes: false
-    patch: true
+    patch:
       default:
         target: 100%
     project: false
