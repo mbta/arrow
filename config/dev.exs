@@ -68,6 +68,11 @@ config :arrow, ArrowWeb.Endpoint,
     ]
   ]
 
+config :ueberauth, Ueberauth,
+  providers: [
+    cognito: {Arrow.Ueberauth.Strategy.Fake, []}
+  ]
+
 config :arrow, :redirect_http?, false
 
 # Do not include metadata nor timestamps in development logs

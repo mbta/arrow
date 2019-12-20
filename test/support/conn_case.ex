@@ -36,22 +36,35 @@ defmodule ArrowWeb.ConnCase do
       Ecto.Adapters.SQL.Sandbox.mode(Arrow.Repo, {:shared, self()})
     end
 
-    if tags[:authenticated] do
-      user = "test_user"
+    cond do
+      tags[:authenticated] ->
+        user = "test_user"
 
-      arrow_group = Application.get_env(:arrow, :cognito_group)
+        arrow_group = Application.get_env(:arrow, :cognito_group)
 
-      conn =
-        Phoenix.ConnTest.build_conn()
-        |> Plug.Conn.put_req_header("x-forwarded-proto", "https")
-        |> init_test_session(%{})
-        |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{groups: [arrow_group]})
+        conn =
+          Phoenix.ConnTest.build_conn()
+          |> Plug.Conn.put_req_header("x-forwarded-proto", "https")
+          |> init_test_session(%{})
+          |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{groups: [arrow_group]})
 
-      {:ok, conn: conn}
-    else
-      {:ok,
-       conn:
-         Phoenix.ConnTest.build_conn() |> Plug.Conn.put_req_header("x-forwarded-proto", "https")}
+        {:ok, conn: conn}
+
+      tags[:authenticated_not_in_group] ->
+        user = "test_user"
+
+        conn =
+          Phoenix.ConnTest.build_conn()
+          |> Plug.Conn.put_req_header("x-forwarded-proto", "https")
+          |> init_test_session(%{})
+          |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{groups: []})
+
+        {:ok, conn: conn}
+
+      true ->
+        {:ok,
+         conn:
+           Phoenix.ConnTest.build_conn() |> Plug.Conn.put_req_header("x-forwarded-proto", "https")}
     end
   end
 end

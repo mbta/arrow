@@ -3,6 +3,7 @@ defmodule ArrowWeb.UnauthorizedControllerTest do
   import ArrowWeb.Router.Helpers
 
   describe "index/2" do
+    @tag :authenticated_not_in_group
     test "renders response", %{conn: conn} do
       conn = get(conn, unauthorized_path(conn, :index))
 
