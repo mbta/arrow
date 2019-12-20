@@ -66,6 +66,8 @@ config :arrow, ArrowWeb.Endpoint,
     ]
   ]
 
+config :arrow, :redirect_http?, false
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 
