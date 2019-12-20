@@ -11,6 +11,8 @@ defmodule ArrowWeb.EnsureArrowGroup do
       conn
     else
       _ ->
+        IO.puts("Hello, world!")
+
         conn
         |> Phoenix.Controller.redirect(
           to: ArrowWeb.Router.Helpers.unauthorized_path(conn, :index)
