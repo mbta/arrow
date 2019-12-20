@@ -19,6 +19,10 @@ defmodule ArrowWeb.Router do
     get "/", PageController, :index
   end
 
+  scope "/", ArrowWeb do
+    get "/_health", HealthController, :index
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", ArrowWeb do
   #   pipe_through :api
