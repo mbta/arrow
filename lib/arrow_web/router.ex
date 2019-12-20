@@ -13,8 +13,14 @@ defmodule ArrowWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :redirect_prod_http do
+    if Application.get_env(:arrow, :redirect_http?) do
+      plug(Plug.SSL, rewrite_on: [:x_forwarded_proto])
+    end
+  end
+
   scope "/", ArrowWeb do
-    pipe_through :browser
+    pipe_through [:redirect_prod_http, :browser]
 
     get "/", PageController, :index
   end
