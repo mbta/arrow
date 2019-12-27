@@ -20,6 +20,9 @@ config :arrow, ArrowWeb.AuthManager, secret_key: {System, :get_env, ["ARROW_AUTH
 # Do not print debug messages in production
 config :logger, level: :info
 
+config :arrow,
+  run_migrations_at_startup?: true
+
 config :arrow, Arrow.Repo, ssl: true
 
 # ## SSL Support
