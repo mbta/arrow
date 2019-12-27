@@ -9,10 +9,14 @@ defmodule Arrow.Disruption do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Arrow.Disruption.{Exception, TripShortName}
+
   schema "disruptions" do
     field :end_date, :date
     field :start_date, :date
 
+    has_many :exceptions, Exception
+    has_many :trip_short_names, TripShortName
     many_to_many :adjustments, Arrow.Adjustment, join_through: "disruption_adjustments"
 
     timestamps(type: :utc_datetime)
@@ -20,9 +24,19 @@ defmodule Arrow.Disruption do
 
   @doc false
   def changeset(disruption, attrs) do
+    exceptions =
+      for exception <- attrs[:exceptions] || [],
+          do: Exception.changeset(%Exception{}, %{excluded_date: exception})
+
+    trip_short_names =
+      for name <- attrs[:trip_short_names] || [],
+          do: TripShortName.changeset(%TripShortName{}, %{trip_short_name: name})
+
     disruption
     |> cast(attrs, [:start_date, :end_date])
     |> validate_required([:start_date, :end_date])
-    |> put_assoc(:adjustments, attrs.adjustments)
+    |> put_assoc(:adjustments, attrs[:adjustments] || [])
+    |> put_assoc(:exceptions, exceptions)
+    |> put_assoc(:trip_short_names, trip_short_names)
   end
 end
