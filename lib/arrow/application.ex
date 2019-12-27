@@ -6,15 +6,18 @@ defmodule Arrow.Application do
   use Application
 
   def start(_type, _args) do
+    run_migrations_at_startup? = Application.get_env(:arrow, :run_migrations_at_startup?)
+
     # List all child processes to be supervised
-    children = [
-      # Start the Ecto repository
-      Arrow.Repo,
-      # Start the endpoint when the application starts
-      ArrowWeb.Endpoint
-      # Starts a worker by calling: Arrow.Worker.start_link(arg)
-      # {Arrow.Worker, arg},
-    ]
+    children =
+      [
+        # Start the Ecto repository
+        Arrow.Repo,
+        # Start the endpoint when the application starts
+        ArrowWeb.Endpoint
+        # Starts a worker by calling: Arrow.Worker.start_link(arg)
+        # {Arrow.Worker, arg},
+      ] ++ migrate_children(run_migrations_at_startup?)
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -27,5 +30,13 @@ defmodule Arrow.Application do
   def config_change(changed, _new, removed) do
     ArrowWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  def migrate_children(true) do
+    [Arrow.Repo.Migrator]
+  end
+
+  def migrate_children(false) do
+    []
   end
 end
