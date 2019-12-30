@@ -87,14 +87,14 @@ defmodule Arrow.DisruptionTest do
 
       assert [friday, weekend] = new_dis.days_of_week
 
-      refute friday.thursday
-      assert friday.friday
+      assert friday.thursday == false
+      assert friday.friday == true
       assert friday.start_time == ~T[20:30:00]
       assert friday.end_time == nil
 
-      refute weekend.friday
-      assert weekend.saturday
-      assert weekend.sunday
+      assert weekend.friday == false
+      assert weekend.saturday == true
+      assert weekend.sunday == true
       assert weekend.start_time == nil
       assert weekend.end_time == nil
     end
