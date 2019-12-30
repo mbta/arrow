@@ -71,5 +71,32 @@ defmodule Arrow.DisruptionTest do
 
       assert [_] = new_dis.trip_short_names
     end
+
+    test "can insert a disruption with days of the week (recurrence)" do
+      assert {:ok, new_dis} =
+               Repo.insert(
+                 Disruption.changeset(%Disruption{}, %{
+                   start_date: @start_date,
+                   end_date: @end_date,
+                   days_of_week: [
+                     %{friday: true, start_time: ~T[20:30:00]},
+                     %{saturday: true, sunday: true}
+                   ]
+                 })
+               )
+
+      assert [friday, weekend] = new_dis.days_of_week
+
+      refute friday.thursday
+      assert friday.friday
+      assert friday.start_time == ~T[20:30:00]
+      assert friday.end_time == nil
+
+      refute weekend.friday
+      assert weekend.saturday
+      assert weekend.sunday
+      assert weekend.start_time == nil
+      assert weekend.end_time == nil
+    end
   end
 end
