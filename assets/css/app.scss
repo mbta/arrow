@@ -1,3 +1,21 @@
 /* This file is for your main application css. */
 
 @import "./phoenix.css";
+
+.header-arrow {
+  font-family: Helvetica Neue;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 25px;
+  line-height: 31px;
+  display: flex;
+  align-items: center;
+}
+
+.header-arrow-text {
+  padding-left: 8px;
+}
+
+.header-long-name {
+  font-weight: bold;
+}

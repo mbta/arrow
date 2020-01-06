@@ -1,0 +1,2 @@
+<div id="app"></div>
+<script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/edit.js") %>"></script>
