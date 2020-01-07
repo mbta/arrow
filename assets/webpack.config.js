@@ -7,13 +7,14 @@ const CopyWebpackPlugin = require("copy-webpack-plugin")
 
 module.exports = (env, options) => ({
   resolve: {
-    extensions: [".ts", ".tsx"],
+    extensions: [".ts", ".tsx", ".js", ".jsx"],
   },
   entry: {
-    "./src/app.ts": ["./src/app.ts"],
+    app: ["./src/app.tsx"],
+    edit: ["./src/edit.tsx"],
   },
   output: {
-    filename: "app.js",
+    filename: "[name].js",
     path: path.resolve(__dirname, "../priv/static/js"),
   },
   module: {
@@ -47,7 +48,7 @@ module.exports = (env, options) => ({
     ],
   },
   plugins: [
-    new MiniCssExtractPlugin({ filename: "../css/app.css" }),
+    new MiniCssExtractPlugin({ filename: "../css/[name].css" }),
     new CopyWebpackPlugin([{ from: "static/", to: "../" }]),
   ],
   devtool: "source-map",

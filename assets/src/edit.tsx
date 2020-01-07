@@ -12,8 +12,23 @@ require("../css/app.scss")
 // Import dependencies
 //
 import "phoenix_html"
+import * as React from "react"
+import ReactDOM from "react-dom"
+
+import Header from "./header"
 
 // Import local files
 //
 // Local files can be imported directly using relative paths, for example:
 // import socket from "./socket"
+
+function App(): JSX.Element {
+  return (
+    <div>
+      <Header />
+      <h2>Hello from Edit</h2>
+    </div>
+  )
+}
+
+ReactDOM.render(<App />, document.getElementById("app"))

@@ -41,6 +41,8 @@ defmodule ArrowWeb.Router do
     pipe_through [:redirect_prod_http, :browser, :auth, :ensure_auth, :ensure_arrow_group]
 
     get "/", PageController, :index
+    get "/edit", EditController, :index
+    get "/edit/:id", EditController, :index
   end
 
   scope "/", ArrowWeb do
