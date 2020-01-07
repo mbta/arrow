@@ -5,8 +5,6 @@ declare function require(name: string): string
 // tslint:disable-next-line
 require("../css/app.scss")
 
-import "bootstrap/dist/css/bootstrap.min.css"
-
 // webpack automatically bundles all modules in your
 // entry points. Those entry points can be configured
 // in "webpack.config.js".
