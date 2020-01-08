@@ -11,10 +11,9 @@ module.exports = (env, options) => ({
   },
   entry: {
     app: ["./src/app.tsx"],
-    edit: ["./src/edit.tsx"],
   },
   output: {
-    filename: "[name].js",
+    filename: "app.js",
     path: path.resolve(__dirname, "../priv/static/js"),
   },
   module: {
@@ -48,7 +47,7 @@ module.exports = (env, options) => ({
     ],
   },
   plugins: [
-    new MiniCssExtractPlugin({ filename: "../css/[name].css" }),
+    new MiniCssExtractPlugin({ filename: "../css/app.css" }),
     new CopyWebpackPlugin([{ from: "static/", to: "../" }]),
   ],
   devtool: "source-map",

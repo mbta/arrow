@@ -1,22 +1,11 @@
 /* This file is for your main application css. */
 
-@import "./phoenix.css";
 @import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+@import "../node_modules/react-datepicker/dist/react-datepicker.css";
 
-.header-arrow {
-  font-family: Helvetica Neue;
-  font-style: normal;
-  font-weight: bold;
-  font-size: 2.5rem;
-  line-height: 3rem;
-  display: flex;
-  align-items: center;
-}
-
-.header-arrow-text {
-  padding-left: 0.8rem;
-}
-
-.header-long-name {
-  font-weight: bold;
-}
+@import "base";
+@import "header";
+@import "forms";
+@import "disruption_times";
+@import "disruption_summary";
+@import "new_disruption_preview";
