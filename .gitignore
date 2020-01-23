@@ -34,3 +34,8 @@ npm-debug.log
 /priv/static/
 
 /assets/coverage/
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
