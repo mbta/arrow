@@ -44,10 +44,16 @@ const DisruptionDateRange = ({
     <Form.Group>
       <div className="m-forms__sublegend">Select date range</div>
       <DatePicker
+        id="disruption-date-range-start"
         selected={fromDate}
         onChange={date => setFromDate(date)}
-      />{" "}
-      until <DatePicker selected={toDate} onChange={date => setToDate(date)} />
+      />
+      until{" "}
+      <DatePicker
+        id="disruption-date-range-end"
+        selected={toDate}
+        onChange={date => setToDate(date)}
+      />
     </Form.Group>
   )
 }
@@ -160,6 +166,7 @@ const DisruptionTimeRange = ({
           <div className="m-disruption-times__time_of_day_start">
             <Form.Control
               as="select"
+              id={`time-of-day-start-${dayOfWeekIndex}`}
               value={timeRange[0]}
               onChange={evt => setTimeRange(dayOfWeekIndex, 0, evt)}
             >
@@ -174,6 +181,7 @@ const DisruptionTimeRange = ({
           <div className="m-disruption-times__time_of_day_end">
             <Form.Control
               as="select"
+              id={`time-of-day-end-${dayOfWeekIndex}`}
               value={timeRange[1]}
               onChange={evt => setTimeRange(dayOfWeekIndex, 1, evt)}
             >

@@ -29,17 +29,67 @@ const DisruptionTimePickerWithProps = ({}): JSX.Element => {
 }
 
 describe("DisruptionTimePicker", () => {
-  test("selecting a day of the week updates props", () => {
+  test("can set the date range", () => {
     const wrapper = mount(<DisruptionTimePickerWithProps />)
 
     wrapper
-      .find("#day-of-week-M")
+      .find("#disruption-date-range-start")
       .find("input")
-      .simulate("change")
+      .simulate("change", { target: { value: "01/01/2020" } })
+    wrapper
+      .find("#disruption-date-range-end")
+      .find("input")
+      .simulate("change", { target: { value: "01/02/2020" } })
+
+    expect(
+      wrapper
+        .find("#disruption-date-range-start")
+        .find("input")
+        .props().value
+    ).toEqual("01/01/2020")
+
+    expect(
+      wrapper
+        .find("#disruption-date-range-end")
+        .find("input")
+        .props().value
+    ).toEqual("01/02/2020")
+  })
+
+  test("selecting a day of the week enables updating time range", () => {
+    const wrapper = mount(<DisruptionTimePickerWithProps />)
+
+    wrapper.find("input#day-of-week-M").simulate("change")
 
     expect(
       wrapper.find(DisruptionTimePicker).props().disruptionDaysOfWeek
     ).toStrictEqual([["TBD", "TBD"], null, null, null, null, null, null])
+
+    wrapper
+      .find("select#time-of-day-start-0")
+      .simulate("change", { target: { value: "Beginning of Service" } })
+
+    wrapper
+      .find("select#time-of-day-end-0")
+      .simulate("change", { target: { value: "End of Service" } })
+
+    expect(
+      wrapper.find(DisruptionTimePicker).props().disruptionDaysOfWeek
+    ).toStrictEqual([
+      ["Beginning of Service", "End of Service"],
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ])
+
+    wrapper.find("input#day-of-week-M").simulate("change")
+
+    expect(
+      wrapper.find(DisruptionTimePicker).props().disruptionDaysOfWeek
+    ).toStrictEqual([null, null, null, null, null, null, null])
   })
 
   test("enabling date exceptions shows a field for entering a date", () => {
@@ -135,7 +185,7 @@ describe("DisruptionTimePicker", () => {
     ).toBe(true)
   })
 
-  test("can delete one of several exception dates", () => {
+  test("can edit and then delete one of several exception dates", () => {
     const wrapper = mount(<DisruptionTimePickerWithProps />)
 
     wrapper
@@ -147,6 +197,25 @@ describe("DisruptionTimePicker", () => {
       .find("#date-exception-new")
       .find("input")
       .simulate("change", { target: { value: "01/01/2020" } })
+
+    expect(
+      wrapper
+        .find("#date-exception-row-0")
+        .find("input")
+        .props().value
+    ).toEqual("01/01/2020")
+
+    wrapper
+      .find("#date-exception-row-0")
+      .find("input")
+      .simulate("change", { target: { value: "01/05/2020" } })
+
+    expect(
+      wrapper
+        .find("#date-exception-row-0")
+        .find("input")
+        .props().value
+    ).toEqual("01/05/2020")
 
     wrapper.find("#date-exception-add-link").simulate("click")
 
@@ -174,5 +243,61 @@ describe("DisruptionTimePicker", () => {
         .find("input")
         .props().checked
     ).toBe(false)
+  })
+
+  test("can delete an exception date by deleting the text in the input", () => {
+    const wrapper = mount(<DisruptionTimePickerWithProps />)
+
+    wrapper
+      .find("#date-exceptions-yes")
+      .find("input")
+      .simulate("change")
+
+    wrapper
+      .find("#date-exception-new")
+      .find("input")
+      .simulate("change", { target: { value: "01/01/2020" } })
+
+    expect(
+      wrapper
+        .find("#date-exception-row-0")
+        .find("input")
+        .props().value
+    ).toEqual("01/01/2020")
+
+    wrapper
+      .find("#date-exception-row-0")
+      .find("input")
+      .simulate("change", { target: { value: "" } })
+
+    expect(wrapper.exists("#date-exception-row-0")).toBe(false)
+  })
+
+  test("changing date exceptions back to 'no' clears selections", () => {
+    const wrapper = mount(<DisruptionTimePickerWithProps />)
+
+    wrapper
+      .find("#date-exceptions-yes")
+      .find("input")
+      .simulate("change")
+
+    wrapper
+      .find("#date-exception-new")
+      .find("input")
+      .simulate("change", { target: { value: "01/01/2020" } })
+
+    expect(
+      wrapper
+        .find("#date-exception-row-0")
+        .find("input")
+        .props().value
+    ).toEqual("01/01/2020")
+
+    wrapper
+      .find("#date-exceptions-no")
+      .find("input")
+      .simulate("change")
+
+    expect(wrapper.exists("#date-exception-row-0")).toBe(false)
   })
 })

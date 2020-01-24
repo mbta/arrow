@@ -17,9 +17,7 @@ describe("NewDisruption", () => {
 
     wrapper.find("#mode-commuter-rail.form-check-input").simulate("change")
 
-    const adjustmentOptions = wrapper
-      .find("#adjustment-select-0")
-      .find("option")
+    let adjustmentOptions = wrapper.find("#adjustment-select-0").find("option")
 
     expect(adjustmentOptions.length).toBe(2)
     expect(
@@ -32,6 +30,14 @@ describe("NewDisruption", () => {
         n => n.text() === "Broadway--Kendall/MIT" && n.type() === "option"
       ).length
     ).toBe(0)
+
+    wrapper.find("#mode-subway.form-check-input").simulate("change")
+    adjustmentOptions = wrapper.find("#adjustment-select-0").find("option")
+    expect(
+      adjustmentOptions.findWhere(
+        n => n.text() === "Broadway--Kendall/MIT" && n.type() === "option"
+      ).length
+    ).toBe(1)
   })
 
   test("add another adjustment link not enabled by default", () => {
@@ -88,6 +94,34 @@ describe("NewDisruption", () => {
     expect(wrapper.find("#adjustment-select-1").exists("select")).toBe(false)
 
     expect(wrapper.exists("#add-another-adjustment-link")).toBe(true)
+  })
+
+  test("ability to update a chosen adjustment", () => {
+    const wrapper = mount(<NewDisruption />)
+
+    wrapper
+      .find("#adjustment-select-0")
+      .find("select")
+      .simulate("change", { target: { value: "Kenmore--Newton Highlands" } })
+
+    expect(
+      wrapper
+        .find("#adjustment-select-0")
+        .first()
+        .props().value
+    ).toEqual("Kenmore--Newton Highlands")
+
+    wrapper
+      .find("#adjustment-select-0")
+      .find("select")
+      .simulate("change", { target: { value: "Broadway--Kendall/MIT" } })
+
+    expect(
+      wrapper
+        .find("#adjustment-select-0")
+        .first()
+        .props().value
+    ).toEqual("Broadway--Kendall/MIT")
   })
 
   test("preview disruption", () => {
