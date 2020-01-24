@@ -152,6 +152,20 @@ describe("DisruptionTimePicker", () => {
     ).toBe(true)
   })
 
+  test("safely ignores leaving the new exception date input empty", () => {
+    const wrapper = mount(<DisruptionTimePickerWithProps />)
+
+    wrapper
+      .find("#date-exceptions-yes")
+      .find("input")
+      .simulate("change")
+
+    wrapper
+      .find("#date-exception-new")
+      .find("input")
+      .simulate("change", { target: { value: "invalid" } })
+  })
+
   test("can delete the only exception date", () => {
     const wrapper = mount(<DisruptionTimePickerWithProps />)
 

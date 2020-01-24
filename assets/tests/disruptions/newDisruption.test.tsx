@@ -102,7 +102,17 @@ describe("NewDisruption", () => {
     wrapper
       .find("#adjustment-select-0")
       .find("select")
+      .simulate("change", { target: { value: "Safely ignores this event" } })
+
+    wrapper
+      .find("#adjustment-select-0")
+      .find("select")
       .simulate("change", { target: { value: "Kenmore--Newton Highlands" } })
+
+    wrapper
+      .find("#adjustment-select-0")
+      .find("select")
+      .simulate("change", { target: { value: "Safely ignores this one, too" } })
 
     expect(
       wrapper

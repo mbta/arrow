@@ -117,10 +117,7 @@ const DisruptionTimeRanges = ({
       ...disruptionDaysOfWeek,
     ] as DayOfWeekTimeRanges
     const oldTimeRange = disruptionDaysOfWeek[dow] as TimeRange
-    const newTimeRange =
-      oldTimeRange == null
-        ? (["TBD", "TBD"] as TimeRange)
-        : ([...oldTimeRange] as TimeRange)
+    const newTimeRange = [...oldTimeRange] as TimeRange
     newTimeRange[idx] = val
     newDisruptionDaysOfWeek[dow] = newTimeRange
     setDisruptionDaysOfWeek(newDisruptionDaysOfWeek)
