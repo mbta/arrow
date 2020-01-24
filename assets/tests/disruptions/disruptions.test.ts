@@ -1,6 +1,8 @@
 import {
   formatDisruptionDate,
   indexToDayOfWeekString,
+  modeForRoute,
+  TransitMode,
 } from "../../src/disruptions/disruptions"
 
 describe("formatDisruptionDate", () => {
@@ -24,5 +26,15 @@ describe("indexToDayOfWeekString", () => {
 
   test("returns an empty string for out of range number", () => {
     expect(indexToDayOfWeekString(10)).toEqual("")
+  })
+})
+
+describe("modeForRoute", () => {
+  test("returns transit mode for a known route", () => {
+    expect(modeForRoute("Red")).toEqual(TransitMode.Subway)
+  })
+
+  test("returns subway when unknown route", () => {
+    expect(modeForRoute("Unknown")).toEqual(TransitMode.Subway)
   })
 })

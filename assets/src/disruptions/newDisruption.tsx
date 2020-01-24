@@ -9,23 +9,10 @@ import {
   TimeRange,
 } from "./disruptionTimePicker"
 
-import { Adjustment, TransitMode } from "./disruptions"
+import { Adjustment, TransitMode, modeForRoute } from "./disruptions"
 
 import Header from "../header"
 import { NewDisruptionPreview } from "./newDisruptionPreview"
-
-const modeForRoute = (route: string): TransitMode => {
-  switch (route) {
-    case "Red":
-      return TransitMode.Subway
-    case "Green-D":
-      return TransitMode.Subway
-    case "CR-Fairmount":
-      return TransitMode.CommuterRail
-    default:
-      return TransitMode.Subway
-  }
-}
 
 interface AdjustmentModePickerProps {
   transitMode: TransitMode

@@ -30,4 +30,23 @@ const indexToDayOfWeekString = (index: number): string => {
   return dayOfWeekStrings[index] || ""
 }
 
-export { Adjustment, TransitMode, formatDisruptionDate, indexToDayOfWeekString }
+const modeForRoute = (route: string): TransitMode => {
+  switch (route) {
+    case "Red":
+      return TransitMode.Subway
+    case "Green-D":
+      return TransitMode.Subway
+    case "CR-Fairmount":
+      return TransitMode.CommuterRail
+    default:
+      return TransitMode.Subway
+  }
+}
+
+export {
+  Adjustment,
+  TransitMode,
+  formatDisruptionDate,
+  indexToDayOfWeekString,
+  modeForRoute,
+}
