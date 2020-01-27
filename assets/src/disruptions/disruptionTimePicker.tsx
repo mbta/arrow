@@ -240,8 +240,8 @@ const DisruptionExceptionDateList = ({
               />
             </Col>
             <Col md="auto">
-              <a
-                href="#"
+              <button
+                className="btn btn-link"
                 onClick={() => {
                   const newExceptionDates = exceptionDates
                     .slice(0, index)
@@ -251,7 +251,7 @@ const DisruptionExceptionDateList = ({
                 }}
               >
                 delete exception
-              </a>
+              </button>
             </Col>
           </Row>
         </div>
@@ -272,21 +272,24 @@ const DisruptionExceptionDateList = ({
               />
             </Col>
             <Col md="auto">
-              <a href="#" onClick={() => setIsAddingDate(false)}>
+              <button
+                className="btn btn-link"
+                onClick={() => setIsAddingDate(false)}
+              >
                 delete exception
-              </a>
+              </button>
             </Col>
           </Row>
         </div>
       ) : (
         <Row key="date-exception-add-link">
-          <a
-            href="#"
+          <button
+            className="btn btn-link"
             id="date-exception-add-link"
             onClick={() => setIsAddingDate(true)}
           >
             + add another exception
-          </a>
+          </button>
         </Row>
       )}
     </Form.Group>

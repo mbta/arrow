@@ -134,7 +134,7 @@ describe("DisruptionTimePicker", () => {
 
     wrapper
       .find("#date-exception-new")
-      .find("a")
+      .find("button")
       .simulate("click")
 
     expect(wrapper.exists("#date-exception-new")).toBe(false)
@@ -181,7 +181,7 @@ describe("DisruptionTimePicker", () => {
 
     wrapper
       .find("#date-exception-row-0")
-      .find("a")
+      .find("button")
       .simulate("click")
 
     expect(wrapper.exists("#date-exception-row-0")).toBe(false)
@@ -240,7 +240,7 @@ describe("DisruptionTimePicker", () => {
 
     wrapper
       .find("#date-exception-row-0")
-      .find("a")
+      .find("button")
       .simulate("click")
 
     expect(wrapper.exists("#date-exception-row-0")).toBe(true)

@@ -134,24 +134,24 @@ const AdjustmentsPicker = ({
                   ))}
                 <option>{adjustment.label}</option>
               </Form.Control>
-              <a
-                href="#"
+              <button
+                className="btn btn-link"
                 id={"adjustment-delete-" + i}
                 onClick={() => deleteAdjustment(i)}
               >
                 delete
-              </a>
+              </button>
             </Form.Row>
           )
         })}
         {!isAddingAdjustment ? (
-          <a
-            href="#"
+          <button
             id="add-another-adjustment-link"
+            className="btn btn-link"
             onClick={() => setIsAddingAdjustment(true)}
           >
             + another
-          </a>
+          </button>
         ) : (
           <Form.Row>
             <Form.Control
