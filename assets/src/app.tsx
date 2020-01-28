@@ -5,29 +5,34 @@ declare function require(name: string): string
 // tslint:disable-next-line
 require("../css/app.scss")
 
-// webpack automatically bundles all modules in your
-// entry points. Those entry points can be configured
-// in "webpack.config.js".
-//
-// Import dependencies
-//
 import "phoenix_html"
 import * as React from "react"
 import ReactDOM from "react-dom"
+import { BrowserRouter, Route } from "react-router-dom"
 
+import EditDisruption from "./disruptions/editDisruption"
+import { NewDisruption } from "./disruptions/newDisruption"
 import Header from "./header"
 
-// Import local files
-//
-// Local files can be imported directly using relative paths, for example:
-// import socket from "./socket"
-
-function App(): JSX.Element {
+const IndexPage = (): JSX.Element => {
   return (
     <div>
-      <Header />
-      <h2>Hello from React</h2>
+      <Header includeHomeLink={false} />
     </div>
+  )
+}
+
+const App = (): JSX.Element => {
+  return (
+    <BrowserRouter>
+      <Route exact={true} path="/" component={IndexPage} />
+      <Route exact={true} path="/disruptions/new" component={NewDisruption} />
+      <Route
+        exact={true}
+        path="/disruptions/:id/edit"
+        component={EditDisruption}
+      />
+    </BrowserRouter>
   )
 }
 
