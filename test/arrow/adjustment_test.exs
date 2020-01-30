@@ -24,15 +24,21 @@ defmodule Arrow.AdjustmentTest do
       assert [^new_adj] = Repo.all(Adjustment)
     end
 
-    test "source/source_label is unique" do
-      adj = %Adjustment{
-        source: "testing",
+    test "source_label is unique" do
+      adj1 = %Adjustment{
+        source: "testing1",
         source_label: "NewtonHighlandsKenmore",
         route_id: "Green-D"
       }
 
-      assert {:ok, _} = Repo.insert(adj)
-      assert {:error, _} = Repo.insert(Adjustment.changeset(adj, %{}))
+      adj2 = %Adjustment{
+        source: "testing2",
+        source_label: "NewtonHighlandsKenmore",
+        route_id: "Green-D"
+      }
+
+      assert {:ok, _} = Repo.insert(adj1)
+      assert {:error, _} = Repo.insert(Adjustment.changeset(adj2, %{}))
     end
   end
 end
