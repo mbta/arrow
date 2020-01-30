@@ -33,6 +33,6 @@ defmodule Arrow.Adjustment do
     adjustment
     |> cast(attrs, [:source, :source_label, :route_id])
     |> validate_required([:source, :source_label, :route_id])
-    |> unique_constraint(:source_source_label, name: :adjustments_source_source_label)
+    |> unique_constraint(:source_label)
   end
 end
