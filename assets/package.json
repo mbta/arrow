@@ -42,7 +42,7 @@
     "sass-loader": "^8.0.2",
     "source-map-loader": "^0.2.4",
     "terser-webpack-plugin": "^2.3.2",
-    "ts-jest": "^25.0.0",
+    "ts-jest": "^25.1.0",
     "ts-loader": "^6.2.1",
     "tslint": "^6.0.0",
     "tslint-config-prettier": "^1.18.0",
