@@ -8,6 +8,8 @@ defmodule Arrow.AdjustmentFetcher do
 
   use GenServer, restart: :transient
 
+  import Ecto.Query, only: [from: 2]
+
   @spec start_link(Keyword.t()) :: GenServer.on_start()
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, [])
@@ -44,6 +46,25 @@ defmodule Arrow.AdjustmentFetcher do
         on_conflict: [set: [source: "gtfs_creator"]],
         conflict_target: :source_label
       )
+
+    adjustment_source_labels = Enum.map(adjustments, & &1.source_label)
+
+    unused_adjustment_ids =
+      Arrow.Repo.all(
+        from d in Arrow.Disruption,
+          right_join: a in assoc(d, :adjustments),
+          select: a.id,
+          where: is_nil(d.id)
+      )
+
+    Arrow.Repo.delete_all(
+      from(
+        a in Arrow.Adjustment,
+        where:
+          a.source == "gtfs_creator" and a.source_label not in ^adjustment_source_labels and
+            a.id in ^unused_adjustment_ids
+      )
+    )
 
     :ok
   end
