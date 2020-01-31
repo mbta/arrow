@@ -1,19 +1,15 @@
 defmodule Arrow.AdjustmentTest do
   @moduledoc false
-  use Arrow.DataCase, async: true
+  use Arrow.DataCase
   alias Arrow.Adjustment
   alias Arrow.Repo
 
   describe "database" do
-    test "starts with no adjustments" do
-      assert [] = Repo.all(Adjustment)
-    end
-
     test "can insert an adjustment" do
       adj = %Adjustment{
         source: "testing",
-        source_label: "NewtonHighlandsKenmore",
-        route_id: "Green-D"
+        source_label: "test_insert_adjustment",
+        route_id: "test_route"
       }
 
       assert {:ok, new_adj} = Repo.insert(adj)
@@ -21,20 +17,20 @@ defmodule Arrow.AdjustmentTest do
       assert adj.source_label == new_adj.source_label
       assert adj.route_id == new_adj.route_id
 
-      assert [^new_adj] = Repo.all(Adjustment)
+      assert new_adj in Repo.all(Adjustment)
     end
 
     test "source_label is unique" do
       adj1 = %Adjustment{
         source: "testing1",
-        source_label: "NewtonHighlandsKenmore",
-        route_id: "Green-D"
+        source_label: "test_unique_source_label",
+        route_id: "test_route"
       }
 
       adj2 = %Adjustment{
         source: "testing2",
-        source_label: "NewtonHighlandsKenmore",
-        route_id: "Green-D"
+        source_label: "test_unique_source_label",
+        route_id: "test_route"
       }
 
       assert {:ok, _} = Repo.insert(adj1)

@@ -30,7 +30,7 @@ adjustments =
     }
   end)
 
-Repo.insert_all(Adjustment, adjustments)
+Repo.insert_all(Adjustment, adjustments, on_conflict: :nothing)
 
 for attrs <- [
       %{

@@ -13,6 +13,7 @@ defmodule Arrow.Application do
       [
         # Start the Ecto repository
         Arrow.Repo,
+        {Arrow.AdjustmentFetcher, path: Application.app_dir(:arrow, "priv/repo/shuttles.json")},
         # Start the endpoint when the application starts
         ArrowWeb.Endpoint
         # Starts a worker by calling: Arrow.Worker.start_link(arg)
