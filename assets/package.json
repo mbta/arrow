@@ -41,7 +41,7 @@
     "prettier": "^1.19.1",
     "sass-loader": "^8.0.2",
     "source-map-loader": "^0.2.4",
-    "terser-webpack-plugin": "^2.3.3",
+    "terser-webpack-plugin": "^2.3.4",
     "ts-jest": "^25.1.0",
     "ts-loader": "^6.2.1",
     "tslint": "^6.0.0",
