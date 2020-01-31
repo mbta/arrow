@@ -1,6 +1,6 @@
 defmodule Arrow.DisruptionTest do
   @moduledoc false
-  use Arrow.DataCase, async: true
+  use Arrow.DataCase
   alias Arrow.Adjustment
   alias Arrow.Disruption
   alias Arrow.Repo
@@ -28,8 +28,8 @@ defmodule Arrow.DisruptionTest do
     test "can insert a disruption with adjustments" do
       adj = %Adjustment{
         source: "testing",
-        source_label: "NewtonHighlandsKenmore",
-        route_id: "Green-D"
+        source_label: "test_insert_disruption",
+        route_id: "test_route"
       }
 
       {:ok, new_adj} = Repo.insert(adj)
