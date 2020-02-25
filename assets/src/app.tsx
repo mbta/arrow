@@ -12,20 +12,16 @@ import { BrowserRouter, Route } from "react-router-dom"
 
 import EditDisruption from "./disruptions/editDisruption"
 import { NewDisruption } from "./disruptions/newDisruption"
-import Header from "./header"
-
-const IndexPage = (): JSX.Element => {
-  return (
-    <div>
-      <Header includeHomeLink={false} />
-    </div>
-  )
-}
+import DisruptionIndex from "./disruptions/disruptionIndex"
 
 const App = (): JSX.Element => {
   return (
     <BrowserRouter>
-      <Route exact={true} path="/" component={IndexPage} />
+      <Route
+        exact={true}
+        path="/"
+        render={() => <DisruptionIndex disruptions={[]} />}
+      />
       <Route exact={true} path="/disruptions/new" component={NewDisruption} />
       <Route
         exact={true}
