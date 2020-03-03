@@ -34,7 +34,8 @@ const DayOfWeekPreview = ({
   )
 }
 
-interface NewDisruptionPreviewProps {
+interface DisruptionPreviewProps {
+  disruptionId?: string
   adjustments: Adjustment[]
   setIsPreview: React.Dispatch<boolean>
   fromDate: Date | null
@@ -43,14 +44,15 @@ interface NewDisruptionPreviewProps {
   exceptionDates: Date[]
 }
 
-const NewDisruptionPreview = ({
+const DisruptionPreview = ({
+  disruptionId,
   adjustments,
   setIsPreview,
   fromDate,
   toDate,
   disruptionDaysOfWeek,
   exceptionDates,
-}: NewDisruptionPreviewProps): JSX.Element => {
+}: DisruptionPreviewProps): JSX.Element => {
   const listedDays: JSX.Element[] = []
   disruptionDaysOfWeek.forEach((timeRange, i) => {
     if (timeRange !== null) {
@@ -71,7 +73,10 @@ const NewDisruptionPreview = ({
 
   return (
     <div>
-      <DisruptionSummary adjustments={adjustments} />
+      <DisruptionSummary
+        disruptionId={disruptionId}
+        adjustments={adjustments}
+      />
       <h2>When</h2>
       <p>
         {formatDisruptionDate(fromDate)} &ndash; {formatDisruptionDate(toDate)}
@@ -90,4 +95,4 @@ const NewDisruptionPreview = ({
   )
 }
 
-export { NewDisruptionPreview }
+export { DisruptionPreview }

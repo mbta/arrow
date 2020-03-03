@@ -2,10 +2,12 @@ import * as React from "react"
 import { Adjustment } from "./disruptions"
 
 interface DisruptionSummaryProps {
+  disruptionId?: string
   adjustments: Adjustment[]
 }
 
 const DisruptionSummary = ({
+  disruptionId,
   adjustments,
 }: DisruptionSummaryProps): JSX.Element => {
   return (
@@ -15,6 +17,13 @@ const DisruptionSummary = ({
           <span className="m-disruption-summary__adjustment_label">
             {adjustment.label}
           </span>
+          {disruptionId && (
+            <div>
+              <span className="m-disruption-summary__disruption_id">
+                Disruption ID: {disruptionId}
+              </span>
+            </div>
+          )}
           <div>
             <span className="m-disruption-summary__adjustment_route">
               {adjustment.route}
