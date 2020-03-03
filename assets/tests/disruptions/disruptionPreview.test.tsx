@@ -1,11 +1,11 @@
 import { mount } from "enzyme"
 import * as React from "react"
-import { NewDisruptionPreview } from "../../src/disruptions/newDisruptionPreview"
+import { DisruptionPreview } from "../../src/disruptions/disruptionPreview"
 
-describe("NewDisruptionPreview", () => {
+describe("DisruptionPreview", () => {
   test("includes formatted from and to dates", () => {
     const text = mount(
-      <NewDisruptionPreview
+      <DisruptionPreview
         adjustments={[]}
         setIsPreview={() => null}
         fromDate={new Date(2020, 0, 1)}
@@ -21,7 +21,7 @@ describe("NewDisruptionPreview", () => {
 
   test("includes formatted exception dates", () => {
     const text = mount(
-      <NewDisruptionPreview
+      <DisruptionPreview
         adjustments={[]}
         setIsPreview={() => null}
         fromDate={null}
@@ -36,7 +36,7 @@ describe("NewDisruptionPreview", () => {
 
   test("Days of week are included and translated", () => {
     let text = mount(
-      <NewDisruptionPreview
+      <DisruptionPreview
         adjustments={[]}
         setIsPreview={() => null}
         fromDate={null}
@@ -58,7 +58,7 @@ describe("NewDisruptionPreview", () => {
     expect(text).toMatch("Start of service – End of service")
 
     text = mount(
-      <NewDisruptionPreview
+      <DisruptionPreview
         adjustments={[]}
         setIsPreview={() => null}
         fromDate={null}

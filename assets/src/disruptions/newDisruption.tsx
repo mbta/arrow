@@ -12,7 +12,7 @@ import {
 import { Adjustment, TransitMode, modeForRoute } from "./disruptions"
 
 import Header from "../header"
-import { NewDisruptionPreview } from "./newDisruptionPreview"
+import { DisruptionPreview } from "./disruptionPreview"
 
 interface AdjustmentModePickerProps {
   transitMode: TransitMode
@@ -238,7 +238,7 @@ const NewDisruption = ({}): JSX.Element => {
     <div>
       <Header />
       {isPreview ? (
-        <NewDisruptionPreview
+        <DisruptionPreview
           adjustments={adjustments}
           setIsPreview={setIsPreview}
           fromDate={fromDate}

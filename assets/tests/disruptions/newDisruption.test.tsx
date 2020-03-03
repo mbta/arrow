@@ -142,7 +142,7 @@ describe("NewDisruption", () => {
       .find("button")
       .simulate("click")
 
-    expect(wrapper.exists("NewDisruptionPreview")).toBe(true)
+    expect(wrapper.exists("DisruptionPreview")).toBe(true)
   })
 
   test("can go back to edit from preview", () => {
