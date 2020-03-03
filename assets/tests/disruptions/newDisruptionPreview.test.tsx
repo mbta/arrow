@@ -35,7 +35,7 @@ describe("NewDisruptionPreview", () => {
   })
 
   test("Days of week are included and translated", () => {
-    const text = mount(
+    let text = mount(
       <NewDisruptionPreview
         adjustments={[]}
         setIsPreview={() => null}
@@ -44,7 +44,7 @@ describe("NewDisruptionPreview", () => {
         disruptionDaysOfWeek={[
           null,
           null,
-          ["Beginning of Service", "End of Service"],
+          [null, null],
           null,
           null,
           null,
@@ -55,6 +55,31 @@ describe("NewDisruptionPreview", () => {
     ).text()
 
     expect(text).toMatch("Wednesday")
-    expect(text).toMatch("Beginning of Service – End of Service")
+    expect(text).toMatch("Start of service – End of service")
+
+    text = mount(
+      <NewDisruptionPreview
+        adjustments={[]}
+        setIsPreview={() => null}
+        fromDate={null}
+        toDate={null}
+        disruptionDaysOfWeek={[
+          null,
+          null,
+          null,
+          [
+            { hour: "12", minute: "30", period: "AM" },
+            { hour: "9", minute: "30", period: "PM" },
+          ],
+          null,
+          null,
+          null,
+        ]}
+        exceptionDates={[new Date(2020, 0, 10)]}
+      />
+    ).text()
+
+    expect(text).toMatch("Thursday")
+    expect(text).toMatch("12:30AM – 9:30PM")
   })
 })

@@ -23,7 +23,13 @@ const DayOfWeekPreview = ({
       <span className="m-new-disruption-preview__day_label">
         {indexToDayOfWeekString(dayIndex)}
       </span>
-      {timeStart} &ndash; {timeEnd}
+      {timeStart
+        ? `${timeStart.hour}:${timeStart.minute}${timeStart.period}`
+        : "Start of service"}{" "}
+      &ndash;{" "}
+      {timeEnd
+        ? `${timeEnd.hour}:${timeEnd.minute}${timeEnd.period}`
+        : "End of service"}
     </div>
   )
 }
