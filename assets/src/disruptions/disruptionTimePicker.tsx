@@ -84,18 +84,19 @@ const DisruptionDaysOfWeek = ({
       <div className="m-forms__sublegend">Select days of the week</div>
       {["M", "T", "W", "Th", "F", "Sa", "Su"].map((day, i) => {
         return (
-          <Form.Check
-            key={day}
-            inline
-            type="checkbox"
-            id={`day-of-week-${day}`}
-            label={day}
-            name="day-of-week"
-            checked={disruptionDaysOfWeek[i] !== null}
-            onChange={() => {
-              handleClick(i)
-            }}
-          />
+          <span key={day} className="m-forms__day-of-week-bubble">
+            <Form.Check
+              inline
+              type="checkbox"
+              id={`day-of-week-${day}`}
+              label={day}
+              name="day-of-week"
+              checked={disruptionDaysOfWeek[i] !== null}
+              onChange={() => {
+                handleClick(i)
+              }}
+            />
+          </span>
         )
       })}
     </Form.Group>
