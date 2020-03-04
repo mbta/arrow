@@ -44,6 +44,12 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :phoenix, :format_encoders, "json-api": Jason
+
+config :mime, :types, %{
+  "application/vnd.api+json" => ["json-api"]
+}
+
 config :ex_aws, json_codec: Jason
 
 # Import environment specific config. This must remain at the bottom
