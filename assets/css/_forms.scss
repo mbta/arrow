@@ -1,3 +1,22 @@
 .m-forms__sublegend {
   font-weight: bold;
 }
+
+.m-forms__day-of-week-bubble {
+  & input {
+    display: none;
+  }
+
+  & label {
+    border: 1px solid #aaa;
+    border-radius: 1.25rem;
+    height: 2.5rem;
+    padding-top: 0.4rem;
+    text-align: center;
+    width: 2.5rem;
+  }
+
+  & input:checked + label {
+    background-color: rgb(46, 139, 224);
+  }
+}
