@@ -63,20 +63,66 @@ describe("DisruptionTimePicker", () => {
 
     expect(
       wrapper.find(DisruptionTimePicker).props().disruptionDaysOfWeek
-    ).toStrictEqual([["TBD", "TBD"], null, null, null, null, null, null])
+    ).toStrictEqual([[null, null], null, null, null, null, null, null])
 
     wrapper
-      .find("select#time-of-day-start-0")
-      .simulate("change", { target: { value: "Beginning of Service" } })
+      .find("input#time-of-day-start-type-0")
+      .simulate("change", { target: { checked: false } })
 
     wrapper
-      .find("select#time-of-day-end-0")
-      .simulate("change", { target: { value: "End of Service" } })
+      .find("input#time-of-day-end-type-0")
+      .simulate("change", { target: { checked: false } })
 
     expect(
       wrapper.find(DisruptionTimePicker).props().disruptionDaysOfWeek
     ).toStrictEqual([
-      ["Beginning of Service", "End of Service"],
+      [
+        { hour: "12", minute: "00", period: "AM" },
+        { hour: "12", minute: "00", period: "AM" },
+      ],
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ])
+
+    wrapper
+      .find("select#time-of-day-start-hour-0")
+      .simulate("change", { target: { value: "9" } })
+
+    wrapper
+      .find("select#time-of-day-end-minute-0")
+      .simulate("change", { target: { value: "30" } })
+
+    wrapper
+      .find("select#time-of-day-end-period-0")
+      .simulate("change", { target: { value: "PM" } })
+
+    expect(
+      wrapper.find(DisruptionTimePicker).props().disruptionDaysOfWeek
+    ).toStrictEqual([
+      [
+        { hour: "9", minute: "00", period: "AM" },
+        { hour: "12", minute: "30", period: "PM" },
+      ],
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ])
+
+    wrapper
+      .find("input#time-of-day-end-type-0")
+      .simulate("change", { target: { checked: true } })
+
+    expect(
+      wrapper.find(DisruptionTimePicker).props().disruptionDaysOfWeek
+    ).toStrictEqual([
+      [{ hour: "9", minute: "00", period: "AM" }, null],
       null,
       null,
       null,

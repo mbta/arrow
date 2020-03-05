@@ -7,7 +7,31 @@ import DatePicker from "react-datepicker"
 
 import { indexToDayOfWeekString } from "./disruptions"
 
-type TimeRange = [string, string]
+type HourOptions =
+  | "12"
+  | "1"
+  | "2"
+  | "3"
+  | "4"
+  | "5"
+  | "6"
+  | "7"
+  | "8"
+  | "9"
+  | "10"
+  | "11"
+
+type MinuteOptions = "00" | "15" | "30" | "45"
+
+type PeriodOptions = "AM" | "PM"
+
+interface Time {
+  hour: HourOptions
+  minute: MinuteOptions
+  period: PeriodOptions
+}
+
+type TimeRange = [Time | null, Time | null]
 
 type DayOfWeekTimeRanges = [
   TimeRange | null,
@@ -21,10 +45,6 @@ type DayOfWeekTimeRanges = [
 
 const isEmpty = (days: DayOfWeekTimeRanges): boolean => {
   return days.filter(d => d !== null).length === 0
-}
-
-const timeOptions = (): string[] => {
-  return ["10:00am", "12:00pm", "1:00pm", "11:00pm"]
 }
 
 interface DisruptionDateRangeProps {
@@ -72,7 +92,7 @@ const DisruptionDaysOfWeek = ({
       ...disruptionDaysOfWeek,
     ] as DayOfWeekTimeRanges
     if (disruptionDaysOfWeek[i] === null) {
-      newDisruptionDaysOfWeek[i] = ["TBD", "TBD"]
+      newDisruptionDaysOfWeek[i] = [null, null]
     } else {
       newDisruptionDaysOfWeek[i] = null
     }
@@ -103,6 +123,12 @@ const DisruptionDaysOfWeek = ({
   )
 }
 
+const DEFAULT_TIME: Time = {
+  hour: "12",
+  minute: "00",
+  period: "AM",
+}
+
 interface DisruptionTimeRangesProps {
   disruptionDaysOfWeek: DayOfWeekTimeRanges
   setDisruptionDaysOfWeek: React.Dispatch<DayOfWeekTimeRanges>
@@ -112,14 +138,15 @@ const DisruptionTimeRanges = ({
   disruptionDaysOfWeek,
   setDisruptionDaysOfWeek,
 }: DisruptionTimeRangesProps): JSX.Element => {
-  const setTimeRange = (dow: number, idx: 0 | 1, evt: React.FormEvent) => {
-    const val = (evt.target as HTMLSelectElement).value
+  const setTimeRange = (dow: number, idx: 0 | 1, val: Partial<Time> | null) => {
     const newDisruptionDaysOfWeek = [
       ...disruptionDaysOfWeek,
     ] as DayOfWeekTimeRanges
     const oldTimeRange = disruptionDaysOfWeek[dow] as TimeRange
     const newTimeRange = [...oldTimeRange] as TimeRange
-    newTimeRange[idx] = val
+    const oldTime = oldTimeRange[idx] || DEFAULT_TIME
+    const newTime = val && { ...oldTime, ...val }
+    newTimeRange[idx] = newTime
     newDisruptionDaysOfWeek[dow] = newTimeRange
     setDisruptionDaysOfWeek(newDisruptionDaysOfWeek)
   }
@@ -146,7 +173,7 @@ const DisruptionTimeRanges = ({
 interface DisruptionTimeRangeProps {
   dayOfWeekIndex: number
   timeRange: TimeRange | null
-  setTimeRange(dow: number, idx: number, evt: React.FormEvent): void
+  setTimeRange(dow: number, idx: number, val: Partial<Time> | null): void
 }
 
 const DisruptionTimeRange = ({
@@ -157,38 +184,26 @@ const DisruptionTimeRange = ({
   if (timeRange !== null) {
     return (
       <Form.Group>
-        <div className="form-inline">
-          <span className="m-disruption-times__dow_label">
+        <div className="form-inline align-items-start">
+          <span className="m-disruption-times__dow_label pt-2">
             {indexToDayOfWeekString(dayOfWeekIndex)}
           </span>
           <div className="m-disruption-times__time_of_day_start">
-            <Form.Control
-              as="select"
-              id={`time-of-day-start-${dayOfWeekIndex}`}
-              value={timeRange[0]}
-              onChange={evt => setTimeRange(dayOfWeekIndex, 0, evt)}
-            >
-              <option value="TBD">Choose Time</option>
-              <option value="Beginning of Service">Beginning of Service</option>
-              {timeOptions().map(opt => (
-                <option key={"0" + opt}>{opt}</option>
-              ))}
-            </Form.Control>
+            <TimeOfDaySelector
+              dayOfWeekIndex={dayOfWeekIndex}
+              timeIndex={0}
+              setTimeRange={setTimeRange}
+              time={timeRange[0]}
+            />
           </div>
-          until
+          <span className="pt-2">until</span>
           <div className="m-disruption-times__time_of_day_end">
-            <Form.Control
-              as="select"
-              id={`time-of-day-end-${dayOfWeekIndex}`}
-              value={timeRange[1]}
-              onChange={evt => setTimeRange(dayOfWeekIndex, 1, evt)}
-            >
-              <option value="TBD">Choose Time</option>
-              {timeOptions().map(opt => (
-                <option key={"1" + opt}>{opt}</option>
-              ))}
-              <option value="End of Service">End of Service</option>
-            </Form.Control>
+            <TimeOfDaySelector
+              dayOfWeekIndex={dayOfWeekIndex}
+              timeIndex={1}
+              setTimeRange={setTimeRange}
+              time={timeRange[1]}
+            />
           </div>
         </div>
       </Form.Group>
@@ -196,6 +211,124 @@ const DisruptionTimeRange = ({
   } else {
     return <div></div>
   }
+}
+
+interface TimeOfDaySelectorProps {
+  dayOfWeekIndex: number
+  timeIndex: 0 | 1
+  time: Time | null
+  setTimeRange(dow: number, idx: number, val: Partial<Time> | null): void
+}
+
+const TimeOfDaySelector = ({
+  dayOfWeekIndex,
+  timeIndex,
+  time,
+  setTimeRange,
+}: TimeOfDaySelectorProps) => {
+  const handleChangeTime = (val: Partial<Time> | null) => {
+    setTimeRange(dayOfWeekIndex, timeIndex, val)
+  }
+
+  const startOrEnd = timeIndex === 0 ? "start" : "end"
+
+  return (
+    <div>
+      <div>
+        <Form.Control
+          as="select"
+          id={`time-of-day-${startOrEnd}-hour-${dayOfWeekIndex}`}
+          value={time?.hour || ""}
+          disabled={!time}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+            handleChangeTime({
+              hour: e.target.value as HourOptions,
+            })
+          }}
+        >
+          <option value="" disabled>
+            --
+          </option>
+          {["12", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"].map(
+            hour => {
+              return (
+                <option
+                  key={`${hour}-${dayOfWeekIndex}-${timeIndex}`}
+                  value={hour}
+                >
+                  {hour}
+                </option>
+              )
+            }
+          )}
+        </Form.Control>
+        <Form.Control
+          as="select"
+          id={`time-of-day-${startOrEnd}-minute-${dayOfWeekIndex}`}
+          value={time?.minute || ""}
+          disabled={!time}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            handleChangeTime({
+              minute: e.target.value as MinuteOptions,
+            })
+          }
+        >
+          <option value="" disabled>
+            --
+          </option>
+          {["00", "15", "30", "45"].map(minute => {
+            return (
+              <option
+                key={`${minute}-${dayOfWeekIndex}-${timeIndex}`}
+                value={minute}
+              >
+                {minute}
+              </option>
+            )
+          })}
+        </Form.Control>
+        <Form.Control
+          as="select"
+          id={`time-of-day-${startOrEnd}-period-${dayOfWeekIndex}`}
+          key={`period-${dayOfWeekIndex}-${timeIndex}`}
+          value={time?.period || ""}
+          disabled={!time}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            handleChangeTime({
+              period: e.target.value as PeriodOptions,
+            })
+          }
+        >
+          <option value="" disabled>
+            --
+          </option>
+          {["AM", "PM"].map(period => {
+            return (
+              <option
+                key={`${period}-${dayOfWeekIndex}-${timeIndex}`}
+                value={period}
+              >
+                {period}
+              </option>
+            )
+          })}
+        </Form.Control>
+      </div>
+      <Form.Check
+        id={`time-of-day-${startOrEnd}-type-${dayOfWeekIndex}`}
+        className="justify-content-start"
+        label={timeIndex === 0 ? "start of service" : "end of service"}
+        checked={!time}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+          if (e.target.checked) {
+            handleChangeTime(null)
+          } else {
+            handleChangeTime({})
+          }
+        }}
+      />
+    </div>
+  )
 }
 
 interface DisruptionExceptionDateListProps {
@@ -392,4 +525,9 @@ const DisruptionTimePicker = ({
   )
 }
 
-export { DisruptionTimePicker, TimeRange, DayOfWeekTimeRanges }
+export {
+  DisruptionTimePicker,
+  DisruptionTimeRange,
+  TimeRange,
+  DayOfWeekTimeRanges,
+}
