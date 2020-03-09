@@ -59,7 +59,7 @@ defmodule ArrowWeb.Router do
   end
 
   scope "/api", ArrowWeb do
-    pipe_through([:redirect_prod_http, :api, :browser])
+    pipe_through([:redirect_prod_http, :api])
 
     get("/disruptions/", DisruptionApiController, :index)
   end
