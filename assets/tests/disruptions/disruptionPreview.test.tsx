@@ -82,4 +82,33 @@ describe("DisruptionPreview", () => {
     expect(text).toMatch("Thursday")
     expect(text).toMatch("12:30AM – 9:30PM")
   })
+
+  test("includes back to edit link when setIsPreview is provided", () => {
+    const wrapper = mount(
+      <DisruptionPreview
+        adjustments={[]}
+        setIsPreview={() => null}
+        fromDate={null}
+        toDate={null}
+        disruptionDaysOfWeek={[null, null, null, null, null, null, null]}
+        exceptionDates={[]}
+      />
+    )
+
+    expect(wrapper.find("#back-to-edit-link").length).toEqual(1)
+  })
+
+  test("doesn't include back to edit link when setIsPreview is omitted", () => {
+    const wrapper = mount(
+      <DisruptionPreview
+        adjustments={[]}
+        fromDate={null}
+        toDate={null}
+        disruptionDaysOfWeek={[null, null, null, null, null, null, null]}
+        exceptionDates={[]}
+      />
+    )
+
+    expect(wrapper.find("#back-to-edit-link").length).toEqual(0)
+  })
 })

@@ -37,7 +37,7 @@ const DayOfWeekPreview = ({
 interface DisruptionPreviewProps {
   disruptionId?: string
   adjustments: Adjustment[]
-  setIsPreview: React.Dispatch<boolean>
+  setIsPreview?: React.Dispatch<boolean>
   fromDate: Date | null
   toDate: Date | null
   disruptionDaysOfWeek: DayOfWeekTimeRanges
@@ -88,9 +88,11 @@ const DisruptionPreview = ({
       ) : (
         <div>none</div>
       )}
-      <a href="#" onClick={() => setIsPreview(false)} id="back-to-edit-link">
-        back to edit
-      </a>
+      {setIsPreview && (
+        <a href="#" onClick={() => setIsPreview(false)} id="back-to-edit-link">
+          back to edit
+        </a>
+      )}
     </div>
   )
 }
