@@ -19,20 +19,4 @@ defmodule ArrowWeb.DisruptionApiView do
   has_many :trip_short_names,
     serializer: ArrowWeb.TripShortNameApiView,
     include: true
-
-  def adjustments(disruption, _conn) do
-    Arrow.Repo.all(Ecto.assoc(disruption, :adjustments))
-  end
-
-  def days_of_week(disruption, _conn) do
-    Arrow.Repo.all(Ecto.assoc(disruption, :days_of_week))
-  end
-
-  def exceptions(disruption, _conn) do
-    Arrow.Repo.all(Ecto.assoc(disruption, :exceptions))
-  end
-
-  def trip_short_names(disruption, _conn) do
-    Arrow.Repo.all(Ecto.assoc(disruption, :trip_short_names))
-  end
 end

@@ -9,7 +9,9 @@ defmodule ArrowWeb.DisruptionApiController do
     query = params |> take_filters |> format_filters |> build_query
 
     render(conn, "index.json-api",
-      data: Repo.all(query),
+      data:
+        Repo.all(query)
+        |> Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names]),
       opts: [include: Map.get(params, "include")]
     )
   end
