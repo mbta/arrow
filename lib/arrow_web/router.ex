@@ -12,7 +12,6 @@ defmodule ArrowWeb.Router do
   pipeline :api do
     plug :accepts, ["json-api"]
     plug JaSerializer.ContentTypeNegotiation
-    plug JaSerializer.Deserializer
   end
 
   pipeline :redirect_prod_http do
