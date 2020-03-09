@@ -58,10 +58,10 @@ defmodule ArrowWeb.Router do
     get("/:provider/callback", AuthController, :callback)
   end
 
-  scope "/api", ArrowWeb do
+  scope "/api", ArrowWeb.API do
     pipe_through([:redirect_prod_http, :api])
 
-    resources("/disruptions", DisruptionApiController, only: [:index])
+    resources("/disruptions", DisruptionController, only: [:index])
   end
 
   # Other scopes may use custom stacks.

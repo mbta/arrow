@@ -1,4 +1,4 @@
-defmodule ArrowWeb.TripShortNameApiView do
+defmodule ArrowWeb.API.TripShortNameView do
   use ArrowWeb, :view
   use JaSerializer.PhoenixView
 

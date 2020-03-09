@@ -1,22 +1,22 @@
-defmodule ArrowWeb.DisruptionApiView do
+defmodule ArrowWeb.API.DisruptionView do
   use ArrowWeb, :view
   use JaSerializer.PhoenixView
 
   attributes([:id, :start_date, :end_date])
 
   has_many :adjustments,
-    serializer: ArrowWeb.AdjustmentApiView,
+    serializer: ArrowWeb.API.AdjustmentView,
     include: true
 
   has_many :days_of_week,
-    serializer: ArrowWeb.DaysOfWeekApiView,
+    serializer: ArrowWeb.API.DaysOfWeekView,
     include: true
 
   has_many :exceptions,
-    serializer: ArrowWeb.ExceptionApiView,
+    serializer: ArrowWeb.API.ExceptionView,
     include: true
 
   has_many :trip_short_names,
-    serializer: ArrowWeb.TripShortNameApiView,
+    serializer: ArrowWeb.API.TripShortNameView,
     include: true
 end

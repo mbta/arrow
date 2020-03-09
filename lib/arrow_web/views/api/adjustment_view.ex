@@ -1,4 +1,4 @@
-defmodule ArrowWeb.AdjustmentApiView do
+defmodule ArrowWeb.API.AdjustmentView do
   use ArrowWeb, :view
   use JaSerializer.PhoenixView
 

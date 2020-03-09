@@ -1,4 +1,4 @@
-defmodule ArrowWeb.DisruptionApiControllerTest do
+defmodule ArrowWeb.DisruptionControllerTest do
   use ArrowWeb.ConnCase, async: true
   alias Arrow.{Disruption, Repo}
 
@@ -21,15 +21,15 @@ defmodule ArrowWeb.DisruptionApiControllerTest do
                    },
                    "relationships" => %{
                      "adjustments" => %{
-                       "data" => [%{"type" => "adjustment-api"}]
+                       "data" => [%{"type" => "adjustment"}]
                      },
                      "days-of-week" => %{},
-                     "exceptions" => %{"data" => [%{"type" => "exception-api"}]},
+                     "exceptions" => %{"data" => [%{"type" => "exception"}]},
                      "trip-short-names" => %{
-                       "data" => [%{"type" => "trip-short-name-api"}]
+                       "data" => [%{"type" => "trip-short-name"}]
                      }
                    },
-                   "type" => "disruption-api"
+                   "type" => "disruption"
                  },
                  %{
                    "attributes" => %{
@@ -38,13 +38,13 @@ defmodule ArrowWeb.DisruptionApiControllerTest do
                    },
                    "relationships" => %{
                      "adjustments" => %{
-                       "data" => [%{"type" => "adjustment-api"}]
+                       "data" => [%{"type" => "adjustment"}]
                      },
                      "days-of-week" => %{},
                      "exceptions" => %{},
                      "trip-short-names" => %{}
                    },
-                   "type" => "disruption-api"
+                   "type" => "disruption"
                  }
                ],
                "included" => [
@@ -60,15 +60,15 @@ defmodule ArrowWeb.DisruptionApiControllerTest do
                      "tuesday" => false,
                      "wednesday" => false
                    },
-                   "type" => "days-of-week-api"
+                   "type" => "days-of-week"
                  },
                  %{
                    "attributes" => %{"excluded-date" => "2019-12-01"},
-                   "type" => "exception-api"
+                   "type" => "exception"
                  },
                  %{
                    "attributes" => %{"trip-short-name" => "006"},
-                   "type" => "trip-short-name-api"
+                   "type" => "trip-short-name"
                  },
                  %{
                    "attributes" => %{
@@ -76,7 +76,7 @@ defmodule ArrowWeb.DisruptionApiControllerTest do
                      "source" => "arrow",
                      "source-label" => "test_adjustment_1"
                    },
-                   "type" => "adjustment-api"
+                   "type" => "adjustment"
                  },
                  %{
                    "attributes" => %{
@@ -84,7 +84,7 @@ defmodule ArrowWeb.DisruptionApiControllerTest do
                      "source" => "gtfs_creator",
                      "source-label" => "test_adjustment_2"
                    },
-                   "type" => "adjustment-api"
+                   "type" => "adjustment"
                  }
                ],
                "jsonapi" => %{"version" => "1.0"}
@@ -105,13 +105,13 @@ defmodule ArrowWeb.DisruptionApiControllerTest do
                           },
                           "relationships" => %{
                             "adjustments" => %{
-                              "data" => [%{"type" => "adjustment-api"}]
+                              "data" => [%{"type" => "adjustment"}]
                             },
                             "days-of-week" => %{},
                             "exceptions" => %{},
                             "trip-short-names" => %{}
                           },
-                          "type" => "disruption-api"
+                          "type" => "disruption"
                         },
                         %{
                           "attributes" => %{
@@ -120,13 +120,13 @@ defmodule ArrowWeb.DisruptionApiControllerTest do
                           },
                           "relationships" => %{
                             "adjustments" => %{
-                              "data" => [%{"type" => "adjustment-api"}]
+                              "data" => [%{"type" => "adjustment"}]
                             },
                             "days-of-week" => %{},
                             "exceptions" => %{},
                             "trip-short-names" => %{}
                           },
-                          "type" => "disruption-api"
+                          "type" => "disruption"
                         }
                       ],
                       "included" => [
@@ -136,7 +136,7 @@ defmodule ArrowWeb.DisruptionApiControllerTest do
                             "source" => "arrow",
                             "source-label" => "test_adjustment_1"
                           },
-                          "type" => "adjustment-api"
+                          "type" => "adjustment"
                         },
                         %{
                           "attributes" => %{
@@ -144,7 +144,7 @@ defmodule ArrowWeb.DisruptionApiControllerTest do
                             "source" => "gtfs_creator",
                             "source-label" => "test_adjustment_2"
                           },
-                          "type" => "adjustment-api"
+                          "type" => "adjustment"
                         }
                       ],
                       "jsonapi" => %{"version" => "1.0"}

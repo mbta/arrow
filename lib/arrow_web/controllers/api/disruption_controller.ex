@@ -1,4 +1,4 @@
-defmodule ArrowWeb.DisruptionApiController do
+defmodule ArrowWeb.API.DisruptionController do
   use ArrowWeb, :controller
   alias Arrow.{Repo, Disruption}
   import Ecto.Query

@@ -1,4 +1,4 @@
-defmodule ArrowWeb.ExceptionApiView do
+defmodule ArrowWeb.API.ExceptionView do
   use ArrowWeb, :view
   use JaSerializer.PhoenixView
 
