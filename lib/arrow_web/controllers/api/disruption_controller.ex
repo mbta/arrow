@@ -5,6 +5,7 @@ defmodule ArrowWeb.API.DisruptionController do
 
   @filters ~w{min_start_date max_start_date min_end_date max_end_date}
 
+  @spec index(Plug.Conn.t(), map) :: Plug.Conn.t()
   def index(conn, params) do
     query = params |> take_filters |> format_filters |> build_query
 
@@ -16,10 +17,12 @@ defmodule ArrowWeb.API.DisruptionController do
     )
   end
 
+  @spec build_query(list(tuple())) :: Ecto.Query.t()
   defp build_query(filters) do
     Enum.reduce(filters, from(d in Disruption), &compose_query/2)
   end
 
+  @spec compose_query(tuple(), Ecto.Query.t()) :: Ecto.Query.t()
   defp compose_query({"min_start_date", date}, query),
     do: from(d in query, where: d.start_date >= ^date)
 
@@ -32,14 +35,17 @@ defmodule ArrowWeb.API.DisruptionController do
   defp compose_query({"max_end_date", date}, query),
     do: from(d in query, where: d.end_date <= ^date)
 
+  @spec take_filters(map) :: map
   defp take_filters(params) do
     Map.take(Map.get(params, "filter", %{}), @filters)
   end
 
+  @spec format_filters(map) :: list(tuple())
   defp format_filters(filters) do
     Enum.reduce(filters, [], fn filter, acc -> acc ++ do_format_filter(filter) end)
   end
 
+  @spec do_format_filter(tuple()) :: list(tuple())
   defp do_format_filter({filter, value})
        when filter in @filters do
     case Date.from_iso8601(value) do
