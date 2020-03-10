@@ -10,7 +10,8 @@ defmodule ArrowWeb.Router do
   end
 
   pipeline :api do
-    plug :accepts, ["json"]
+    plug :accepts, ["json-api"]
+    plug JaSerializer.ContentTypeNegotiation
   end
 
   pipeline :redirect_prod_http do
@@ -55,6 +56,12 @@ defmodule ArrowWeb.Router do
 
     get("/:provider", AuthController, :request)
     get("/:provider/callback", AuthController, :callback)
+  end
+
+  scope "/api", ArrowWeb.API do
+    pipe_through([:redirect_prod_http, :api])
+
+    resources("/disruptions", DisruptionController, only: [:index])
   end
 
   # Other scopes may use custom stacks.
