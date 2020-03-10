@@ -20,15 +20,17 @@ defmodule ArrowWeb.API.DisruptionController do
     Enum.reduce(filters, from(d in Disruption), &compose_query/2)
   end
 
-  defp compose_query({filter, date}, query) when filter in ["min_start_date", "min_end_date"] do
-    filter_field = String.to_atom(String.slice(filter, 4..-1))
-    where(query, [d], field(d, ^filter_field) > ^date)
-  end
+  defp compose_query({"min_start_date", date}, query),
+    do: from(d in query, where: d.start_date >= ^date)
 
-  defp compose_query({filter, date}, query) when filter in ["max_start_date", "max_end_date"] do
-    filter_field = String.to_atom(String.slice(filter, 4..-1))
-    where(query, [d], field(d, ^filter_field) < ^date)
-  end
+  defp compose_query({"min_end_date", date}, query),
+    do: from(d in query, where: d.end_date >= ^date)
+
+  defp compose_query({"max_start_date", date}, query),
+    do: from(d in query, where: d.start_date <= ^date)
+
+  defp compose_query({"max_end_date", date}, query),
+    do: from(d in query, where: d.end_date <= ^date)
 
   defp take_filters(params) do
     Map.take(Map.get(params, "filter", %{}), @filters)
