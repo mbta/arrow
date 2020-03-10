@@ -1,4 +1,4 @@
-defmodule ArrowWeb.DisruptionControllerTest do
+defmodule ArrowWeb.API.DisruptionControllerTest do
   use ArrowWeb.ConnCase, async: true
   alias Arrow.{Disruption, Repo}
 
