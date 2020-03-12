@@ -1,7 +1,7 @@
 import Adjustment from "../../src/models/adjustment"
 
 describe("Adjustment", () => {
-  test("serialize", () => {
+  test("toJsonApi", () => {
     const adj = new Adjustment({
       id: 5,
       routeId: "Red",
@@ -20,5 +20,19 @@ describe("Adjustment", () => {
         },
       },
     })
+  })
+
+  test("fromJsonApi success", () => {
+    expect(Adjustment.fromJsonApi({ data: { type: "adjustment" } })).toEqual(
+      new Adjustment({})
+    )
+  })
+
+  test("fromJsonApi error wrong format", () => {
+    expect(Adjustment.fromJsonApi({})).toEqual("error")
+  })
+
+  test("fromJsonApi error not an object", () => {
+    expect(Adjustment.fromJsonApi(5)).toEqual("error")
   })
 })

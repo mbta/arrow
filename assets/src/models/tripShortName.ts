@@ -20,6 +20,16 @@ class TripShortName {
       },
     }
   }
+
+  static fromJsonApi(raw: any): TripShortName | "error" {
+    if (typeof raw === "object") {
+      if (raw.data?.type === "trip_short_name") {
+        return new TripShortName({})
+      }
+    }
+
+    return "error"
+  }
 }
 
 export default TripShortName

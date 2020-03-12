@@ -45,6 +45,16 @@ class DayOfWeek {
       },
     }
   }
+
+  static fromJsonApi(raw: any): DayOfWeek | "error" {
+    if (typeof raw === "object") {
+      if (raw.data?.type === "day_of_week") {
+        return new DayOfWeek({})
+      }
+    }
+
+    return "error"
+  }
 }
 
 export default DayOfWeek

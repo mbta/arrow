@@ -38,6 +38,16 @@ class Adjustment {
       },
     }
   }
+
+  static fromJsonApi(raw: any): Adjustment | "error" {
+    if (typeof raw === "object") {
+      if (raw.data?.type === "adjustment") {
+        return new Adjustment({})
+      }
+    }
+
+    return "error"
+  }
 }
 
 export default Adjustment

@@ -1,7 +1,7 @@
 import Exception from "../../src/models/exception"
 
 describe("Exception", () => {
-  test("serialize", () => {
+  test("toJsonApi", () => {
     const ex = new Exception({
       id: 5,
       excludedDate: new Date(2020, 1, 1),
@@ -16,5 +16,19 @@ describe("Exception", () => {
         },
       },
     })
+  })
+
+  test("fromJsonApi success", () => {
+    expect(Exception.fromJsonApi({ data: { type: "exception" } })).toEqual(
+      new Exception({})
+    )
+  })
+
+  test("fromJsonApi error wrong format", () => {
+    expect(Exception.fromJsonApi({})).toEqual("error")
+  })
+
+  test("fromJsonApi error not an object", () => {
+    expect(Exception.fromJsonApi(5)).toEqual("error")
   })
 })

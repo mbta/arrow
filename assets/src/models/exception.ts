@@ -22,6 +22,16 @@ class Exception {
       },
     }
   }
+
+  static fromJsonApi(raw: any): Exception | "error" {
+    if (typeof raw === "object") {
+      if (raw.data?.type === "exception") {
+        return new Exception({})
+      }
+    }
+
+    return "error"
+  }
 }
 
 export default Exception

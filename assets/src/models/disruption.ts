@@ -10,10 +10,10 @@ class Disruption {
   endDate?: Date
   startDate?: Date
 
-  adjustments: [Adjustment]
-  daysOfWeek: [DayOfWeek]
-  exceptions: [Exception]
-  tripShortNames: [TripShortName]
+  adjustments: Adjustment[]
+  daysOfWeek: DayOfWeek[]
+  exceptions: Exception[]
+  tripShortNames: TripShortName[]
 
   constructor({
     id,
@@ -27,10 +27,10 @@ class Disruption {
     id?: number
     endDate?: Date
     startDate?: Date
-    adjustments: [Adjustment]
-    daysOfWeek: [DayOfWeek]
-    exceptions: [Exception]
-    tripShortNames: [TripShortName]
+    adjustments: Adjustment[]
+    daysOfWeek: DayOfWeek[]
+    exceptions: Exception[]
+    tripShortNames: TripShortName[]
   }) {
     this.id = id
     this.endDate = endDate
@@ -62,6 +62,21 @@ class Disruption {
         },
       },
     }
+  }
+
+  static fromJsonApi(raw: any): Disruption | "error" {
+    if (typeof raw === "object") {
+      if (raw.data?.type === "disruption") {
+        return new Disruption({
+          adjustments: [],
+          daysOfWeek: [],
+          exceptions: [],
+          tripShortNames: [],
+        })
+      }
+    }
+
+    return "error"
   }
 }
 
