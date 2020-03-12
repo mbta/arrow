@@ -16,33 +16,33 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                "data" => [
                  %{
                    "attributes" => %{
-                     "end-date" => "2019-12-12",
-                     "start-date" => "2019-10-10"
+                     "end_date" => "2019-12-12",
+                     "start_date" => "2019-10-10"
                    },
                    "relationships" => %{
                      "adjustments" => %{
                        "data" => [%{"type" => "adjustment"}]
                      },
-                     "days-of-week" => %{},
+                     "days_of_week" => %{},
                      "exceptions" => %{"data" => [%{"type" => "exception"}]},
-                     "trip-short-names" => %{
-                       "data" => [%{"type" => "trip-short-name"}]
+                     "trip_short_names" => %{
+                       "data" => [%{"type" => "trip_short_name"}]
                      }
                    },
                    "type" => "disruption"
                  },
                  %{
                    "attributes" => %{
-                     "end-date" => "2019-12-30",
-                     "start-date" => "2019-11-15"
+                     "end_date" => "2019-12-30",
+                     "start_date" => "2019-11-15"
                    },
                    "relationships" => %{
                      "adjustments" => %{
                        "data" => [%{"type" => "adjustment"}]
                      },
-                     "days-of-week" => %{},
+                     "days_of_week" => %{},
                      "exceptions" => %{},
-                     "trip-short-names" => %{}
+                     "trip_short_names" => %{}
                    },
                    "type" => "disruption"
                  }
@@ -50,39 +50,39 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                "included" => [
                  %{
                    "attributes" => %{
-                     "end-time" => nil,
+                     "end_time" => nil,
                      "friday" => true,
                      "monday" => false,
                      "saturday" => false,
-                     "start-time" => "20:30:00",
+                     "start_time" => "20:30:00",
                      "sunday" => false,
                      "thursday" => false,
                      "tuesday" => false,
                      "wednesday" => false
                    },
-                   "type" => "days-of-week"
+                   "type" => "day_of_week"
                  },
                  %{
-                   "attributes" => %{"excluded-date" => "2019-12-01"},
+                   "attributes" => %{"excluded_date" => "2019-12-01"},
                    "type" => "exception"
                  },
                  %{
-                   "attributes" => %{"trip-short-name" => "006"},
-                   "type" => "trip-short-name"
+                   "attributes" => %{"trip_short_name" => "006"},
+                   "type" => "trip_short_name"
                  },
                  %{
                    "attributes" => %{
-                     "route-id" => "test_route_1",
+                     "route_id" => "test_route_1",
                      "source" => "arrow",
-                     "source-label" => "test_adjustment_1"
+                     "source_label" => "test_adjustment_1"
                    },
                    "type" => "adjustment"
                  },
                  %{
                    "attributes" => %{
-                     "route-id" => "test_route_2",
+                     "route_id" => "test_route_2",
                      "source" => "gtfs_creator",
-                     "source-label" => "test_adjustment_2"
+                     "source_label" => "test_adjustment_2"
                    },
                    "type" => "adjustment"
                  }
@@ -100,31 +100,31 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                       "data" => [
                         %{
                           "attributes" => %{
-                            "end-date" => "2019-12-12",
-                            "start-date" => "2019-10-10"
+                            "end_date" => "2019-12-12",
+                            "start_date" => "2019-10-10"
                           },
                           "relationships" => %{
                             "adjustments" => %{
                               "data" => [%{"type" => "adjustment"}]
                             },
-                            "days-of-week" => %{},
+                            "days_of_week" => %{},
                             "exceptions" => %{},
-                            "trip-short-names" => %{}
+                            "trip_short_names" => %{}
                           },
                           "type" => "disruption"
                         },
                         %{
                           "attributes" => %{
-                            "end-date" => "2019-12-30",
-                            "start-date" => "2019-11-15"
+                            "end_date" => "2019-12-30",
+                            "start_date" => "2019-11-15"
                           },
                           "relationships" => %{
                             "adjustments" => %{
                               "data" => [%{"type" => "adjustment"}]
                             },
-                            "days-of-week" => %{},
+                            "days_of_week" => %{},
                             "exceptions" => %{},
-                            "trip-short-names" => %{}
+                            "trip_short_names" => %{}
                           },
                           "type" => "disruption"
                         }
@@ -132,17 +132,17 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                       "included" => [
                         %{
                           "attributes" => %{
-                            "route-id" => "test_route_1",
+                            "route_id" => "test_route_1",
                             "source" => "arrow",
-                            "source-label" => "test_adjustment_1"
+                            "source_label" => "test_adjustment_1"
                           },
                           "type" => "adjustment"
                         },
                         %{
                           "attributes" => %{
-                            "route-id" => "test_route_2",
+                            "route_id" => "test_route_2",
                             "source" => "gtfs_creator",
-                            "source-label" => "test_adjustment_2"
+                            "source_label" => "test_adjustment_2"
                           },
                           "type" => "adjustment"
                         }
