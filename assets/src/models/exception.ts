@@ -9,7 +9,7 @@ class Exception {
     this.excludedDate = excludedDate
   }
 
-  serialize(): JsonApiResource {
+  toJsonApi(): JsonApiResource {
     return {
       data: {
         type: "exception",

@@ -9,7 +9,7 @@ describe("DayOfWeek", () => {
       day: "monday",
     })
 
-    expect(dow.serialize()).toEqual({
+    expect(dow.toJsonApi()).toEqual({
       data: {
         id: "5",
         type: "day_of_week",

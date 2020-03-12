@@ -25,7 +25,7 @@ class Adjustment {
     this.sourceLabel = sourceLabel
   }
 
-  serialize(): JsonApiResource {
+  toJsonApi(): JsonApiResource {
     return {
       data: {
         type: "adjustment",

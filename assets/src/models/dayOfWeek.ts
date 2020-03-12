@@ -32,7 +32,7 @@ class DayOfWeek {
     this.day = day
   }
 
-  serialize(): JsonApiResource {
+  toJsonApi(): JsonApiResource {
     return {
       data: {
         type: "day_of_week",

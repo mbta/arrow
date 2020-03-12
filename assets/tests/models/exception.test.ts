@@ -7,7 +7,7 @@ describe("Exception", () => {
       excludedDate: new Date(2020, 1, 1),
     })
 
-    expect(ex.serialize()).toEqual({
+    expect(ex.toJsonApi()).toEqual({
       data: {
         id: "5",
         type: "exception",

@@ -16,7 +16,7 @@ describe("Disruption", () => {
       tripShortNames: [new TripShortName({ id: 4 })],
     })
 
-    expect(disruption.serialize()).toEqual({
+    expect(disruption.toJsonApi()).toEqual({
       data: {
         id: "5",
         type: "disruption",

@@ -7,7 +7,7 @@ describe("TripShortName", () => {
       tripShortName: "1753",
     })
 
-    expect(tsn.serialize()).toEqual({
+    expect(tsn.toJsonApi()).toEqual({
       data: {
         id: "5",
         type: "trip_short_name",

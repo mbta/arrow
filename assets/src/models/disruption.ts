@@ -41,7 +41,7 @@ class Disruption {
     this.tripShortNames = tripShortNames
   }
 
-  serialize(): JsonApiResource {
+  toJsonApi(): JsonApiResource {
     return {
       data: {
         type: "disruption",
@@ -55,10 +55,10 @@ class Disruption {
           }),
         },
         relationships: {
-          adjustment: this.adjustments.map(adj => adj.serialize()),
-          day_of_week: this.daysOfWeek.map(dow => dow.serialize()),
-          exceptions: this.exceptions.map(ex => ex.serialize()),
-          trip_short_name: this.tripShortNames.map(tsn => tsn.serialize()),
+          adjustment: this.adjustments.map(adj => adj.toJsonApi()),
+          day_of_week: this.daysOfWeek.map(dow => dow.toJsonApi()),
+          exceptions: this.exceptions.map(ex => ex.toJsonApi()),
+          trip_short_name: this.tripShortNames.map(tsn => tsn.toJsonApi()),
         },
       },
     }
