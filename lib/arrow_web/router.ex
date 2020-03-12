@@ -62,6 +62,7 @@ defmodule ArrowWeb.Router do
     pipe_through([:redirect_prod_http, :api])
 
     resources("/disruptions", DisruptionController, only: [:index])
+    resources("/adjustments", AdjustmentController, only: [:index])
   end
 
   # Other scopes may use custom stacks.
