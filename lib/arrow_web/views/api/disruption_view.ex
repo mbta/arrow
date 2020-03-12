@@ -9,7 +9,7 @@ defmodule ArrowWeb.API.DisruptionView do
     include: true
 
   has_many :days_of_week,
-    serializer: ArrowWeb.API.DaysOfWeekView,
+    serializer: ArrowWeb.API.DayOfWeekView,
     include: true
 
   has_many :exceptions,
