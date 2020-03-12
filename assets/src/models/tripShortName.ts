@@ -9,7 +9,7 @@ class TripShortName {
     this.tripShortName = tripShortName
   }
 
-  serialize(): JsonApiResource {
+  toJsonApi(): JsonApiResource {
     return {
       data: {
         type: "trip_short_name",

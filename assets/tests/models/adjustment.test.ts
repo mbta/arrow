@@ -9,7 +9,7 @@ describe("Adjustment", () => {
       sourceLabel: "AlewifeHarvard",
     })
 
-    expect(adj.serialize()).toEqual({
+    expect(adj.toJsonApi()).toEqual({
       data: {
         id: "5",
         type: "adjustment",
