@@ -1,7 +1,7 @@
 import DayOfWeek from "../../src/models/dayOfWeek"
 
 describe("DayOfWeek", () => {
-  test("serialize", () => {
+  test("toJsonApi", () => {
     const dow = new DayOfWeek({
       id: 5,
       startTime: "10:00:00",
@@ -20,5 +20,19 @@ describe("DayOfWeek", () => {
         },
       },
     })
+  })
+
+  test("fromJsonApi success", () => {
+    expect(DayOfWeek.fromJsonApi({ data: { type: "day_of_week" } })).toEqual(
+      new DayOfWeek({})
+    )
+  })
+
+  test("fromJsonApi error wrong format", () => {
+    expect(DayOfWeek.fromJsonApi({})).toEqual("error")
+  })
+
+  test("fromJsonApi error not an object", () => {
+    expect(DayOfWeek.fromJsonApi(5)).toEqual("error")
   })
 })

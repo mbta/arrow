@@ -5,7 +5,7 @@ import Exception from "../../src/models/exception"
 import TripShortName from "../../src/models/tripShortName"
 
 describe("Disruption", () => {
-  test("serialize", () => {
+  test("toJsonApi", () => {
     const disruption = new Disruption({
       id: 5,
       endDate: new Date(2020, 2, 1),
@@ -40,5 +40,24 @@ describe("Disruption", () => {
         },
       },
     })
+  })
+
+  test("fromJsonApi success", () => {
+    expect(Disruption.fromJsonApi({ data: { type: "disruption" } })).toEqual(
+      new Disruption({
+        adjustments: [],
+        daysOfWeek: [],
+        exceptions: [],
+        tripShortNames: [],
+      })
+    )
+  })
+
+  test("fromJsonApi error wrong format", () => {
+    expect(Disruption.fromJsonApi({})).toEqual("error")
+  })
+
+  test("fromJsonApi error not an object", () => {
+    expect(Disruption.fromJsonApi(5)).toEqual("error")
   })
 })
