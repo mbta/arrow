@@ -46,7 +46,7 @@ defmodule Arrow.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:credo, "~> 1.2.1", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.3.1", only: [:dev, :test], runtime: false},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_rds, "~> 2.0"},
       {:excoveralls, "~> 0.10", only: :test},
