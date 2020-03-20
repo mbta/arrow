@@ -22,6 +22,8 @@ config :ueberauth, Ueberauth,
     cognito: {Arrow.Ueberauth.Strategy.Fake, []}
   ]
 
+config :arrow, fetch_adjustments_at_startup?: false
+
 # Print only warnings and errors during test
 config :logger, level: :warn
 

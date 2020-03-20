@@ -7,7 +7,10 @@ defmodule Arrow.Application do
 
   def start(_type, _args) do
     run_migrations_at_startup? = Application.get_env(:arrow, :run_migrations_at_startup?)
-    run_adjustment_fetcher_at_startup? = Application.get_env(:arrow, :env) != :test
+
+    run_adjustment_fetcher_at_startup? =
+      Application.get_env(:arrow, :fetch_adjustments_at_startup?)
+
     # List all child processes to be supervised
     children =
       [
