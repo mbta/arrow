@@ -10,7 +10,8 @@ use Mix.Config
 config :arrow,
   ecto_repos: [Arrow.Repo],
   aws_rds_mod: ExAws.RDS,
-  run_migrations_at_startup?: false
+  run_migrations_at_startup?: false,
+  fetch_adjustments_at_startup?: true
 
 # Configures the endpoint
 config :arrow, ArrowWeb.Endpoint,
