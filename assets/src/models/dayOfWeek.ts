@@ -11,7 +11,7 @@ type DayName =
   | "sunday"
 
 class DayOfWeek extends JsonApiResourceObject {
-  id?: number
+  id?: string
   startTime?: string
   endTime?: string
   day?: DayName
@@ -22,7 +22,7 @@ class DayOfWeek extends JsonApiResourceObject {
     endTime,
     day,
   }: {
-    id?: number
+    id?: string
     startTime?: string
     endTime?: string
     day?: DayName

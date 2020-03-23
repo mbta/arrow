@@ -3,7 +3,7 @@ import Adjustment from "../../src/models/adjustment"
 describe("Adjustment", () => {
   test("toJsonApi", () => {
     const adj = new Adjustment({
-      id: 5,
+      id: "5",
       routeId: "Red",
       source: "gtfs_creator",
       sourceLabel: "AlewifeHarvard",

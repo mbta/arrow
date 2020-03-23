@@ -2,10 +2,10 @@ import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
 
 class Exception extends JsonApiResourceObject {
-  id?: number
+  id?: string
   excludedDate?: Date
 
-  constructor({ id, excludedDate }: { id?: number; excludedDate?: Date }) {
+  constructor({ id, excludedDate }: { id?: string; excludedDate?: Date }) {
     super()
     this.id = id
     this.excludedDate = excludedDate

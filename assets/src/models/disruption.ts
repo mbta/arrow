@@ -7,7 +7,7 @@ import Exception from "./exception"
 import TripShortName from "./tripShortName"
 
 class Disruption extends JsonApiResourceObject {
-  id?: number
+  id?: string
   endDate?: Date
   startDate?: Date
 
@@ -25,7 +25,7 @@ class Disruption extends JsonApiResourceObject {
     exceptions,
     tripShortNames,
   }: {
-    id?: number
+    id?: string
     endDate?: Date
     startDate?: Date
     adjustments: Adjustment[]
@@ -76,6 +76,7 @@ class Disruption extends JsonApiResourceObject {
     if (typeof raw === "object") {
       if (raw.data?.type === "disruption") {
         return new Disruption({
+          id: raw.data?.id,
           adjustments: [],
           daysOfWeek: [],
           exceptions: [],
