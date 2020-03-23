@@ -3,7 +3,6 @@ defmodule ArrowWeb.API.ExceptionView do
   use JaSerializer.PhoenixView
 
   attributes([
-    :id,
     :excluded_date
   ])
 end

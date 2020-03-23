@@ -1,5 +1,5 @@
 defmodule ArrowWeb.API.DisruptionControllerTest do
-  use ArrowWeb.ConnCase, async: true
+  use ArrowWeb.ConnCase
   alias Arrow.{Disruption, Repo}
 
   describe "index/2" do
@@ -135,6 +135,19 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           assert List.first(data)["id"] == Integer.to_string(expected_id)
         end
       )
+    end
+  end
+
+  describe "show/2" do
+    test "returns valid disruption", %{conn: conn} do
+      {disruption_1, _disruption_2} = insert_disruptions()
+      disruption_1_id = disruption_1.id
+
+      assert %{"data" => %{"id" => disruption_1_id}} =
+               json_response(
+                 get(conn, "/api/disruptions/" <> Integer.to_string(disruption_1_id), %{}),
+                 200
+               )
     end
   end
 

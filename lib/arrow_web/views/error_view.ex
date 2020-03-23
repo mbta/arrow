@@ -1,5 +1,6 @@
 defmodule ArrowWeb.ErrorView do
   use ArrowWeb, :view
+  alias JaSerializer.ErrorSerializer
 
   # If you want to customize a particular status code
   # for a certain format, you may uncomment below.
@@ -12,5 +13,14 @@ defmodule ArrowWeb.ErrorView do
   # "Not Found".
   def template_not_found(template, _assigns) do
     Phoenix.Controller.status_message_from_template(template)
+  end
+
+  def render("404.json" <> _, _assigns) do
+    ErrorSerializer.format(%{
+      code: :not_found,
+      source: %{parameter: "id"},
+      status: "404",
+      title: "Resource Not Found"
+    })
   end
 end

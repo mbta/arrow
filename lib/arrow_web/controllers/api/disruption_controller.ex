@@ -17,6 +17,16 @@ defmodule ArrowWeb.API.DisruptionController do
     )
   end
 
+  @spec show(Plug.Conn.t(), map()) :: Plug.Conn.t()
+  def show(conn, params) do
+    render(conn, "index.json-api",
+      data:
+        Repo.get!(Disruption, params["id"])
+        |> Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names]),
+      opts: [include: Map.get(params, "include")]
+    )
+  end
+
   @spec build_query([{String.t(), Date.t()}]) :: Ecto.Query.t()
   defp build_query(filters) do
     Enum.reduce(filters, from(d in Disruption), &compose_query/2)
