@@ -3,7 +3,6 @@ defmodule ArrowWeb.API.DayOfWeekView do
   use JaSerializer.PhoenixView
 
   attributes([
-    :id,
     :start_time,
     :end_time,
     :day_name
