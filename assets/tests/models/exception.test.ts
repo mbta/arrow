@@ -3,7 +3,7 @@ import Exception from "../../src/models/exception"
 describe("Exception", () => {
   test("toJsonApi", () => {
     const ex = new Exception({
-      id: 5,
+      id: "5",
       excludedDate: new Date(2020, 1, 1),
     })
 

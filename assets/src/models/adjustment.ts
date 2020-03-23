@@ -4,7 +4,7 @@ import JsonApiResourceObject from "../jsonApiResourceObject"
 type Source = "gtfs_creator" | "arrow"
 
 class Adjustment extends JsonApiResourceObject {
-  id?: number
+  id?: string
   routeId?: string
   source?: Source
   sourceLabel?: string
@@ -15,7 +15,7 @@ class Adjustment extends JsonApiResourceObject {
     source,
     sourceLabel,
   }: {
-    id?: number
+    id?: string
     routeId?: string
     source?: Source
     sourceLabel?: string

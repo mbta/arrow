@@ -2,10 +2,10 @@ import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
 
 class TripShortName extends JsonApiResourceObject {
-  id?: number
+  id?: string
   tripShortName?: string
 
-  constructor({ id, tripShortName }: { id?: number; tripShortName?: string }) {
+  constructor({ id, tripShortName }: { id?: string; tripShortName?: string }) {
     super()
     this.id = id
     this.tripShortName = tripShortName

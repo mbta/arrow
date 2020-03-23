@@ -3,7 +3,7 @@ import TripShortName from "../../src/models/tripShortName"
 describe("TripShortName", () => {
   test("serialize", () => {
     const tsn = new TripShortName({
-      id: 5,
+      id: "5",
       tripShortName: "1753",
     })
 

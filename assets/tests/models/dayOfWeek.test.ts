@@ -3,7 +3,7 @@ import DayOfWeek from "../../src/models/dayOfWeek"
 describe("DayOfWeek", () => {
   test("toJsonApi", () => {
     const dow = new DayOfWeek({
-      id: 5,
+      id: "5",
       startTime: "10:00:00",
       endTime: "15:00:00",
       day: "monday",

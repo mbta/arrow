@@ -7,13 +7,13 @@ import TripShortName from "../../src/models/tripShortName"
 describe("Disruption", () => {
   test("toJsonApi", () => {
     const disruption = new Disruption({
-      id: 5,
+      id: "5",
       endDate: new Date(2020, 2, 1),
       startDate: new Date(2020, 0, 1),
-      adjustments: [new Adjustment({ id: 1 })],
-      daysOfWeek: [new DayOfWeek({ id: 2 })],
-      exceptions: [new Exception({ id: 3 })],
-      tripShortNames: [new TripShortName({ id: 4 })],
+      adjustments: [new Adjustment({ id: "1" })],
+      daysOfWeek: [new DayOfWeek({ id: "2" })],
+      exceptions: [new Exception({ id: "3" })],
+      tripShortNames: [new TripShortName({ id: "4" })],
     })
 
     expect(disruption.toJsonApi()).toEqual({
@@ -43,8 +43,11 @@ describe("Disruption", () => {
   })
 
   test("fromJsonApi success", () => {
-    expect(Disruption.fromJsonApi({ data: { type: "disruption" } })).toEqual(
+    expect(
+      Disruption.fromJsonApi({ data: { id: "1", type: "disruption" } })
+    ).toEqual(
       new Disruption({
+        id: "1",
         adjustments: [],
         daysOfWeek: [],
         exceptions: [],
