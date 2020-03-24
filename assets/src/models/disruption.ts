@@ -1,5 +1,6 @@
 import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
+import { ModelObject } from "../jsonApi"
 
 import Adjustment from "./adjustment"
 import DayOfWeek from "./dayOfWeek"
@@ -8,8 +9,8 @@ import TripShortName from "./tripShortName"
 
 class Disruption extends JsonApiResourceObject {
   id?: string
-  endDate?: Date
   startDate?: Date
+  endDate?: Date
 
   adjustments: Adjustment[]
   daysOfWeek: DayOfWeek[]
@@ -26,8 +27,8 @@ class Disruption extends JsonApiResourceObject {
     tripShortNames,
   }: {
     id?: string
-    endDate?: Date
     startDate?: Date
+    endDate?: Date
     adjustments: Adjustment[]
     daysOfWeek: DayOfWeek[]
     exceptions: Exception[]
@@ -72,17 +73,20 @@ class Disruption extends JsonApiResourceObject {
     }
   }
 
-  static fromJsonApi(raw: any): Disruption | "error" {
-    if (typeof raw === "object") {
-      if (raw.data?.type === "disruption") {
-        return new Disruption({
-          id: raw.data?.id,
-          adjustments: [],
-          daysOfWeek: [],
-          exceptions: [],
-          tripShortNames: [],
-        })
-      }
+  static fromJsonObject(
+    raw: any,
+    included: ModelObject[]
+  ): Disruption | "error" {
+    if (typeof raw.attributes === "object") {
+      return new Disruption({
+        id: raw.id,
+        startDate: new Date(raw.attributes.start_date),
+        endDate: new Date(raw.attributes.end_date),
+        adjustments: included.filter(i => i instanceof Adjustment),
+        daysOfWeek: included.filter(i => i instanceof DayOfWeek),
+        exceptions: included.filter(i => i instanceof Exception),
+        tripShortNames: included.filter(i => i instanceof TripShortName),
+      })
     }
 
     return "error"

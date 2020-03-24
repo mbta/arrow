@@ -22,17 +22,33 @@ describe("DayOfWeek", () => {
     })
   })
 
-  test("fromJsonApi success", () => {
-    expect(DayOfWeek.fromJsonApi({ data: { type: "day_of_week" } })).toEqual(
-      new DayOfWeek({})
-    )
+  test("fromJsonObject success", () => {
+    expect(
+      DayOfWeek.fromJsonObject(
+        {
+          type: "day_of_week",
+          attributes: {
+            start_time: "20:45:00",
+            end_time: undefined,
+            monday: true,
+            tuesday: false,
+            wednesday: false,
+            thursday: false,
+            friday: false,
+            saturday: false,
+            sunday: false,
+          },
+        },
+        []
+      )
+    ).toEqual(new DayOfWeek({ startTime: "20:45:00", day: "monday" }))
   })
 
   test("fromJsonApi error wrong format", () => {
-    expect(DayOfWeek.fromJsonApi({})).toEqual("error")
+    expect(DayOfWeek.fromJsonObject({}, [])).toEqual("error")
   })
 
   test("fromJsonApi error not an object", () => {
-    expect(DayOfWeek.fromJsonApi(5)).toEqual("error")
+    expect(DayOfWeek.fromJsonObject(5, [])).toEqual("error")
   })
 })

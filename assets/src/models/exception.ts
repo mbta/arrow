@@ -1,5 +1,6 @@
 import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
+import { ModelObject } from "../jsonApi"
 
 class Exception extends JsonApiResourceObject {
   id?: string
@@ -29,11 +30,15 @@ class Exception extends JsonApiResourceObject {
     }
   }
 
-  static fromJsonApi(raw: any): Exception | "error" {
-    if (typeof raw === "object") {
-      if (raw.data?.type === "exception") {
-        return new Exception({})
-      }
+  static fromJsonObject(
+    raw: any,
+    _included: ModelObject[]
+  ): Exception | "error" {
+    if (typeof raw.attributes === "object") {
+      return new Exception({
+        id: raw.id,
+        excludedDate: new Date(raw.attributes.excluded_date),
+      })
     }
 
     return "error"
