@@ -8,8 +8,8 @@ describe("Disruption", () => {
   test("toJsonApi", () => {
     const disruption = new Disruption({
       id: "5",
-      endDate: new Date(2020, 2, 1),
       startDate: new Date(2020, 0, 1),
+      endDate: new Date(2020, 2, 1),
       adjustments: [new Adjustment({ id: "1" })],
       daysOfWeek: [new DayOfWeek({ id: "2" })],
       exceptions: [new Exception({ id: "3" })],
@@ -42,25 +42,46 @@ describe("Disruption", () => {
     })
   })
 
-  test("fromJsonApi success", () => {
+  test("fromJsonObject success", () => {
     expect(
-      Disruption.fromJsonApi({ data: { id: "1", type: "disruption" } })
+      Disruption.fromJsonObject(
+        {
+          id: "1",
+          type: "disruption",
+          attributes: { start_date: "2019-12-20", end_date: "2020-01-12" },
+        },
+        [
+          new DayOfWeek({
+            id: "1",
+            startTime: "20:45:00",
+            day: "friday",
+          }),
+        ]
+      )
     ).toEqual(
       new Disruption({
         id: "1",
+        startDate: new Date("2019-12-20"),
+        endDate: new Date("2020-01-12"),
         adjustments: [],
-        daysOfWeek: [],
+        daysOfWeek: [
+          new DayOfWeek({
+            id: "1",
+            startTime: "20:45:00",
+            day: "friday",
+          }),
+        ],
         exceptions: [],
         tripShortNames: [],
       })
     )
   })
 
-  test("fromJsonApi error wrong format", () => {
-    expect(Disruption.fromJsonApi({})).toEqual("error")
+  test("fromJsonObject error wrong format", () => {
+    expect(Disruption.fromJsonObject({}, [])).toEqual("error")
   })
 
-  test("fromJsonApi error not an object", () => {
-    expect(Disruption.fromJsonApi(5)).toEqual("error")
+  test("fromJsonObject error not an object", () => {
+    expect(Disruption.fromJsonObject(5, [])).toEqual("error")
   })
 })

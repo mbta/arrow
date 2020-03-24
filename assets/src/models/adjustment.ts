@@ -1,5 +1,6 @@
 import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
+import { ModelObject } from "../jsonApi"
 
 type Source = "gtfs_creator" | "arrow"
 
@@ -45,11 +46,30 @@ class Adjustment extends JsonApiResourceObject {
     }
   }
 
-  static fromJsonApi(raw: any): Adjustment | "error" {
-    if (typeof raw === "object") {
-      if (raw.data?.type === "adjustment") {
-        return new Adjustment({})
+  static fromJsonObject(
+    raw: any,
+    _included: ModelObject[]
+  ): Adjustment | "error" {
+    if (typeof raw.attributes === "object") {
+      let source: Source | undefined
+
+      switch (raw.attributes.source) {
+        case "arrow":
+          source = "arrow"
+          break
+        case "gtfs_creator":
+          source = "gtfs_creator"
+          break
+        default:
+          return "error"
       }
+
+      return new Adjustment({
+        id: raw.id,
+        routeId: raw.attributes.route_id || undefined,
+        source,
+        sourceLabel: raw.attributes.source_label || undefined,
+      })
     }
 
     return "error"

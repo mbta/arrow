@@ -22,17 +22,54 @@ describe("Adjustment", () => {
     })
   })
 
-  test("fromJsonApi success", () => {
-    expect(Adjustment.fromJsonApi({ data: { type: "adjustment" } })).toEqual(
-      new Adjustment({})
+  test("fromJsonObject success", () => {
+    expect(
+      Adjustment.fromJsonObject(
+        {
+          type: "adjustment",
+          id: "1",
+          attributes: {
+            source: "gtfs_creator",
+            route_id: "Red",
+            source_label: "AlewifeHarvard",
+          },
+        },
+        []
+      )
+    ).toEqual(
+      new Adjustment({
+        id: "1",
+        routeId: "Red",
+        source: "gtfs_creator",
+        sourceLabel: "AlewifeHarvard",
+      })
+    )
+
+    expect(
+      Adjustment.fromJsonObject({
+        type: "adjustment",
+        id: "1",
+        attributes: {
+          source: "arrow",
+          route_id: "Red",
+          source_label: "AlewifeHarvard",
+        },
+      })
+    ).toEqual(
+      new Adjustment({
+        id: "1",
+        routeId: "Red",
+        source: "arrow",
+        sourceLabel: "AlewifeHarvard",
+      })
     )
   })
 
-  test("fromJsonApi error wrong format", () => {
-    expect(Adjustment.fromJsonApi({})).toEqual("error")
+  test("fromJsonObject error wrong format", () => {
+    expect(Adjustment.fromJsonObject({}, [])).toEqual("error")
   })
 
-  test("fromJsonApi error not an object", () => {
-    expect(Adjustment.fromJsonApi(5)).toEqual("error")
+  test("fromJsonObject error not an object", () => {
+    expect(Adjustment.fromJsonObject(5, [])).toEqual("error")
   })
 })

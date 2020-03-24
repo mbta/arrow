@@ -18,17 +18,24 @@ describe("Exception", () => {
     })
   })
 
-  test("fromJsonApi success", () => {
-    expect(Exception.fromJsonApi({ data: { type: "exception" } })).toEqual(
-      new Exception({})
-    )
+  test("fromJsonObject success", () => {
+    expect(
+      Exception.fromJsonObject(
+        {
+          id: "1",
+          type: "exception",
+          attributes: { excluded_date: "2020-03-30" },
+        },
+        []
+      )
+    ).toEqual(new Exception({ id: "1", excludedDate: new Date("2020-03-30") }))
   })
 
-  test("fromJsonApi error wrong format", () => {
-    expect(Exception.fromJsonApi({})).toEqual("error")
+  test("fromJsonObject error wrong format", () => {
+    expect(Exception.fromJsonObject({}, [])).toEqual("error")
   })
 
-  test("fromJsonApi error not an object", () => {
-    expect(Exception.fromJsonApi(5)).toEqual("error")
+  test("fromJsonObject error not an object", () => {
+    expect(Exception.fromJsonObject(5, [])).toEqual("error")
   })
 })

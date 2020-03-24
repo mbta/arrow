@@ -18,17 +18,20 @@ describe("TripShortName", () => {
     })
   })
 
-  test("fromJsonApi success", () => {
+  test("fromJsonObject success", () => {
     expect(
-      TripShortName.fromJsonApi({ data: { type: "trip_short_name" } })
+      TripShortName.fromJsonObject(
+        { type: "trip_short_name", attributes: {} },
+        []
+      )
     ).toEqual(new TripShortName({}))
   })
 
-  test("fromJsonApi error wrong format", () => {
-    expect(TripShortName.fromJsonApi({})).toEqual("error")
+  test("fromJsonObject error wrong format", () => {
+    expect(TripShortName.fromJsonObject({}, [])).toEqual("error")
   })
 
-  test("fromJsonApi error not an object", () => {
-    expect(TripShortName.fromJsonApi(5)).toEqual("error")
+  test("fromJsonObject error not an object", () => {
+    expect(TripShortName.fromJsonObject(5, [])).toEqual("error")
   })
 })

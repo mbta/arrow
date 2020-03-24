@@ -1,5 +1,6 @@
 import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
+import { ModelObject } from "../jsonApi"
 
 type DayName =
   | "monday"
@@ -52,11 +53,37 @@ class DayOfWeek extends JsonApiResourceObject {
     }
   }
 
-  static fromJsonApi(raw: any): DayOfWeek | "error" {
-    if (typeof raw === "object") {
-      if (raw.data?.type === "day_of_week") {
-        return new DayOfWeek({})
+  static fromJsonObject(
+    raw: any,
+    _included: ModelObject[]
+  ): DayOfWeek | "error" {
+    if (typeof raw.attributes === "object") {
+      let day: DayName | undefined
+
+      if (raw.attributes.monday) {
+        day = "monday"
+      } else if (raw.attributes.tuesday) {
+        day = "tuesday"
+      } else if (raw.attributes.wednesday) {
+        day = "wednesday"
+      } else if (raw.attributes.thursday) {
+        day = "thursday"
+      } else if (raw.attributes.friday) {
+        day = "friday"
+      } else if (raw.attributes.saturday) {
+        day = "saturday"
+      } else if (raw.attributes.sunday) {
+        day = "sunday"
       }
+
+      return new DayOfWeek({
+        id: raw.id,
+        ...(raw.attributes.start_time && {
+          startTime: raw.attributes.start_time,
+        }),
+        ...(raw.attributes.end_time && { endTime: raw.attributes.end_time }),
+        day,
+      })
     }
 
     return "error"
