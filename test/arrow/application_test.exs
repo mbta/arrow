@@ -5,7 +5,7 @@ defmodule Arrow.ApplicationTest do
 
   describe "migrate_children/1" do
     test "starts the migrator when passed true" do
-      assert migrate_children(true) == [Arrow.Repo.Migrator]
+      assert [{Arrow.Repo.Migrator, [{:migrate_synchronously?, _}]}] = migrate_children(true)
     end
 
     test "starts nothing when passed false" do

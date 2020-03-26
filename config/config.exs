@@ -11,7 +11,9 @@ config :arrow,
   ecto_repos: [Arrow.Repo],
   aws_rds_mod: ExAws.RDS,
   run_migrations_at_startup?: false,
-  fetch_adjustments_at_startup?: true
+  fetch_adjustments_at_startup?: true,
+  # Run migrations synchronously before anything else. Must finish in <5 seconds
+  migrate_synchronously?: false
 
 # Configures the endpoint
 config :arrow, ArrowWeb.Endpoint,

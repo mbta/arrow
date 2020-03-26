@@ -5,7 +5,7 @@ defmodule Arrow.Repo.Migrator do
   use GenServer, restart: :transient
   require Logger
 
-  @opts [module: Ecto.Migrator]
+  @opts [module: Ecto.Migrator, migrate_synchronously?: false]
 
   def start_link(opts) do
     opts = Keyword.merge(@opts, opts)
@@ -14,7 +14,14 @@ defmodule Arrow.Repo.Migrator do
 
   @impl GenServer
   def init(opts) do
-    {:ok, opts, {:continue, :migrate}}
+    if opts[:migrate_synchronously?] do
+      _ = Logger.info("Migrating synchronously")
+      migrate!(opts[:module])
+      _ = Logger.info("Finished migrations")
+      :ignore
+    else
+      {:ok, opts, {:continue, :migrate}}
+    end
   end
 
   @impl GenServer
