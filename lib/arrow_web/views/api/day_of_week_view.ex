@@ -6,12 +6,6 @@ defmodule ArrowWeb.API.DayOfWeekView do
     :id,
     :start_time,
     :end_time,
-    :monday,
-    :tuesday,
-    :wednesday,
-    :thursday,
-    :friday,
-    :saturday,
-    :sunday
+    :day_name
   ])
 end

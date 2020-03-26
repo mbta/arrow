@@ -29,6 +29,21 @@ CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
+--
+-- Name: day_name; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.day_name AS ENUM (
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday'
+);
+
+
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -102,16 +117,10 @@ ALTER SEQUENCE public.disruption_adjustments_id_seq OWNED BY public.disruption_a
 
 CREATE TABLE public.disruption_day_of_weeks (
     id bigint NOT NULL,
-    monday boolean DEFAULT false NOT NULL,
-    tuesday boolean DEFAULT false NOT NULL,
-    wednesday boolean DEFAULT false NOT NULL,
-    thursday boolean DEFAULT false NOT NULL,
-    friday boolean DEFAULT false NOT NULL,
-    saturday boolean DEFAULT false NOT NULL,
-    sunday boolean DEFAULT false NOT NULL,
+    day_name public.day_name NOT NULL,
     start_time time(0) without time zone,
     end_time time(0) without time zone,
-    disruption_id bigint,
+    disruption_id bigint NOT NULL,
     inserted_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL
 );
@@ -383,6 +392,13 @@ CREATE INDEX disruption_trip_short_names_disruption_id_index ON public.disruptio
 
 
 --
+-- Name: unique_disruption_weekday; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX unique_disruption_weekday ON public.disruption_day_of_weeks USING btree (disruption_id, day_name);
+
+
+--
 -- Name: disruption_adjustments disruption_adjustments_adjustment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -426,5 +442,5 @@ ALTER TABLE ONLY public.disruption_trip_short_names
 -- PostgreSQL database dump complete
 --
 
-INSERT INTO public."schema_migrations" (version) VALUES (20191223181419), (20191223181443), (20191223181711), (20191223181837), (20191223182116), (20191223182231), (20200129212636);
+INSERT INTO public."schema_migrations" (version) VALUES (20191223181419), (20191223181443), (20191223181711), (20191223181837), (20191223182116), (20191223182231), (20200129212636), (20200326133115);
 
