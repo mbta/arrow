@@ -51,14 +51,8 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                  %{
                    "attributes" => %{
                      "end_time" => nil,
-                     "friday" => true,
-                     "monday" => false,
-                     "saturday" => false,
-                     "start_time" => "20:30:00",
-                     "sunday" => false,
-                     "thursday" => false,
-                     "tuesday" => false,
-                     "wednesday" => false
+                     "day_name" => "friday",
+                     "start_time" => "20:30:00"
                    },
                    "type" => "day_of_week"
                  },
@@ -88,7 +82,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                  }
                ],
                "jsonapi" => %{"version" => "1.0"}
-             } = res
+             } = Enum.sort(res)
     end
 
     test "can include only specified relationships", %{conn: conn} do
@@ -198,7 +192,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
         Disruption.changeset(%Disruption{}, %{
           start_date: ~D[2019-11-15],
           end_date: ~D[2019-12-30],
-          days_of_week: [%{friday: true, start_time: ~T[20:30:00]}],
+          days_of_week: [%{day_name: "friday", start_time: ~T[20:30:00]}],
           adjustments: [
             %{
               source: "gtfs_creator",

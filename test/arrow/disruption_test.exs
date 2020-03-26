@@ -79,24 +79,21 @@ defmodule Arrow.DisruptionTest do
                    start_date: @start_date,
                    end_date: @end_date,
                    days_of_week: [
-                     %{friday: true, start_time: ~T[20:30:00]},
-                     %{saturday: true, sunday: true}
+                     %{day_name: "friday", start_time: ~T[20:30:00]},
+                     %{day_name: "saturday"}
                    ]
                  })
                )
 
-      assert [friday, weekend] = new_dis.days_of_week
+      assert [friday, saturday] = new_dis.days_of_week
 
-      assert friday.thursday == false
-      assert friday.friday == true
+      assert friday.day_name == "friday"
       assert friday.start_time == ~T[20:30:00]
       assert friday.end_time == nil
 
-      assert weekend.friday == false
-      assert weekend.saturday == true
-      assert weekend.sunday == true
-      assert weekend.start_time == nil
-      assert weekend.end_time == nil
+      assert saturday.day_name == "saturday"
+      assert saturday.start_time == nil
+      assert saturday.end_time == nil
     end
   end
 end
