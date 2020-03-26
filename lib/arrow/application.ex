@@ -15,13 +15,15 @@ defmodule Arrow.Application do
     children =
       [
         # Start the Ecto repository
-        Arrow.Repo,
-        # Start the endpoint when the application starts
-        ArrowWeb.Endpoint
-        # Starts a worker by calling: Arrow.Worker.start_link(arg)
-        # {Arrow.Worker, arg},
+        Arrow.Repo
       ] ++
         migrate_children(run_migrations_at_startup?) ++
+        [
+          # Start the endpoint when the application starts
+          ArrowWeb.Endpoint
+          # Starts a worker by calling: Arrow.Worker.start_link(arg)
+          # {Arrow.Worker, arg},
+        ] ++
         adjustment_fetcher_children(run_adjustment_fetcher_at_startup?)
 
     # See https://hexdocs.pm/elixir/Supervisor.html
@@ -38,7 +40,8 @@ defmodule Arrow.Application do
   end
 
   def migrate_children(true) do
-    [Arrow.Repo.Migrator]
+    migrate_synchronously? = Application.get_env(:arrow, :migrate_synchronously?)
+    [{Arrow.Repo.Migrator, [migrate_synchronously?: migrate_synchronously?]}]
   end
 
   def migrate_children(false) do

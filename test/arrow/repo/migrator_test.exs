@@ -30,6 +30,17 @@ defmodule Arrow.Repo.MigratorTest do
       assert {:ok, pid} = Migrator.start_link(module: FakeMigrator)
     end
 
+    test "runs migrations and ends when run synchronously" do
+      log_level_info()
+
+      log =
+        capture_log(fn ->
+          assert :ignore = Migrator.start_link(module: FakeMigrator, migrate_synchronously?: true)
+        end)
+
+      assert log =~ "Migrating synchronously"
+    end
+
     test "logs a migration for each repo" do
       log_level_info()
 
