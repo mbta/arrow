@@ -53,6 +53,7 @@ interface RouteFilterToggleProps {
   active: boolean
   onClick: (route: keyof RouteFilterState) => void
 }
+// eslint-disable-next-line react/display-name
 export const RouteFilterToggle = React.memo(
   ({ route, active, onClick }: RouteFilterToggleProps) => {
     return (

@@ -38,6 +38,7 @@ module.exports = {
     "@typescript-eslint/semi": ["off", null],
     "@typescript-eslint/type-annotation-spacing": "off",
     "@typescript-eslint/unified-signatures": "error",
+    "@typescript-eslint/explicit-function-return-type": "off",
     "arrow-parens": ["off", "as-needed"],
     "prefer-arrow/prefer-arrow-functions": [
       "warn",
