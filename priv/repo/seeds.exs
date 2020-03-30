@@ -37,7 +37,7 @@ for attrs <- [
         start_date: ~D[2019-12-20],
         end_date: ~D[2020-01-12],
         adjustments: [Repo.get_by!(Adjustment, source_label: "KenmoreReservoir")],
-        excluded_dates: [~D[2019-12-29]],
+        exceptions: [~D[2019-12-29]],
         days_of_week: [
           %{day_name: "friday", start_time: ~T[20:45:00]},
           %{day_name: "saturday"},
@@ -69,7 +69,12 @@ for attrs <- [
         start_date: ~D[2019-12-11],
         end_date: ~D[2020-03-29],
         adjustments: [Repo.get_by!(Adjustment, source_label: "ForgeParkReadville")],
-        excluded_dates: [~D[2019-12-28], ~D[2019-12-29], ~D[2020-01-04], ~D[2020-01-05]],
+        exceptions: [
+          ~D[2019-12-28],
+          ~D[2019-12-29],
+          ~D[2020-01-04],
+          ~D[2020-01-05]
+        ],
         trip_short_names: [
           "1702",
           "1704",
@@ -107,7 +112,12 @@ for attrs <- [
         start_date: ~D[2019-12-11],
         end_date: ~D[2020-03-29],
         adjustments: [Repo.get_by!(Adjustment, source_label: "ForgeParkSouthStation")],
-        excluded_dates: [~D[2019-12-28], ~D[2019-12-29], ~D[2020-01-04], ~D[2020-01-05]],
+        exceptions: [
+          ~D[2019-12-28],
+          ~D[2019-12-29],
+          ~D[2020-01-04],
+          ~D[2020-01-05]
+        ],
         trip_short_names: ["1716", "1718", "1719", "2716", "2718", "2719"],
         days_of_week: [
           %{day_name: "saturday"},
