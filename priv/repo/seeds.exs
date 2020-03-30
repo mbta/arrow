@@ -39,8 +39,9 @@ for attrs <- [
         adjustments: [Repo.get_by!(Adjustment, source_label: "KenmoreReservoir")],
         excluded_dates: [~D[2019-12-29]],
         days_of_week: [
-          %{friday: true, start_time: ~T[20:45:00]},
-          %{saturday: true, sunday: true}
+          %{day_name: "friday", start_time: ~T[20:45:00]},
+          %{day_name: "saturday"},
+          %{day_name: "sunday"}
         ]
       },
       %{
@@ -48,14 +49,11 @@ for attrs <- [
         end_date: ~D[2020-01-17],
         adjustments: [Repo.get_by!(Adjustment, source_label: "KenmoreReservoir")],
         days_of_week: [
-          %{
-            monday: true,
-            tuesday: true,
-            wednesday: true,
-            thursday: true,
-            friday: true,
-            start_time: ~T[20:45:00]
-          }
+          %{day_name: "monday", start_time: ~T[20:45:00]},
+          %{day_name: "tuesday", start_time: ~T[20:45:00]},
+          %{day_name: "wednesday", start_time: ~T[20:45:00]},
+          %{day_name: "thursday", start_time: ~T[20:45:00]},
+          %{day_name: "friday", start_time: ~T[20:45:00]}
         ]
       },
       %{
@@ -63,7 +61,8 @@ for attrs <- [
         end_date: ~D[2020-02-09],
         adjustments: [Repo.get_by!(Adjustment, source_label: "AlewifeHarvard")],
         days_of_week: [
-          %{saturday: true, sunday: true}
+          %{day_name: "saturday"},
+          %{day_name: "sunday"}
         ]
       },
       %{
@@ -100,7 +99,8 @@ for attrs <- [
           "2717"
         ],
         days_of_week: [
-          %{saturday: true, sunday: true}
+          %{day_name: "saturday"},
+          %{day_name: "sunday"}
         ]
       },
       %{
@@ -110,7 +110,8 @@ for attrs <- [
         excluded_dates: [~D[2019-12-28], ~D[2019-12-29], ~D[2020-01-04], ~D[2020-01-05]],
         trip_short_names: ["1716", "1718", "1719", "2716", "2718", "2719"],
         days_of_week: [
-          %{saturday: true, sunday: true}
+          %{day_name: "saturday"},
+          %{day_name: "sunday"}
         ]
       }
     ] do
