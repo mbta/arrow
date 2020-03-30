@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Adjustment } from "./disruptions"
+import Adjustment from "../models/adjustment"
 
 interface DisruptionSummaryProps {
   disruptionId?: string
@@ -13,9 +13,12 @@ const DisruptionSummary = ({
   return (
     <ul className="m-disruption-summary__adjustment_list">
       {adjustments.map(adjustment => (
-        <li className="m-disruption-summary__adjustment" key={adjustment.label}>
+        <li
+          className="m-disruption-summary__adjustment"
+          key={adjustment.sourceLabel}
+        >
           <span className="m-disruption-summary__adjustment_label">
-            {adjustment.label}
+            {adjustment.sourceLabel}
           </span>
           {disruptionId && (
             <div>
@@ -26,7 +29,7 @@ const DisruptionSummary = ({
           )}
           <div>
             <span className="m-disruption-summary__adjustment_route">
-              {adjustment.route}
+              {adjustment.routeId}
             </span>
           </div>
         </li>

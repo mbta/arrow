@@ -9,10 +9,12 @@ import {
   TimeRange,
 } from "./disruptionTimePicker"
 
-import { Adjustment, TransitMode, modeForRoute } from "./disruptions"
+import { TransitMode, modeForRoute } from "./disruptions"
 
 import Header from "../header"
 import { DisruptionPreview } from "./disruptionPreview"
+
+import Adjustment from "../models/adjustment"
 
 interface AdjustmentModePickerProps {
   transitMode: TransitMode
@@ -78,12 +80,13 @@ const AdjustmentsPicker = ({
   setIsAddingAdjustment,
 }: AdjustmentsPickerProps): JSX.Element => {
   const modeAdjustments = allAdjustments.filter(
-    adjustment => modeForRoute(adjustment.route) === transitMode
+    adjustment =>
+      adjustment.routeId && modeForRoute(adjustment.routeId) === transitMode
   )
 
   const appendAdjustment = (evt: React.FormEvent) => {
     const val = (evt.target as HTMLSelectElement).value
-    const adjustmentForLabel = allAdjustments.find(a => val === a.label)
+    const adjustmentForLabel = allAdjustments.find(a => val === a.sourceLabel)
 
     if (adjustmentForLabel) {
       setIsAddingAdjustment(false)
@@ -93,7 +96,7 @@ const AdjustmentsPicker = ({
 
   const updateAdjustment = (evt: React.FormEvent, i: number) => {
     const val = (evt.target as HTMLSelectElement).value
-    const adjustmentForLabel = allAdjustments.find(a => val === a.label)
+    const adjustmentForLabel = allAdjustments.find(a => val === a.sourceLabel)
 
     if (adjustmentForLabel) {
       setAdjustments(
@@ -115,24 +118,24 @@ const AdjustmentsPicker = ({
       <Form.Group>
         {adjustments.map((adjustment, i) => {
           return (
-            <Form.Row key={adjustment.label}>
+            <Form.Row key={adjustment.sourceLabel}>
               <Form.Control
                 as="select"
                 id={"adjustment-select-" + i}
-                value={adjustment.label}
+                value={adjustment.sourceLabel}
                 onChange={evt => updateAdjustment(evt, i)}
               >
                 {modeAdjustments
                   .filter(
                     modeAdjustment =>
                       adjustments.findIndex(
-                        a => modeAdjustment.label === a.label
+                        a => modeAdjustment.sourceLabel === a.sourceLabel
                       ) === -1
                   )
                   .map(a => (
-                    <option key={a.label}>{a.label}</option>
+                    <option key={a.sourceLabel}>{a.sourceLabel}</option>
                   ))}
-                <option>{adjustment.label}</option>
+                <option>{adjustment.sourceLabel}</option>
               </Form.Control>
               <button
                 className="btn btn-link"
@@ -164,12 +167,12 @@ const AdjustmentsPicker = ({
                 .filter(
                   modeAdjustment =>
                     adjustments.findIndex(
-                      a => modeAdjustment.label === a.label
+                      a => modeAdjustment.sourceLabel === a.sourceLabel
                     ) === -1
                 )
                 .map(modeAdjustment => (
-                  <option key={modeAdjustment.label}>
-                    {modeAdjustment.label}
+                  <option key={modeAdjustment.sourceLabel}>
+                    {modeAdjustment.sourceLabel}
                   </option>
                 ))}
             </Form.Control>
@@ -229,9 +232,15 @@ const NewDisruption = ({}): JSX.Element => {
   const [isPreview, setIsPreview] = React.useState<boolean>(false)
 
   const allAdjustments: Adjustment[] = [
-    { label: "Broadway--Kendall/MIT", route: "Red" },
-    { label: "Kenmore--Newton Highlands", route: "Green-D" },
-    { label: "Fairmount--Newmarket", route: "CR-Fairmount" },
+    new Adjustment({ routeId: "Red", sourceLabel: "Broadway--Kendall/MIT" }),
+    new Adjustment({
+      routeId: "Green-D",
+      sourceLabel: "Kenmore--Newton Highlands",
+    }),
+    new Adjustment({
+      routeId: "CR-Fairmount",
+      sourceLabel: "Fairmount--Newmarket",
+    }),
   ]
 
   return (
