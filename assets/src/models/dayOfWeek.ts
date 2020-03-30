@@ -60,20 +60,20 @@ class DayOfWeek extends JsonApiResourceObject {
     if (typeof raw.attributes === "object") {
       let day: DayName | undefined
 
-      if (raw.attributes.monday) {
-        day = "monday"
-      } else if (raw.attributes.tuesday) {
-        day = "tuesday"
-      } else if (raw.attributes.wednesday) {
-        day = "wednesday"
-      } else if (raw.attributes.thursday) {
-        day = "thursday"
-      } else if (raw.attributes.friday) {
-        day = "friday"
-      } else if (raw.attributes.saturday) {
-        day = "saturday"
-      } else if (raw.attributes.sunday) {
-        day = "sunday"
+      if (
+        [
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+          "saturday",
+          "sunday",
+        ].includes(raw.attributes.day_name)
+      ) {
+        day = raw.attributes.day_name
+      } else {
+        return "error"
       }
 
       return new DayOfWeek({
