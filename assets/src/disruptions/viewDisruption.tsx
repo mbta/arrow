@@ -7,6 +7,8 @@ import Header from "../header"
 import { DisruptionPreview } from "./disruptionPreview"
 import { DayOfWeekTimeRanges } from "./disruptionTimePicker"
 
+import Adjustment from "../models/adjustment"
+
 interface TParams {
   id: string
 }
@@ -52,10 +54,10 @@ const ViewDisruptionForm = ({
     )
   } else {
     // TODO: Dummy data, to be filled in with the results from an API call once that's ready
-    const adjustment = {
-      label: "Kenmore - Newton Highlands",
-      route: "Green-D",
-    }
+    const adjustment = new Adjustment({
+      routeId: "Green-D",
+      sourceLabel: "Kenmore - Newton Highlands",
+    })
     const fromDate = new Date("2020-03-06")
     const toDate = new Date("2020-03-22")
     const exceptionDates = [new Date("2020-03-13")]

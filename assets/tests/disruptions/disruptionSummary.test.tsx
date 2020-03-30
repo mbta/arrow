@@ -3,13 +3,15 @@ import { mount } from "enzyme"
 import * as renderer from "react-test-renderer"
 import { DisruptionSummary } from "../../src/disruptions/disruptionSummary"
 
+import Adjustment from "../../src/models/adjustment"
+
 describe("DisruptionSummary", () => {
   test("renders the adjustments onto the page", () => {
     const summary = (
       <DisruptionSummary
         adjustments={[
-          { label: "adjustment1", route: "route1" },
-          { label: "adjustment2", route: "route2" },
+          new Adjustment({ routeId: "route1", sourceLabel: "adjustment1" }),
+          new Adjustment({ routeId: "route2", sourceLabel: "adjustment2" }),
         ]}
       />
     )
@@ -23,8 +25,8 @@ describe("DisruptionSummary", () => {
       <DisruptionSummary
         disruptionId={"123"}
         adjustments={[
-          { label: "adjustment1", route: "route1" },
-          { label: "adjustment2", route: "route2" },
+          new Adjustment({ routeId: "route1", sourceLabel: "adjustment1" }),
+          new Adjustment({ routeId: "route2", sourceLabel: "adjustment2" }),
         ]}
       />
     ).text()

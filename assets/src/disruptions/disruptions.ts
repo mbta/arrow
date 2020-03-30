@@ -1,8 +1,3 @@
-interface Adjustment {
-  label: string
-  route: string
-}
-
 enum TransitMode {
   Subway,
   CommuterRail,
@@ -45,7 +40,6 @@ const modeForRoute = (route: string): TransitMode => {
 }
 
 export {
-  Adjustment,
   TransitMode,
   formatDisruptionDate,
   indexToDayOfWeekString,

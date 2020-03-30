@@ -12,6 +12,8 @@ import {
   DisruptionTimePicker,
 } from "./disruptionTimePicker"
 
+import Adjustment from "../models/adjustment"
+
 interface TParams {
   id: string
 }
@@ -121,10 +123,12 @@ const EditDisruptionForm = ({
   const [isPreview, setIsPreview] = React.useState<boolean>(false)
 
   // TODO: Dummy data, to be filled in with the results from an API call once that's ready
-  const adjustment = {
-    label: "Kenmore - Newton Highlands",
-    route: "Green-D",
-  }
+  const adjustment = new Adjustment({
+    id: "1",
+    routeId: "Green-D",
+    source: "gtfs_creator",
+    sourceLabel: "Kenmore - Newton Highlands",
+  })
 
   if (redirect && disruptionId) {
     return <Redirect to={"/disruptions/" + encodeURIComponent(disruptionId)} />
