@@ -2,7 +2,7 @@ import * as React from "react"
 
 import { formatDisruptionDate, indexToDayOfWeekString } from "./disruptions"
 import { DisruptionSummary } from "./disruptionSummary"
-import { DayOfWeekTimeRanges, TimeRange } from "./disruptionTimePicker"
+import { DayOfWeekTimeRanges, TimeRange } from "./time"
 import Adjustment from "../models/adjustment"
 
 interface DayOfWeekPreviewProps {

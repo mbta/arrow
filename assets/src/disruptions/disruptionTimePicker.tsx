@@ -5,47 +5,16 @@ import Row from "react-bootstrap/Row"
 
 import DatePicker from "react-datepicker"
 
+import {
+  Time,
+  HourOptions,
+  MinuteOptions,
+  PeriodOptions,
+  TimeRange,
+  DayOfWeekTimeRanges,
+  isEmpty,
+} from "./time"
 import { indexToDayOfWeekString } from "./disruptions"
-
-type HourOptions =
-  | "12"
-  | "1"
-  | "2"
-  | "3"
-  | "4"
-  | "5"
-  | "6"
-  | "7"
-  | "8"
-  | "9"
-  | "10"
-  | "11"
-
-type MinuteOptions = "00" | "15" | "30" | "45"
-
-type PeriodOptions = "AM" | "PM"
-
-interface Time {
-  hour: HourOptions
-  minute: MinuteOptions
-  period: PeriodOptions
-}
-
-type TimeRange = [Time | null, Time | null]
-
-type DayOfWeekTimeRanges = [
-  TimeRange | null,
-  TimeRange | null,
-  TimeRange | null,
-  TimeRange | null,
-  TimeRange | null,
-  TimeRange | null,
-  TimeRange | null
-]
-
-const isEmpty = (days: DayOfWeekTimeRanges): boolean => {
-  return days.filter(d => d !== null).length === 0
-}
 
 interface DisruptionDateRangeProps {
   fromDate: Date | null
@@ -525,9 +494,4 @@ const DisruptionTimePicker = ({
   )
 }
 
-export {
-  DisruptionTimePicker,
-  DisruptionTimeRange,
-  TimeRange,
-  DayOfWeekTimeRanges,
-}
+export { DisruptionTimePicker, DisruptionTimeRange }

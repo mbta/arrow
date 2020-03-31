@@ -1,10 +1,8 @@
 import { mount } from "enzyme"
 import * as React from "react"
 
-import {
-  DayOfWeekTimeRanges,
-  DisruptionTimePicker,
-} from "../../src/disruptions/disruptionTimePicker"
+import { DayOfWeekTimeRanges } from "../../src/disruptions/time"
+import { DisruptionTimePicker } from "../../src/disruptions/disruptionTimePicker"
 
 const DisruptionTimePickerWithProps = ({}): JSX.Element => {
   const [fromDate, setFromDate] = React.useState<Date | null>(null)
