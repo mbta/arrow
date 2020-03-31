@@ -3,11 +3,8 @@ import * as React from "react"
 import Button from "react-bootstrap/Button"
 import Form from "react-bootstrap/Form"
 
-import {
-  DayOfWeekTimeRanges,
-  DisruptionTimePicker,
-  TimeRange,
-} from "./disruptionTimePicker"
+import { DayOfWeekTimeRanges, TimeRange } from "./time"
+import { DisruptionTimePicker } from "./disruptionTimePicker"
 
 import { TransitMode, modeForRoute } from "./disruptions"
 

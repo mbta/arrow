@@ -5,7 +5,7 @@ import { Redirect } from "react-router"
 
 import Header from "../header"
 import { DisruptionPreview } from "./disruptionPreview"
-import { DayOfWeekTimeRanges } from "./disruptionTimePicker"
+import { fromDaysOfWeek } from "./time"
 
 import Adjustment from "../models/adjustment"
 
