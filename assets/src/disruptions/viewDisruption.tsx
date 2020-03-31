@@ -3,11 +3,15 @@ import Button from "react-bootstrap/Button"
 import { RouteComponentProps } from "react-router-dom"
 import { Redirect } from "react-router"
 
+import { apiCall } from "../api"
+
 import Header from "../header"
+import Loading from "../loading"
 import { DisruptionPreview } from "./disruptionPreview"
 import { fromDaysOfWeek } from "./time"
 
-import Adjustment from "../models/adjustment"
+import Disruption from "../models/disruption"
+import { ModelObject, toModelObject } from "../jsonApi"
 
 interface TParams {
   id: string
@@ -45,6 +49,23 @@ const ViewDisruptionForm = ({
   disruptionId,
 }: ViewDisruptionFormProps): JSX.Element => {
   const [redirect, setRedirect] = React.useState<boolean>(false)
+  const [disruption, setDisruption] = React.useState<
+    Disruption | "error" | null
+  >(null)
+
+  React.useEffect(() => {
+    apiCall<ModelObject | "error">({
+      url: "/api/disruptions/" + encodeURIComponent(disruptionId),
+      parser: toModelObject,
+      defaultResult: "error",
+    }).then((result: ModelObject | "error") => {
+      if (result instanceof Disruption) {
+        setDisruption(result)
+      } else {
+        setDisruption("error")
+      }
+    })
+  }, [disruptionId])
 
   if (redirect) {
     return (
@@ -53,47 +74,39 @@ const ViewDisruptionForm = ({
       />
     )
   } else {
-    // TODO: Dummy data, to be filled in with the results from an API call once that's ready
-    const adjustment = new Adjustment({
-      routeId: "Green-D",
-      sourceLabel: "Kenmore - Newton Highlands",
-    })
-    const fromDate = new Date("2020-03-06")
-    const toDate = new Date("2020-03-22")
-    const exceptionDates = [new Date("2020-03-13")]
-    const disruptionDaysOfWeek: DayOfWeekTimeRanges = [
-      null,
-      null,
-      null,
-      null,
-      [
-        { hour: "1", minute: "00", period: "PM" },
-        { hour: "11", minute: "00", period: "PM" },
-      ],
-      [
-        { hour: "1", minute: "00", period: "PM" },
-        { hour: "11", minute: "00", period: "PM" },
-      ],
-      [
-        { hour: "1", minute: "00", period: "PM" },
-        { hour: "11", minute: "00", period: "PM" },
-      ],
-    ]
+    if (disruption && disruption !== "error") {
+      const exceptionDates = disruption.exceptions
+        .map(exception => exception.excludedDate)
+        .filter(
+          (maybeDate: Date | undefined): maybeDate is Date =>
+            maybeDate !== undefined
+        )
 
-    return (
-      <div>
-        <Header />
-        <DisruptionPreview
-          disruptionId={disruptionId}
-          adjustments={[adjustment]}
-          fromDate={fromDate}
-          toDate={toDate}
-          exceptionDates={exceptionDates}
-          disruptionDaysOfWeek={disruptionDaysOfWeek}
-        />
-        <EditDisruptionButton setRedirect={setRedirect} />
-      </div>
-    )
+      const disruptionDaysOfWeek = fromDaysOfWeek(disruption.daysOfWeek)
+
+      if (disruptionDaysOfWeek !== "error") {
+        return (
+          <div>
+            <Header />
+            <DisruptionPreview
+              disruptionId={disruption.id}
+              adjustments={disruption.adjustments}
+              fromDate={disruption.startDate || null}
+              toDate={disruption.endDate || null}
+              exceptionDates={exceptionDates}
+              disruptionDaysOfWeek={disruptionDaysOfWeek}
+            />
+            <EditDisruptionButton setRedirect={setRedirect} />
+          </div>
+        )
+      } else {
+        return <div>Error parsing day of week information.</div>
+      }
+    } else if (disruption === "error") {
+      return <div>Error fetching or parsing disruption.</div>
+    } else {
+      return <Loading />
+    }
   }
 }
 
