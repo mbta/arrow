@@ -3,6 +3,7 @@ import * as React from "react"
 import { BrowserRouter } from "react-router-dom"
 import { act } from "react-dom/test-utils"
 import * as ReactDOM from "react-dom"
+import * as api from "../../src/api"
 
 import ViewDisruption from "../../src/disruptions/viewDisruption"
 import Adjustment from "../../src/models/adjustment"
@@ -12,8 +13,6 @@ import Exception from "../../src/models/exception"
 
 describe("ViewDisruption", () => {
   test("loads and displays disruption from the API", async () => {
-    const api = require("../../src/api")
-
     jest.spyOn(api, "apiCall").mockImplementationOnce(() => {
       return Promise.resolve(
         new Disruption({
@@ -48,9 +47,10 @@ describe("ViewDisruption", () => {
 
     const history = createBrowserHistory()
 
-    let container = document.createElement("div")
+    const container = document.createElement("div")
     document.body.appendChild(container)
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     await act(async () => {
       ReactDOM.render(
         <BrowserRouter>
@@ -84,8 +84,6 @@ describe("ViewDisruption", () => {
   })
 
   test("edit link redirects to edit page", async () => {
-    const api = require("../../src/api")
-
     jest.spyOn(api, "apiCall").mockImplementationOnce(() => {
       return Promise.resolve(
         new Disruption({
@@ -102,9 +100,10 @@ describe("ViewDisruption", () => {
 
     const history = createBrowserHistory()
 
-    let container = document.createElement("div")
+    const container = document.createElement("div")
     document.body.appendChild(container)
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     await act(async () => {
       ReactDOM.render(
         <BrowserRouter>
@@ -142,17 +141,16 @@ describe("ViewDisruption", () => {
   })
 
   test("handles error on fetching / parsing", async () => {
-    const api = require("../../src/api")
-
     jest.spyOn(api, "apiCall").mockImplementationOnce(() => {
       return Promise.resolve("error")
     })
 
     const history = createBrowserHistory()
 
-    let container = document.createElement("div")
+    const container = document.createElement("div")
     document.body.appendChild(container)
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     await act(async () => {
       ReactDOM.render(
         <BrowserRouter>
@@ -182,8 +180,6 @@ describe("ViewDisruption", () => {
   })
 
   test("handles error with day of week values", async () => {
-    const api = require("../../src/api")
-
     jest.spyOn(api, "apiCall").mockImplementationOnce(() => {
       return Promise.resolve(
         new Disruption({
@@ -218,9 +214,10 @@ describe("ViewDisruption", () => {
 
     const history = createBrowserHistory()
 
-    let container = document.createElement("div")
+    const container = document.createElement("div")
     document.body.appendChild(container)
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     await act(async () => {
       ReactDOM.render(
         <BrowserRouter>

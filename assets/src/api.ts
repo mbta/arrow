@@ -27,7 +27,7 @@ const apiCall = <T>({
     .then((response: Response) => response.json())
     .then((json: any) => parser(json))
     .catch(error => {
-      if (defaultResult === undefined) {
+      if (typeof defaultResult === "undefined") {
         throw error
       } else {
         return defaultResult

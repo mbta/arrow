@@ -20,18 +20,15 @@ describe("TripShortName", () => {
 
   test("fromJsonObject success", () => {
     expect(
-      TripShortName.fromJsonObject(
-        { type: "trip_short_name", attributes: {} },
-        []
-      )
+      TripShortName.fromJsonObject({ type: "trip_short_name", attributes: {} })
     ).toEqual(new TripShortName({}))
   })
 
   test("fromJsonObject error wrong format", () => {
-    expect(TripShortName.fromJsonObject({}, [])).toEqual("error")
+    expect(TripShortName.fromJsonObject({})).toEqual("error")
   })
 
   test("fromJsonObject error not an object", () => {
-    expect(TripShortName.fromJsonObject(5, [])).toEqual("error")
+    expect(TripShortName.fromJsonObject(5)).toEqual("error")
   })
 })

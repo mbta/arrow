@@ -24,18 +24,15 @@ describe("Adjustment", () => {
 
   test("fromJsonObject success", () => {
     expect(
-      Adjustment.fromJsonObject(
-        {
-          type: "adjustment",
-          id: "1",
-          attributes: {
-            source: "gtfs_creator",
-            route_id: "Red",
-            source_label: "AlewifeHarvard",
-          },
+      Adjustment.fromJsonObject({
+        type: "adjustment",
+        id: "1",
+        attributes: {
+          source: "gtfs_creator",
+          route_id: "Red",
+          source_label: "AlewifeHarvard",
         },
-        []
-      )
+      })
     ).toEqual(
       new Adjustment({
         id: "1",
@@ -66,10 +63,10 @@ describe("Adjustment", () => {
   })
 
   test("fromJsonObject error wrong format", () => {
-    expect(Adjustment.fromJsonObject({}, [])).toEqual("error")
+    expect(Adjustment.fromJsonObject({})).toEqual("error")
   })
 
   test("fromJsonObject error not an object", () => {
-    expect(Adjustment.fromJsonObject(5, [])).toEqual("error")
+    expect(Adjustment.fromJsonObject(5)).toEqual("error")
   })
 })

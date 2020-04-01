@@ -1,6 +1,5 @@
 import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
-import { ModelObject } from "../jsonApi"
 
 class TripShortName extends JsonApiResourceObject {
   id?: string
@@ -28,10 +27,7 @@ class TripShortName extends JsonApiResourceObject {
     }
   }
 
-  static fromJsonObject(
-    raw: any,
-    _included: ModelObject[]
-  ): TripShortName | "error" {
+  static fromJsonObject(raw: any): TripShortName | "error" {
     if (typeof raw.attributes === "object") {
       return new TripShortName({
         id: raw.id,
