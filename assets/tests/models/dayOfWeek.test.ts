@@ -24,41 +24,33 @@ describe("DayOfWeek", () => {
 
   test("fromJsonObject success", () => {
     expect(
-      DayOfWeek.fromJsonObject(
-        {
-          type: "day_of_week",
-          attributes: {
-            start_time: "20:45:00",
-            end_time: undefined,
-            day_name: "monday",
-          },
+      DayOfWeek.fromJsonObject({
+        type: "day_of_week",
+        attributes: {
+          start_time: "20:45:00",
+          day_name: "monday",
         },
-        []
-      )
+      })
     ).toEqual(new DayOfWeek({ startTime: "20:45:00", day: "monday" }))
   })
 
   test("fromJsonObject error with invalid day of week", () => {
     expect(
-      DayOfWeek.fromJsonObject(
-        {
-          type: "day_of_week",
-          attributes: {
-            start_time: "20:45:00",
-            end_time: undefined,
-            day_name: "not_a_day_of_the_week",
-          },
+      DayOfWeek.fromJsonObject({
+        type: "day_of_week",
+        attributes: {
+          start_time: "20:45:00",
+          day_name: "not_a_day_of_the_week",
         },
-        []
-      )
+      })
     ).toEqual("error")
   })
 
   test("fromJsonObject error wrong format", () => {
-    expect(DayOfWeek.fromJsonObject({}, [])).toEqual("error")
+    expect(DayOfWeek.fromJsonObject({})).toEqual("error")
   })
 
   test("fromJsonObject error not an object", () => {
-    expect(DayOfWeek.fromJsonObject(5, [])).toEqual("error")
+    expect(DayOfWeek.fromJsonObject(5)).toEqual("error")
   })
 })

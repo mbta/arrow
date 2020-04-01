@@ -5,8 +5,8 @@
     "deploy": "webpack --mode production",
     "test": "jest",
     "watch": "webpack --mode development --watch",
-    "lint": "eslint -c .eslintrc.js --ext ts,tsx,js ./ --fix",
-    "lint:check": "eslint -c .eslintrc.js --ext ts,tsx,js ./",
+    "lint": "eslint -c .eslintrc.js --ext ts,tsx,js ./src ./tests --fix",
+    "lint:check": "eslint -c .eslintrc.js --ext ts,tsx,js ./src ./tests",
     "format": "prettier --write \"{.,**}/*.{js,json,ts,tsx,css,scss}\"",
     "format:check": "prettier --check \"{.,**}/*.{js,json,ts,tsx,css,scss}\"",
     "check": "tsc --noEmit && npm run lint:check && npm run format:check"

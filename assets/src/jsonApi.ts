@@ -41,32 +41,20 @@ const modelFromJsonApiResource = (
   includedObjects: ModelObject[]
 ): ModelObject | "error" => {
   if (typeof raw === "object") {
-    let fromJsonObjectFunction: (
-      arg0: any,
-      arg1: ModelObject[]
-    ) => ModelObject | "error"
-
     switch (raw.type) {
       case "adjustment":
-        fromJsonObjectFunction = Adjustment.fromJsonObject
-        break
+        return Adjustment.fromJsonObject(raw)
       case "day_of_week":
-        fromJsonObjectFunction = DayOfWeek.fromJsonObject
-        break
+        return DayOfWeek.fromJsonObject(raw)
       case "disruption":
-        fromJsonObjectFunction = Disruption.fromJsonObject
-        break
+        return Disruption.fromJsonObject(raw, includedObjects)
       case "exception":
-        fromJsonObjectFunction = Exception.fromJsonObject
-        break
+        return Exception.fromJsonObject(raw)
       case "trip_short_name":
-        fromJsonObjectFunction = TripShortName.fromJsonObject
-        break
+        return TripShortName.fromJsonObject(raw)
       default:
         return "error"
     }
-
-    return fromJsonObjectFunction(raw, includedObjects)
   }
 
   return "error"

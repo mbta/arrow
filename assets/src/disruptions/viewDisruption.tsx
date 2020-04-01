@@ -79,7 +79,7 @@ const ViewDisruptionForm = ({
         .map(exception => exception.excludedDate)
         .filter(
           (maybeDate: Date | undefined): maybeDate is Date =>
-            maybeDate !== undefined
+            typeof maybeDate !== "undefined"
         )
 
       const disruptionDaysOfWeek = fromDaysOfWeek(disruption.daysOfWeek)
