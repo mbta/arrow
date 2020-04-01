@@ -15,17 +15,17 @@ defmodule ArrowWeb.API.AdjustmentControllerTest do
       assert [
                %{
                  "attributes" => %{
-                   "route-id" => "test_route_1",
+                   "route_id" => "test_route_1",
                    "source" => "source1",
-                   "source-label" => "label1"
+                   "source_label" => "label1"
                  },
                  "type" => "adjustment"
                },
                %{
                  "attributes" => %{
-                   "route-id" => "test_route_2",
+                   "route_id" => "test_route_2",
                    "source" => "source2",
-                   "source-label" => "label2"
+                   "source_label" => "label2"
                  },
                  "type" => "adjustment"
                }
