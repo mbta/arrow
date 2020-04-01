@@ -1,24 +1,30 @@
-import JsonApiResource from "../jsonApiResource"
+import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
+import JsonApiResourceObject from "../jsonApiResourceObject"
 
-class Exception {
+class Exception extends JsonApiResourceObject {
   id?: number
   excludedDate?: Date
 
   constructor({ id, excludedDate }: { id?: number; excludedDate?: Date }) {
+    super()
     this.id = id
     this.excludedDate = excludedDate
   }
 
   toJsonApi(): JsonApiResource {
     return {
-      data: {
-        type: "exception",
-        ...(this.id && { id: this.id.toString() }),
-        attributes: {
-          ...(this.excludedDate && {
-            excluded_date: this.excludedDate.toISOString().slice(0, 10),
-          }),
-        },
+      data: this.toJsonApiData(),
+    }
+  }
+
+  toJsonApiData(): JsonApiResourceData {
+    return {
+      type: "exception",
+      ...(this.id && { id: this.id.toString() }),
+      attributes: {
+        ...(this.excludedDate && {
+          excluded_date: this.excludedDate.toISOString().slice(0, 10),
+        }),
       },
     }
   }

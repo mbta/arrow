@@ -1,4 +1,5 @@
-import JsonApiResource from "../jsonApiResource"
+import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
+import JsonApiResourceObject from "../jsonApiResourceObject"
 
 type DayName =
   | "monday"
@@ -9,7 +10,7 @@ type DayName =
   | "saturday"
   | "sunday"
 
-class DayOfWeek {
+class DayOfWeek extends JsonApiResourceObject {
   id?: number
   startTime?: string
   endTime?: string
@@ -26,6 +27,7 @@ class DayOfWeek {
     endTime?: string
     day?: DayName
   }) {
+    super()
     this.id = id
     this.startTime = startTime
     this.endTime = endTime
@@ -34,14 +36,18 @@ class DayOfWeek {
 
   toJsonApi(): JsonApiResource {
     return {
-      data: {
-        type: "day_of_week",
-        ...(this.id && { id: this.id.toString() }),
-        attributes: {
-          ...(this.startTime && { start_time: this.startTime }),
-          ...(this.endTime && { end_time: this.endTime }),
-          ...(this.day && { day: this.day }),
-        },
+      data: this.toJsonApiData(),
+    }
+  }
+
+  toJsonApiData(): JsonApiResourceData {
+    return {
+      type: "day_of_week",
+      ...(this.id && { id: this.id.toString() }),
+      attributes: {
+        ...(this.startTime && { start_time: this.startTime }),
+        ...(this.endTime && { end_time: this.endTime }),
+        ...(this.day && { day: this.day }),
       },
     }
   }

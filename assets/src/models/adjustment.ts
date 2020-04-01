@@ -1,8 +1,9 @@
-import JsonApiResource from "../jsonApiResource"
+import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
+import JsonApiResourceObject from "../jsonApiResourceObject"
 
 type Source = "gtfs_creator" | "arrow"
 
-class Adjustment {
+class Adjustment extends JsonApiResourceObject {
   id?: number
   routeId?: string
   source?: Source
@@ -19,6 +20,7 @@ class Adjustment {
     source?: Source
     sourceLabel?: string
   }) {
+    super()
     this.id = id
     this.routeId = routeId
     this.source = source
@@ -27,14 +29,18 @@ class Adjustment {
 
   toJsonApi(): JsonApiResource {
     return {
-      data: {
-        type: "adjustment",
-        ...(this.id && { id: this.id.toString() }),
-        attributes: {
-          ...(this.routeId && { route_id: this.routeId }),
-          ...(this.source && { source: this.source }),
-          ...(this.sourceLabel && { source_label: this.sourceLabel }),
-        },
+      data: this.toJsonApiData(),
+    }
+  }
+
+  toJsonApiData(): JsonApiResourceData {
+    return {
+      type: "adjustment",
+      ...(this.id && { id: this.id.toString() }),
+      attributes: {
+        ...(this.routeId && { route_id: this.routeId }),
+        ...(this.source && { source: this.source }),
+        ...(this.sourceLabel && { source_label: this.sourceLabel }),
       },
     }
   }

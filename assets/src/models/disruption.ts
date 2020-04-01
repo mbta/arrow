@@ -1,11 +1,12 @@
-import JsonApiResource from "../jsonApiResource"
+import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
+import JsonApiResourceObject from "../jsonApiResourceObject"
 
 import Adjustment from "./adjustment"
 import DayOfWeek from "./dayOfWeek"
 import Exception from "./exception"
 import TripShortName from "./tripShortName"
 
-class Disruption {
+class Disruption extends JsonApiResourceObject {
   id?: number
   endDate?: Date
   startDate?: Date
@@ -32,6 +33,7 @@ class Disruption {
     exceptions: Exception[]
     tripShortNames: TripShortName[]
   }) {
+    super()
     this.id = id
     this.endDate = endDate
     this.startDate = startDate
@@ -43,22 +45,28 @@ class Disruption {
 
   toJsonApi(): JsonApiResource {
     return {
-      data: {
-        type: "disruption",
-        ...(this.id && { id: this.id.toString() }),
-        attributes: {
-          ...(this.startDate && {
-            start_date: this.startDate.toISOString().slice(0, 10),
-          }),
-          ...(this.endDate && {
-            end_date: this.endDate.toISOString().slice(0, 10),
-          }),
-        },
-        relationships: {
-          adjustment: this.adjustments.map(adj => adj.toJsonApi()),
-          day_of_week: this.daysOfWeek.map(dow => dow.toJsonApi()),
-          exceptions: this.exceptions.map(ex => ex.toJsonApi()),
-          trip_short_name: this.tripShortNames.map(tsn => tsn.toJsonApi()),
+      data: this.toJsonApiData(),
+    }
+  }
+
+  toJsonApiData(): JsonApiResourceData {
+    return {
+      type: "disruption",
+      ...(this.id && { id: this.id.toString() }),
+      attributes: {
+        ...(this.startDate && {
+          start_date: this.startDate.toISOString().slice(0, 10),
+        }),
+        ...(this.endDate && {
+          end_date: this.endDate.toISOString().slice(0, 10),
+        }),
+      },
+      relationships: {
+        adjustment: { data: this.adjustments.map(adj => adj.toJsonApiData()) },
+        day_of_week: { data: this.daysOfWeek.map(dow => dow.toJsonApiData()) },
+        exceptions: { data: this.exceptions.map(ex => ex.toJsonApiData()) },
+        trip_short_name: {
+          data: this.tripShortNames.map(tsn => tsn.toJsonApiData()),
         },
       },
     }

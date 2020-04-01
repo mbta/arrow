@@ -1,10 +1,12 @@
-interface JsonApiResource {
-  data: {
-    id?: string
-    type: string
-    attributes: any
-    relationships?: any
-  }
+interface JsonApiResourceData {
+  id?: string
+  type: string
+  attributes: any
+  relationships?: any
 }
 
-export default JsonApiResource
+interface JsonApiResource {
+  data: JsonApiResourceData
+}
+
+export { JsonApiResource, JsonApiResourceData }
