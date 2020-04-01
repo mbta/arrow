@@ -13,76 +13,45 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
       res = json_response(get(conn, "/api/disruptions"), 200)
 
       assert %{
-               "data" => [
-                 %{
-                   "attributes" => %{
-                     "end_date" => "2019-12-12",
-                     "start_date" => "2019-10-10"
-                   },
-                   "relationships" => %{
-                     "adjustments" => %{
-                       "data" => [%{"type" => "adjustment"}]
-                     },
-                     "days_of_week" => %{},
-                     "exceptions" => %{"data" => [%{"type" => "exception"}]},
-                     "trip_short_names" => %{
-                       "data" => [%{"type" => "trip_short_name"}]
-                     }
-                   },
-                   "type" => "disruption"
-                 },
-                 %{
-                   "attributes" => %{
-                     "end_date" => "2019-12-30",
-                     "start_date" => "2019-11-15"
-                   },
-                   "relationships" => %{
-                     "adjustments" => %{
-                       "data" => [%{"type" => "adjustment"}]
-                     },
-                     "days_of_week" => %{},
-                     "exceptions" => %{},
-                     "trip_short_names" => %{}
-                   },
-                   "type" => "disruption"
-                 }
-               ],
-               "included" => [
-                 %{
-                   "attributes" => %{
-                     "end_time" => nil,
-                     "day_name" => "friday",
-                     "start_time" => "20:30:00"
-                   },
-                   "type" => "day_of_week"
-                 },
-                 %{
-                   "attributes" => %{"excluded_date" => "2019-12-01"},
-                   "type" => "exception"
-                 },
-                 %{
-                   "attributes" => %{"trip_short_name" => "006"},
-                   "type" => "trip_short_name"
-                 },
-                 %{
-                   "attributes" => %{
-                     "route_id" => "test_route_1",
-                     "source" => "arrow",
-                     "source_label" => "test_adjustment_1"
-                   },
-                   "type" => "adjustment"
-                 },
-                 %{
-                   "attributes" => %{
-                     "route_id" => "test_route_2",
-                     "source" => "gtfs_creator",
-                     "source_label" => "test_adjustment_2"
-                   },
-                   "type" => "adjustment"
-                 }
-               ],
+               "data" => data,
+               "included" => included,
                "jsonapi" => %{"version" => "1.0"}
-             } = Enum.sort(res)
+             } = res
+
+      assert length(data) == 2
+
+      d1 = Enum.find(data, &(&1["attributes"]["start_date"] == "2019-10-10"))
+      d2 = Enum.find(data, &(&1["attributes"]["start_date"] == "2019-11-15"))
+
+      assert %{
+               "attributes" => %{"end_date" => "2019-12-12", "start_date" => "2019-10-10"},
+               "id" => _,
+               "relationships" => %{
+                 "adjustments" => %{"data" => [%{"id" => id1, "type" => "adjustment"}]},
+                 "days_of_week" => %{"data" => []},
+                 "exceptions" => %{"data" => [%{"id" => id2, "type" => "exception"}]},
+                 "trip_short_names" => %{"data" => [%{"id" => id3, "type" => "trip_short_name"}]}
+               },
+               "type" => "disruption"
+             } = d1
+
+      assert %{
+               "attributes" => %{"end_date" => "2019-12-30", "start_date" => "2019-11-15"},
+               "id" => _,
+               "relationships" => %{
+                 "adjustments" => %{"data" => [%{"id" => id4, "type" => "adjustment"}]},
+                 "days_of_week" => %{"data" => [%{"id" => id5, "type" => "day_of_week"}]},
+                 "exceptions" => %{"data" => []},
+                 "trip_short_names" => %{"data" => []}
+               },
+               "type" => "disruption"
+             } = d2
+
+      assert length(included) == 5
+
+      Enum.each([id1, id2, id3, id4, id5], fn id ->
+        assert Enum.find(included, &(&1["id"] == id))
+      end)
     end
 
     test "can include only specified relationships", %{conn: conn} do
