@@ -128,7 +128,7 @@ describe("ViewDisruption", () => {
     })
 
     const editButton = container.querySelector(
-      "#edit-disruption-button"
+      "#edit-disruption-link"
     ) as Element
     expect(editButton).toBeDefined()
     expect(editButton.textContent).toEqual("edit disruption times")

@@ -1,7 +1,5 @@
 import * as React from "react"
-import Button from "react-bootstrap/Button"
-import { RouteComponentProps } from "react-router-dom"
-import { Redirect } from "react-router"
+import { RouteComponentProps, Link } from "react-router-dom"
 
 import { apiCall } from "../api"
 
@@ -18,20 +16,20 @@ interface TParams {
 }
 
 interface EditDisruptionButtonProps {
-  setRedirect: React.Dispatch<boolean>
+  disruptionId: string
 }
 
 const EditDisruptionButton = ({
-  setRedirect,
+  disruptionId,
 }: EditDisruptionButtonProps): JSX.Element => {
   return (
-    <Button
-      variant="primary"
-      onClick={() => setRedirect(true)}
-      id="edit-disruption-button"
+    <Link
+      to={"/disruptions/" + encodeURIComponent(disruptionId) + "/edit"}
+      id="edit-disruption-link"
+      className="btn btn-primary"
     >
       edit disruption times
-    </Button>
+    </Link>
   )
 }
 
@@ -48,7 +46,6 @@ interface ViewDisruptionFormProps {
 const ViewDisruptionForm = ({
   disruptionId,
 }: ViewDisruptionFormProps): JSX.Element => {
-  const [redirect, setRedirect] = React.useState<boolean>(false)
   const [disruption, setDisruption] = React.useState<
     Disruption | "error" | null
   >(null)
@@ -67,46 +64,38 @@ const ViewDisruptionForm = ({
     })
   }, [disruptionId])
 
-  if (redirect) {
-    return (
-      <Redirect
-        to={"/disruptions/" + encodeURIComponent(disruptionId) + "/edit"}
-      />
-    )
-  } else {
-    if (disruption && disruption !== "error") {
-      const exceptionDates = disruption.exceptions
-        .map(exception => exception.excludedDate)
-        .filter(
-          (maybeDate: Date | undefined): maybeDate is Date =>
-            typeof maybeDate !== "undefined"
-        )
+  if (disruption && disruption !== "error" && disruption.id) {
+    const exceptionDates = disruption.exceptions
+      .map(exception => exception.excludedDate)
+      .filter(
+        (maybeDate: Date | undefined): maybeDate is Date =>
+          typeof maybeDate !== "undefined"
+      )
 
-      const disruptionDaysOfWeek = fromDaysOfWeek(disruption.daysOfWeek)
+    const disruptionDaysOfWeek = fromDaysOfWeek(disruption.daysOfWeek)
 
-      if (disruptionDaysOfWeek !== "error") {
-        return (
-          <div>
-            <Header />
-            <DisruptionPreview
-              disruptionId={disruption.id}
-              adjustments={disruption.adjustments}
-              fromDate={disruption.startDate || null}
-              toDate={disruption.endDate || null}
-              exceptionDates={exceptionDates}
-              disruptionDaysOfWeek={disruptionDaysOfWeek}
-            />
-            <EditDisruptionButton setRedirect={setRedirect} />
-          </div>
-        )
-      } else {
-        return <div>Error parsing day of week information.</div>
-      }
-    } else if (disruption === "error") {
-      return <div>Error fetching or parsing disruption.</div>
+    if (disruptionDaysOfWeek !== "error") {
+      return (
+        <div>
+          <Header />
+          <DisruptionPreview
+            disruptionId={disruption.id}
+            adjustments={disruption.adjustments}
+            fromDate={disruption.startDate || null}
+            toDate={disruption.endDate || null}
+            exceptionDates={exceptionDates}
+            disruptionDaysOfWeek={disruptionDaysOfWeek}
+          />
+          <EditDisruptionButton disruptionId={disruption.id} />
+        </div>
+      )
     } else {
-      return <Loading />
+      return <div>Error parsing day of week information.</div>
     }
+  } else if (disruption === "error") {
+    return <div>Error fetching or parsing disruption.</div>
+  } else {
+    return <Loading />
   }
 }
 
