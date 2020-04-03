@@ -1,12 +1,14 @@
 defmodule ArrowWeb.API.DisruptionControllerTest do
   use ArrowWeb.ConnCase
-  alias Arrow.{Disruption, Repo}
+  alias Arrow.{Disruption, Repo, Adjustment}
 
   describe "index/2" do
+    @tag :authenticated
     test "returns 200", %{conn: conn} do
       assert %{status: 200} = get(conn, "/api/disruptions")
     end
 
+    @tag :authenticated
     test "includes all fields by default", %{conn: conn} do
       insert_disruptions()
 
@@ -54,6 +56,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
       end)
     end
 
+    @tag :authenticated
     test "can include only specified relationships", %{conn: conn} do
       insert_disruptions()
 
@@ -114,6 +117,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                     } = res
     end
 
+    @tag :authenticated
     test "can filter by dates", %{conn: conn} do
       {%{id: disruption_1_id}, %{id: disruption_2_id}} = insert_disruptions()
 
@@ -139,6 +143,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
   end
 
   describe "show/2" do
+    @tag :authenticated
     test "returns valid disruption", %{conn: conn} do
       {disruption_1, _disruption_2} = insert_disruptions()
       disruption_1_id = disruption_1.id
@@ -152,39 +157,137 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
   end
 
   defp insert_disruptions do
+    {:ok, adjustment_1} =
+      Repo.insert(
+        Adjustment.changeset(%Adjustment{}, %{
+          source: "arrow",
+          source_label: "test_adjustment_1",
+          route_id: "test_route_1"
+        })
+      )
+
     {:ok, disruption_1} =
       Repo.insert(
-        Disruption.changeset(%Disruption{}, %{
-          start_date: ~D[2019-10-10],
-          end_date: ~D[2019-12-12],
-          adjustments: [
-            %{
-              source: "arrow",
-              source_label: "test_adjustment_1",
-              route_id: "test_route_1"
-            }
-          ],
-          exceptions: [~D[2019-12-01]],
-          trip_short_names: ["006"]
+        Disruption.changeset(
+          %Disruption{},
+          %{
+            "start_date" => ~D[2019-10-10],
+            "end_date" => ~D[2019-12-12],
+            "exceptions" => [%{"excluded_date" => ~D[2019-12-01]}],
+            "trip_short_names" => [%{"trip_short_name" => "006"}]
+          },
+          [adjustment_1]
+        )
+      )
+
+    {:ok, adjustment_2} =
+      Repo.insert(
+        Adjustment.changeset(%Adjustment{}, %{
+          source: "gtfs_creator",
+          source_label: "test_adjustment_2",
+          route_id: "test_route_2"
         })
       )
 
     {:ok, disruption_2} =
       Repo.insert(
-        Disruption.changeset(%Disruption{}, %{
-          start_date: ~D[2019-11-15],
-          end_date: ~D[2019-12-30],
-          days_of_week: [%{day_name: "friday", start_time: ~T[20:30:00]}],
-          adjustments: [
-            %{
-              source: "gtfs_creator",
-              source_label: "test_adjustment_2",
-              route_id: "test_route_2"
-            }
-          ]
-        })
+        Disruption.changeset(
+          %Disruption{},
+          %{
+            "start_date" => ~D[2019-11-15],
+            "end_date" => ~D[2019-12-30],
+            "days_of_week" => [%{day_name: "friday", start_time: ~T[20:30:00]}]
+          },
+          [adjustment_2]
+        )
       )
 
     {disruption_1, disruption_2}
+  end
+
+  describe "create/2" do
+    setup %{conn: conn} do
+      conn =
+        conn
+        |> put_req_header("accept", "application/vnd.api+json")
+        |> put_req_header("content-type", "application/vnd.api+json")
+
+      {:ok, conn: conn}
+    end
+
+    @tag :authenticated
+    test "creates a disruption when the data is present and valid", %{conn: conn} do
+      {:ok, adjustment} =
+        Repo.insert(%Adjustment{
+          route_id: "Red",
+          source: "gtfs_creator",
+          source_label: "TheLabel"
+        })
+
+      post_data = %{
+        "data" => %{
+          "type" => "disruption",
+          "attributes" => %{
+            "start_date" => "2020-01-01",
+            "end_date" => "2020-03-01"
+          },
+          "relationships" => %{
+            "days_of_week" => %{
+              "data" => [
+                %{
+                  "type" => "day_of_week",
+                  "attributes" => %{
+                    "start_time" => "10:00:00",
+                    "end_time" => "23:00:00",
+                    "day_name" => "monday"
+                  }
+                },
+                %{
+                  "type" => "day_of_week",
+                  "attributes" => %{
+                    "start_time" => "23:45:00",
+                    "end_time" => nil,
+                    "day_name" => "tuesday"
+                  }
+                }
+              ]
+            },
+            "exceptions" => %{
+              "data" => [
+                %{"type" => "exception", "attributes" => %{"excluded_date" => "2020-02-01"}}
+              ]
+            },
+            "trip_short_names" => %{
+              "data" => [
+                %{
+                  "type" => "trip_short_names",
+                  "attributes" => %{"trip_short_name" => "shortname"}
+                }
+              ]
+            },
+            "adjustments" => %{
+              "data" => [
+                %{
+                  "type" => "adjustment",
+                  "attributes" => %{"source_label" => adjustment.source_label}
+                }
+              ]
+            }
+          }
+        }
+      }
+
+      conn = post(conn, "/api/disruptions", post_data)
+
+      assert resp = json_response(conn, 201)
+    end
+
+    @tag :authenticated
+    test "returns errors with invalid post", %{conn: conn} do
+      conn = post(conn, "/api/disruptions", %{"data" => %{}})
+
+      assert resp = json_response(conn, 400)
+      assert %{"errors" => [_ | _]} = resp
+    end
   end
 end

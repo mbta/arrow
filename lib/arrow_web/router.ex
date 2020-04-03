@@ -11,6 +11,7 @@ defmodule ArrowWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json-api"]
+    plug :fetch_session
     plug JaSerializer.ContentTypeNegotiation
   end
 
@@ -59,9 +60,9 @@ defmodule ArrowWeb.Router do
   end
 
   scope "/api", ArrowWeb.API do
-    pipe_through([:redirect_prod_http, :api])
+    pipe_through([:redirect_prod_http, :api, :auth, :ensure_auth, :ensure_arrow_group])
 
-    resources("/disruptions", DisruptionController, only: [:index, :show])
+    resources("/disruptions", DisruptionController, only: [:index, :show, :create])
     resources("/adjustments", AdjustmentController, only: [:index])
   end
 

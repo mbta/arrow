@@ -37,4 +37,9 @@ defmodule Arrow.AdjustmentTest do
       assert {:error, _} = Repo.insert(Adjustment.changeset(adj2, %{}))
     end
   end
+
+  describe "changeset_assoc/2" do
+    assert %Ecto.Changeset{valid?: true} =
+             Adjustment.changeset_assoc(%Adjustment{}, %{id: 10, source: "foo"})
+  end
 end

@@ -24,23 +24,24 @@ defmodule Arrow.Disruption do
   end
 
   @doc false
-  def changeset(disruption, attrs) do
+  def changeset(disruption, attrs, adjustments) do
     days_of_week =
-      for dow <- attrs[:days_of_week] || [],
+      for dow <- attrs["days_of_week"] || [],
           do: DayOfWeek.changeset(%DayOfWeek{}, dow)
 
     exceptions =
-      for exception <- attrs[:exceptions] || [],
-          do: Exception.changeset(%Exception{}, %{excluded_date: exception})
+      for exception <- attrs["exceptions"] || [],
+          do: Exception.changeset(%Exception{}, exception)
 
     trip_short_names =
-      for name <- attrs[:trip_short_names] || [],
-          do: TripShortName.changeset(%TripShortName{}, %{trip_short_name: name})
+      for name <- attrs["trip_short_names"] || [],
+          do: TripShortName.changeset(%TripShortName{}, name)
 
     disruption
     |> cast(attrs, [:start_date, :end_date])
     |> validate_required([:start_date, :end_date])
-    |> put_assoc(:adjustments, attrs[:adjustments] || [])
+    |> put_assoc(:adjustments, adjustments, with: &Arrow.Adjustment.changeset_assoc/2)
+    |> validate_length(:adjustments, min: 1)
     |> put_assoc(:days_of_week, days_of_week)
     |> put_assoc(:exceptions, exceptions)
     |> put_assoc(:trip_short_names, trip_short_names)
