@@ -177,6 +177,109 @@ describe("toModelObject", () => {
     )
   })
 
+  test("succeeds with valid input containing multiple objects", () => {
+    expect(
+      toModelObject({
+        data: [
+          {
+            attributes: {
+              route_id: "Green-D",
+              source: "gtfs_creator",
+              source_label: "KenmoreReservoir",
+            },
+            id: "1",
+            relationships: {
+              adjustments: {
+                data: [],
+              },
+              days_of_week: { data: [] },
+              exceptions: { data: [] },
+              trip_short_names: { data: [] },
+            },
+            type: "adjustment",
+          },
+          {
+            attributes: {
+              route_id: "Red",
+              source: "gtfs_creator",
+              source_label: "HarvardAlewife",
+            },
+            id: "2",
+            relationships: {
+              adjustments: {
+                data: [],
+              },
+              days_of_week: { data: [] },
+              exceptions: { data: [] },
+              trip_short_names: { data: [] },
+            },
+            type: "adjustment",
+          },
+        ],
+        included: [],
+        jsonapi: { version: "1.0" },
+      })
+    ).toEqual([
+      new Adjustment({
+        id: "1",
+        routeId: "Green-D",
+        source: "gtfs_creator",
+        sourceLabel: "KenmoreReservoir",
+      }),
+      new Adjustment({
+        id: "2",
+        routeId: "Red",
+        source: "gtfs_creator",
+        sourceLabel: "HarvardAlewife",
+      }),
+    ])
+  })
+
+  test("returns error when one of multiple objects fails to parse", () => {
+    expect(
+      toModelObject({
+        data: [
+          {
+            attributes: {
+              route_id: "Green-D",
+              source: "gtfs_creator",
+              source_label: "KenmoreReservoir",
+            },
+            id: "1",
+            relationships: {
+              adjustments: {
+                data: [],
+              },
+              days_of_week: { data: [] },
+              exceptions: { data: [] },
+              trip_short_names: { data: [] },
+            },
+            type: "adjustment",
+          },
+          {
+            attributes: {
+              route_id: "Red",
+              source: "gtfs_creator",
+              source_label: "HarvardAlewife",
+            },
+            id: "2",
+            relationships: {
+              adjustments: {
+                data: [],
+              },
+              days_of_week: { data: [] },
+              exceptions: { data: [] },
+              trip_short_names: { data: [] },
+            },
+            type: "not_a_valid_type",
+          },
+        ],
+        included: [],
+        jsonapi: { version: "1.0" },
+      })
+    ).toEqual("error")
+  })
+
   test("return error when included isn't an array", () => {
     expect(
       toModelObject({

@@ -51,11 +51,11 @@ const ViewDisruptionForm = ({
   >(null)
 
   React.useEffect(() => {
-    apiCall<ModelObject | "error">({
+    apiCall<ModelObject | ModelObject[] | "error">({
       url: "/api/disruptions/" + encodeURIComponent(disruptionId),
       parser: toModelObject,
       defaultResult: "error",
-    }).then((result: ModelObject | "error") => {
+    }).then((result: ModelObject | ModelObject[] | "error") => {
       if (result instanceof Disruption) {
         setDisruption(result)
       } else {

@@ -11,7 +11,9 @@ type ModelObject =
   | Exception
   | TripShortName
 
-const toModelObject = (response: any): ModelObject | "error" => {
+const toModelObject = (
+  response: any
+): ModelObject | ModelObject[] | "error" => {
   let includedObjects: (ModelObject | "error")[] = []
 
   if (Array.isArray(response?.included)) {
@@ -30,10 +32,26 @@ const toModelObject = (response: any): ModelObject | "error" => {
     return "error"
   }
 
-  return modelFromJsonApiResource(
-    response.data,
-    includedObjects as ModelObject[]
-  )
+  if (Array.isArray(response.data)) {
+    const maybeModelObjects: (
+      | ModelObject
+      | "error"
+    )[] = response.data.map((data: any) =>
+      modelFromJsonApiResource(data, includedObjects as ModelObject[])
+    )
+    if (
+      maybeModelObjects.some(maybeModelObject => maybeModelObject === "error")
+    ) {
+      return "error"
+    } else {
+      return maybeModelObjects as ModelObject[]
+    }
+  } else {
+    return modelFromJsonApiResource(
+      response.data,
+      includedObjects as ModelObject[]
+    )
+  }
 }
 
 const modelFromJsonApiResource = (
