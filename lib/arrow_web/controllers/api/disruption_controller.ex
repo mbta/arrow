@@ -28,6 +28,37 @@ defmodule ArrowWeb.API.DisruptionController do
   end
 
   @spec build_query([{String.t(), Date.t()}]) :: Ecto.Query.t()
+  def create(conn, params) do
+    params_data = Map.get(params, "data", %{})
+    params_relationships = Map.get(params_data, "relationships", %{})
+
+    relationships = ArrowWeb.Utilities.get_json_api_relationships(params_relationships)
+    attrs = JaSerializer.Params.to_attributes(params_data)
+
+    adjustment_labels =
+      relationships
+      |> Map.get("adjustments", [])
+      |> Enum.map(& &1["source_label"])
+
+    adjustments =
+      Repo.all(from adj in Arrow.Adjustment, where: adj.source_label in ^adjustment_labels)
+
+    attrs = Map.merge(attrs, relationships)
+    changeset = Disruption.changeset(%Disruption{}, attrs, adjustments)
+
+    case Repo.insert(changeset) do
+      {:ok, disruption} ->
+        conn
+        |> put_status(201)
+        |> render("show.json-api", data: disruption)
+
+      {:error, changeset} ->
+        conn
+        |> put_status(400)
+        |> render(:errors, data: changeset)
+    end
+  end
+
   defp build_query(filters) do
     Enum.reduce(filters, from(d in Disruption), &compose_query/2)
   end
