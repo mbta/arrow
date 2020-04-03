@@ -27,15 +27,10 @@ const indexToDayOfWeekString = (index: number): string => {
 }
 
 const modeForRoute = (route: string): TransitMode => {
-  switch (route) {
-    case "Red":
-      return TransitMode.Subway
-    case "Green-D":
-      return TransitMode.Subway
-    case "CR-Fairmount":
-      return TransitMode.CommuterRail
-    default:
-      return TransitMode.Subway
+  if (route.startsWith("CR-")) {
+    return TransitMode.CommuterRail
+  } else {
+    return TransitMode.Subway
   }
 }
 

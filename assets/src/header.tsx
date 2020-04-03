@@ -26,7 +26,11 @@ const Header = ({ includeHomeLink }: HeaderProps) => (
         </Navbar.Text>
       </Navbar.Collapse>
     </Navbar>
-    {includeHomeLink && <a href="/">&lt; back to home</a>}
+    {includeHomeLink && (
+      <a id="header-home-link" href="/">
+        &lt; back to home
+      </a>
+    )}
     <hr />
   </div>
 )

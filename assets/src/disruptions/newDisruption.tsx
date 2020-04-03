@@ -5,13 +5,15 @@ import Form from "react-bootstrap/Form"
 
 import { DayOfWeekTimeRanges, TimeRange } from "./time"
 import { DisruptionTimePicker } from "./disruptionTimePicker"
+import { apiCall } from "../api"
 
 import { TransitMode, modeForRoute } from "./disruptions"
-
 import Header from "../header"
+import Loading from "../loading"
 import { DisruptionPreview } from "./disruptionPreview"
 
 import Adjustment from "../models/adjustment"
+import { toModelObject, ModelObject } from "../jsonApi"
 
 interface AdjustmentModePickerProps {
   transitMode: TransitMode
@@ -227,18 +229,34 @@ const NewDisruption = ({}): JSX.Element => {
   >([null, null, null, null, null, null, null])
   const [exceptionDates, setExceptionDates] = React.useState<Date[]>([])
   const [isPreview, setIsPreview] = React.useState<boolean>(false)
+  const [allAdjustments, setAllAdjustments] = React.useState<
+    Adjustment[] | "error" | null
+  >(null)
 
-  const allAdjustments: Adjustment[] = [
-    new Adjustment({ routeId: "Red", sourceLabel: "Broadway--Kendall/MIT" }),
-    new Adjustment({
-      routeId: "Green-D",
-      sourceLabel: "Kenmore--Newton Highlands",
-    }),
-    new Adjustment({
-      routeId: "CR-Fairmount",
-      sourceLabel: "Fairmount--Newmarket",
-    }),
-  ]
+  React.useEffect(() => {
+    apiCall<ModelObject | ModelObject[] | "error">({
+      url: "/api/adjustments",
+      parser: toModelObject,
+      defaultResult: "error",
+    }).then((result: ModelObject | ModelObject[] | "error") => {
+      if (
+        Array.isArray(result) &&
+        result.every(res => res instanceof Adjustment)
+      ) {
+        setAllAdjustments(result)
+      } else {
+        setAllAdjustments("error")
+      }
+    })
+  }, [])
+
+  if (allAdjustments === null) {
+    return <Loading />
+  }
+
+  if (allAdjustments === "error") {
+    return <div>Error loading or parsing adjustments.</div>
+  }
 
   return (
     <div>
