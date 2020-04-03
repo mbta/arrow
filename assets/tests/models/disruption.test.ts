@@ -25,16 +25,16 @@ describe("Disruption", () => {
           end_date: "2020-03-01",
         },
         relationships: {
-          adjustment: {
+          adjustments: {
             data: [{ id: "1", type: "adjustment", attributes: {} }],
           },
-          day_of_week: {
+          days_of_week: {
             data: [{ id: "2", type: "day_of_week", attributes: {} }],
           },
           exceptions: {
             data: [{ id: "3", type: "exception", attributes: {} }],
           },
-          trip_short_name: {
+          trip_short_names: {
             data: [{ id: "4", type: "trip_short_name", attributes: {} }],
           },
         },

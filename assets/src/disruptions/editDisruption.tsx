@@ -122,7 +122,6 @@ const EditDisruptionForm = ({
 
   // TODO: Dummy data, to be filled in with the results from an API call once that's ready
   const adjustment = new Adjustment({
-    id: "1",
     routeId: "Green-D",
     source: "gtfs_creator",
     sourceLabel: "Kenmore - Newton Highlands",

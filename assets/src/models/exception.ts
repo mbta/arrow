@@ -39,6 +39,12 @@ class Exception extends JsonApiResourceObject {
 
     return "error"
   }
+
+  static fromDates(exceptions: Date[]): Exception[] {
+    return exceptions.map(
+      exceptionDate => new Exception({ excludedDate: exceptionDate })
+    )
+  }
 }
 
 export default Exception

@@ -111,4 +111,24 @@ describe("DisruptionPreview", () => {
 
     expect(wrapper.find("#back-to-edit-link").length).toEqual(0)
   })
+
+  test("create callback is invoked", () => {
+    const requests = []
+    const createFn = (args: any) => {
+      requests.push(args)
+    }
+    const wrapper = mount(
+      <DisruptionPreview
+        adjustments={[]}
+        fromDate={null}
+        toDate={null}
+        disruptionDaysOfWeek={[null, null, null, null, null, null, null]}
+        exceptionDates={[]}
+        createFn={createFn}
+      />
+    )
+    wrapper.find("button#disruption-preview-create").simulate("click")
+
+    expect(requests.length).toEqual(1)
+  })
 })

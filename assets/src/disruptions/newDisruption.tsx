@@ -1,19 +1,23 @@
 import * as React from "react"
 
+import { Redirect } from "react-router-dom"
+
 import Button from "react-bootstrap/Button"
 import Form from "react-bootstrap/Form"
+import Alert from "react-bootstrap/Alert"
 
-import { DayOfWeekTimeRanges, TimeRange } from "./time"
-import { DisruptionTimePicker } from "./disruptionTimePicker"
 import { apiGet } from "../api"
+import { toModelObject, ModelObject } from "../jsonApi"
+import Disruption from "../models/disruption"
+import Adjustment from "../models/adjustment"
+import Exception from "../models/exception"
+import { DayOfWeekTimeRanges, dayOfWeekTimeRangesToDayOfWeeks } from "./time"
 
-import { TransitMode, modeForRoute } from "./disruptions"
 import Header from "../header"
 import Loading from "../loading"
+import { DisruptionTimePicker } from "./disruptionTimePicker"
+import { TransitMode, modeForRoute } from "./disruptions"
 import { DisruptionPreview } from "./disruptionPreview"
-
-import Adjustment from "../models/adjustment"
-import { toModelObject, ModelObject } from "../jsonApi"
 
 interface AdjustmentModePickerProps {
   transitMode: TransitMode
@@ -220,6 +224,40 @@ const AdjustmentForm = ({
   )
 }
 
+interface ApiCreateDisruptionParams {
+  adjustments: Adjustment[]
+  fromDate: Date | null
+  toDate: Date | null
+  disruptionDaysOfWeek: DayOfWeekTimeRanges
+  exceptionDates: Date[]
+}
+
+const apiCreateDisruption = ({
+  adjustments,
+  fromDate,
+  toDate,
+  disruptionDaysOfWeek,
+  exceptionDates,
+}: ApiCreateDisruptionParams): Promise<Response> => {
+  const disruption = new Disruption({
+    ...(fromDate && { startDate: fromDate }),
+    ...(toDate && { endDate: toDate }),
+    adjustments,
+    daysOfWeek: dayOfWeekTimeRangesToDayOfWeeks(disruptionDaysOfWeek),
+    exceptions: Exception.fromDates(exceptionDates),
+    tripShortNames: [],
+  })
+
+  const data = disruption.toJsonApi()
+
+  return fetch("/api/disruptions", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/vnd.api+json" },
+    body: JSON.stringify(data),
+  })
+}
+
 const NewDisruption = ({}): JSX.Element => {
   const [adjustments, setAdjustments] = React.useState<Adjustment[]>([])
   const [fromDate, setFromDate] = React.useState<Date | null>(null)
@@ -232,6 +270,30 @@ const NewDisruption = ({}): JSX.Element => {
   const [allAdjustments, setAllAdjustments] = React.useState<
     Adjustment[] | "error" | null
   >(null)
+  const [validationErrors, setValidationErrors] = React.useState<string[]>([])
+  const [doRedirect, setDoRedirect] = React.useState<boolean>(false)
+
+  const createFn = async (args: ApiCreateDisruptionParams) => {
+    const response = await apiCreateDisruption(args)
+    const json = await response.json()
+
+    if (response.status === 201) {
+      setDoRedirect(true)
+    } else if (response.status === 400) {
+      const errors: string[] = []
+      const jsonErrors = json?.errors
+      if (Array.isArray(jsonErrors)) {
+        jsonErrors.forEach(err => {
+          const detail = err.detail
+          if (typeof detail === "string") {
+            errors.push(detail)
+          }
+        })
+      }
+      setIsPreview(false)
+      setValidationErrors(errors)
+    }
+  }
 
   React.useEffect(() => {
     apiGet<ModelObject | ModelObject[] | "error">({
@@ -258,6 +320,10 @@ const NewDisruption = ({}): JSX.Element => {
     return <div>Error loading or parsing adjustments.</div>
   }
 
+  if (doRedirect) {
+    return <Redirect to={`/`} />
+  }
+
   return (
     <div>
       <Header />
@@ -269,9 +335,19 @@ const NewDisruption = ({}): JSX.Element => {
           toDate={toDate}
           disruptionDaysOfWeek={disruptionDaysOfWeek}
           exceptionDates={exceptionDates}
+          createFn={createFn}
         />
       ) : (
         <>
+          {validationErrors.length > 0 && (
+            <Alert variant="danger">
+              <ul>
+                {validationErrors.map(err => (
+                  <li key={err}>{err} </li>
+                ))}
+              </ul>
+            </Alert>
+          )}
           <h1>Create new disruption</h1>
           <AdjustmentForm
             adjustments={adjustments}
@@ -304,4 +380,4 @@ const NewDisruption = ({}): JSX.Element => {
   )
 }
 
-export { NewDisruption, TimeRange }
+export { NewDisruption }
