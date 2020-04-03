@@ -1,163 +1,327 @@
-import { mount } from "enzyme"
 import * as React from "react"
-import * as renderer from "react-test-renderer"
 
+import { render, fireEvent, screen } from "@testing-library/react"
+import { waitForElementToBeRemoved } from "@testing-library/dom"
+
+import * as api from "../../src/api"
 import { NewDisruption } from "../../src/disruptions/newDisruption"
-import Header from "../../src/header"
+
+import Adjustment from "../../src/models/adjustment"
 
 describe("NewDisruption", () => {
-  test("header include link to homepage", () => {
-    const testInstance = renderer.create(<NewDisruption />).root
+  let apiCallSpy: jest.SpyInstance
 
-    expect(testInstance.findByType(Header).props.includeHomeLink).toBe(true)
+  beforeEach(() => {
+    apiCallSpy = jest.spyOn(api, "apiCall").mockImplementation(() => {
+      return Promise.resolve([
+        new Adjustment({
+          routeId: "Red",
+          sourceLabel: "Broadway--Kendall/MIT",
+        }),
+        new Adjustment({
+          routeId: "Green-D",
+          sourceLabel: "Kenmore--Newton Highlands",
+        }),
+        new Adjustment({
+          routeId: "CR-Fairmount",
+          sourceLabel: "Fairmount--Newmarket",
+        }),
+      ])
+    })
   })
 
-  test("selecting a mode filters the available adjustments", () => {
-    const wrapper = mount(<NewDisruption />)
+  afterAll(() => {
+    apiCallSpy.mockRestore()
+  })
 
-    wrapper.find("#mode-commuter-rail.form-check-input").simulate("change")
+  test("header include link to homepage", async () => {
+    const { container } = render(<NewDisruption />)
 
-    let adjustmentOptions = wrapper.find("#adjustment-select-0").find("option")
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
 
-    expect(adjustmentOptions.length).toBe(2)
+    expect(container.querySelector("#header-home-link")).not.toBeNull()
+  })
+
+  test("selecting a mode filters the available adjustments", async () => {
+    const { container } = render(<NewDisruption />)
+
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
+
+    const commuterRailCheck = container.querySelector("#mode-commuter-rail")
+
+    if (commuterRailCheck) {
+      fireEvent.click(commuterRailCheck)
+    } else {
+      throw new Error("commuter rail check not found")
+    }
+
+    let adjustmentOptions = container
+      .querySelector("#adjustment-select-0")
+      ?.querySelectorAll("option") as NodeList
+
+    let fairmountOptions: Node[] = []
+    let redOptions: Node[] = []
+
+    adjustmentOptions.forEach((option: Node) => {
+      if (option.textContent === "Fairmount--Newmarket") {
+        fairmountOptions = fairmountOptions.concat([option])
+      } else if (option.textContent === "Broadway--Kendall/MIT") {
+        redOptions = redOptions.concat([option])
+      }
+    })
+
+    expect(fairmountOptions.length).toBe(1)
+    expect(redOptions.length).toBe(0)
+
+    const subwayCheck = container.querySelector("#mode-subway")
+
+    if (subwayCheck) {
+      fireEvent.click(subwayCheck)
+    } else {
+      throw new Error("subway check not found")
+    }
+
+    adjustmentOptions = container
+      .querySelector("#adjustment-select-0")
+      ?.querySelectorAll("option") as NodeList
+
+    fairmountOptions = []
+    redOptions = []
+
+    adjustmentOptions.forEach((option: Node) => {
+      if (option.textContent === "Fairmount--Newmarket") {
+        fairmountOptions = fairmountOptions.concat([option])
+      } else if (option.textContent === "Broadway--Kendall/MIT") {
+        redOptions = redOptions.concat([option])
+      }
+    })
+
+    expect(fairmountOptions.length).toBe(0)
+    expect(redOptions.length).toBe(1)
+  })
+
+  test("add another adjustment link not enabled by default", async () => {
+    const { container } = render(<NewDisruption />)
+
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
+
+    const addAnotherLink = container.querySelector(
+      "#add-another-adjustment-link"
+    )
+    expect(addAnotherLink).toBeNull()
+  })
+
+  test("choosing one adjustment enabled link to choose another", async () => {
+    const { container } = render(<NewDisruption />)
+
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
+
+    const adjustmentSelect = container.querySelector("#adjustment-select-0")
+
+    if (adjustmentSelect) {
+      fireEvent.change(adjustmentSelect, {
+        target: { value: "Kenmore--Newton Highlands" },
+      })
+    } else {
+      throw new Error("adjustment selector not found")
+    }
+
+    const addAnotherLink = container.querySelector(
+      "#add-another-adjustment-link"
+    )
+
+    expect(addAnotherLink).not.toBeNull()
+  })
+
+  test("ability to delete the only adjustment", async () => {
+    const { container } = render(<NewDisruption />)
+
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
+
+    const adjustmentSelect = container.querySelector("#adjustment-select-0")
+
+    if (adjustmentSelect) {
+      fireEvent.change(adjustmentSelect, {
+        target: { value: "Kenmore--Newton Highlands" },
+      })
+    } else {
+      throw new Error("adjustment selector not found")
+    }
+
+    const adjustmentDelete = container.querySelector("#adjustment-delete-0")
+
+    if (adjustmentDelete) {
+      fireEvent.click(adjustmentDelete)
+    } else {
+      throw new Error("adjustment delete link not found")
+    }
+
+    expect(container.querySelector("#adjustment-select-0")).toBeNull()
+  })
+
+  test("ability to delete an adjustment that isn't the only one", async () => {
+    const { container } = render(<NewDisruption />)
+
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
+
+    const adjustmentSelect0 = container.querySelector("#adjustment-select-0")
+
+    if (adjustmentSelect0) {
+      fireEvent.change(adjustmentSelect0, {
+        target: { value: "Kenmore--Newton Highlands" },
+      })
+    } else {
+      throw new Error("adjustment selector not found")
+    }
+
+    const addAnotherLink = container.querySelector(
+      "#add-another-adjustment-link"
+    )
+
+    if (addAnotherLink) {
+      fireEvent.click(addAnotherLink)
+    } else {
+      throw new Error("add another adjustment link not found")
+    }
+
+    const adjustmentSelect1 = container.querySelector("#adjustment-select-1")
+
+    if (adjustmentSelect1) {
+      fireEvent.change(adjustmentSelect1, {
+        target: { value: "Broadway--Kendall/MIT" },
+      })
+    } else {
+      throw new Error("adjustment selector not found")
+    }
+
+    const adjustmentDelete1 = container.querySelector("#adjustment-delete-1")
+
+    if (adjustmentDelete1) {
+      fireEvent.click(adjustmentDelete1)
+    } else {
+      throw new Error("adjustment delete link not found")
+    }
+
+    expect(container.querySelector("#adjustment-select-1")).toBeNull()
+
     expect(
-      adjustmentOptions.findWhere(
-        n => n.text() === "Fairmount--Newmarket" && n.type() === "option"
-      ).length
-    ).toBe(1)
-    expect(
-      adjustmentOptions.findWhere(
-        n => n.text() === "Broadway--Kendall/MIT" && n.type() === "option"
-      ).length
-    ).toBe(0)
-
-    wrapper.find("#mode-subway.form-check-input").simulate("change")
-    adjustmentOptions = wrapper.find("#adjustment-select-0").find("option")
-    expect(
-      adjustmentOptions.findWhere(
-        n => n.text() === "Broadway--Kendall/MIT" && n.type() === "option"
-      ).length
-    ).toBe(1)
+      container.querySelector("#add-another-adjustment-link")
+    ).toBeDefined()
   })
 
-  test("add another adjustment link not enabled by default", () => {
-    const wrapper = mount(<NewDisruption />)
+  test("ability to update a chosen adjustment", async () => {
+    const { container } = render(<NewDisruption />)
 
-    expect(wrapper.exists("#add-another-adjustment-link")).toBe(false)
-  })
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
 
-  test("choosing one adjustment enabled link to choose another", () => {
-    const wrapper = mount(<NewDisruption />)
+    let adjustmentSelect0 = container.querySelector("#adjustment-select-0")
 
-    wrapper
-      .find("#adjustment-select-0")
-      .find("select")
-      .simulate("change", { target: { value: "Kenmore--Newton Highlands" } })
-
-    expect(wrapper.exists("#add-another-adjustment-link")).toBe(true)
-  })
-
-  test("ability to delete the only adjustment", () => {
-    const wrapper = mount(<NewDisruption />)
-
-    wrapper
-      .find("#adjustment-select-0")
-      .find("select")
-      .simulate("change", { target: { value: "Kenmore--Newton Highlands" } })
-
-    expect(wrapper.exists("#adjustment-delete-0")).toBe(true)
-
-    wrapper.find("#adjustment-delete-0").simulate("click")
-
-    expect(wrapper.find("#adjustment-select-0").exists("select")).toBe(false)
-  })
-
-  test("ability to delete an adjustment that isn't the only one", () => {
-    const wrapper = mount(<NewDisruption />)
-
-    wrapper
-      .find("#adjustment-select-0")
-      .find("select")
-      .simulate("change", { target: { value: "Kenmore--Newton Highlands" } })
-
-    wrapper.find("#add-another-adjustment-link").simulate("click")
-
-    wrapper
-      .find("#adjustment-select-1")
-      .find("select")
-      .simulate("change", { target: { value: "Broadway--Kendall/MIT" } })
-
-    expect(wrapper.exists("#adjustment-delete-1")).toBe(true)
-
-    wrapper.find("#adjustment-delete-1").simulate("click")
-
-    expect(wrapper.find("#adjustment-select-1").exists("select")).toBe(false)
-
-    expect(wrapper.exists("#add-another-adjustment-link")).toBe(true)
-  })
-
-  test("ability to update a chosen adjustment", () => {
-    const wrapper = mount(<NewDisruption />)
-
-    wrapper
-      .find("#adjustment-select-0")
-      .find("select")
-      .simulate("change", { target: { value: "Safely ignores this event" } })
-
-    wrapper
-      .find("#adjustment-select-0")
-      .find("select")
-      .simulate("change", { target: { value: "Kenmore--Newton Highlands" } })
-
-    wrapper
-      .find("#adjustment-select-0")
-      .find("select")
-      .simulate("change", { target: { value: "Safely ignores this one, too" } })
+    if (adjustmentSelect0) {
+      fireEvent.change(adjustmentSelect0, {
+        target: { value: "Safely ignores this event" },
+      })
+      fireEvent.change(adjustmentSelect0, {
+        target: { value: "Kenmore--Newton Highlands" },
+      })
+      fireEvent.change(adjustmentSelect0, {
+        target: { value: "Safely ignores this one, too" },
+      })
+    } else {
+      throw new Error("adjustment selector not found")
+    }
 
     expect(
-      wrapper
-        .find("#adjustment-select-0")
-        .first()
-        .props().value
-    ).toEqual("Kenmore--Newton Highlands")
+      (container?.querySelector("#adjustment-select-0") as HTMLSelectElement)
+        .value
+    ).toBe("Kenmore--Newton Highlands")
 
-    wrapper
-      .find("#adjustment-select-0")
-      .find("select")
-      .simulate("change", { target: { value: "Broadway--Kendall/MIT" } })
+    adjustmentSelect0 = container.querySelector("#adjustment-select-0")
+
+    if (adjustmentSelect0) {
+      fireEvent.change(adjustmentSelect0, {
+        target: { value: "Broadway--Kendall/MIT" },
+      })
+    } else {
+      throw new Error("adjustment selector not found")
+    }
 
     expect(
-      wrapper
-        .find("#adjustment-select-0")
-        .first()
-        .props().value
-    ).toEqual("Broadway--Kendall/MIT")
+      (container?.querySelector("#adjustment-select-0") as HTMLSelectElement)
+        .value
+    ).toBe("Broadway--Kendall/MIT")
   })
 
-  test("preview disruption", () => {
-    const wrapper = mount(<NewDisruption />)
+  test("preview disruption", async () => {
+    const { container } = render(<NewDisruption />)
 
-    wrapper
-      .find("#preview-disruption-button")
-      .find("button")
-      .simulate("click")
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
 
-    expect(wrapper.exists("DisruptionPreview")).toBe(true)
+    const previewButton = container.querySelector("#preview-disruption-button")
+
+    if (previewButton) {
+      fireEvent.click(previewButton)
+    } else {
+      throw new Error("preview button not found")
+    }
+
+    expect(screen.getByText("When")).not.toBeNull()
   })
 
-  test("can go back to edit from preview", () => {
-    const wrapper = mount(<NewDisruption />)
+  test("can go back to edit from preview", async () => {
+    const { container } = render(<NewDisruption />)
 
-    wrapper
-      .find("#preview-disruption-button")
-      .find("button")
-      .simulate("click")
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
 
-    wrapper
-      .find("#back-to-edit-link")
-      .find("a")
-      .simulate("click")
+    const previewButton = container.querySelector("#preview-disruption-button")
 
-    expect(wrapper.exists("NewDisruptionPreview")).toBe(false)
+    if (previewButton) {
+      fireEvent.click(previewButton)
+    } else {
+      throw new Error("preview button not found")
+    }
+
+    const backToEditLink = container.querySelector("#back-to-edit-link")
+
+    if (backToEditLink) {
+      fireEvent.click(backToEditLink)
+    } else {
+      throw new Error("back to edit link not found")
+    }
+
+    expect(screen.queryByText("When")).toBeNull()
+  })
+
+  test("handles error fetching / parsing adjustments", async () => {
+    apiCallSpy = jest.spyOn(api, "apiCall").mockImplementationOnce(() => {
+      return Promise.resolve("error")
+    })
+
+    render(<NewDisruption />)
+
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
+
+    expect(
+      screen.queryByText("Error loading or parsing adjustments.")
+    ).not.toBeNull()
   })
 })
