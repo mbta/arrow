@@ -35,4 +35,10 @@ describe("Exception", () => {
   test("fromJsonObject error not an object", () => {
     expect(Exception.fromJsonObject(5)).toEqual("error")
   })
+
+  test("constructs from array of dates", () => {
+    expect(Exception.fromDates([new Date("2020-03-31")])).toEqual([
+      new Exception({ excludedDate: new Date("2020-03-31") }),
+    ])
+  })
 })

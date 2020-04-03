@@ -39,6 +39,7 @@ interface DisruptionPreviewProps {
   toDate: Date | null
   disruptionDaysOfWeek: DayOfWeekTimeRanges
   exceptionDates: Date[]
+  createFn?: any
 }
 
 const DisruptionPreview = ({
@@ -49,6 +50,7 @@ const DisruptionPreview = ({
   toDate,
   disruptionDaysOfWeek,
   exceptionDates,
+  createFn,
 }: DisruptionPreviewProps): JSX.Element => {
   const listedDays: JSX.Element[] = []
   disruptionDaysOfWeek.forEach((timeRange, i) => {
@@ -68,6 +70,23 @@ const DisruptionPreview = ({
     )
   })
 
+  const createDisruption = React.useCallback(() => {
+    createFn({
+      adjustments,
+      fromDate,
+      toDate,
+      disruptionDaysOfWeek,
+      exceptionDates,
+    })
+  }, [
+    createFn,
+    adjustments,
+    fromDate,
+    toDate,
+    disruptionDaysOfWeek,
+    exceptionDates,
+  ])
+
   return (
     <div>
       <DisruptionSummary
@@ -84,6 +103,13 @@ const DisruptionPreview = ({
         <ul>{listedExceptionDates}</ul>
       ) : (
         <div>none</div>
+      )}
+      {createFn && (
+        <div>
+          <button id="disruption-preview-create" onClick={createDisruption}>
+            create disruption
+          </button>
+        </div>
       )}
       {setIsPreview && (
         <a href="#" onClick={() => setIsPreview(false)} id="back-to-edit-link">

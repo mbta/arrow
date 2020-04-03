@@ -139,6 +139,75 @@ const fromDaysOfWeek = (
   }
 }
 
+const numToString = (n: number): string => {
+  if (n < 10) {
+    return "0" + n.toString()
+  }
+  return n.toString()
+}
+
+const timeToString = (time: Time): string => {
+  const { hour, minute, period } = time
+  let hourNum = parseInt(hour, 10)
+  const minuteNum = parseInt(minute, 10)
+  if (period === "AM" && hourNum === 12) {
+    hourNum = 0
+  } else if (period === "PM" && hourNum !== 12) {
+    hourNum += 12
+  }
+
+  return `${numToString(hourNum)}:${numToString(minuteNum)}:00`
+}
+
+const ixToDayName = (
+  ix: number
+):
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday" => {
+  switch (ix) {
+    case 0:
+      return "monday"
+    case 1:
+      return "tuesday"
+    case 2:
+      return "wednesday"
+    case 3:
+      return "thursday"
+    case 4:
+      return "friday"
+    case 5:
+      return "saturday"
+    default:
+      return "sunday"
+  }
+}
+
+const dayOfWeekTimeRangesToDayOfWeeks = (
+  timeRanges: DayOfWeekTimeRanges
+): DayOfWeek[] => {
+  const daysOfWeek: DayOfWeek[] = []
+
+  timeRanges.forEach((dow, ix) => {
+    if (dow !== null) {
+      const dayName = ixToDayName(ix)
+      const [startTime, endTime] = dow
+      const dayOfWeek = new DayOfWeek({
+        ...(dayName !== null && { day: dayName }),
+        ...(startTime !== null && { startTime: timeToString(startTime) }),
+        ...(endTime !== null && { endTime: timeToString(endTime) }),
+      })
+      daysOfWeek.push(dayOfWeek)
+    }
+  })
+
+  return daysOfWeek
+}
+
 export {
   Time,
   HourOptions,
@@ -148,4 +217,5 @@ export {
   DayOfWeekTimeRanges,
   fromDaysOfWeek,
   isEmpty,
+  dayOfWeekTimeRangesToDayOfWeeks,
 }

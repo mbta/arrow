@@ -63,10 +63,10 @@ class Disruption extends JsonApiResourceObject {
         }),
       },
       relationships: {
-        adjustment: { data: this.adjustments.map(adj => adj.toJsonApiData()) },
-        day_of_week: { data: this.daysOfWeek.map(dow => dow.toJsonApiData()) },
+        adjustments: { data: this.adjustments.map(adj => adj.toJsonApiData()) },
+        days_of_week: { data: this.daysOfWeek.map(dow => dow.toJsonApiData()) },
         exceptions: { data: this.exceptions.map(ex => ex.toJsonApiData()) },
-        trip_short_name: {
+        trip_short_names: {
           data: this.tripShortNames.map(tsn => tsn.toJsonApiData()),
         },
       },
