@@ -6,8 +6,8 @@ import Button from "react-bootstrap/Button"
 import Form from "react-bootstrap/Form"
 import Alert from "react-bootstrap/Alert"
 
-import { apiGet } from "../api"
-import { toModelObject, ModelObject } from "../jsonApi"
+import { apiGet, apiPost } from "../api"
+import { toModelObject, ModelObject, parseErrors } from "../jsonApi"
 import Disruption from "../models/disruption"
 import Adjustment from "../models/adjustment"
 import Exception from "../models/exception"
@@ -232,29 +232,20 @@ interface ApiCreateDisruptionParams {
   exceptionDates: Date[]
 }
 
-const apiCreateDisruption = ({
+const disruptionFromState = ({
   adjustments,
   fromDate,
   toDate,
   disruptionDaysOfWeek,
   exceptionDates,
-}: ApiCreateDisruptionParams): Promise<Response> => {
-  const disruption = new Disruption({
+}: ApiCreateDisruptionParams): Disruption => {
+  return new Disruption({
     ...(fromDate && { startDate: fromDate }),
     ...(toDate && { endDate: toDate }),
     adjustments,
     daysOfWeek: dayOfWeekTimeRangesToDayOfWeeks(disruptionDaysOfWeek),
     exceptions: Exception.fromDates(exceptionDates),
     tripShortNames: [],
-  })
-
-  const data = disruption.toJsonApi()
-
-  return fetch("/api/disruptions", {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/vnd.api+json" },
-    body: JSON.stringify(data),
   })
 }
 
@@ -274,24 +265,20 @@ const NewDisruption = ({}): JSX.Element => {
   const [doRedirect, setDoRedirect] = React.useState<boolean>(false)
 
   const createFn = async (args: ApiCreateDisruptionParams) => {
-    const response = await apiCreateDisruption(args)
-    const json = await response.json()
+    const disruption = disruptionFromState(args)
 
-    if (response.status === 201) {
+    const result = await apiPost({
+      url: "/api/disruptions",
+      json: JSON.stringify(disruption.toJsonApi()),
+      successParser: toModelObject,
+      errorParser: parseErrors,
+    })
+
+    if (result.ok) {
       setDoRedirect(true)
-    } else if (response.status === 400) {
-      const errors: string[] = []
-      const jsonErrors = json?.errors
-      if (Array.isArray(jsonErrors)) {
-        jsonErrors.forEach(err => {
-          const detail = err.detail
-          if (typeof detail === "string") {
-            errors.push(detail)
-          }
-        })
-      }
+    } else if (result.error) {
       setIsPreview(false)
-      setValidationErrors(errors)
+      setValidationErrors(result.error)
     }
   }
 

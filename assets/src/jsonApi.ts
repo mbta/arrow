@@ -54,6 +54,24 @@ const toModelObject = (
   }
 }
 
+const parseErrors = (raw: any): string[] => {
+  const errors: string[] = []
+
+  if (typeof raw === "object") {
+    const rawErrors = raw?.errors
+    if (Array.isArray(rawErrors)) {
+      rawErrors.forEach(err => {
+        const rawDetail = err?.detail
+        if (typeof rawDetail === "string") {
+          errors.push(rawDetail)
+        }
+      })
+    }
+  }
+
+  return errors
+}
+
 const modelFromJsonApiResource = (
   raw: any,
   includedObjects: ModelObject[]
@@ -78,4 +96,4 @@ const modelFromJsonApiResource = (
   return "error"
 }
 
-export { ModelObject, toModelObject }
+export { ModelObject, toModelObject, parseErrors }
