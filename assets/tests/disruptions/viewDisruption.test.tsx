@@ -13,7 +13,7 @@ import Exception from "../../src/models/exception"
 
 describe("ViewDisruption", () => {
   test("loads and displays disruption from the API", async () => {
-    jest.spyOn(api, "apiCall").mockImplementationOnce(() => {
+    jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
       return Promise.resolve(
         new Disruption({
           id: "1",
@@ -84,7 +84,7 @@ describe("ViewDisruption", () => {
   })
 
   test("edit link redirects to edit page", async () => {
-    jest.spyOn(api, "apiCall").mockImplementationOnce(() => {
+    jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
       return Promise.resolve(
         new Disruption({
           id: "1",
@@ -141,7 +141,7 @@ describe("ViewDisruption", () => {
   })
 
   test("handles error on fetching / parsing", async () => {
-    jest.spyOn(api, "apiCall").mockImplementationOnce(() => {
+    jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
       return Promise.resolve("error")
     })
 
@@ -180,7 +180,7 @@ describe("ViewDisruption", () => {
   })
 
   test("handles error with day of week values", async () => {
-    jest.spyOn(api, "apiCall").mockImplementationOnce(() => {
+    jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
       return Promise.resolve(
         new Disruption({
           id: "1",

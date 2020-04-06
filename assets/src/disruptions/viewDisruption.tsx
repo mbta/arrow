@@ -1,7 +1,7 @@
 import * as React from "react"
 import { RouteComponentProps, Link } from "react-router-dom"
 
-import { apiCall } from "../api"
+import { apiGet } from "../api"
 
 import Header from "../header"
 import Loading from "../loading"
@@ -51,7 +51,7 @@ const ViewDisruptionForm = ({
   >(null)
 
   React.useEffect(() => {
-    apiCall<ModelObject | ModelObject[] | "error">({
+    apiGet<ModelObject | ModelObject[] | "error">({
       url: "/api/disruptions/" + encodeURIComponent(disruptionId),
       parser: toModelObject,
       defaultResult: "error",

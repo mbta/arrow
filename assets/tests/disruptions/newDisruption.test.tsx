@@ -12,7 +12,7 @@ describe("NewDisruption", () => {
   let apiCallSpy: jest.SpyInstance
 
   beforeEach(() => {
-    apiCallSpy = jest.spyOn(api, "apiCall").mockImplementation(() => {
+    apiCallSpy = jest.spyOn(api, "apiGet").mockImplementation(() => {
       return Promise.resolve([
         new Adjustment({
           routeId: "Red",
@@ -310,7 +310,7 @@ describe("NewDisruption", () => {
   })
 
   test("handles error fetching / parsing adjustments", async () => {
-    apiCallSpy = jest.spyOn(api, "apiCall").mockImplementationOnce(() => {
+    apiCallSpy = jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
       return Promise.resolve("error")
     })
 

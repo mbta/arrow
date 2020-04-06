@@ -1,4 +1,4 @@
-import { apiCall } from "../src/api"
+import { apiGet } from "../src/api"
 
 declare global {
   interface Window {
@@ -14,7 +14,7 @@ const mockFetch = (status: number, json: any): void => {
     } as Response)
 }
 
-describe("apiCall", () => {
+describe("apiGet", () => {
   let reloadSpy: jest.SpyInstance
 
   beforeEach(() => {
@@ -38,7 +38,7 @@ describe("apiCall", () => {
 
     const parse = jest.fn(() => "parsed")
 
-    apiCall({
+    apiGet({
       url: "/",
       parser: parse,
     }).then(parsed => {
@@ -51,7 +51,7 @@ describe("apiCall", () => {
   test("reloads the page if the response status is a redirect (3xx)", done => {
     mockFetch(302, { data: null })
 
-    apiCall({
+    apiGet({
       url: "/",
       parser: () => null,
     }).catch(() => {
@@ -63,7 +63,7 @@ describe("apiCall", () => {
   test("reloads the page if the response status is forbidden (403)", done => {
     mockFetch(403, { data: null })
 
-    apiCall({
+    apiGet({
       url: "/",
       parser: () => null,
     }).catch(() => {
@@ -75,7 +75,7 @@ describe("apiCall", () => {
   test("returns a default for any other response", done => {
     mockFetch(500, { data: null })
 
-    apiCall({
+    apiGet({
       url: "/",
       parser: () => null,
       defaultResult: "default",
@@ -88,7 +88,7 @@ describe("apiCall", () => {
   test("throws an error for any other response status if there's no default", done => {
     mockFetch(500, { data: null })
 
-    apiCall({
+    apiGet({
       url: "/",
       parser: () => null,
     })
