@@ -5,7 +5,7 @@ import Form from "react-bootstrap/Form"
 
 import { DayOfWeekTimeRanges, TimeRange } from "./time"
 import { DisruptionTimePicker } from "./disruptionTimePicker"
-import { apiCall } from "../api"
+import { apiGet } from "../api"
 
 import { TransitMode, modeForRoute } from "./disruptions"
 import Header from "../header"
@@ -234,7 +234,7 @@ const NewDisruption = ({}): JSX.Element => {
   >(null)
 
   React.useEffect(() => {
-    apiCall<ModelObject | ModelObject[] | "error">({
+    apiGet<ModelObject | ModelObject[] | "error">({
       url: "/api/adjustments",
       parser: toModelObject,
       defaultResult: "error",

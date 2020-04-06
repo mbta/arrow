@@ -12,7 +12,7 @@ const checkResponseStatus = (response: Response) => {
   throw new Error(`Response error: ${response.status}`)
 }
 
-const apiCall = <T>({
+const apiGet = <T>({
   url,
   parser,
   defaultResult,
@@ -34,4 +34,4 @@ const apiCall = <T>({
       }
     })
 
-export { apiCall }
+export { apiGet }
