@@ -1,4 +1,4 @@
-import { toModelObject } from "../src/jsonApi"
+import { toModelObject, parseErrors } from "../src/jsonApi"
 import Adjustment from "../src/models/adjustment"
 import DayOfWeek from "../src/models/dayOfWeek"
 import Disruption from "../src/models/disruption"
@@ -399,5 +399,19 @@ describe("toModelObject", () => {
         jsonapi: { version: "1.0" },
       })
     ).toEqual("error")
+  })
+})
+
+describe("parseErrors", () => {
+  test("Parses JSON:API formatted errors into list of errors", () => {
+    const data = { errors: [{ detail: "error1" }, { detail: "error2" }] }
+    expect(parseErrors(data)).toEqual(["error1", "error2"])
+  })
+
+  test("handles oddly shaped data without crashing", () => {
+    expect(parseErrors("foo")).toEqual([])
+    expect(parseErrors({})).toEqual([])
+    expect(parseErrors({ errors: "foo" })).toEqual([])
+    expect(parseErrors({ errors: [{ foo: "bar" }] })).toEqual([])
   })
 })

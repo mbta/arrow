@@ -1,5 +1,7 @@
 import * as React from "react"
 
+import { MemoryRouter, Route, Switch } from "react-router-dom"
+import { act } from "react-dom/test-utils"
 import { render, fireEvent, screen } from "@testing-library/react"
 import { waitForElementToBeRemoved } from "@testing-library/dom"
 
@@ -8,8 +10,23 @@ import { NewDisruption } from "../../src/disruptions/newDisruption"
 
 import Adjustment from "../../src/models/adjustment"
 
+const withElement = (
+  container: HTMLElement,
+  selector: string,
+  fn: (arg0: Element) => any
+) => {
+  const element = container.querySelector(selector)
+
+  if (element) {
+    fn(element)
+  } else {
+    throw new Error(`No element found for ${selector}`)
+  }
+}
+
 describe("NewDisruption", () => {
   let apiCallSpy: jest.SpyInstance
+  let apiPostSpy: jest.SpyInstance
 
   beforeEach(() => {
     apiCallSpy = jest.spyOn(api, "apiGet").mockImplementation(() => {
@@ -32,6 +49,7 @@ describe("NewDisruption", () => {
 
   afterAll(() => {
     apiCallSpy.mockRestore()
+    apiPostSpy.mockRestore()
   })
 
   test("header include link to homepage", async () => {
@@ -323,5 +341,91 @@ describe("NewDisruption", () => {
     expect(
       screen.queryByText("Error loading or parsing adjustments.")
     ).not.toBeNull()
+  })
+
+  test("can create a disruption", async () => {
+    apiPostSpy = jest.spyOn(api, "apiPost").mockImplementation(() => {
+      return Promise.resolve({
+        ok: {},
+      })
+    })
+
+    await act(async () => {
+      const { container } = render(
+        <MemoryRouter initialEntries={["/disruptions/new"]}>
+          <Switch>
+            <Route path="/disruptions/new" component={NewDisruption} />
+            <Route path="/" render={() => <div>Success!!!</div>} />
+          </Switch>
+        </MemoryRouter>
+      )
+
+      await waitForElementToBeRemoved(
+        document.querySelector("#loading-indicator")
+      )
+
+      withElement(container, "#adjustment-select-0", el => {
+        fireEvent.change(el, { target: { value: "Kenmore--Newton Highlands" } })
+      })
+
+      withElement(container, "#disruption-date-range-start", el => {
+        fireEvent.change(el, { target: { value: "2020-03-31" } })
+      })
+
+      withElement(container, "#disruption-date-range-end", el => {
+        fireEvent.change(el, { target: { value: "2020-04-30" } })
+      })
+
+      withElement(container, "#preview-disruption-button", el => {
+        fireEvent.click(el)
+      })
+
+      withElement(container, "#disruption-preview-create", el => {
+        fireEvent.click(el)
+      })
+    })
+
+    await screen.findByText("Success!!!")
+    const apiPostCall = apiPostSpy.mock.calls[0][0]
+    const apiPostData = JSON.parse(apiPostCall.json)
+    expect(apiPostCall.url).toEqual("/api/disruptions")
+    expect(apiPostData.data.attributes.start_date).toEqual("2020-03-31")
+    expect(apiPostData.data.attributes.end_date).toEqual("2020-04-30")
+    expect(
+      apiPostData.data.relationships.adjustments.data[0].attributes.source_label
+    ).toEqual("Kenmore--Newton Highlands")
+  })
+
+  test("handles errors with disruptions", async () => {
+    apiPostSpy = jest.spyOn(api, "apiPost").mockImplementation(() => {
+      return Promise.resolve({
+        error: ["Data is all wrong"],
+      })
+    })
+
+    await act(async () => {
+      const { container } = render(
+        <MemoryRouter initialEntries={["/disruptions/new"]}>
+          <Switch>
+            <Route path="/disruptions/new" component={NewDisruption} />
+            <Route path="/" render={() => <div>Success!!!</div>} />
+          </Switch>
+        </MemoryRouter>
+      )
+
+      await waitForElementToBeRemoved(
+        document.querySelector("#loading-indicator")
+      )
+
+      withElement(container, "#preview-disruption-button", el => {
+        fireEvent.click(el)
+      })
+
+      withElement(container, "#disruption-preview-create", el => {
+        fireEvent.click(el)
+      })
+    })
+
+    await screen.findByText("Data is all wrong")
   })
 })

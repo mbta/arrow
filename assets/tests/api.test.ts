@@ -1,4 +1,4 @@
-import { apiGet } from "../src/api"
+import { apiGet, apiPost } from "../src/api"
 
 declare global {
   interface Window {
@@ -13,6 +13,69 @@ const mockFetch = (status: number, json: any): void => {
       status,
     } as Response)
 }
+
+const mockFetchFailure = () => {
+  window.fetch = () => Promise.reject("network failure")
+}
+
+describe("apiPost", () => {
+  test("parses successful create", done => {
+    mockFetch(201, { data: "success" })
+    const successParse = jest.fn(() => "success")
+    apiPost({
+      url: "/",
+      json: "{}",
+      successParser: successParse,
+      errorParser: () => "error",
+    }).then(parsed => {
+      expect(successParse).toHaveBeenCalledWith({ data: "success" })
+      expect(parsed).toEqual({ ok: "success" })
+      done()
+    })
+  })
+
+  test("parses error response", done => {
+    mockFetch(400, { data: "error" })
+    const errorParse = jest.fn(() => "error")
+    apiPost({
+      url: "/",
+      json: "{}",
+      successParser: () => "success",
+      errorParser: errorParse,
+    }).then(parsed => {
+      expect(errorParse).toHaveBeenCalledWith({ data: "error" })
+      expect(parsed).toEqual({ error: "error" })
+      done()
+    })
+  })
+
+  test("promise reject if there are errors", done => {
+    mockFetchFailure()
+
+    apiPost({
+      url: "/",
+      json: "{}",
+      successParser: () => "success",
+      errorParser: () => "error",
+    }).catch(err => {
+      expect(err).toEqual("network failure")
+      done()
+    })
+  })
+
+  test("promise reject if unexpected error code", done => {
+    mockFetch(500, { data: "error" })
+    apiPost({
+      url: "/",
+      json: "{}",
+      successParser: () => "success",
+      errorParser: () => "error",
+    }).catch(err => {
+      expect(err).toEqual("fetch/parse error")
+      done()
+    })
+  })
+})
 
 describe("apiGet", () => {
   let reloadSpy: jest.SpyInstance
