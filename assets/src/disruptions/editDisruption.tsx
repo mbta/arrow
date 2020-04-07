@@ -1,28 +1,40 @@
 import * as React from "react"
 import Button from "react-bootstrap/Button"
 import ButtonGroup from "react-bootstrap/ButtonGroup"
-import { RouteComponentProps } from "react-router-dom"
-import { Redirect } from "react-router"
+import { RouteComponentProps, Link } from "react-router-dom"
+
+import { apiGet } from "../api"
 
 import Header from "../header"
+import Loading from "../loading"
 import { DisruptionPreview } from "./disruptionPreview"
 import { DisruptionSummary } from "./disruptionSummary"
-import { DayOfWeekTimeRanges } from "./time"
+import {
+  Time,
+  DayOfWeekTimeRanges,
+  fromDaysOfWeek,
+  timeToString,
+  ixToDayName,
+} from "./time"
 import { DisruptionTimePicker } from "./disruptionTimePicker"
 
 import Adjustment from "../models/adjustment"
+import Disruption from "../models/disruption"
+import Exception from "../models/exception"
+import { ModelObject, toModelObject } from "../jsonApi"
+import DayOfWeek from "../models/dayOfWeek"
 
 interface TParams {
   id: string
 }
 
 interface SaveCancelButtonProps {
-  setRedirect: React.Dispatch<boolean>
+  disruptionId: string
   setIsPreview: React.Dispatch<boolean>
 }
 
 const SaveCancelButton = ({
-  setRedirect,
+  disruptionId,
   setIsPreview,
 }: SaveCancelButtonProps): JSX.Element => {
   return (
@@ -34,13 +46,13 @@ const SaveCancelButton = ({
       >
         save changes
       </Button>
-      <Button
-        variant="light"
-        onClick={() => setRedirect(true)}
+      <Link
+        to={"/disruptions/" + encodeURIComponent(disruptionId)}
         id="cancel-button"
+        className="btn btn-light"
       >
         cancel
-      </Button>
+      </Link>
     </ButtonGroup>
   )
 }
@@ -48,54 +60,175 @@ const SaveCancelButton = ({
 const EditDisruption = ({
   match,
 }: RouteComponentProps<TParams>): JSX.Element => {
-  // TODO: Dummy data, to be filled in with the results from an API call once that's ready
-  const [fromDate, setFromDate] = React.useState<Date | null>(
-    new Date("2020-03-06")
-  )
-  const [toDate, setToDate] = React.useState<Date | null>(
-    new Date("2020-03-22")
-  )
-  const [exceptionDates, setExceptionDates] = React.useState<Date[]>([
-    new Date("2020-03-13"),
-  ])
-  const [disruptionDaysOfWeek, setDisruptionDaysOfWeek] = React.useState<
-    DayOfWeekTimeRanges
-  >([
-    null,
-    null,
-    null,
-    null,
-    [
-      { hour: "1", minute: "00", period: "PM" },
-      { hour: "11", minute: "00", period: "PM" },
-    ],
-    [
-      { hour: "1", minute: "00", period: "PM" },
-      { hour: "11", minute: "00", period: "PM" },
-    ],
-    [
-      { hour: "1", minute: "00", period: "PM" },
-      { hour: "11", minute: "00", period: "PM" },
-    ],
-  ])
+  const [disruption, setDisruption] = React.useState<
+    Disruption | "error" | null
+  >(null)
+
+  React.useEffect(() => {
+    apiGet<ModelObject | ModelObject[] | "error">({
+      url: "/api/disruptions/" + encodeURIComponent(match.params.id),
+      parser: toModelObject,
+      defaultResult: "error",
+    }).then((result: ModelObject | ModelObject[] | "error") => {
+      if (result instanceof Disruption) {
+        setDisruption(result)
+      } else {
+        setDisruption("error")
+      }
+    })
+  }, [match.params.id])
+
+  if (disruption === "error") {
+    return <div>Error loading disruption.</div>
+  }
+
+  if (disruption === null) {
+    return <Loading />
+  }
+
+  const disruptionDaysOfWeek = fromDaysOfWeek(disruption.daysOfWeek)
+
+  if (disruptionDaysOfWeek === "error") {
+    return <div>Error parsing day of week information.</div>
+  }
+
+  const exceptionDates = disruption.exceptions
+    .map(exception => exception.excludedDate)
+    .filter(
+      (maybeDate: Date | undefined): maybeDate is Date =>
+        typeof maybeDate !== "undefined"
+    )
 
   return (
     <EditDisruptionForm
       disruptionId={match.params.id}
-      fromDate={fromDate}
-      setFromDate={setFromDate}
-      toDate={toDate}
-      setToDate={setToDate}
+      adjustments={disruption.adjustments}
+      fromDate={disruption.startDate || null}
+      setFromDate={newDate => {
+        const newDisruption = new Disruption({ ...disruption })
+        if (newDate) {
+          newDisruption.startDate = newDate
+        } else {
+          delete newDisruption.startDate
+        }
+        setDisruption(newDisruption)
+      }}
+      toDate={disruption.endDate || null}
+      setToDate={newDate => {
+        const newDisruption = new Disruption({ ...disruption })
+        if (newDate) {
+          newDisruption.endDate = newDate
+        } else {
+          delete newDisruption.endDate
+        }
+        setDisruption(newDisruption)
+      }}
       exceptionDates={exceptionDates}
-      setExceptionDates={setExceptionDates}
+      setExceptionDates={setExceptionDatesForDisruption(
+        new Disruption({ ...disruption }),
+        setDisruption
+      )}
       disruptionDaysOfWeek={disruptionDaysOfWeek}
-      setDisruptionDaysOfWeek={setDisruptionDaysOfWeek}
+      setDisruptionDaysOfWeek={setDisruptionDaysOfWeekForDisruption(
+        new Disruption({ ...disruption }),
+        setDisruption
+      )}
     />
   )
 }
 
+const setExceptionDatesForDisruption = (
+  disruption: Disruption,
+  setDisruption: React.Dispatch<Disruption>
+): React.Dispatch<Date[]> => {
+  return newExceptionDates => {
+    const newExceptionDatesAsTimes = newExceptionDates.map(date =>
+      date.getTime()
+    )
+    const currentExceptionDates = (disruption.exceptions
+      .map(exception => exception.excludedDate)
+      .filter(maybeDate => maybeDate instanceof Date) as Date[]).map(date =>
+      date.getTime()
+    )
+
+    const addedDates = newExceptionDatesAsTimes.filter(
+      date => !currentExceptionDates.includes(date)
+    )
+    const removedDates = currentExceptionDates.filter(
+      date => !newExceptionDatesAsTimes.includes(date)
+    )
+
+    // Trim out the removed dates
+    disruption.exceptions = disruption.exceptions.filter(exception => {
+      return (
+        exception.excludedDate instanceof Date &&
+        !removedDates.includes(exception.excludedDate.getTime())
+      )
+    })
+    // Add in added dates
+    disruption.exceptions = disruption.exceptions.concat(
+      addedDates.map(date => new Exception({ excludedDate: new Date(date) }))
+    )
+    setDisruption(disruption)
+  }
+}
+
+const setDisruptionDaysOfWeekForDisruption = (
+  disruption: Disruption,
+  setDisruption: React.Dispatch<Disruption>
+): React.Dispatch<DayOfWeekTimeRanges> => {
+  return newDisruptionDaysOfWeek => {
+    for (let i = 0; i < newDisruptionDaysOfWeek.length; i++) {
+      if (newDisruptionDaysOfWeek[i] === null) {
+        disruption.daysOfWeek = disruption.daysOfWeek.filter(
+          dayOfWeek => dayOfWeek.dayName !== ixToDayName(i)
+        )
+      } else {
+        let startTime
+        if ((newDisruptionDaysOfWeek[i] as [Time | null, Time | null])[0]) {
+          startTime = timeToString(
+            (newDisruptionDaysOfWeek[i] as [
+              Time | null,
+              Time | null
+            ])[0] as Time
+          )
+        }
+
+        let endTime
+        if ((newDisruptionDaysOfWeek[i] as [Time | null, Time | null])[1]) {
+          endTime = timeToString(
+            (newDisruptionDaysOfWeek[i] as [
+              Time | null,
+              Time | null
+            ])[1] as Time
+          )
+        }
+
+        const dayOfWeekIndex = disruption.daysOfWeek.findIndex(
+          dayOfWeek => dayOfWeek.dayName === ixToDayName(i)
+        )
+
+        if (dayOfWeekIndex === -1) {
+          disruption.daysOfWeek = disruption.daysOfWeek.concat([
+            new DayOfWeek({
+              startTime,
+              endTime,
+              dayName: ixToDayName(i),
+            }),
+          ])
+        } else {
+          disruption.daysOfWeek[dayOfWeekIndex].startTime = startTime
+          disruption.daysOfWeek[dayOfWeekIndex].endTime = endTime
+        }
+      }
+    }
+    setDisruption(disruption)
+  }
+}
+
 interface EditDisruptionFormProps {
-  disruptionId?: string
+  disruptionId: string
+  adjustments: Adjustment[]
   fromDate: Date | null
   setFromDate: React.Dispatch<Date | null>
   toDate: Date | null
@@ -108,6 +241,7 @@ interface EditDisruptionFormProps {
 
 const EditDisruptionForm = ({
   disruptionId,
+  adjustments,
   fromDate,
   setFromDate,
   toDate,
@@ -117,25 +251,15 @@ const EditDisruptionForm = ({
   disruptionDaysOfWeek,
   setDisruptionDaysOfWeek,
 }: EditDisruptionFormProps): JSX.Element => {
-  const [redirect, setRedirect] = React.useState(false)
   const [isPreview, setIsPreview] = React.useState<boolean>(false)
 
-  // TODO: Dummy data, to be filled in with the results from an API call once that's ready
-  const adjustment = new Adjustment({
-    routeId: "Green-D",
-    source: "gtfs_creator",
-    sourceLabel: "Kenmore - Newton Highlands",
-  })
-
-  if (redirect && disruptionId) {
-    return <Redirect to={"/disruptions/" + encodeURIComponent(disruptionId)} />
-  } else if (isPreview) {
+  if (isPreview) {
     return (
       <div>
         <Header />
         <DisruptionPreview
           disruptionId={disruptionId}
-          adjustments={[adjustment]}
+          adjustments={adjustments}
           setIsPreview={setIsPreview}
           fromDate={fromDate}
           toDate={toDate}
@@ -150,7 +274,7 @@ const EditDisruptionForm = ({
         <Header />
         <DisruptionSummary
           disruptionId={disruptionId}
-          adjustments={[adjustment]}
+          adjustments={adjustments}
         />
         <fieldset>
           <legend>Edit disruption times</legend>
@@ -166,7 +290,7 @@ const EditDisruptionForm = ({
           />
         </fieldset>
         <SaveCancelButton
-          setRedirect={setRedirect}
+          disruptionId={disruptionId}
           setIsPreview={setIsPreview}
         />
       </div>

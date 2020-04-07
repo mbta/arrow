@@ -13,21 +13,22 @@ describe("fromDaysOfWeek", () => {
         new DayOfWeek({ dayName: "monday" }),
         new DayOfWeek({ startTime: "11:30:00", dayName: "tuesday" }),
         new DayOfWeek({
-          startTime: "11:30:00",
+          startTime: "08:30:00",
           endTime: "20:45:00",
           dayName: "wednesday",
         }),
         new DayOfWeek({ endTime: "20:45:00", dayName: "thursday" }),
+        new DayOfWeek({ startTime: "00:00:00", dayName: "friday" }),
       ])
     ).toEqual([
       [null, null],
       [{ hour: "11", minute: "30", period: "AM" }, null],
       [
-        { hour: "11", minute: "30", period: "AM" },
+        { hour: "8", minute: "30", period: "AM" },
         { hour: "8", minute: "45", period: "PM" },
       ],
       [null, { hour: "8", minute: "45", period: "PM" }],
-      null,
+      [{ hour: "12", minute: "00", period: "AM" }, null],
       null,
       null,
     ])
