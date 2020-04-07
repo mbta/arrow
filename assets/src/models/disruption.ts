@@ -80,8 +80,12 @@ class Disruption extends JsonApiResourceObject {
     if (typeof raw.attributes === "object") {
       return new Disruption({
         id: raw.id,
-        startDate: new Date(raw.attributes.start_date),
-        endDate: new Date(raw.attributes.end_date),
+        ...(raw.attributes.start_date && {
+          startDate: new Date(raw.attributes.start_date + "T00:00:00"),
+        }),
+        ...(raw.attributes.end_date && {
+          endDate: new Date(raw.attributes.end_date + "T00:00:00"),
+        }),
         adjustments: included.filter(i => i instanceof Adjustment),
         daysOfWeek: included.filter(i => i instanceof DayOfWeek),
         exceptions: included.filter(i => i instanceof Exception),

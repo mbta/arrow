@@ -25,7 +25,9 @@ describe("Exception", () => {
         type: "exception",
         attributes: { excluded_date: "2020-03-30" },
       })
-    ).toEqual(new Exception({ id: "1", excludedDate: new Date("2020-03-30") }))
+    ).toEqual(
+      new Exception({ id: "1", excludedDate: new Date("2020-03-30T00:00:00") })
+    )
   })
 
   test("fromJsonObject error wrong format", () => {

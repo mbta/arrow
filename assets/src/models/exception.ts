@@ -33,7 +33,9 @@ class Exception extends JsonApiResourceObject {
     if (typeof raw.attributes === "object") {
       return new Exception({
         id: raw.id,
-        excludedDate: new Date(raw.attributes.excluded_date),
+        ...(raw.attributes.excluded_date && {
+          excludedDate: new Date(raw.attributes.excluded_date + "T00:00:00"),
+        }),
       })
     }
 

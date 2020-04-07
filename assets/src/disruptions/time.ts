@@ -334,6 +334,8 @@ export {
   TimeRange,
   DayOfWeekTimeRanges,
   fromDaysOfWeek,
+  timeToString,
+  ixToDayName,
   isEmpty,
   dayOfWeekTimeRangesToDayOfWeeks,
   parseDaysAndTimes,
