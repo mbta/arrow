@@ -13,7 +13,7 @@ interface DisruptionTableHeaderProps {
   onClick?: () => void
 }
 
-export const DisruptionTableHeader = ({
+const DisruptionTableHeader = ({
   sortable,
   sortOrder,
   active,
@@ -53,9 +53,13 @@ const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
   const sortedDisruptions = React.useMemo(() => {
     const { by, order } = sortState
     return disruptions.sort((a, b) => {
-      if (a[by] > b[by]) {
+      if (!a[by] || !b[by]) {
+        return -1
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      } else if (a[by]! > b[by]!) {
         return order === "asc" ? 1 : -1
-      } else if (a[by] < b[by]) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      } else if (a[by]! < b[by]!) {
         return order === "asc" ? -1 : 1
       } else {
         return 0
@@ -99,9 +103,11 @@ const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
         {sortedDisruptions.map(x => (
           <tr key={x.id}>
             <td>{x.label}</td>
-            <td>{`${formatDisruptionDate(x.startDate)} - ${formatDisruptionDate(
-              x.endDate
-            )}`}</td>
+            {!!x.startDate && !!x.endDate && (
+              <td>{`${formatDisruptionDate(
+                x.startDate
+              )} - ${formatDisruptionDate(x.endDate)}`}</td>
+            )}
             <td>{x.daysAndTimes}</td>
             <td>
               <Link to={`/disruptions/${x.id}`}>See details</Link>
@@ -113,4 +119,4 @@ const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
   )
 }
 
-export default DisruptionTable
+export { DisruptionTableHeader, DisruptionTable }

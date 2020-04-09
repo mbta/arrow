@@ -1,7 +1,8 @@
 import * as React from "react"
 import { BrowserRouter } from "react-router-dom"
 import { mount } from "enzyme"
-import DisruptionTable, {
+import {
+  DisruptionTable,
   DisruptionTableHeader,
 } from "../../src/disruptions/disruptionTable"
 
@@ -13,7 +14,6 @@ const DisruptionTableWithRouter = () => {
           {
             id: "1",
             routes: ["Red"],
-            label: "AlewifeHarvard",
             startDate: new Date("2019-10-31"),
             endDate: new Date("2019-11-15"),
             daysAndTimes: "Weekends, starting Friday 845",
@@ -47,10 +47,10 @@ describe("DisruptionTable", () => {
     expect(tableRows.length).toEqual(3)
     let firstRow = tableRows.at(0)
     let firstRowData = firstRow.find("td")
-    expect(firstRowData.at(0).text()).toEqual("AlewifeHarvard")
-    expect(firstRowData.at(1).text()).toEqual("10/31/2019 - 11/15/2019")
+    expect(firstRowData.at(0).text()).toEqual("Kenmore—Newton Highlands")
+    expect(firstRowData.at(1).text()).toEqual("10/23/2019 - 10/24/2019")
     expect(firstRowData.at(2).text()).toEqual("Weekends, starting Friday 845")
-    expect(firstRowData.at(3).find("a[href='/disruptions/1']").length).toEqual(
+    expect(firstRowData.at(3).find("a[href='/disruptions/2']").length).toEqual(
       1
     )
     let activeSortToggle = wrapper
@@ -69,7 +69,7 @@ describe("DisruptionTable", () => {
       .find({ active: true })
     expect(activeSortToggle.text()).toEqual("stops")
     expect(activeSortToggle.props().sortOrder).toEqual("desc")
-    expect(firstRowData.at(0).text()).toEqual("Kenmore—Newton Highlands")
+    expect(firstRowData.at(0).text()).toEqual("")
 
     wrapper
       .find(".m-disruption-table__sortable[children='dates']")

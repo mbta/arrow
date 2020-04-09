@@ -235,6 +235,101 @@ describe("toModelObject", () => {
     ])
   })
 
+  test("properly assigns included objects when there are multiple entities", () => {
+    expect(
+      toModelObject({
+        data: [
+          {
+            attributes: {
+              end_date: "2020-01-12",
+              start_date: "2019-12-20",
+            },
+            id: "1",
+            relationships: {
+              adjustments: {
+                data: [{ id: "12", type: "adjustment" }],
+              },
+              days_of_week: { data: [] },
+              exceptions: { data: [] },
+              trip_short_names: { data: [] },
+            },
+            type: "disruption",
+          },
+          {
+            attributes: {
+              end_date: "2020-01-15",
+              start_date: "2019-12-25",
+            },
+            id: "2",
+            relationships: {
+              adjustments: {
+                data: [{ id: "13", type: "adjustment" }],
+              },
+              days_of_week: { data: [] },
+              exceptions: { data: [] },
+              trip_short_names: { data: [] },
+            },
+            type: "disruption",
+          },
+        ],
+        included: [
+          {
+            attributes: {
+              route_id: "Green-D",
+              source: "gtfs_creator",
+              source_label: "KenmoreReservoir",
+            },
+            id: "12",
+            type: "adjustment",
+          },
+          {
+            attributes: {
+              route_id: "Green-D",
+              source: "gtfs_creator",
+              source_label: "Kenmore-Newton",
+            },
+            id: "13",
+            type: "adjustment",
+          },
+        ],
+        jsonapi: { version: "1.0" },
+      })
+    ).toEqual([
+      new Disruption({
+        id: "1",
+        startDate: new Date("2019-12-20"),
+        endDate: new Date("2020-01-12"),
+        adjustments: [
+          new Adjustment({
+            id: "12",
+            routeId: "Green-D",
+            source: "gtfs_creator",
+            sourceLabel: "KenmoreReservoir",
+          }),
+        ],
+        daysOfWeek: [],
+        exceptions: [],
+        tripShortNames: [],
+      }),
+      new Disruption({
+        id: "2",
+        startDate: new Date("2019-12-25"),
+        endDate: new Date("2020-01-15"),
+        adjustments: [
+          new Adjustment({
+            id: "13",
+            routeId: "Green-D",
+            source: "gtfs_creator",
+            sourceLabel: "Kenmore-Newton",
+          }),
+        ],
+        daysOfWeek: [],
+        exceptions: [],
+        tripShortNames: [],
+      }),
+    ])
+  })
+
   test("returns error when one of multiple objects fails to parse", () => {
     expect(
       toModelObject({

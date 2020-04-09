@@ -13,17 +13,13 @@ import { BrowserRouter, Route, Switch } from "react-router-dom"
 import EditDisruption from "./disruptions/editDisruption"
 import { NewDisruption } from "./disruptions/newDisruption"
 import ViewDisruption from "./disruptions/viewDisruption"
-import DisruptionIndex from "./disruptions/disruptionIndex"
+import { DisruptionIndex } from "./disruptions/disruptionIndex"
 
 const App = (): JSX.Element => {
   return (
     <BrowserRouter>
       <Switch>
-        <Route
-          exact={true}
-          path="/"
-          render={() => <DisruptionIndex disruptions={[]} />}
-        />
+        <Route exact={true} path="/" component={DisruptionIndex} />
         <Route exact={true} path="/disruptions/new" component={NewDisruption} />
         <Route
           exact={true}

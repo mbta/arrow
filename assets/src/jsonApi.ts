@@ -14,15 +14,20 @@ type ModelObject =
 const toModelObject = (
   response: any
 ): ModelObject | ModelObject[] | "error" => {
-  let includedObjects: (ModelObject | "error")[] = []
-
+  const includedObjects: {
+    [key: string]: ModelObject | "error"
+  } = Array.isArray(response?.included)
+    ? response.included.reduce(
+        (acc: any, curr: { [keys: string]: ModelObject | "error" }) => {
+          acc[`${curr.type}-${curr.id}`] = modelFromJsonApiResource(curr, [])
+          return acc
+        },
+        {}
+      )
+    : {}
   if (Array.isArray(response?.included)) {
-    includedObjects = response.included.map((raw: any) =>
-      modelFromJsonApiResource(raw, [])
-    )
-
     if (
-      includedObjects.some(
+      Object.values(includedObjects).some(
         (modelObject: ModelObject | "error") => modelObject === "error"
       )
     ) {
@@ -31,13 +36,23 @@ const toModelObject = (
   } else if (typeof response?.included !== "undefined") {
     return "error"
   }
-
   if (Array.isArray(response.data)) {
-    const maybeModelObjects: (
-      | ModelObject
-      | "error"
-    )[] = response.data.map((data: any) =>
-      modelFromJsonApiResource(data, includedObjects as ModelObject[])
+    const maybeModelObjects: (ModelObject | "error")[] = response.data.map(
+      (data: any) =>
+        modelFromJsonApiResource(
+          data,
+          Object.values(data?.relationships || []).reduce(
+            (acc: any, curr: any) => {
+              return [
+                ...acc,
+                ...(curr?.data || []).map(
+                  (x: any) => includedObjects[`${x.type}-${x.id}`]
+                ),
+              ]
+            },
+            [] as ModelObject[]
+          ) as ModelObject[]
+        )
     )
     if (
       maybeModelObjects.some(maybeModelObject => maybeModelObject === "error")
@@ -49,7 +64,7 @@ const toModelObject = (
   } else {
     return modelFromJsonApiResource(
       response.data,
-      includedObjects as ModelObject[]
+      Object.values(includedObjects) as ModelObject[]
     )
   }
 }

@@ -1,7 +1,7 @@
 import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
 
-type DayName =
+export type DayName =
   | "monday"
   | "tuesday"
   | "wednesday"

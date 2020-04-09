@@ -9,8 +9,12 @@ import Form from "react-bootstrap/Form"
 import Header from "../header"
 import Button from "react-bootstrap/Button"
 import Icon from "../icons"
-import DisruptionTable from "./disruptionTable"
+import { DisruptionTable } from "./disruptionTable"
 import DisruptionCalendar from "./disruptionCalendar"
+import Disruption from "../models/disruption"
+import { apiGet } from "../api"
+import { ModelObject, toModelObject } from "../jsonApi"
+import { parseDaysAndTimes } from "../disruptions/time"
 
 type Routes =
   | "Red"
@@ -28,12 +32,12 @@ type RouteFilterState = {
 }
 
 export interface DisruptionRow {
-  id: string
-  routes: Routes[]
-  label: string
-  startDate: Date
-  endDate: Date
-  daysAndTimes: string
+  id?: string
+  routes?: Routes[]
+  label?: string
+  startDate?: Date
+  endDate?: Date
+  daysAndTimes?: string
 }
 
 const ROUTE_ICONS: { [route in Routes]: Icon } = {
@@ -54,7 +58,7 @@ interface RouteFilterToggleProps {
   onClick: (route: keyof RouteFilterState) => void
 }
 // eslint-disable-next-line react/display-name
-export const RouteFilterToggle = React.memo(
+const RouteFilterToggle = React.memo(
   ({ route, active, onClick }: RouteFilterToggleProps) => {
     return (
       <a
@@ -100,7 +104,7 @@ interface DisruptionIndexProps {
   disruptions: DisruptionRow[]
 }
 
-const DisruptionIndex = ({ disruptions }: DisruptionIndexProps) => {
+const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
   const [view, setView] = React.useState<"table" | "calendar">("table")
   const toggleView = React.useCallback(() => {
     if (view === "table") {
@@ -140,8 +144,8 @@ const DisruptionIndex = ({ disruptions }: DisruptionIndexProps) => {
     return disruptions.filter(
       x =>
         (!anyRouteFiltersActive ||
-          x.routes.some(route => routeFilters[route])) &&
-        x.label.toLowerCase().includes(query)
+          (x.routes || []).some(route => routeFilters[route])) &&
+        (x.label || "").toLowerCase().includes(query)
     )
   }, [disruptions, searchQuery, routeFilters, anyRouteFiltersActive])
 
@@ -214,4 +218,60 @@ const DisruptionIndex = ({ disruptions }: DisruptionIndexProps) => {
   )
 }
 
-export default DisruptionIndex
+const DisruptionIndex = () => {
+  const [disruptions, setDisruptions] = React.useState<Disruption[] | "error">(
+    []
+  )
+  const disruptionRows = React.useMemo(() => {
+    if (disruptions === "error") {
+      return []
+    } else {
+      return disruptions.map(x => {
+        return {
+          id: x.id,
+          startDate: x.startDate,
+          endDate: x.endDate,
+          label: x.adjustments.map(adj => adj.sourceLabel).join(", "),
+          routes: x.adjustments
+            .map(adj => {
+              if (adj.routeId && adj.routeId.startsWith("CR-")) {
+                return "Commuter"
+              } else {
+                return adj.routeId
+              }
+            })
+            .filter(
+              (routeId: string | undefined): routeId is Routes => !!routeId
+            ),
+          daysAndTimes:
+            x.daysOfWeek.length > 0 ? parseDaysAndTimes(x.daysOfWeek) : "",
+        }
+      })
+    }
+  }, [disruptions])
+
+  React.useEffect(() => {
+    apiGet<ModelObject | ModelObject[] | "error">({
+      url: "/api/disruptions",
+      parser: toModelObject,
+      defaultResult: "error",
+    }).then((result: ModelObject | ModelObject[] | "error") => {
+      if (
+        Array.isArray(result) &&
+        result.every(res => res instanceof Disruption)
+      ) {
+        setDisruptions(result as Disruption[])
+      } else {
+        setDisruptions("error")
+      }
+    })
+  }, [])
+
+  if (disruptions === "error") {
+    return <div>Something went wrong</div>
+  } else {
+    return <DisruptionIndexView disruptions={disruptionRows} />
+  }
+}
+
+export { DisruptionIndex, RouteFilterToggle, DisruptionIndexView }
