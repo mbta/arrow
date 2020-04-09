@@ -128,7 +128,7 @@ describe("parseDaysAndTimes", () => {
       ],
       "Wednesday - Friday, 11:30AM - 8:45PM",
     ],
-    
+
     [
       [
         new DayOfWeek({ startTime: "20:45:00", day: "saturday" }),
