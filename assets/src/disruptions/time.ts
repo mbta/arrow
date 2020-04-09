@@ -283,11 +283,13 @@ const getTimeType = (
     return "daily"
   } else if (
     ((!!firstTime.startTime || !!lastTime.endTime) &&
+      !firstTime.endTime &&
       startTimeSet.size + endTimeSet.size === 3 &&
       firstTime.startTime !== lastTime.endTime) ||
     (startTimeSet.size + endTimeSet.size === 4 &&
       !!firstTime.startTime &&
       !!lastTime.endTime &&
+      !firstTime.endTime &&
       firstTime.startTime === lastTime.endTime)
   ) {
     return "ends"
