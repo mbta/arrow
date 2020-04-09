@@ -3,6 +3,7 @@ import {
   fromDaysOfWeek,
   dayOfWeekTimeRangesToDayOfWeeks,
   DayOfWeekTimeRanges,
+  parseDaysAndTimes,
 } from "../../src/disruptions/time"
 
 describe("fromDaysOfWeek", () => {
@@ -91,5 +92,73 @@ describe("dayOfWeekTimeRangesToDayOfWeeks", () => {
       new DayOfWeek({ dayName: "saturday" }),
       new DayOfWeek({ dayName: "sunday" }),
     ])
+  })
+})
+
+describe("parseDaysAndTimes", () => {
+  test.each([
+    [
+      [new DayOfWeek({ day: "monday" })],
+      "Monday, Start of service - End of service",
+    ],
+    [
+      [
+        new DayOfWeek({ startTime: "09:30:00", day: "tuesday" }),
+        new DayOfWeek({ startTime: "09:30:00", day: "thursday" }),
+      ],
+      "Tuesday, 9:30AM - End of service, Thursday, 9:30AM - End of service",
+    ],
+    [
+      [
+        new DayOfWeek({
+          startTime: "11:30:00",
+          endTime: "20:45:00",
+          day: "wednesday",
+        }),
+        new DayOfWeek({
+          startTime: "11:30:00",
+          endTime: "20:45:00",
+          day: "thursday",
+        }),
+        new DayOfWeek({
+          startTime: "11:30:00",
+          endTime: "20:45:00",
+          day: "friday",
+        }),
+      ],
+      "Wednesday - Friday, 11:30AM - 8:45PM",
+    ],
+    [
+      [
+        new DayOfWeek({ startTime: "20:45:00", day: "saturday" }),
+        new DayOfWeek({ day: "sunday" }),
+      ],
+      "Saturday 8:45PM - Sunday End of service",
+    ],
+    [
+      [
+        new DayOfWeek({ startTime: "20:45:00", day: "saturday" }),
+        new DayOfWeek({ endTime: "20:45:00", day: "sunday" }),
+      ],
+      "Saturday 8:45PM - Sunday 8:45PM",
+    ],
+    [
+      [new DayOfWeek({ day: "saturday" }), new DayOfWeek({ day: "sunday" })],
+      "Saturday - Sunday, Start of service - End of service",
+    ],
+    [
+      [
+        new DayOfWeek({ day: "friday" }),
+        new DayOfWeek({
+          day: "saturday",
+          startTime: "11:30:00",
+          endTime: "20:45:00",
+        }),
+        new DayOfWeek({ day: "sunday" }),
+      ],
+      "Friday, Start of service - End of service, Saturday, 11:30AM - 8:45PM, Sunday, Start of service - End of service",
+    ],
+  ])("parses days and times correctly", (daysOfWeek, expected) => {
+    expect(parseDaysAndTimes(daysOfWeek)).toEqual(expected)
   })
 })

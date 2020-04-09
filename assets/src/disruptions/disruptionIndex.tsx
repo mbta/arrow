@@ -14,7 +14,7 @@ import DisruptionCalendar from "./disruptionCalendar"
 import Disruption from "../models/disruption"
 import { apiGet } from "../api"
 import { ModelObject, toModelObject } from "../jsonApi"
-import {parseDaysAndTimes} from "../disruptions/time"
+import { parseDaysAndTimes } from "../disruptions/time"
 
 type Routes =
   | "Red"
