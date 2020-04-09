@@ -163,22 +163,22 @@ describe("parseDaysAndTimes", () => {
       [
         new DayOfWeek({ day: "friday" }),
         new DayOfWeek({
-          startTime: "11:30:00",
+          startTime: "00:30:00",
           day: "saturday",
         }),
         new DayOfWeek({ day: "sunday" }),
       ],
-      "Friday, Start of service - End of service, Saturday, 11:30AM - End of service, Sunday, Start of service - End of service",
+      "Friday, Start of service - End of service, Saturday, 12:30AM - End of service, Sunday, Start of service - End of service",
     ],
     [
       [
-        new DayOfWeek({ startTime: "09:00:00", day: "monday", }),
+        new DayOfWeek({ startTime: "09:00:00", day: "monday" }),
         new DayOfWeek({
           startTime: "11:30:00",
           endTime: "18:30:00",
           day: "tuesday",
         }),
-        new DayOfWeek({ day: "wednesday", endTime: "20:45:00" }),
+        new DayOfWeek({ endTime: "20:45:00", day: "wednesday" }),
       ],
       "Monday, 9:00AM - End of service, Tuesday, 11:30AM - 6:30PM, Wednesday, Start of service - 8:45PM",
     ],

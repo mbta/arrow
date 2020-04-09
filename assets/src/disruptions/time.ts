@@ -279,18 +279,14 @@ const getTimeType = (
   startTimeSet: Set<string | undefined>,
   endTimeSet: Set<string | undefined>
 ): "daily" | "ends" | "other" => {
-  if (startTimeSet.size === 1 && endTimeSet.size === 1) {
+  const setSizeSum = startTimeSet.size + endTimeSet.size
+  if (setSizeSum == 2) {
     return "daily"
   } else if (
-    ((!!firstTime.startTime || !!lastTime.endTime) &&
-      !firstTime.endTime &&
-      startTimeSet.size + endTimeSet.size === 3 &&
-      firstTime.startTime !== lastTime.endTime) ||
-    (startTimeSet.size + endTimeSet.size === 4 &&
-      !!firstTime.startTime &&
-      !!lastTime.endTime &&
-      !firstTime.endTime &&
-      firstTime.startTime === lastTime.endTime)
+    (!!firstTime.startTime || !!firstTime.endTime) &&
+    !firstTime.endTime &&
+    !lastTime.startTime &&
+    setSizeSum === (firstTime.startTime === lastTime.endTime ? 4 : 3)
   ) {
     return "ends"
   } else {
