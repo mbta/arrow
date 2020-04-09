@@ -9,14 +9,14 @@ describe("fromDaysOfWeek", () => {
   test("successful conversion", () => {
     expect(
       fromDaysOfWeek([
-        new DayOfWeek({ day: "monday" }),
-        new DayOfWeek({ startTime: "11:30:00", day: "tuesday" }),
+        new DayOfWeek({ dayName: "monday" }),
+        new DayOfWeek({ startTime: "11:30:00", dayName: "tuesday" }),
         new DayOfWeek({
           startTime: "11:30:00",
           endTime: "20:45:00",
-          day: "wednesday",
+          dayName: "wednesday",
         }),
-        new DayOfWeek({ endTime: "20:45:00", day: "thursday" }),
+        new DayOfWeek({ endTime: "20:45:00", dayName: "thursday" }),
       ])
     ).toEqual([
       [null, null],
@@ -35,14 +35,14 @@ describe("fromDaysOfWeek", () => {
   test("invalid hours or minutes specified", () => {
     expect(
       fromDaysOfWeek([
-        new DayOfWeek({ day: "monday" }),
-        new DayOfWeek({ startTime: "11:37:00", day: "tuesday" }),
+        new DayOfWeek({ dayName: "monday" }),
+        new DayOfWeek({ startTime: "11:37:00", dayName: "tuesday" }),
         new DayOfWeek({
           startTime: "11:30:00",
           endTime: "20:45:00",
-          day: "wednesday",
+          dayName: "wednesday",
         }),
-        new DayOfWeek({ endTime: "20:45:00", day: "thursday" }),
+        new DayOfWeek({ endTime: "20:45:00", dayName: "thursday" }),
       ])
     ).toEqual("error")
   })
@@ -50,14 +50,14 @@ describe("fromDaysOfWeek", () => {
   test("invalid time format", () => {
     expect(
       fromDaysOfWeek([
-        new DayOfWeek({ day: "monday" }),
-        new DayOfWeek({ startTime: "foo", day: "tuesday" }),
+        new DayOfWeek({ dayName: "monday" }),
+        new DayOfWeek({ startTime: "foo", dayName: "tuesday" }),
         new DayOfWeek({
           startTime: "11:30:00",
           endTime: "20:45:00",
-          day: "wednesday",
+          dayName: "wednesday",
         }),
-        new DayOfWeek({ endTime: "20:45:00", day: "thursday" }),
+        new DayOfWeek({ endTime: "20:45:00", dayName: "thursday" }),
       ])
     ).toEqual("error")
   })
@@ -79,17 +79,17 @@ describe("dayOfWeekTimeRangesToDayOfWeeks", () => {
     ]
 
     expect(dayOfWeekTimeRangesToDayOfWeeks(dayOfWeekTimeRanges)).toEqual([
-      new DayOfWeek({ day: "monday" }),
-      new DayOfWeek({ startTime: "09:30:00", day: "tuesday" }),
+      new DayOfWeek({ dayName: "monday" }),
+      new DayOfWeek({ startTime: "09:30:00", dayName: "tuesday" }),
       new DayOfWeek({
         startTime: "11:30:00",
         endTime: "20:45:00",
-        day: "wednesday",
+        dayName: "wednesday",
       }),
-      new DayOfWeek({ endTime: "20:45:00", day: "thursday" }),
-      new DayOfWeek({ endTime: "00:00:00", day: "friday" }),
-      new DayOfWeek({ day: "saturday" }),
-      new DayOfWeek({ day: "sunday" }),
+      new DayOfWeek({ endTime: "20:45:00", dayName: "thursday" }),
+      new DayOfWeek({ endTime: "00:00:00", dayName: "friday" }),
+      new DayOfWeek({ dayName: "saturday" }),
+      new DayOfWeek({ dayName: "sunday" }),
     ])
   })
 })

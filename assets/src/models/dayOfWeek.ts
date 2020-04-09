@@ -14,24 +14,24 @@ class DayOfWeek extends JsonApiResourceObject {
   id?: string
   startTime?: string
   endTime?: string
-  day?: DayName
+  dayName?: DayName
 
   constructor({
     id,
     startTime,
     endTime,
-    day,
+    dayName,
   }: {
     id?: string
     startTime?: string
     endTime?: string
-    day?: DayName
+    dayName?: DayName
   }) {
     super()
     this.id = id
     this.startTime = startTime
     this.endTime = endTime
-    this.day = day
+    this.dayName = dayName
   }
 
   toJsonApi(): JsonApiResource {
@@ -47,14 +47,14 @@ class DayOfWeek extends JsonApiResourceObject {
       attributes: {
         ...(this.startTime && { start_time: this.startTime }),
         ...(this.endTime && { end_time: this.endTime }),
-        ...(this.day && { day: this.day }),
+        ...(this.dayName && { day_name: this.dayName }),
       },
     }
   }
 
   static fromJsonObject(raw: any): DayOfWeek | "error" {
     if (typeof raw.attributes === "object") {
-      let day: DayName | undefined
+      let dayName: DayName | undefined
 
       if (
         [
@@ -67,7 +67,7 @@ class DayOfWeek extends JsonApiResourceObject {
           "sunday",
         ].includes(raw.attributes.day_name)
       ) {
-        day = raw.attributes.day_name
+        dayName = raw.attributes.day_name
       } else {
         return "error"
       }
@@ -78,7 +78,7 @@ class DayOfWeek extends JsonApiResourceObject {
           startTime: raw.attributes.start_time,
         }),
         ...(raw.attributes.end_time && { endTime: raw.attributes.end_time }),
-        day,
+        dayName,
       })
     }
 
