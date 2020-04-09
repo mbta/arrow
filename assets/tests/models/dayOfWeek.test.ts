@@ -6,7 +6,7 @@ describe("DayOfWeek", () => {
       id: "5",
       startTime: "10:00:00",
       endTime: "15:00:00",
-      day: "monday",
+      dayName: "monday",
     })
 
     expect(dow.toJsonApi()).toEqual({
@@ -16,7 +16,7 @@ describe("DayOfWeek", () => {
         attributes: {
           start_time: "10:00:00",
           end_time: "15:00:00",
-          day: "monday",
+          day_name: "monday",
         },
       },
     })
@@ -31,7 +31,7 @@ describe("DayOfWeek", () => {
           day_name: "monday",
         },
       })
-    ).toEqual(new DayOfWeek({ startTime: "20:45:00", day: "monday" }))
+    ).toEqual(new DayOfWeek({ startTime: "20:45:00", dayName: "monday" }))
   })
 
   test("fromJsonObject error with invalid day of week", () => {

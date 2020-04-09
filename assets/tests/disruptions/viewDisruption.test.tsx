@@ -31,7 +31,7 @@ describe("ViewDisruption", () => {
             new DayOfWeek({
               id: "1",
               startTime: "20:45:00",
-              day: "friday",
+              dayName: "friday",
             }),
           ],
           exceptions: [
@@ -198,7 +198,7 @@ describe("ViewDisruption", () => {
             new DayOfWeek({
               id: "1",
               startTime: "20:37:00",
-              day: "friday",
+              dayName: "friday",
             }),
           ],
           exceptions: [

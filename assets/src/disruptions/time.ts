@@ -119,8 +119,8 @@ const fromDaysOfWeek = (
   let invalidTimeFound = false
 
   daysOfWeek.forEach(dayOfWeek => {
-    if (dayOfWeek.day) {
-      const index = dayNamesToIndices[dayOfWeek.day]
+    if (dayOfWeek.dayName) {
+      const index = dayNamesToIndices[dayOfWeek.dayName]
       const startTime = timeStringToTime(dayOfWeek.startTime)
       const endTime = timeStringToTime(dayOfWeek.endTime)
 
@@ -197,7 +197,7 @@ const dayOfWeekTimeRangesToDayOfWeeks = (
       const dayName = ixToDayName(ix)
       const [startTime, endTime] = dow
       const dayOfWeek = new DayOfWeek({
-        ...(dayName !== null && { day: dayName }),
+        ...(dayName !== null && { dayName }),
         ...(startTime !== null && { startTime: timeToString(startTime) }),
         ...(endTime !== null && { endTime: timeToString(endTime) }),
       })

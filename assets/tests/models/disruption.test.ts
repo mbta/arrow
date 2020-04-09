@@ -54,7 +54,7 @@ describe("Disruption", () => {
           new DayOfWeek({
             id: "1",
             startTime: "20:45:00",
-            day: "friday",
+            dayName: "friday",
           }),
         ]
       )
@@ -68,7 +68,7 @@ describe("Disruption", () => {
           new DayOfWeek({
             id: "1",
             startTime: "20:45:00",
-            day: "friday",
+            dayName: "friday",
           }),
         ],
         exceptions: [],
