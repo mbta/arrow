@@ -2,11 +2,12 @@ import * as React from "react"
 import { BrowserRouter } from "react-router-dom"
 import { mount } from "enzyme"
 import * as renderer from "react-test-renderer"
-import DisruptionIndexConnected, {
-  DisruptionIndexView as DisruptionIndex,
+import {
+  DisruptionIndexView,
+  DisruptionIndex,
   RouteFilterToggle,
 } from "../../src/disruptions/disruptionIndex"
-import DisruptionTable from "../../src/disruptions/disruptionTable"
+import { DisruptionTable } from "../../src/disruptions/disruptionTable"
 import DisruptionCalendar from "../../src/disruptions/disruptionCalendar"
 import Header from "../../src/header"
 import Disruption from "../../src/models/disruption"
@@ -25,9 +26,9 @@ const DisruptionIndexWithRouter = ({
   return (
     <BrowserRouter>
       {connected ? (
-        <DisruptionIndexConnected />
+        <DisruptionIndex />
       ) : (
-        <DisruptionIndex
+        <DisruptionIndexView
           disruptions={[
             {
               id: "1",
@@ -238,6 +239,32 @@ describe("DisruptionIndexConnected", () => {
           "Saturday 8:45PM - Sunday 8:45PM",
         ],
       ],
+    ],
+    [
+      [
+        new Disruption({
+          id: "1",
+          startDate: new Date("2020-01-15"),
+          endDate: new Date("2020-01-30"),
+          adjustments: [
+            new Adjustment({
+              id: "1",
+              routeId: "Green-D",
+              source: "gtfs_creator",
+              sourceLabel: "NewtonHighlandsKenmore",
+            }),
+          ],
+          daysOfWeek: [],
+          exceptions: [
+            new Exception({
+              id: "1",
+              excludedDate: new Date("2020-01-20"),
+            }),
+          ],
+          tripShortNames: [],
+        }),
+      ],
+      [["NewtonHighlandsKenmore", "1/15/2020 - 1/30/2020", ""]],
     ],
   ])(`Renders the table correctly`, async (disruptions, expected) => {
     jest.spyOn(api, "apiGet").mockImplementationOnce(() => {

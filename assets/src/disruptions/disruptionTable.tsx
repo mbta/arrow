@@ -13,7 +13,7 @@ interface DisruptionTableHeaderProps {
   onClick?: () => void
 }
 
-export const DisruptionTableHeader = ({
+const DisruptionTableHeader = ({
   sortable,
   sortOrder,
   active,
@@ -119,4 +119,4 @@ const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
   )
 }
 
-export default DisruptionTable
+export { DisruptionTableHeader, DisruptionTable }

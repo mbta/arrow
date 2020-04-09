@@ -1,7 +1,8 @@
 import * as React from "react"
 import { BrowserRouter } from "react-router-dom"
 import { mount } from "enzyme"
-import DisruptionTable, {
+import {
+  DisruptionTable,
   DisruptionTableHeader,
 } from "../../src/disruptions/disruptionTable"
 

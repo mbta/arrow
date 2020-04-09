@@ -13,7 +13,7 @@ import { BrowserRouter, Route, Switch } from "react-router-dom"
 import EditDisruption from "./disruptions/editDisruption"
 import { NewDisruption } from "./disruptions/newDisruption"
 import ViewDisruption from "./disruptions/viewDisruption"
-import DisruptionIndex from "./disruptions/disruptionIndex"
+import { DisruptionIndex } from "./disruptions/disruptionIndex"
 
 const App = (): JSX.Element => {
   return (

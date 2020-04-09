@@ -187,7 +187,7 @@ const ixToDayName = (
   }
 }
 
-export const dayToIx = (
+const dayToIx = (
   day:
     | "monday"
     | "tuesday"
@@ -234,28 +234,6 @@ const dayOfWeekTimeRangesToDayOfWeeks = (
   })
 
   return daysOfWeek
-}
-
-export {
-  Time,
-  HourOptions,
-  MinuteOptions,
-  PeriodOptions,
-  TimeRange,
-  DayOfWeekTimeRanges,
-  fromDaysOfWeek,
-  isEmpty,
-  dayOfWeekTimeRangesToDayOfWeeks,
-}
-
-const hourToString = (hour: number) => {
-  if (hour === 0) {
-    return "12"
-  } else if (hour > 12) {
-    return (hour - 12).toString()
-  } else {
-    return hour.toString()
-  }
 }
 
 const timeOrEndOfService = (
@@ -322,7 +300,7 @@ const describeSingleDay = ({
     startTime
   )} - ${timeOrEndOfService(endTime, "end")}`
 
-export const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
+const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
   if (daysAndTimes.length === 1) {
     return describeSingleDay(daysAndTimes[0])
   }
@@ -361,5 +339,29 @@ export const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
       last.endTime,
       "end"
     )}`
+  }
+}
+
+export {
+  Time,
+  HourOptions,
+  MinuteOptions,
+  PeriodOptions,
+  TimeRange,
+  DayOfWeekTimeRanges,
+  fromDaysOfWeek,
+  isEmpty,
+  dayOfWeekTimeRangesToDayOfWeeks,
+  parseDaysAndTimes,
+  dayToIx,
+}
+
+const hourToString = (hour: number) => {
+  if (hour === 0) {
+    return "12"
+  } else if (hour > 12) {
+    return (hour - 12).toString()
+  } else {
+    return hour.toString()
   }
 }

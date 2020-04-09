@@ -9,7 +9,7 @@ import Form from "react-bootstrap/Form"
 import Header from "../header"
 import Button from "react-bootstrap/Button"
 import Icon from "../icons"
-import DisruptionTable from "./disruptionTable"
+import { DisruptionTable } from "./disruptionTable"
 import DisruptionCalendar from "./disruptionCalendar"
 import Disruption from "../models/disruption"
 import { apiGet } from "../api"
@@ -58,7 +58,7 @@ interface RouteFilterToggleProps {
   onClick: (route: keyof RouteFilterState) => void
 }
 // eslint-disable-next-line react/display-name
-export const RouteFilterToggle = React.memo(
+const RouteFilterToggle = React.memo(
   ({ route, active, onClick }: RouteFilterToggleProps) => {
     return (
       <a
@@ -104,7 +104,7 @@ interface DisruptionIndexProps {
   disruptions: DisruptionRow[]
 }
 
-export const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
+const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
   const [view, setView] = React.useState<"table" | "calendar">("table")
   const toggleView = React.useCallback(() => {
     if (view === "table") {
@@ -218,7 +218,7 @@ export const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
   )
 }
 
-const DisruptionIndexConnected = () => {
+const DisruptionIndex = () => {
   const [disruptions, setDisruptions] = React.useState<Disruption[] | "error">(
     []
   )
@@ -243,7 +243,9 @@ const DisruptionIndexConnected = () => {
             .filter(
               (routeId: string | undefined): routeId is Routes => !!routeId
             ),
-          daysAndTimes: parseDaysAndTimes(x.daysOfWeek),
+          daysAndTimes: x.daysOfWeek.length
+            ? parseDaysAndTimes(x.daysOfWeek)
+            : "",
         }
       })
     }
@@ -273,4 +275,4 @@ const DisruptionIndexConnected = () => {
   }
 }
 
-export default DisruptionIndexConnected
+export { DisruptionIndex, RouteFilterToggle, DisruptionIndexView }
