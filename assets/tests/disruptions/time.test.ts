@@ -150,9 +150,9 @@ describe("parseDaysAndTimes", () => {
       [
         new DayOfWeek({ day: "friday" }),
         new DayOfWeek({
-          day: "saturday",
           startTime: "11:30:00",
           endTime: "20:45:00",
+          day: "saturday",
         }),
         new DayOfWeek({ day: "sunday" }),
       ],

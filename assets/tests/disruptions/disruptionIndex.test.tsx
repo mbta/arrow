@@ -17,7 +17,11 @@ import * as api from "../../src/api"
 import ReactDOM from "react-dom"
 import { act } from "react-dom/test-utils"
 
-const DisruptionIndexWithRouter = ({ connected = false }) => {
+const DisruptionIndexWithRouter = ({
+  connected = false,
+}: {
+  connected?: boolean
+}) => {
   return (
     <BrowserRouter>
       {connected ? (
@@ -214,8 +218,8 @@ describe("DisruptionIndexConnected", () => {
             }),
             new DayOfWeek({
               id: "2",
-              day: "sunday",
               endTime: "20:45:00",
+              day: "sunday",
             }),
           ],
           exceptions: [

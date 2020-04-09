@@ -284,7 +284,7 @@ const getTimeType = (
   } else if (
     (startTimeSet.size + endTimeSet.size === 3 &&
       firstTime.startTime !== lastTime.endTime) ||
-    (startTimeSet.size + endTimeSet.size == 4 &&
+    (startTimeSet.size + endTimeSet.size === 4 &&
       !!firstTime.startTime &&
       !!lastTime.endTime &&
       firstTime.startTime === lastTime.endTime)
@@ -327,7 +327,7 @@ export const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
   const last = daysAndTimes[daysAndTimes.length - 1]
   const startTimeSet = new Set<string | undefined>()
   const endTimeSet = new Set<string | undefined>()
-  let fallBackStringList: string[] = []
+  const fallBackStringList: string[] = []
   daysAndTimes.forEach(dayOfWeek => {
     const { day, startTime, endTime } = dayOfWeek
     if (day) {
