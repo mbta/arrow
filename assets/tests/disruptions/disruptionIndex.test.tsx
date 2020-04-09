@@ -259,4 +259,19 @@ describe("DisruptionIndexConnected", () => {
       expect(dataColumns[2].textContent).toEqual(expected[index][2])
     })
   })
+
+  test("renders error", async () => {
+    jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
+      return Promise.resolve("error")
+    })
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    await act(async () => {
+      ReactDOM.render(<DisruptionIndexWithRouter connected />, container)
+    })
+
+    expect(container.textContent).toMatch("Something went wrong")
+  })
 })
