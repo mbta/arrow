@@ -1,4 +1,4 @@
-import DayOfWeek from "../models/dayOfWeek"
+import DayOfWeek, { DayName } from "../models/dayOfWeek"
 
 type HourOptions =
   | "12"

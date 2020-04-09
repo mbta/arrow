@@ -19,11 +19,7 @@ const App = (): JSX.Element => {
   return (
     <BrowserRouter>
       <Switch>
-        <Route
-          exact={true}
-          path="/"
-          render={() => <DisruptionIndex disruptions={[]} />}
-        />
+        <Route exact={true} path="/" render={() => <DisruptionIndex />} />
         <Route exact={true} path="/disruptions/new" component={NewDisruption} />
         <Route
           exact={true}

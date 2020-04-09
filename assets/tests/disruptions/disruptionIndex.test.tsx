@@ -2,7 +2,8 @@ import * as React from "react"
 import { BrowserRouter } from "react-router-dom"
 import { mount } from "enzyme"
 import * as renderer from "react-test-renderer"
-import DisruptionIndex, {
+import {
+  DisruptionIndexView as DisruptionIndex,
   RouteFilterToggle,
 } from "../../src/disruptions/disruptionIndex"
 import DisruptionTable from "../../src/disruptions/disruptionTable"
