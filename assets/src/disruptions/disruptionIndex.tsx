@@ -14,8 +14,7 @@ import DisruptionCalendar from "./disruptionCalendar"
 import Disruption from "../models/disruption"
 import { apiGet } from "../api"
 import { ModelObject, toModelObject } from "../jsonApi"
-import DayOfWeek, { DayName } from "../models/dayOfWeek"
-import {dayToIx, parseDaysAndTimes} from "../disruptions/time"
+import {parseDaysAndTimes} from "../disruptions/time"
 
 type Routes =
   | "Red"
@@ -223,7 +222,6 @@ const DisruptionIndexConnected = () => {
   const [disruptions, setDisruptions] = React.useState<Disruption[] | "error">(
     []
   )
-
   const disruptionRows = React.useMemo(() => {
     if (disruptions === "error") {
       return []
