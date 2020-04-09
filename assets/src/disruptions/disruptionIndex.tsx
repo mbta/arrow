@@ -243,9 +243,8 @@ const DisruptionIndex = () => {
             .filter(
               (routeId: string | undefined): routeId is Routes => !!routeId
             ),
-          daysAndTimes: x.daysOfWeek.length > 0
-            ? parseDaysAndTimes(x.daysOfWeek)
-            : "",
+          daysAndTimes:
+            x.daysOfWeek.length > 0 ? parseDaysAndTimes(x.daysOfWeek) : "",
         }
       })
     }
