@@ -248,7 +248,7 @@ export {
 }
 
 const hourToString = (hour: number) => {
-  if (hour == 0) {
+  if (hour === 0) {
     return "12"
   } else if (hour > 12) {
     return (hour - 12).toString()
@@ -259,7 +259,7 @@ const hourToString = (hour: number) => {
 
 const timeOrEndOfService = (time?: string, end: "start" | "end" = "start"): string => {
   if (time) {
-    const hoursInt = parseInt(time.slice(0,2))
+    const hoursInt = parseInt(time.slice(0,2), 10)
     const hours = hourToString(hoursInt)
     const minutes = time.slice(2,5)
     const period = hoursInt < 12 ? "AM" : "PM"
@@ -270,9 +270,9 @@ const timeOrEndOfService = (time?: string, end: "start" | "end" = "start"): stri
 }
 
 const getTimeType = (firstTime: DayOfWeek, lastTime: DayOfWeek, startTimeSet: Set<string | undefined>, endTimeSet: Set<string | undefined>) : "same-but-ends" | "other" | "same-each-day" => {
-  if (startTimeSet.size == 1 && endTimeSet.size == 1) {
+  if (startTimeSet.size === 1 && endTimeSet.size === 1) {
     return "same-each-day"
-  } else if (startTimeSet.size + endTimeSet.size == 3 && firstTime.startTime !== lastTime.endTime) {
+  } else if (startTimeSet.size + endTimeSet.size === 3 && firstTime.startTime !== lastTime.endTime) {
     return "same-but-ends"
   } else {
     return "other"
@@ -285,21 +285,21 @@ const getDaysType = (days: DayName[]): DaysType=> {
   const sortedDays = days.map(day => ({day, index: dayToIx(day)})).sort((a,b) => a.index - b.index)
   let consecutive = true;
   sortedDays.forEach((day, index, array) => {
-    if (index && day.index - array[index - 1].index != 1) {
+    if (index && day.index - array[index - 1].index !== 1) {
       consecutive = false
     }
   })
   return consecutive ? "consecutive" : "other"
 }
 
-function capitalizeFirstLetter(string?: string) {
-  return string ? string.charAt(0).toUpperCase() + string.slice(1) : "";
+const capitalizeFirstLetter = (str?: string) => {
+  return str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
 }
 
 const describeSingleDay = ({day, startTime, endTime}: DayOfWeek) => `${day}, ${timeOrEndOfService(startTime)} - ${timeOrEndOfService(endTime, "end")}, `
 
 export const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
-  if (daysAndTimes.length == 1) {
+  if (daysAndTimes.length === 1) {
     return describeSingleDay(daysAndTimes[0])
   }
   const first = daysAndTimes[0]
@@ -317,9 +317,9 @@ export const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
   })
   const daysType = getDaysType(daysAndTimes.map(day => day.day).filter((day: DayName | undefined): day is DayName => !!day))
   const timeType = getTimeType(first, last, startTimeSet, endTimeSet)
-  if (daysType == "other" || timeType == "other") {
+  if (daysType === "other" || timeType === "other") {
     return fallBackString
-  } else if (timeType == "same-each-day") {
+  } else if (timeType === "same-each-day") {
     return `${capitalizeFirstLetter(first.day)} - ${capitalizeFirstLetter(last.day)}, ${timeOrEndOfService(first.startTime)} - ${timeOrEndOfService(first.endTime, "end")}`
   } else {
     return `${capitalizeFirstLetter(first.day)} ${timeOrEndOfService(first.startTime)} - ${capitalizeFirstLetter(last.day)} ${timeOrEndOfService(last.endTime, "end")}`
