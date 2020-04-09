@@ -54,7 +54,7 @@ const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
     const { by, order } = sortState
     return disruptions.sort((a, b) => {
       if (!a[by] || !b[by]) {
-        return 0
+        return -1
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       } else if (a[by]! > b[by]!) {
         return order === "asc" ? 1 : -1

@@ -205,10 +205,16 @@ describe("DisruptionIndexConnected", () => {
               sourceLabel: "NewtonHighlandsKenmore",
             }),
             new Adjustment({
-              id: "1",
+              id: "2",
               routeId: "Red",
               source: "gtfs_creator",
               sourceLabel: "HarvardAlewife",
+            }),
+            new Adjustment({
+              id: "3",
+              routeId: "CR-Fairmount",
+              source: "arrow",
+              sourceLabel: "Fairmount--Newmarket",
             }),
           ],
           daysOfWeek: [
@@ -234,7 +240,7 @@ describe("DisruptionIndexConnected", () => {
       ],
       [
         [
-          "NewtonHighlandsKenmore, HarvardAlewife",
+          "NewtonHighlandsKenmore, HarvardAlewife, Fairmount--Newmarket",
           "1/15/2020 - 1/30/2020",
           "Saturday 8:45PM - Sunday 8:45PM",
         ],
