@@ -77,19 +77,22 @@ const timeStringToTime = (
   if (typeof timeString === "undefined") {
     return null
   }
-
   const timeStringComponents = timeString.split(":")
 
   if (timeStringComponents.length === 3) {
+    const hourString = timeStringComponents[0].startsWith("0")
+      ? timeStringComponents[0].slice(1)
+      : timeStringComponents[0]
     const hour = String(
-      +timeStringComponents[0] > 12
-        ? +timeStringComponents[0] - 12
-        : timeStringComponents[0]
+      +hourString > 12
+        ? +hourString - 12
+        : hourString === "0"
+        ? "12"
+        : hourString
     )
     const minute = timeStringComponents[1]
     const second = timeStringComponents[2]
     const period = +timeStringComponents[0] > 12 ? "PM" : "AM"
-
     if (isHourOption(hour) && isMinuteOption(minute) && second === "00") {
       return {
         hour,
@@ -159,16 +162,7 @@ const timeToString = (time: Time): string => {
   return `${numToString(hourNum)}:${numToString(minuteNum)}:00`
 }
 
-const ixToDayName = (
-  ix: number
-):
-  | "monday"
-  | "tuesday"
-  | "wednesday"
-  | "thursday"
-  | "friday"
-  | "saturday"
-  | "sunday" => {
+const ixToDayName = (ix: number): DayName => {
   switch (ix) {
     case 0:
       return "monday"
@@ -187,16 +181,7 @@ const ixToDayName = (
   }
 }
 
-const dayToIx = (
-  day:
-    | "monday"
-    | "tuesday"
-    | "wednesday"
-    | "thursday"
-    | "friday"
-    | "saturday"
-    | "sunday"
-): number => {
+const dayToIx = (day: DayName): number => {
   switch (day) {
     case "monday":
       return 0
@@ -237,18 +222,17 @@ const dayOfWeekTimeRangesToDayOfWeeks = (
 }
 
 const timeOrEndOfService = (
-  time?: string,
+  timeString?: string,
   end: "start" | "end" = "start"
 ): string => {
-  if (time) {
-    const hoursInt = parseInt(time.slice(0, 2), 10)
-    const hours = hourToString(hoursInt)
-    const minutes = time.slice(2, 5)
-    const period = hoursInt < 12 ? "AM" : "PM"
-    return `${hours}${minutes}${period}`
-  } else {
-    return end === "start" ? "Start of service" : "End of service"
+  if (timeString) {
+    const time = timeStringToTime(timeString)
+    if (time && time !== "error") {
+      const { hour, minute, period } = time
+      return `${hour}:${minute}${period}`
+    }
   }
+  return end === "start" ? "Start of service" : "End of service"
 }
 
 const getTimeType = (
@@ -354,14 +338,4 @@ export {
   dayOfWeekTimeRangesToDayOfWeeks,
   parseDaysAndTimes,
   dayToIx,
-}
-
-const hourToString = (hour: number) => {
-  if (hour === 0) {
-    return "12"
-  } else if (hour > 12) {
-    return (hour - 12).toString()
-  } else {
-    return hour.toString()
-  }
 }
