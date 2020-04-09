@@ -170,7 +170,7 @@ describe("DisruptionIndexConnected", () => {
             new DayOfWeek({
               id: "1",
               startTime: "20:45:00",
-              day: "friday",
+              dayName: "friday",
             }),
           ],
           exceptions: [
@@ -214,12 +214,12 @@ describe("DisruptionIndexConnected", () => {
             new DayOfWeek({
               id: "1",
               startTime: "20:45:00",
-              day: "saturday",
+              dayName: "saturday",
             }),
             new DayOfWeek({
               id: "2",
               endTime: "20:45:00",
-              day: "sunday",
+              dayName: "sunday",
             }),
           ],
           exceptions: [

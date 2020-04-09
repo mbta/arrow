@@ -280,7 +280,7 @@ const getTimeType = (
   endTimeSet: Set<string | undefined>
 ): "daily" | "ends" | "other" => {
   const setSizeSum = startTimeSet.size + endTimeSet.size
-  if (setSizeSum == 2) {
+  if (setSizeSum === 2) {
     return "daily"
   } else if (
     (!!firstTime.startTime || !!firstTime.endTime) &&
@@ -313,8 +313,12 @@ const capitalizeFirstLetter = (str?: string) => {
   return str ? str.charAt(0).toUpperCase() + str.slice(1) : ""
 }
 
-const describeSingleDay = ({ day, startTime, endTime }: DayOfWeek): string =>
-  `${capitalizeFirstLetter(day)}, ${timeOrEndOfService(
+const describeSingleDay = ({
+  dayName,
+  startTime,
+  endTime,
+}: DayOfWeek): string =>
+  `${capitalizeFirstLetter(dayName)}, ${timeOrEndOfService(
     startTime
   )} - ${timeOrEndOfService(endTime, "end")}`
 
@@ -328,8 +332,8 @@ export const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
   const endTimeSet = new Set<string | undefined>()
   const fallBackStringList: string[] = []
   daysAndTimes.forEach(dayOfWeek => {
-    const { day, startTime, endTime } = dayOfWeek
-    if (day) {
+    const { dayName, startTime, endTime } = dayOfWeek
+    if (dayName) {
       startTimeSet.add(startTime)
       endTimeSet.add(endTime)
       fallBackStringList.push(describeSingleDay(dayOfWeek))
@@ -337,23 +341,23 @@ export const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
   })
   const daysType = getDaysType(
     daysAndTimes
-      .map(day => day.day)
+      .map(day => day.dayName)
       .filter((day: DayName | undefined): day is DayName => !!day)
   )
   const timeType = getTimeType(first, last, startTimeSet, endTimeSet)
   if (daysType === "other" || timeType === "other") {
     return fallBackStringList.join(", ")
   } else if (timeType === "daily") {
-    return `${capitalizeFirstLetter(first.day)} - ${capitalizeFirstLetter(
-      last.day
+    return `${capitalizeFirstLetter(first.dayName)} - ${capitalizeFirstLetter(
+      last.dayName
     )}, ${timeOrEndOfService(first.startTime)} - ${timeOrEndOfService(
       first.endTime,
       "end"
     )}`
   } else {
-    return `${capitalizeFirstLetter(first.day)} ${timeOrEndOfService(
+    return `${capitalizeFirstLetter(first.dayName)} ${timeOrEndOfService(
       first.startTime
-    )} - ${capitalizeFirstLetter(last.day)} ${timeOrEndOfService(
+    )} - ${capitalizeFirstLetter(last.dayName)} ${timeOrEndOfService(
       last.endTime,
       "end"
     )}`
