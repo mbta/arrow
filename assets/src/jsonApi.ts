@@ -14,7 +14,7 @@ type ModelObject =
 const toModelObject = (
   response: any
 ): ModelObject | ModelObject[] | "error" => {
-  const includedObjectsMap: {
+  const includedObjects: {
     [key: string]: ModelObject | "error"
   } = Array.isArray(response?.included)
     ? response.included.reduce(
@@ -25,14 +25,9 @@ const toModelObject = (
         {}
       )
     : {}
-  let includedObjects = Object.values(includedObjectsMap)
   if (Array.isArray(response?.included)) {
-    includedObjects = response.included.map((raw: any) =>
-      modelFromJsonApiResource(raw, [])
-    )
-
     if (
-      Object.values(includedObjectsMap).some(
+      Object.values(includedObjects).some(
         (modelObject: ModelObject | "error") => modelObject === "error"
       )
     ) {
@@ -51,7 +46,7 @@ const toModelObject = (
               return [
                 ...acc,
                 ...(curr?.data || []).map(
-                  (x: any) => includedObjectsMap[`${x.type}-${x.id}`]
+                  (x: any) => includedObjects[`${x.type}-${x.id}`]
                 ),
               ]
             },
@@ -69,7 +64,7 @@ const toModelObject = (
   } else {
     return modelFromJsonApiResource(
       response.data,
-      includedObjects as ModelObject[]
+      Object.values(includedObjects) as ModelObject[]
     )
   }
 }
