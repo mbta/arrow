@@ -21,7 +21,7 @@ import { DisruptionTimePicker } from "./disruptionTimePicker"
 import Adjustment from "../models/adjustment"
 import Disruption from "../models/disruption"
 import Exception from "../models/exception"
-import { ModelObject, toModelObject } from "../jsonApi"
+import { JsonApiResponse, toModelObject } from "../jsonApi"
 import DayOfWeek from "../models/dayOfWeek"
 
 interface TParams {
@@ -65,11 +65,11 @@ const EditDisruption = ({
   >(null)
 
   React.useEffect(() => {
-    apiGet<ModelObject | ModelObject[] | "error">({
+    apiGet<JsonApiResponse>({
       url: "/api/disruptions/" + encodeURIComponent(match.params.id),
       parser: toModelObject,
       defaultResult: "error",
-    }).then((result: ModelObject | ModelObject[] | "error") => {
+    }).then((result: JsonApiResponse) => {
       if (result instanceof Disruption) {
         setDisruption(result)
       } else {

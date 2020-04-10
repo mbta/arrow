@@ -11,9 +11,9 @@ type ModelObject =
   | Exception
   | TripShortName
 
-const toModelObject = (
-  response: any
-): ModelObject | ModelObject[] | "error" => {
+type JsonApiResponse = ModelObject | ModelObject[] | "error"
+
+const toModelObject = (response: any): JsonApiResponse => {
   const includedObjects: {
     [key: string]: ModelObject | "error"
   } = Array.isArray(response?.included)
@@ -111,4 +111,4 @@ const modelFromJsonApiResource = (
   return "error"
 }
 
-export { ModelObject, toModelObject, parseErrors }
+export { ModelObject, JsonApiResponse, toModelObject, parseErrors }
