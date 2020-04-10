@@ -27,7 +27,7 @@ defmodule ArrowWeb.API.DisruptionController do
     )
   end
 
-  @spec build_query([{String.t(), Date.t()}]) :: Ecto.Query.t()
+  @spec create(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def create(conn, params) do
     params_data = Map.get(params, "data", %{})
     params_relationships = Map.get(params_data, "relationships", %{})
@@ -59,6 +59,7 @@ defmodule ArrowWeb.API.DisruptionController do
     end
   end
 
+  @spec build_query([{String.t(), Date.t()}]) :: Ecto.Query.t()
   defp build_query(filters) do
     Enum.reduce(filters, from(d in Disruption), &compose_query/2)
   end
