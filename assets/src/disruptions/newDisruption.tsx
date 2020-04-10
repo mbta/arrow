@@ -7,7 +7,7 @@ import Form from "react-bootstrap/Form"
 import Alert from "react-bootstrap/Alert"
 
 import { apiGet, apiPost } from "../api"
-import { toModelObject, ModelObject, parseErrors } from "../jsonApi"
+import { toModelObject, JsonApiResponse, parseErrors } from "../jsonApi"
 import Disruption from "../models/disruption"
 import Adjustment from "../models/adjustment"
 import Exception from "../models/exception"
@@ -283,11 +283,11 @@ const NewDisruption = ({}): JSX.Element => {
   }
 
   React.useEffect(() => {
-    apiGet<ModelObject | ModelObject[] | "error">({
+    apiGet<JsonApiResponse>({
       url: "/api/adjustments",
       parser: toModelObject,
       defaultResult: "error",
-    }).then((result: ModelObject | ModelObject[] | "error") => {
+    }).then((result: JsonApiResponse) => {
       if (
         Array.isArray(result) &&
         result.every(res => res instanceof Adjustment)

@@ -13,7 +13,7 @@ import { DisruptionTable } from "./disruptionTable"
 import DisruptionCalendar from "./disruptionCalendar"
 import Disruption from "../models/disruption"
 import { apiGet } from "../api"
-import { ModelObject, toModelObject } from "../jsonApi"
+import { JsonApiResponse, toModelObject } from "../jsonApi"
 import { parseDaysAndTimes } from "../disruptions/time"
 
 type Routes =
@@ -251,11 +251,11 @@ const DisruptionIndex = () => {
   }, [disruptions])
 
   React.useEffect(() => {
-    apiGet<ModelObject | ModelObject[] | "error">({
+    apiGet<JsonApiResponse>({
       url: "/api/disruptions",
       parser: toModelObject,
       defaultResult: "error",
-    }).then((result: ModelObject | ModelObject[] | "error") => {
+    }).then((result: JsonApiResponse) => {
       if (
         Array.isArray(result) &&
         result.every(res => res instanceof Disruption)

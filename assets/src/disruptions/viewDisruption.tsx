@@ -9,7 +9,7 @@ import { DisruptionPreview } from "./disruptionPreview"
 import { fromDaysOfWeek } from "./time"
 
 import Disruption from "../models/disruption"
-import { ModelObject, toModelObject } from "../jsonApi"
+import { JsonApiResponse, toModelObject } from "../jsonApi"
 
 interface TParams {
   id: string
@@ -51,11 +51,11 @@ const ViewDisruptionForm = ({
   >(null)
 
   React.useEffect(() => {
-    apiGet<ModelObject | ModelObject[] | "error">({
+    apiGet<JsonApiResponse>({
       url: "/api/disruptions/" + encodeURIComponent(disruptionId),
       parser: toModelObject,
       defaultResult: "error",
-    }).then((result: ModelObject | ModelObject[] | "error") => {
+    }).then((result: JsonApiResponse) => {
       if (result instanceof Disruption) {
         setDisruption(result)
       } else {
