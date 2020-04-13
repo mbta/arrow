@@ -26,7 +26,7 @@ const withElement = (
 
 describe("NewDisruption", () => {
   let apiCallSpy: jest.SpyInstance
-  let apiPostSpy: jest.SpyInstance
+  let apiSendSpy: jest.SpyInstance
 
   beforeEach(() => {
     apiCallSpy = jest.spyOn(api, "apiGet").mockImplementation(() => {
@@ -49,7 +49,7 @@ describe("NewDisruption", () => {
 
   afterAll(() => {
     apiCallSpy.mockRestore()
-    apiPostSpy.mockRestore()
+    apiSendSpy.mockRestore()
   })
 
   test("header include link to homepage", async () => {
@@ -344,7 +344,7 @@ describe("NewDisruption", () => {
   })
 
   test("can create a disruption", async () => {
-    apiPostSpy = jest.spyOn(api, "apiPost").mockImplementation(() => {
+    apiSendSpy = jest.spyOn(api, "apiSend").mockImplementation(() => {
       return Promise.resolve({
         ok: {},
       })
@@ -386,18 +386,18 @@ describe("NewDisruption", () => {
     })
 
     await screen.findByText("Success!!!")
-    const apiPostCall = apiPostSpy.mock.calls[0][0]
-    const apiPostData = JSON.parse(apiPostCall.json)
-    expect(apiPostCall.url).toEqual("/api/disruptions")
-    expect(apiPostData.data.attributes.start_date).toEqual("2020-03-31")
-    expect(apiPostData.data.attributes.end_date).toEqual("2020-04-30")
+    const apiSendCall = apiSendSpy.mock.calls[0][0]
+    const apiSendData = JSON.parse(apiSendCall.json)
+    expect(apiSendCall.url).toEqual("/api/disruptions")
+    expect(apiSendData.data.attributes.start_date).toEqual("2020-03-31")
+    expect(apiSendData.data.attributes.end_date).toEqual("2020-04-30")
     expect(
-      apiPostData.data.relationships.adjustments.data[0].attributes.source_label
+      apiSendData.data.relationships.adjustments.data[0].attributes.source_label
     ).toEqual("Kenmore--Newton Highlands")
   })
 
   test("handles errors with disruptions", async () => {
-    apiPostSpy = jest.spyOn(api, "apiPost").mockImplementation(() => {
+    apiSendSpy = jest.spyOn(api, "apiSend").mockImplementation(() => {
       return Promise.resolve({
         error: ["Data is all wrong"],
       })

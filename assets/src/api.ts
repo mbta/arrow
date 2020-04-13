@@ -20,26 +20,28 @@ const checkResponseStatus = (response: Response) => {
   throw new Error(`Response error: ${response.status}`)
 }
 
-const apiPost = async <T, E>({
+const apiSend = async <T, E>({
   url,
+  method,
   json,
   successParser,
   errorParser,
 }: {
   url: string
+  method: "POST" | "PATCH"
   json: any
   successParser: (json: any) => T
   errorParser: (json: any) => E
 }): Promise<Result<T, E>> => {
   const response = await fetch(url, {
-    method: "POST",
+    method,
     credentials: "include",
     headers: { "Content-Type": "application/vnd.api+json" },
     body: json,
   })
   redirectIfUnauthorized(response.status)
   const responseData = await response.json()
-  if (response.status === 201) {
+  if (response.status === 200 || response.status === 201) {
     return { ok: successParser(responseData) }
   } else if (response.status === 400) {
     return { error: errorParser(responseData) }
@@ -70,4 +72,4 @@ const apiGet = <T>({
       }
     })
 
-export { apiGet, apiPost }
+export { apiGet, apiSend }

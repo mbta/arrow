@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from "../src/api"
+import { apiGet, apiSend } from "../src/api"
 
 declare global {
   interface Window {
@@ -18,12 +18,29 @@ const mockFetchFailure = () => {
   window.fetch = () => Promise.reject("network failure")
 }
 
-describe("apiPost", () => {
+describe("apiSend", () => {
   test("parses successful create", done => {
     mockFetch(201, { data: "success" })
     const successParse = jest.fn(() => "success")
-    apiPost({
+    apiSend({
       url: "/",
+      method: "POST",
+      json: "{}",
+      successParser: successParse,
+      errorParser: () => "error",
+    }).then(parsed => {
+      expect(successParse).toHaveBeenCalledWith({ data: "success" })
+      expect(parsed).toEqual({ ok: "success" })
+      done()
+    })
+  })
+
+  test("parses successful update", done => {
+    mockFetch(200, { data: "success" })
+    const successParse = jest.fn(() => "success")
+    apiSend({
+      url: "/",
+      method: "PATCH",
       json: "{}",
       successParser: successParse,
       errorParser: () => "error",
@@ -37,8 +54,9 @@ describe("apiPost", () => {
   test("parses error response", done => {
     mockFetch(400, { data: "error" })
     const errorParse = jest.fn(() => "error")
-    apiPost({
+    apiSend({
       url: "/",
+      method: "POST",
       json: "{}",
       successParser: () => "success",
       errorParser: errorParse,
@@ -52,8 +70,9 @@ describe("apiPost", () => {
   test("promise reject if there are errors", done => {
     mockFetchFailure()
 
-    apiPost({
+    apiSend({
       url: "/",
+      method: "POST",
       json: "{}",
       successParser: () => "success",
       errorParser: () => "error",
@@ -65,8 +84,9 @@ describe("apiPost", () => {
 
   test("promise reject if unexpected error code", done => {
     mockFetch(500, { data: "error" })
-    apiPost({
+    apiSend({
       url: "/",
+      method: "POST",
       json: "{}",
       successParser: () => "success",
       errorParser: () => "error",

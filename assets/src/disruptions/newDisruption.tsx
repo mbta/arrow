@@ -6,7 +6,7 @@ import Button from "react-bootstrap/Button"
 import Form from "react-bootstrap/Form"
 import Alert from "react-bootstrap/Alert"
 
-import { apiGet, apiPost } from "../api"
+import { apiGet, apiSend } from "../api"
 import { toModelObject, JsonApiResponse, parseErrors } from "../jsonApi"
 import Disruption from "../models/disruption"
 import Adjustment from "../models/adjustment"
@@ -267,8 +267,9 @@ const NewDisruption = ({}): JSX.Element => {
   const createFn = async (args: ApiCreateDisruptionParams) => {
     const disruption = disruptionFromState(args)
 
-    const result = await apiPost({
+    const result = await apiSend({
       url: "/api/disruptions",
+      method: "POST",
       json: JSON.stringify(disruption.toJsonApi()),
       successParser: toModelObject,
       errorParser: parseErrors,

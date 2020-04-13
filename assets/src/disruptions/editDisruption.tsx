@@ -1,13 +1,16 @@
 import * as React from "react"
+
+import Alert from "react-bootstrap/Alert"
 import Button from "react-bootstrap/Button"
 import ButtonGroup from "react-bootstrap/ButtonGroup"
+
+import { Redirect } from "react-router-dom"
 import { RouteComponentProps, Link } from "react-router-dom"
 
-import { apiGet } from "../api"
+import { apiGet, apiSend } from "../api"
 
 import Header from "../header"
 import Loading from "../loading"
-import { DisruptionPreview } from "./disruptionPreview"
 import { DisruptionSummary } from "./disruptionSummary"
 import {
   Time,
@@ -21,7 +24,7 @@ import { DisruptionTimePicker } from "./disruptionTimePicker"
 import Adjustment from "../models/adjustment"
 import Disruption from "../models/disruption"
 import Exception from "../models/exception"
-import { JsonApiResponse, toModelObject } from "../jsonApi"
+import { JsonApiResponse, toModelObject, parseErrors } from "../jsonApi"
 import DayOfWeek from "../models/dayOfWeek"
 
 interface TParams {
@@ -30,20 +33,16 @@ interface TParams {
 
 interface SaveCancelButtonProps {
   disruptionId: string
-  setIsPreview: React.Dispatch<boolean>
+  saveFn: () => void
 }
 
 const SaveCancelButton = ({
   disruptionId,
-  setIsPreview,
+  saveFn,
 }: SaveCancelButtonProps): JSX.Element => {
   return (
     <ButtonGroup vertical>
-      <Button
-        variant="primary"
-        onClick={() => setIsPreview(true)}
-        id="save-changes-button"
-      >
+      <Button variant="primary" onClick={saveFn} id="save-changes-button">
         save changes
       </Button>
       <Link
@@ -63,6 +62,24 @@ const EditDisruption = ({
   const [disruption, setDisruption] = React.useState<
     Disruption | "error" | null
   >(null)
+  const [validationErrors, setValidationErrors] = React.useState<string[]>([])
+  const [doRedirect, setDoRedirect] = React.useState<boolean>(false)
+
+  const saveDisruption = React.useCallback(async () => {
+    const result = await apiSend({
+      url: "/api/disruptions/" + encodeURIComponent(match.params.id),
+      method: "PATCH",
+      json: JSON.stringify((disruption as Disruption).toJsonApi()),
+      successParser: toModelObject,
+      errorParser: parseErrors,
+    })
+
+    if (result.ok) {
+      setDoRedirect(true)
+    } else if (result.error) {
+      setValidationErrors(result.error)
+    }
+  }, [disruption, match])
 
   React.useEffect(() => {
     apiGet<JsonApiResponse>({
@@ -77,6 +94,24 @@ const EditDisruption = ({
       }
     })
   }, [match.params.id])
+
+  if (validationErrors.length > 0) {
+    return (
+      <Alert variant="danger">
+        <ul>
+          {validationErrors.map(err => (
+            <li key={err}>{err} </li>
+          ))}
+        </ul>
+      </Alert>
+    )
+  }
+
+  if (doRedirect) {
+    return (
+      <Redirect to={"/disruptions/" + +encodeURIComponent(match.params.id)} />
+    )
+  }
 
   if (disruption === "error") {
     return <div>Error loading disruption.</div>
@@ -133,6 +168,7 @@ const EditDisruption = ({
         new Disruption({ ...disruption }),
         setDisruption
       )}
+      saveDisruption={saveDisruption}
     />
   )
 }
@@ -237,6 +273,7 @@ interface EditDisruptionFormProps {
   setExceptionDates: React.Dispatch<Date[]>
   disruptionDaysOfWeek: DayOfWeekTimeRanges
   setDisruptionDaysOfWeek: React.Dispatch<DayOfWeekTimeRanges>
+  saveDisruption: () => void
 }
 
 const EditDisruptionForm = ({
@@ -250,52 +287,31 @@ const EditDisruptionForm = ({
   setExceptionDates,
   disruptionDaysOfWeek,
   setDisruptionDaysOfWeek,
+  saveDisruption,
 }: EditDisruptionFormProps): JSX.Element => {
-  const [isPreview, setIsPreview] = React.useState<boolean>(false)
-
-  if (isPreview) {
-    return (
-      <div>
-        <Header />
-        <DisruptionPreview
-          disruptionId={disruptionId}
-          adjustments={adjustments}
-          setIsPreview={setIsPreview}
+  return (
+    <div>
+      <Header />
+      <DisruptionSummary
+        disruptionId={disruptionId}
+        adjustments={adjustments}
+      />
+      <fieldset>
+        <legend>Edit disruption times</legend>
+        <DisruptionTimePicker
           fromDate={fromDate}
+          setFromDate={setFromDate}
           toDate={toDate}
+          setToDate={setToDate}
           disruptionDaysOfWeek={disruptionDaysOfWeek}
+          setDisruptionDaysOfWeek={setDisruptionDaysOfWeek}
           exceptionDates={exceptionDates}
+          setExceptionDates={setExceptionDates}
         />
-      </div>
-    )
-  } else {
-    return (
-      <div>
-        <Header />
-        <DisruptionSummary
-          disruptionId={disruptionId}
-          adjustments={adjustments}
-        />
-        <fieldset>
-          <legend>Edit disruption times</legend>
-          <DisruptionTimePicker
-            fromDate={fromDate}
-            setFromDate={setFromDate}
-            toDate={toDate}
-            setToDate={setToDate}
-            disruptionDaysOfWeek={disruptionDaysOfWeek}
-            setDisruptionDaysOfWeek={setDisruptionDaysOfWeek}
-            exceptionDates={exceptionDates}
-            setExceptionDates={setExceptionDates}
-          />
-        </fieldset>
-        <SaveCancelButton
-          disruptionId={disruptionId}
-          setIsPreview={setIsPreview}
-        />
-      </div>
-    )
-  }
+      </fieldset>
+      <SaveCancelButton disruptionId={disruptionId} saveFn={saveDisruption} />
+    </div>
+  )
 }
 
 export default EditDisruption
