@@ -20,6 +20,14 @@ defmodule Arrow.Adjustment do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @type t :: %__MODULE__{
+          route_id: String.t() | nil,
+          source: String.t() | nil,
+          source_label: String.t() | nil,
+          inserted_at: DateTime.t() | nil,
+          updated_at: DateTime.t() | nil
+        }
+
   schema "adjustments" do
     field :route_id, :string
     field :source, :string
@@ -29,6 +37,7 @@ defmodule Arrow.Adjustment do
   end
 
   @doc false
+  @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(adjustment, attrs) do
     adjustment
     |> cast(attrs, [:source, :source_label, :route_id])
@@ -36,6 +45,7 @@ defmodule Arrow.Adjustment do
     |> unique_constraint(:source_label)
   end
 
+  @spec changeset_assoc(t(), map()) :: Ecto.Changeset.t()
   def changeset_assoc(adjustment, attrs) do
     cast(adjustment, attrs, [:id])
   end

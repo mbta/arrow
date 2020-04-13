@@ -127,5 +127,5 @@ for {attrs, adjustments} <- [
          "end_date" => ~D[2020-03-29]
        }, [Repo.get_by!(Adjustment, source_label: "ForgeParkSouthStation")]}
     ] do
-  Repo.insert!(Disruption.changeset(%Disruption{}, attrs, adjustments))
+  Repo.insert!(Disruption.changeset_for_create(%Disruption{}, attrs, adjustments))
 end

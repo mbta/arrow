@@ -44,12 +44,45 @@ defmodule ArrowWeb.API.DisruptionController do
       Repo.all(from adj in Arrow.Adjustment, where: adj.source_label in ^adjustment_labels)
 
     attrs = Map.merge(attrs, relationships)
-    changeset = Disruption.changeset(%Disruption{}, attrs, adjustments)
+    changeset = Disruption.changeset_for_create(%Disruption{}, attrs, adjustments)
 
     case Repo.insert(changeset) do
       {:ok, disruption} ->
         conn
         |> put_status(201)
+        |> render("show.json-api", data: disruption)
+
+      {:error, changeset} ->
+        conn
+        |> put_status(400)
+        |> render(:errors, data: changeset)
+    end
+  end
+
+  @spec update(Plug.Conn.t(), map()) :: Plug.Conn.t()
+  def update(conn, %{"id" => id} = params) do
+    params_data = Map.get(params, "data", %{})
+    params_relationships = Map.get(params_data, "relationships", %{})
+
+    relationships = ArrowWeb.Utilities.get_json_api_relationships(params_relationships)
+    attrs = JaSerializer.Params.to_attributes(params_data)
+
+    attrs = Map.merge(attrs, relationships)
+
+    changeset =
+      Disruption.changeset_for_update(
+        Repo.get(Disruption, id)
+        |> Repo.preload(:adjustments)
+        |> Repo.preload(:days_of_week)
+        |> Repo.preload(:exceptions)
+        |> Repo.preload(:trip_short_names),
+        attrs
+      )
+
+    case Repo.update(changeset) do
+      {:ok, disruption} ->
+        conn
+        |> put_status(200)
         |> render("show.json-api", data: disruption)
 
       {:error, changeset} ->
