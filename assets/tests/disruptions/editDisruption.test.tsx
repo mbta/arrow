@@ -1,4 +1,5 @@
 import * as React from "react"
+import { act } from "react-dom/test-utils"
 import { MemoryRouter, Route, Switch } from "react-router-dom"
 import { render, fireEvent, screen } from "@testing-library/react"
 import { waitForElementToBeRemoved } from "@testing-library/dom"
@@ -13,6 +14,7 @@ import Exception from "../../src/models/exception"
 
 describe("EditDisruption", () => {
   let apiCallSpy: jest.SpyInstance
+  let apiSendSpy: jest.SpyInstance
 
   beforeEach(() => {
     apiCallSpy = jest.spyOn(api, "apiGet").mockImplementation(() => {
@@ -50,6 +52,7 @@ describe("EditDisruption", () => {
 
   afterAll(() => {
     apiCallSpy.mockRestore()
+    apiSendSpy.mockRestore()
   })
 
   test("header include link to homepage", async () => {
@@ -70,34 +73,6 @@ describe("EditDisruption", () => {
     )
 
     expect(container.querySelector("#header-home-link")).not.toBeNull()
-  })
-
-  test("save link previews disruption", async () => {
-    const { container } = render(
-      <MemoryRouter initialEntries={["/disruptions/foo/edit"]}>
-        <Switch>
-          <Route
-            exact={true}
-            path="/disruptions/:id/edit"
-            component={EditDisruption}
-          />
-        </Switch>
-      </MemoryRouter>
-    )
-
-    await waitForElementToBeRemoved(
-      document.querySelector("#loading-indicator")
-    )
-
-    const saveButton = container.querySelector("#save-changes-button")
-
-    if (saveButton) {
-      fireEvent.click(saveButton)
-    } else {
-      throw new Error("save button not found")
-    }
-
-    expect(screen.getByText("When")).not.toBeNull()
   })
 
   test("cancel link redirects back to view page", async () => {
@@ -130,7 +105,7 @@ describe("EditDisruption", () => {
       throw new Error("cancel button not found")
     }
 
-    expect(screen.getByText("Success!!!")).not.toBeNull()
+    expect(screen.queryByText("Success!!!")).not.toBeNull()
   })
 
   test("handles error fetching disruption", async () => {
@@ -435,5 +410,89 @@ describe("EditDisruption", () => {
     expect((endHour as HTMLInputElement).value).toBe("8")
     expect((endMinute as HTMLInputElement).value).toBe("30")
     expect((endPeriod as HTMLInputElement).value).toBe("PM")
+  })
+
+  test("successfully creating disruption", async () => {
+    apiSendSpy = jest.spyOn(api, "apiSend").mockImplementation(() => {
+      return Promise.resolve({
+        ok: {},
+      })
+    })
+
+    const { container } = render(
+      <MemoryRouter initialEntries={["/disruptions/foo/edit"]}>
+        <Switch>
+          <Route
+            exact={true}
+            path="/disruptions/:id"
+            render={() => <div>Success!!!</div>}
+          />
+          <Route
+            exact={true}
+            path="/disruptions/:id/edit"
+            component={EditDisruption}
+          />
+        </Switch>
+      </MemoryRouter>
+    )
+
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
+
+    const saveButton = container.querySelector("#save-changes-button")
+
+    if (saveButton) {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      await act(async () => {
+        fireEvent.click(saveButton)
+      })
+    } else {
+      throw new Error("save button not found")
+    }
+
+    expect(screen.queryByText("Success!!!")).not.toBeNull()
+  })
+
+  test("handles error with saving disruption", async () => {
+    apiSendSpy = jest.spyOn(api, "apiSend").mockImplementation(() => {
+      return Promise.resolve({
+        error: ["Data is all wrong"],
+      })
+    })
+
+    const { container } = render(
+      <MemoryRouter initialEntries={["/disruptions/foo/edit"]}>
+        <Switch>
+          <Route
+            exact={true}
+            path="/disruptions/:id"
+            render={() => <div>Success!!!</div>}
+          />
+          <Route
+            exact={true}
+            path="/disruptions/:id/edit"
+            component={EditDisruption}
+          />
+        </Switch>
+      </MemoryRouter>
+    )
+
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
+
+    const saveButton = container.querySelector("#save-changes-button")
+
+    if (saveButton) {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      await act(async () => {
+        fireEvent.click(saveButton)
+      })
+    } else {
+      throw new Error("save button not found")
+    }
+
+    expect(screen.getByText("Data is all wrong")).not.toBeNull()
   })
 })
