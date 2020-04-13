@@ -3,7 +3,7 @@ import Col from "react-bootstrap/Col"
 import Form from "react-bootstrap/Form"
 import Row from "react-bootstrap/Row"
 
-import DatePicker from "react-datepicker"
+import DatePicker from "../datePicker"
 
 import {
   Time,
@@ -37,7 +37,7 @@ const DisruptionDateRange = ({
         selected={fromDate}
         onChange={date => setFromDate(date)}
       />
-      until{" "}
+      <span className="px-3">until</span>
       <DatePicker
         id="disruption-date-range-end"
         selected={toDate}
