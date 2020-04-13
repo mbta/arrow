@@ -16,7 +16,7 @@ defmodule Arrow.DisruptionTest do
     test "cannot insert a disruption with no adjustments" do
       assert {:error, %{errors: errors}} =
                Repo.insert(
-                 Disruption.changeset(
+                 Disruption.changeset_for_create(
                    %Disruption{},
                    %{
                      start_date: @start_date,
@@ -40,7 +40,7 @@ defmodule Arrow.DisruptionTest do
 
       assert {:ok, new_dis} =
                Repo.insert(
-                 Disruption.changeset(
+                 Disruption.changeset_for_create(
                    %Disruption{},
                    %{
                      start_date: @start_date,
@@ -64,12 +64,12 @@ defmodule Arrow.DisruptionTest do
 
       assert {:ok, new_dis} =
                Repo.insert(
-                 Disruption.changeset(
+                 Disruption.changeset_for_create(
                    %Disruption{},
                    %{
                      "start_date" => @start_date,
                      "end_date" => @end_date,
-                     "exceptions" => [%{"excluded_date" => ~D[2019-12-01]}]
+                     "exceptions" => [%{"id" => 1234, "excluded_date" => ~D[2019-12-01]}]
                    },
                    [new_adj]
                  )
@@ -89,7 +89,7 @@ defmodule Arrow.DisruptionTest do
 
       assert {:ok, new_dis} =
                Repo.insert(
-                 Disruption.changeset(
+                 Disruption.changeset_for_create(
                    %Disruption{},
                    %{
                      "start_date" => @start_date,
@@ -114,7 +114,7 @@ defmodule Arrow.DisruptionTest do
 
       assert {:ok, new_dis} =
                Repo.insert(
-                 Disruption.changeset(
+                 Disruption.changeset_for_create(
                    %Disruption{},
                    %{
                      "start_date" => @start_date,
@@ -139,6 +139,186 @@ defmodule Arrow.DisruptionTest do
       assert saturday.day_name == "saturday"
       assert saturday.start_time == nil
       assert saturday.end_time == nil
+    end
+
+    test "can update a disruption" do
+      new_start_date = ~D[2019-10-15]
+      new_end_date = ~D[2019-12-17]
+
+      adj = %Adjustment{
+        source: "testing",
+        source_label: "test_insert_disruption",
+        route_id: "test_route"
+      }
+
+      {:ok, new_adj} = Repo.insert(adj)
+
+      {:ok, new_dis} =
+        Repo.insert(
+          Disruption.changeset_for_create(
+            %Disruption{},
+            %{
+              start_date: @start_date,
+              end_date: @end_date
+            },
+            [new_adj]
+          )
+        )
+
+      assert {:ok, updated_dis} =
+               Repo.update(
+                 Disruption.changeset_for_update(new_dis, %{
+                   start_date: new_start_date,
+                   end_date: new_end_date
+                 })
+               )
+
+      assert updated_dis.start_date == new_start_date
+      assert updated_dis.end_date == new_end_date
+    end
+
+    test "can update days of week on a disruption" do
+      adj = %Adjustment{
+        source: "testing",
+        source_label: "test_insert_disruption",
+        route_id: "test_route"
+      }
+
+      {:ok, new_adj} = Repo.insert(adj)
+
+      {:ok, new_dis} =
+        Repo.insert(
+          Disruption.changeset_for_create(
+            %Disruption{},
+            %{
+              "start_date" => @start_date,
+              "end_date" => @end_date,
+              "days_of_week" => [
+                %{"day_name" => "friday"},
+                %{"day_name" => "saturday"}
+              ]
+            },
+            [new_adj]
+          )
+        )
+
+      saturday_dow = Enum.find(new_dis.days_of_week, &(&1.day_name == "saturday"))
+
+      assert {:ok, updated_dis} =
+               Repo.update(
+                 Disruption.changeset_for_update(new_dis, %{
+                   "start_date" => @start_date,
+                   "end_date" => @end_date,
+                   "days_of_week" => [
+                     %{"id" => saturday_dow.id, "day_name" => saturday_dow.day_name},
+                     %{"day_name" => "sunday"}
+                   ]
+                 })
+               )
+
+      day_names = Enum.map(updated_dis.days_of_week, & &1.day_name)
+
+      assert Enum.count(day_names) == 2
+      assert "saturday" in day_names
+      assert "sunday" in day_names
+    end
+
+    test "can update exceptions on a disruption" do
+      adj = %Adjustment{
+        source: "testing",
+        source_label: "test_insert_disruption",
+        route_id: "test_route"
+      }
+
+      {:ok, new_adj} = Repo.insert(adj)
+
+      {:ok, new_dis} =
+        Repo.insert(
+          Disruption.changeset_for_create(
+            %Disruption{},
+            %{
+              "start_date" => @start_date,
+              "end_date" => @end_date,
+              "exceptions" => [
+                %{"excluded_date" => ~D[2019-11-01]},
+                %{"excluded_date" => ~D[2019-11-02]}
+              ]
+            },
+            [new_adj]
+          )
+        )
+
+      exception_to_keep = Enum.find(new_dis.exceptions, &(&1.excluded_date == ~D[2019-11-02]))
+
+      assert {:ok, updated_dis} =
+               Repo.update(
+                 Disruption.changeset_for_update(new_dis, %{
+                   "start_date" => @start_date,
+                   "end_date" => @end_date,
+                   "exceptions" => [
+                     %{
+                       "id" => exception_to_keep.id,
+                       "excluded_date" => exception_to_keep.excluded_date
+                     },
+                     %{"excluded_date" => ~D[2019-11-03]}
+                   ]
+                 })
+               )
+
+      excluded_dates = Enum.map(updated_dis.exceptions, & &1.excluded_date)
+
+      assert Enum.count(excluded_dates) == 2
+      assert ~D[2019-11-02] in excluded_dates
+      assert ~D[2019-11-03] in excluded_dates
+    end
+
+    test "can update trip short names on a disruption" do
+      adj = %Adjustment{
+        source: "testing",
+        source_label: "test_insert_disruption",
+        route_id: "test_route"
+      }
+
+      {:ok, new_adj} = Repo.insert(adj)
+
+      {:ok, new_dis} =
+        Repo.insert(
+          Disruption.changeset_for_create(
+            %Disruption{},
+            %{
+              "start_date" => @start_date,
+              "end_date" => @end_date,
+              "trip_short_names" => [
+                %{"trip_short_name" => "123"},
+                %{"trip_short_name" => "456"}
+              ]
+            },
+            [new_adj]
+          )
+        )
+
+      short_name_to_keep = Enum.find(new_dis.trip_short_names, &(&1.trip_short_name == "456"))
+
+      assert {:ok, updated_dis} =
+               Repo.update(
+                 Disruption.changeset_for_update(new_dis, %{
+                   "start_date" => @start_date,
+                   "end_date" => @end_date,
+                   "trip_short_names" => [
+                     %{
+                       "id" => short_name_to_keep.id,
+                       "trip_short_name" => short_name_to_keep.trip_short_name
+                     },
+                     %{"trip_short_name" => "789"}
+                   ]
+                 })
+               )
+
+      short_names = Enum.map(updated_dis.trip_short_names, & &1.trip_short_name)
+
+      assert Enum.count(short_names) == 2
+      assert "456" in short_names
+      assert "789" in short_names
     end
   end
 end

@@ -168,7 +168,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
 
     {:ok, disruption_1} =
       Repo.insert(
-        Disruption.changeset(
+        Disruption.changeset_for_create(
           %Disruption{},
           %{
             "start_date" => ~D[2019-10-10],
@@ -191,7 +191,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
 
     {:ok, disruption_2} =
       Repo.insert(
-        Disruption.changeset(
+        Disruption.changeset_for_create(
           %Disruption{},
           %{
             "start_date" => ~D[2019-11-15],
@@ -288,6 +288,129 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
 
       assert resp = json_response(conn, 400)
       assert %{"errors" => [_ | _]} = resp
+    end
+  end
+
+  describe "update/2" do
+    setup %{conn: conn} do
+      conn =
+        conn
+        |> put_req_header("accept", "application/vnd.api+json")
+        |> put_req_header("content-type", "application/vnd.api+json")
+
+      {:ok, conn: conn}
+    end
+
+    @tag :authenticated
+    test "can update disruption with valid data", %{conn: conn} do
+      {disruption_1, _} = insert_disruptions()
+
+      post_data = %{
+        "data" => %{
+          "type" => "disruption",
+          "id" => disruption_1.id,
+          "attributes" => %{
+            "start_date" => "2019-10-10",
+            "end_date" => "2019-12-15"
+          },
+          "relationships" => %{
+            "days_of_week" => %{
+              "data" => [
+                %{
+                  "type" => "day_of_week",
+                  "attributes" => %{
+                    "start_time" => nil,
+                    "end_time" => nil,
+                    "day_name" => "saturday"
+                  }
+                }
+              ]
+            },
+            "exceptions" => %{
+              "data" => []
+            },
+            "trip_short_names" => %{
+              "data" => [
+                %{
+                  "type" => "trip_short_names",
+                  "id" => Enum.at(disruption_1.trip_short_names, 0).id,
+                  "attributes" => %{
+                    "trip_short_name" => Enum.at(disruption_1.trip_short_names, 0).trip_short_name
+                  }
+                }
+              ]
+            },
+            "adjustments" => %{
+              "data" => [
+                %{
+                  "type" => "adjustment",
+                  "attributes" => %{"source_label" => "test_adjustment_1"}
+                }
+              ]
+            }
+          }
+        }
+      }
+
+      conn = patch(conn, "/api/disruptions/" <> Integer.to_string(disruption_1.id), post_data)
+
+      assert resp = json_response(conn, 200)
+    end
+
+    @tag :authenticated
+    test "fails to update disruption with invalid data", %{conn: conn} do
+      {disruption_1, _} = insert_disruptions()
+
+      post_data = %{
+        "data" => %{
+          "type" => "disruption",
+          "id" => disruption_1.id,
+          "attributes" => %{
+            "start_date" => "2019-10-10",
+            "end_date" => "2019-12-15"
+          },
+          "relationships" => %{
+            "days_of_week" => %{
+              "data" => [
+                %{
+                  "type" => "day_of_week",
+                  "attributes" => %{
+                    "start_time" => nil,
+                    "end_time" => nil,
+                    "day_name" => "saturday"
+                  }
+                }
+              ]
+            },
+            "exceptions" => %{
+              "data" => []
+            },
+            "trip_short_names" => %{
+              "data" => [
+                %{
+                  "type" => "trip_short_names",
+                  "id" => Enum.at(disruption_1.trip_short_names, 0).id,
+                  "attributes" => %{
+                    "trip_short_name" => nil
+                  }
+                }
+              ]
+            },
+            "adjustments" => %{
+              "data" => [
+                %{
+                  "type" => "adjustment",
+                  "attributes" => %{"source_label" => "test_adjustment_1"}
+                }
+              ]
+            }
+          }
+        }
+      }
+
+      conn = patch(conn, "/api/disruptions/" <> Integer.to_string(disruption_1.id), post_data)
+
+      assert resp = json_response(conn, 400)
     end
   end
 end
