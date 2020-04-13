@@ -1,0 +1,27 @@
+.m-datepicker__container {
+  display: inline-block;
+  border: 1px solid gray;
+  padding-left: 1rem;
+
+  input {
+    border: none;
+    width: 7rem;
+  }
+}
+
+.m-datepicker__icon {
+  color: #888;
+  border-left: 1px solid gray;
+  display: inline-block;
+  padding: 0.5rem;
+}
+
+.m-datepicker__react {
+  input {
+    padding: 0.5rem;
+  }
+}
+
+.react-datepicker__tab-loop {
+  display: inline-block;
+}
