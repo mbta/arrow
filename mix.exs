@@ -11,6 +11,7 @@ defmodule Arrow.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
+      releases: releases(),
       dialyzer: [
         plt_add_deps: :transitive,
         flags: [
@@ -49,6 +50,7 @@ defmodule Arrow.MixProject do
       {:credo, "~> 1.3.1", only: [:dev, :test], runtime: false},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_rds, "~> 2.0"},
+      {:ex_aws_secretsmanager, "~> 2.0"},
       {:excoveralls, "~> 0.10", only: :test},
       {:phoenix, "~> 1.4.11"},
       {:phoenix_pubsub, "~> 1.1"},
@@ -81,6 +83,15 @@ defmodule Arrow.MixProject do
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate", "test"]
+    ]
+  end
+
+  defp releases do
+    [
+      arrow: [
+        include_executables_for: [:unix],
+        config_providers: [{Arrow.SecretsProvider, []}]
+      ]
     ]
   end
 end
