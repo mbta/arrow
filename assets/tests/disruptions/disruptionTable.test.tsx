@@ -1,10 +1,7 @@
 import * as React from "react"
 import { BrowserRouter } from "react-router-dom"
-import { mount } from "enzyme"
-import {
-  DisruptionTable,
-  DisruptionTableHeader,
-} from "../../src/disruptions/disruptionTable"
+import { render, fireEvent, screen } from "@testing-library/react"
+import { DisruptionTable } from "../../src/disruptions/disruptionTable"
 
 const DisruptionTableWithRouter = () => {
   return (
@@ -42,47 +39,57 @@ const DisruptionTableWithRouter = () => {
 
 describe("DisruptionTable", () => {
   test("can sort table by 'stops' or 'dates'", () => {
-    const wrapper = mount(<DisruptionTableWithRouter />)
-    let tableRows = wrapper.find("tbody tr")
+    const { container } = render(<DisruptionTableWithRouter />)
+    let tableRows = container.querySelectorAll("tbody tr")
     expect(tableRows.length).toEqual(3)
-    let firstRow = tableRows.at(0)
-    let firstRowData = firstRow.find("td")
-    expect(firstRowData.at(0).text()).toEqual("Kenmore—Newton Highlands")
-    expect(firstRowData.at(1).text()).toEqual("10/23/2019 - 10/24/2019")
-    expect(firstRowData.at(2).text()).toEqual("Weekends, starting Friday 845")
-    expect(firstRowData.at(3).find("a[href='/disruptions/2']").length).toEqual(
-      1
+    let firstRow = tableRows.item(0)
+    let firstRowData = firstRow.querySelectorAll("td")
+    expect(firstRowData.item(0).textContent).toEqual("Kenmore—Newton Highlands")
+    expect(firstRowData.item(1).textContent).toEqual("10/23/2019 - 10/24/2019")
+    expect(firstRowData.item(2).textContent).toEqual(
+      "Weekends, starting Friday 845"
     )
-    let activeSortToggle = wrapper
-      .find(DisruptionTableHeader)
-      .find({ active: true })
-    expect(activeSortToggle.text()).toEqual("stops")
-    expect(activeSortToggle.props().sortOrder).toEqual("asc")
+    expect(
+      firstRowData.item(3).querySelectorAll("a[href='/disruptions/2']").length
+    ).toEqual(1)
+    let activeSortToggle = container.querySelector(
+      ".m-disruption-table__sortable.asc, .m-disruption-table__sortable.desc"
+    )
+    if (!activeSortToggle) {
+      throw new Error("active sort toggle not found")
+    }
+    expect(activeSortToggle.textContent).toEqual("stops")
+    expect(activeSortToggle.className).toMatch("asc")
 
-    activeSortToggle.find(".m-disruption-table__sortable").simulate("click")
-    tableRows = wrapper.find("tbody tr")
-    firstRow = tableRows.at(0)
-    firstRowData = firstRow.find("td")
+    fireEvent.click(activeSortToggle)
+    tableRows = container.querySelectorAll("tbody tr")
+    firstRow = tableRows.item(0)
+    firstRowData = firstRow.querySelectorAll("td")
 
-    activeSortToggle = wrapper
-      .find(DisruptionTableHeader)
-      .find({ active: true })
-    expect(activeSortToggle.text()).toEqual("stops")
-    expect(activeSortToggle.props().sortOrder).toEqual("desc")
-    expect(firstRowData.at(0).text()).toEqual("")
+    activeSortToggle = container.querySelector(
+      ".m-disruption-table__sortable.asc, .m-disruption-table__sortable.desc"
+    )
+    if (!activeSortToggle) {
+      throw new Error("active sort toggle not found")
+    }
+    expect(activeSortToggle.textContent).toEqual("stops")
+    expect(activeSortToggle.className).toMatch("desc")
+    expect(firstRowData.item(0).textContent).toEqual("")
 
-    wrapper
-      .find(".m-disruption-table__sortable[children='dates']")
-      .simulate("click")
-    activeSortToggle = wrapper
-      .find(DisruptionTableHeader)
-      .find({ active: true })
-    tableRows = wrapper.find("tbody tr")
-    firstRow = tableRows.at(0)
-    firstRowData = firstRow.find("td")
-    expect(activeSortToggle.text()).toEqual("dates")
-    expect(activeSortToggle.props().sortOrder).toEqual("asc")
-    expect(firstRowData.at(0).text()).toEqual("Kenmore—Newton Highlands")
-    expect(firstRowData.at(1).text()).toEqual("9/22/2019 - 10/22/2019")
+    const dateSort = screen.getByText("dates")
+    fireEvent.click(dateSort)
+    activeSortToggle = container.querySelector(
+      ".m-disruption-table__sortable.asc, .m-disruption-table__sortable.desc"
+    )
+    if (!activeSortToggle) {
+      throw new Error("active sort toggle not found")
+    }
+    tableRows = container.querySelectorAll("tbody tr")
+    firstRow = tableRows.item(0)
+    firstRowData = firstRow.querySelectorAll("td")
+    expect(activeSortToggle.textContent).toEqual("dates")
+    expect(activeSortToggle.className).toMatch("asc")
+    expect(firstRowData.item(0).textContent).toEqual("Kenmore—Newton Highlands")
+    expect(firstRowData.item(1).textContent).toEqual("9/22/2019 - 10/22/2019")
   })
 })

@@ -65,6 +65,7 @@ const RouteFilterToggle = React.memo(
         className={classnames("mr-2 m-disruption-index__route_filter", {
           active,
         })}
+        id={"route-filter-toggle-" + route}
         onClick={() => onClick(route)}
       >
         <Icon type={ROUTE_ICONS[route]} />

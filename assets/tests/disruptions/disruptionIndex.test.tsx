@@ -1,20 +1,17 @@
 import * as React from "react"
 import { BrowserRouter } from "react-router-dom"
-import { mount } from "enzyme"
-import * as renderer from "react-test-renderer"
+import { render, fireEvent, screen } from "@testing-library/react"
+
 import {
   DisruptionIndexView,
   DisruptionIndex,
-  RouteFilterToggle,
 } from "../../src/disruptions/disruptionIndex"
-import { DisruptionTable } from "../../src/disruptions/disruptionTable"
-import DisruptionCalendar from "../../src/disruptions/disruptionCalendar"
-import Header from "../../src/header"
 import Disruption from "../../src/models/disruption"
 import Adjustment from "../../src/models/adjustment"
 import DayOfWeek from "../../src/models/dayOfWeek"
 import Exception from "../../src/models/exception"
 import * as api from "../../src/api"
+
 import ReactDOM from "react-dom"
 import { act } from "react-dom/test-utils"
 
@@ -55,99 +52,135 @@ const DisruptionIndexWithRouter = ({
 
 describe("DisruptionIndexView", () => {
   test("header does not include link to homepage", () => {
-    const testInstance = renderer.create(<DisruptionIndexWithRouter />).root
+    const { container } = render(<DisruptionIndexWithRouter />)
 
-    expect(testInstance.findByType(Header).props.includeHomeLink).toBe(false)
+    expect(container.querySelector("#header-home-link")).toBeNull()
   })
 
   test("disruptions can be filtered by label", () => {
-    const wrapper = mount(<DisruptionIndexWithRouter />)
-    expect(wrapper.find("tbody tr").length).toEqual(2)
+    const { container } = render(<DisruptionIndexWithRouter />)
 
-    wrapper
-      .find('input[type="text"]')
-      .simulate("change", { target: { value: "Alewife" } })
+    expect(container.querySelectorAll("tbody tr").length).toEqual(2)
 
-    expect(wrapper.find("tbody tr").length).toEqual(1)
-    expect(
-      wrapper
-        .find("tbody tr")
-        .at(0)
-        .text()
-        .includes("AlewifeHarvard")
-    ).toBe(true)
+    const searchInput = container.querySelector('input[type="text"]')
 
-    wrapper
-      .find('input[type="text"]')
-      .simulate("change", { target: { value: "Some other label" } })
-    expect(wrapper.find("tbody tr").length).toEqual(0)
+    if (!searchInput) {
+      throw new Error("search input not found")
+    }
+
+    fireEvent.change(searchInput, { target: { value: "Alewife" } })
+
+    expect(container.querySelectorAll("tbody tr").length).toEqual(1)
+    expect(container.querySelectorAll("tbody tr").item(0).innerHTML).toMatch(
+      "AlewifeHarvard"
+    )
+
+    fireEvent.change(searchInput, { target: { value: "Some other label" } })
+
+    expect(container.querySelectorAll("tbody tr").length).toEqual(0)
   })
 
   test("disruptions can be filtered by route", () => {
-    const wrapper = mount(<DisruptionIndexWithRouter />)
-    let tableRows = wrapper.find("tbody tr")
+    const { container } = render(<DisruptionIndexWithRouter />)
+    let tableRows = container.querySelectorAll("tbody tr")
     expect(tableRows.length).toEqual(2)
-    expect(tableRows.at(0).text()).toContain("AlewifeHarvard")
-    expect(tableRows.at(1).text()).toContain("Kenmore—Newton")
-    expect(wrapper.find("#clear-filter").length).toEqual(0)
+    expect(tableRows.item(0).innerHTML).toContain("AlewifeHarvard")
+    expect(tableRows.item(1).innerHTML).toContain("Kenmore—Newton")
+    expect(container.querySelectorAll("#clear-filter").length).toEqual(0)
     expect(
-      wrapper.find(RouteFilterToggle).find({ active: true }).length
+      container.querySelectorAll(".m-disruption-index__route_filter.active")
+        .length
     ).toEqual(9)
 
-    wrapper
-      .find(RouteFilterToggle)
-      .find({ route: "Green-D" })
-      .simulate("click")
-    tableRows = wrapper.find("tbody tr")
+    const greenDselector = container.querySelector(
+      "#route-filter-toggle-Green-D"
+    )
+
+    if (!greenDselector) {
+      throw new Error("Green-D selector not found")
+    }
+
+    fireEvent.click(greenDselector)
+
+    tableRows = container.querySelectorAll("tbody tr")
     expect(tableRows.length).toEqual(1)
-    expect(tableRows.at(0).text()).toContain("Kenmore—Newton")
+    expect(tableRows.item(0).innerHTML).toContain("Kenmore—Newton")
     expect(
-      wrapper.find(RouteFilterToggle).find({ active: true }).length
+      container.querySelectorAll(".m-disruption-index__route_filter.active")
+        .length
     ).toEqual(1)
-    expect(wrapper.find("#clear-filter").length).toEqual(1)
-    wrapper.find("#clear-filter").simulate("click")
-    tableRows = wrapper.find("tbody tr")
+
+    let clearFilterLink = container.querySelector("#clear-filter")
+
+    if (!clearFilterLink) {
+      throw new Error("clear filter link not found")
+    }
+
+    fireEvent.click(clearFilterLink)
+
+    tableRows = container.querySelectorAll("tbody tr")
     expect(tableRows.length).toEqual(2)
 
-    wrapper
-      .find(RouteFilterToggle)
-      .find({ route: "Green-E" })
-      .simulate("click")
-    tableRows = wrapper.find("tbody tr")
+    const greenEselector = container.querySelector(
+      "#route-filter-toggle-Green-E"
+    )
+
+    if (!greenEselector) {
+      throw new Error("Green-E selector not found")
+    }
+
+    fireEvent.click(greenEselector)
+    tableRows = container.querySelectorAll("tbody tr")
     expect(tableRows.length).toEqual(1)
-    expect(tableRows.at(0).text()).toContain("Kenmore—Newton")
+    expect(tableRows.item(0).innerHTML).toContain("Kenmore—Newton")
     expect(
-      wrapper.find(RouteFilterToggle).find({ active: true }).length
+      container.querySelectorAll(".m-disruption-index__route_filter.active")
+        .length
     ).toEqual(1)
-    expect(wrapper.find("#clear-filter").length).toEqual(1)
-    wrapper.find("#clear-filter").simulate("click")
-    tableRows = wrapper.find("tbody tr")
+
+    clearFilterLink = container.querySelector("#clear-filter")
+
+    if (!clearFilterLink) {
+      throw new Error("clear filter link not found")
+    }
+
+    fireEvent.click(clearFilterLink)
+
+    tableRows = container.querySelectorAll("tbody tr")
     expect(tableRows.length).toEqual(2)
 
-    expect(tableRows.at(0).text()).toContain("AlewifeHarvard")
-    expect(tableRows.at(1).text()).toContain("Kenmore—Newton")
-    expect(wrapper.find("#clear-filter").length).toEqual(0)
+    expect(tableRows.item(0).innerHTML).toContain("AlewifeHarvard")
+    expect(tableRows.item(1).innerHTML).toContain("Kenmore—Newton")
+
+    clearFilterLink = container.querySelector("#clear-filter")
+    expect(clearFilterLink).toBeNull()
+
     expect(
-      wrapper.find(RouteFilterToggle).find({ active: true }).length
+      container.querySelectorAll(".m-disruption-index__route_filter.active")
+        .length
     ).toEqual(9)
   })
 
   test("can toggle between table and calendar view", () => {
-    const wrapper = mount(<DisruptionIndexWithRouter />)
-    expect(wrapper.exists(DisruptionTable)).toBe(true)
-    expect(wrapper.exists(DisruptionCalendar)).toBe(false)
-    const toggleButton = wrapper.find("#view-toggle").at(0)
-    expect(toggleButton.text()).toEqual("calendar view")
+    const { container } = render(<DisruptionIndexWithRouter />)
+    expect(screen.queryByText("days + times")).not.toBeNull()
+    expect(screen.queryByText("calendar goes here")).toBeNull()
 
-    toggleButton.simulate("click")
-    expect(wrapper.exists(DisruptionTable)).toBe(false)
-    expect(wrapper.exists(DisruptionCalendar)).toBe(true)
-    expect(toggleButton.text()).toEqual("list view")
+    const toggleButton = container.querySelector("#view-toggle")
+    if (!toggleButton) {
+      throw new Error("toggle button not found")
+    }
+    expect(toggleButton.textContent).toEqual("calendar view")
 
-    toggleButton.simulate("click")
-    expect(wrapper.exists(DisruptionTable)).toBe(true)
-    expect(wrapper.exists(DisruptionCalendar)).toBe(false)
-    expect(toggleButton.text()).toEqual("calendar view")
+    fireEvent.click(toggleButton)
+    expect(screen.queryByText("days + times")).toBeNull()
+    expect(screen.queryByText("calendar goes here")).not.toBeNull()
+    expect(toggleButton.textContent).toEqual("list view")
+
+    fireEvent.click(toggleButton)
+    expect(screen.queryByText("days + times")).not.toBeNull()
+    expect(screen.queryByText("calendar goes here")).toBeNull()
+    expect(toggleButton.textContent).toEqual("calendar view")
   })
 })
 
