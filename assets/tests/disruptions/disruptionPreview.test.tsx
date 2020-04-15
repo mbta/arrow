@@ -1,10 +1,10 @@
-import { mount } from "enzyme"
+import { render, fireEvent, screen } from "@testing-library/react"
 import * as React from "react"
 import { DisruptionPreview } from "../../src/disruptions/disruptionPreview"
 
 describe("DisruptionPreview", () => {
   test("includes formatted from and to dates", () => {
-    const text = mount(
+    render(
       <DisruptionPreview
         adjustments={[]}
         setIsPreview={() => null}
@@ -13,14 +13,13 @@ describe("DisruptionPreview", () => {
         disruptionDaysOfWeek={[null, null, null, null, null, null, null]}
         exceptionDates={[]}
       />
-    ).text()
+    )
 
-    expect(text).toMatch("1/1/2020")
-    expect(text).toMatch("1/15/2020")
+    expect(screen.queryByText("1/1/2020 – 1/15/2020")).not.toBeNull()
   })
 
   test("includes formatted exception dates", () => {
-    const text = mount(
+    render(
       <DisruptionPreview
         adjustments={[]}
         setIsPreview={() => null}
@@ -29,13 +28,13 @@ describe("DisruptionPreview", () => {
         disruptionDaysOfWeek={[null, null, null, null, null, null, null]}
         exceptionDates={[new Date(2020, 0, 10)]}
       />
-    ).text()
+    )
 
-    expect(text).toMatch("1/10/2020")
+    expect(screen.queryByText("1/10/2020")).not.toBeNull()
   })
 
   test("Days of week are included and translated", () => {
-    let text = mount(
+    render(
       <DisruptionPreview
         adjustments={[]}
         setIsPreview={() => null}
@@ -52,12 +51,14 @@ describe("DisruptionPreview", () => {
         ]}
         exceptionDates={[new Date(2020, 0, 10)]}
       />
-    ).text()
+    )
 
-    expect(text).toMatch("Wednesday")
-    expect(text).toMatch("Start of service – End of service")
+    expect(screen.queryByText("Wednesday")).not.toBeNull()
+    expect(
+      screen.queryByText("Start of service – End of service")
+    ).not.toBeNull()
 
-    text = mount(
+    render(
       <DisruptionPreview
         adjustments={[]}
         setIsPreview={() => null}
@@ -77,14 +78,14 @@ describe("DisruptionPreview", () => {
         ]}
         exceptionDates={[new Date(2020, 0, 10)]}
       />
-    ).text()
+    )
 
-    expect(text).toMatch("Thursday")
-    expect(text).toMatch("12:30AM – 9:30PM")
+    expect(screen.queryByText("Thursday")).not.toBeNull()
+    expect(screen.queryByText("12:30AM – 9:30PM")).not.toBeNull()
   })
 
   test("includes back to edit link when setIsPreview is provided", () => {
-    const wrapper = mount(
+    const { container } = render(
       <DisruptionPreview
         adjustments={[]}
         setIsPreview={() => null}
@@ -95,11 +96,11 @@ describe("DisruptionPreview", () => {
       />
     )
 
-    expect(wrapper.find("#back-to-edit-link").length).toEqual(1)
+    expect(container.querySelector("#back-to-edit-link")).not.toBeNull()
   })
 
   test("doesn't include back to edit link when setIsPreview is omitted", () => {
-    const wrapper = mount(
+    const { container } = render(
       <DisruptionPreview
         adjustments={[]}
         fromDate={null}
@@ -109,7 +110,7 @@ describe("DisruptionPreview", () => {
       />
     )
 
-    expect(wrapper.find("#back-to-edit-link").length).toEqual(0)
+    expect(container.querySelector("#back-to-edit-link")).toBeNull()
   })
 
   test("create callback is invoked", () => {
@@ -117,7 +118,7 @@ describe("DisruptionPreview", () => {
     const createFn = (args: any) => {
       requests.push(args)
     }
-    const wrapper = mount(
+    const { container } = render(
       <DisruptionPreview
         adjustments={[]}
         fromDate={null}
@@ -127,7 +128,14 @@ describe("DisruptionPreview", () => {
         createFn={createFn}
       />
     )
-    wrapper.find("button#disruption-preview-create").simulate("click")
+    const createButton = container.querySelector(
+      "button#disruption-preview-create"
+    )
+    if (!createButton) {
+      throw new Error("create button not found")
+    }
+
+    fireEvent.click(createButton)
 
     expect(requests.length).toEqual(1)
   })

@@ -1,11 +1,11 @@
 import * as React from "react"
-import { mount } from "enzyme"
+import { render, screen } from "@testing-library/react"
 import Loading from "../src/loading"
 
 describe("Loading", () => {
   test('says "Loading"', () => {
-    const text = mount(<Loading />).text()
+    render(<Loading />)
 
-    expect(text).toMatch("Loading")
+    expect(screen.queryByText("Loading…")).not.toBeNull()
   })
 })

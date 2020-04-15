@@ -1,13 +1,12 @@
 import * as React from "react"
-import { mount } from "enzyme"
-import * as renderer from "react-test-renderer"
+import { render, screen } from "@testing-library/react"
 import { DisruptionSummary } from "../../src/disruptions/disruptionSummary"
 
 import Adjustment from "../../src/models/adjustment"
 
 describe("DisruptionSummary", () => {
   test("renders the adjustments onto the page", () => {
-    const summary = (
+    const { container } = render(
       <DisruptionSummary
         adjustments={[
           new Adjustment({ routeId: "route1", sourceLabel: "adjustment1" }),
@@ -16,12 +15,11 @@ describe("DisruptionSummary", () => {
       />
     )
 
-    const testInstance = renderer.create(summary).root
-    expect(testInstance.findAllByType("li").length).toEqual(2)
+    expect(container.querySelectorAll("li").length).toEqual(2)
   })
 
   test("renders the disruption ID if present", () => {
-    const text = mount(
+    render(
       <DisruptionSummary
         disruptionId={"123"}
         adjustments={[
@@ -29,8 +27,8 @@ describe("DisruptionSummary", () => {
           new Adjustment({ routeId: "route2", sourceLabel: "adjustment2" }),
         ]}
       />
-    ).text()
+    )
 
-    expect(text).toMatch("Disruption ID: 123")
+    expect(screen.queryAllByText("Disruption ID: 123")).not.toBeNull()
   })
 })

@@ -1,18 +1,17 @@
 import * as React from "react"
-import * as renderer from "react-test-renderer"
+import { render } from "@testing-library/react"
 import Header from "../src/header"
 
 describe("Header", () => {
   test("includes link to homepage when includeHomeLink set", () => {
-    const testInstance = renderer.create(<Header includeHomeLink={true} />).root
+    const { container } = render(<Header includeHomeLink={true} />)
 
-    expect(testInstance.findAllByType("a").length).toBe(1)
+    expect(container.querySelectorAll("a").length).toBe(1)
   })
 
   test("doesn't include link to homepage when includeHomeLink not set", () => {
-    const testInstance = renderer.create(<Header includeHomeLink={false} />)
-      .root
+    const { container } = render(<Header includeHomeLink={false} />)
 
-    expect(testInstance.findAllByType("a").length).toBe(0)
+    expect(container.querySelectorAll("a").length).toBe(0)
   })
 })
