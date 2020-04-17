@@ -95,18 +95,6 @@ const EditDisruption = ({
     })
   }, [match.params.id])
 
-  if (validationErrors.length > 0) {
-    return (
-      <Alert variant="danger">
-        <ul>
-          {validationErrors.map(err => (
-            <li key={err}>{err} </li>
-          ))}
-        </ul>
-      </Alert>
-    )
-  }
-
   if (doRedirect) {
     return (
       <Redirect to={"/disruptions/" + +encodeURIComponent(match.params.id)} />
@@ -169,6 +157,7 @@ const EditDisruption = ({
         setDisruption
       )}
       saveDisruption={saveDisruption}
+      validationErrors={validationErrors}
     />
   )
 }
@@ -274,6 +263,7 @@ interface EditDisruptionFormProps {
   disruptionDaysOfWeek: DayOfWeekTimeRanges
   setDisruptionDaysOfWeek: React.Dispatch<DayOfWeekTimeRanges>
   saveDisruption: () => void
+  validationErrors: string[]
 }
 
 const EditDisruptionForm = ({
@@ -288,10 +278,20 @@ const EditDisruptionForm = ({
   disruptionDaysOfWeek,
   setDisruptionDaysOfWeek,
   saveDisruption,
+  validationErrors,
 }: EditDisruptionFormProps): JSX.Element => {
   return (
     <div>
       <Header />
+      {validationErrors.length > 0 && (
+        <Alert variant="danger">
+          <ul>
+            {validationErrors.map(err => (
+              <li key={err}>{err} </li>
+            ))}
+          </ul>
+        </Alert>
+      )}
       <DisruptionSummary
         disruptionId={disruptionId}
         adjustments={adjustments}
