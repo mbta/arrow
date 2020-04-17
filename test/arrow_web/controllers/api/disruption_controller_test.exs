@@ -2,6 +2,14 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
   use ArrowWeb.ConnCase
   alias Arrow.{Disruption, Repo, Adjustment}
 
+  @current_time DateTime.from_naive!(~N[2019-04-15 12:00:00], "America/New_York")
+
+  def future_date() do
+    {:ok, now} = DateTime.now(Application.get_env(:arrow, :time_zone))
+    today = DateTime.to_date(now)
+    Date.add(today, 10)
+  end
+
   describe "index/2" do
     @tag :authenticated
     test "returns 200", %{conn: conn} do
@@ -25,8 +33,11 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
       d1 = Enum.find(data, &(&1["attributes"]["start_date"] == "2019-10-10"))
       d2 = Enum.find(data, &(&1["attributes"]["start_date"] == "2019-11-15"))
 
+      end_date1 = Date.to_iso8601(future_date())
+      end_date2 = future_date() |> Date.add(5) |> Date.to_iso8601()
+
       assert %{
-               "attributes" => %{"end_date" => "2019-12-12", "start_date" => "2019-10-10"},
+               "attributes" => %{"end_date" => ^end_date1, "start_date" => "2019-10-10"},
                "id" => _,
                "relationships" => %{
                  "adjustments" => %{"data" => [%{"id" => id1, "type" => "adjustment"}]},
@@ -38,7 +49,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
              } = d1
 
       assert %{
-               "attributes" => %{"end_date" => "2019-12-30", "start_date" => "2019-11-15"},
+               "attributes" => %{"end_date" => ^end_date2, "start_date" => "2019-11-15"},
                "id" => _,
                "relationships" => %{
                  "adjustments" => %{"data" => [%{"id" => id4, "type" => "adjustment"}]},
@@ -62,11 +73,14 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
 
       res = json_response(get(conn, "/api/disruptions", %{"include" => "adjustments"}), 200)
 
+      end_date1 = Date.to_iso8601(future_date())
+      end_date2 = future_date() |> Date.add(5) |> Date.to_iso8601()
+
       assert assert %{
                       "data" => [
                         %{
                           "attributes" => %{
-                            "end_date" => "2019-12-12",
+                            "end_date" => ^end_date1,
                             "start_date" => "2019-10-10"
                           },
                           "relationships" => %{
@@ -81,7 +95,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                         },
                         %{
                           "attributes" => %{
-                            "end_date" => "2019-12-30",
+                            "end_date" => ^end_date2,
                             "start_date" => "2019-11-15"
                           },
                           "relationships" => %{
@@ -121,12 +135,15 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
     test "can filter by dates", %{conn: conn} do
       {%{id: disruption_1_id}, %{id: disruption_2_id}} = insert_disruptions()
 
+      end_date1 = Date.to_iso8601(future_date())
+      end_date2 = future_date() |> Date.add(5) |> Date.to_iso8601()
+
       Enum.each(
         [
           {"min_start_date", "2019-11-01", disruption_2_id},
           {"max_start_date", "2019-11-01", disruption_1_id},
-          {"min_end_date", "2019-12-20", disruption_2_id},
-          {"max_end_date", "2019-12-20", disruption_1_id}
+          {"min_end_date", end_date2, disruption_2_id},
+          {"max_end_date", end_date1, disruption_1_id}
         ],
         fn {filter, value, expected_id} ->
           data =
@@ -172,11 +189,12 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           %Disruption{},
           %{
             "start_date" => ~D[2019-10-10],
-            "end_date" => ~D[2019-12-12],
-            "exceptions" => [%{"excluded_date" => ~D[2019-12-01]}],
+            "end_date" => future_date(),
+            "exceptions" => [%{"excluded_date" => future_date()}],
             "trip_short_names" => [%{"trip_short_name" => "006"}]
           },
-          [adjustment_1]
+          [adjustment_1],
+          @current_time
         )
       )
 
@@ -195,10 +213,11 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           %Disruption{},
           %{
             "start_date" => ~D[2019-11-15],
-            "end_date" => ~D[2019-12-30],
+            "end_date" => Date.add(future_date(), 5),
             "days_of_week" => [%{day_name: "friday", start_time: ~T[20:30:00]}]
           },
-          [adjustment_2]
+          [adjustment_2],
+          @current_time
         )
       )
 
@@ -228,8 +247,8 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
         "data" => %{
           "type" => "disruption",
           "attributes" => %{
-            "start_date" => "2020-01-01",
-            "end_date" => "2020-03-01"
+            "start_date" => Date.to_iso8601(future_date()),
+            "end_date" => Date.to_iso8601(future_date())
           },
           "relationships" => %{
             "days_of_week" => %{
@@ -254,7 +273,10 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
             },
             "exceptions" => %{
               "data" => [
-                %{"type" => "exception", "attributes" => %{"excluded_date" => "2020-02-01"}}
+                %{
+                  "type" => "exception",
+                  "attributes" => %{"excluded_date" => Date.to_iso8601(future_date())}
+                }
               ]
             },
             "trip_short_names" => %{
@@ -311,7 +333,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           "id" => disruption_1.id,
           "attributes" => %{
             "start_date" => "2019-10-10",
-            "end_date" => "2019-12-15"
+            "end_date" => Date.to_iso8601(future_date())
           },
           "relationships" => %{
             "days_of_week" => %{
@@ -367,7 +389,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           "id" => disruption_1.id,
           "attributes" => %{
             "start_date" => "2019-10-10",
-            "end_date" => "2019-12-15"
+            "end_date" => Date.to_iso8601(future_date())
           },
           "relationships" => %{
             "days_of_week" => %{

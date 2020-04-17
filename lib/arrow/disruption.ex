@@ -36,20 +36,25 @@ defmodule Arrow.Disruption do
   end
 
   @doc false
-  @spec changeset(t(), map()) :: Ecto.Changeset.t()
-  def changeset(disruption, attrs) do
-    disruption
-    |> cast(attrs, [:id, :start_date, :end_date])
-    |> validate_required([:start_date, :end_date])
-  end
+  @spec changeset_for_create(t(), map(), [Arrow.Adjustment.t()], DateTime.t()) ::
+          Ecto.Changeset.t()
+  def changeset_for_create(disruption, attrs, adjustments, current_time) do
+    today = DateTime.to_date(current_time)
 
-  @doc false
-  @spec changeset_for_create(t(), map(), [Arrow.Adjustment.t()]) :: Ecto.Changeset.t()
-  def changeset_for_create(disruption, attrs, adjustments) do
-    {days_of_week, exceptions, trip_short_names} = assoc_changesets(attrs)
+    days_of_week =
+      for dow <- attrs["days_of_week"] || [],
+          do: DayOfWeek.changeset(%DayOfWeek{}, dow)
+
+    exceptions =
+      for exception <- attrs["exceptions"] || [],
+          do: Exception.changeset(%Exception{}, exception, today)
+
+    trip_short_names =
+      for name <- attrs["trip_short_names"] || [],
+          do: TripShortName.changeset(%TripShortName{}, name)
 
     disruption
-    |> changeset(attrs)
+    |> changeset(attrs, today)
     |> put_assoc(:adjustments, adjustments)
     |> validate_length(:adjustments, min: 1)
     |> put_assoc(:days_of_week, days_of_week)
@@ -58,32 +63,47 @@ defmodule Arrow.Disruption do
   end
 
   @doc false
-  @spec changeset_for_update(t(), map()) :: Ecto.Changeset.t()
-  def changeset_for_update(disruption, attrs) do
-    {days_of_week, exceptions, trip_short_names} = assoc_changesets(attrs)
+  @spec changeset_for_update(t(), map(), DateTime.t()) :: Ecto.Changeset.t(t())
+  def changeset_for_update(disruption, attrs, current_time) do
+    today = DateTime.to_date(current_time)
 
     disruption
-    |> changeset(attrs)
-    |> cast_assoc(:days_of_week, days_of_week)
-    |> cast_assoc(:exceptions, exceptions)
-    |> cast_assoc(:trip_short_names, trip_short_names)
+    |> changeset(attrs, today)
+    |> Arrow.Validations.validate_not_changing_past(:start_date, today)
+    |> Arrow.Validations.validate_not_changing_past(:end_date, today)
+    |> cast_assoc(:days_of_week)
+    |> cast_assoc(:exceptions, with: {Exception, :changeset, [today]})
+    |> cast_assoc(:trip_short_names)
+    |> validate_not_deleting_past_exception(today)
   end
 
-  @spec assoc_changesets(map()) ::
-          {[Ecto.Changeset.t()], [Ecto.Changeset.t()], [Ecto.Changeset.t()]}
-  defp assoc_changesets(attrs) do
-    days_of_week =
-      for dow <- attrs["days_of_week"] || [],
-          do: DayOfWeek.changeset(%DayOfWeek{}, dow)
-
-    exceptions =
-      for exception <- attrs["exceptions"] || [],
-          do: Exception.changeset(%Exception{}, exception)
-
-    trip_short_names =
-      for name <- attrs["trip_short_names"] || [],
-          do: TripShortName.changeset(%TripShortName{}, name)
-
-    {days_of_week, exceptions, trip_short_names}
+  @doc false
+  @spec changeset(t(), map(), Date.t()) :: Ecto.Changeset.t(t())
+  defp changeset(disruption, attrs, today) do
+    disruption
+    |> cast(attrs, [:id, :start_date, :end_date])
+    |> validate_required([:start_date, :end_date])
+    |> Arrow.Validations.validate_not_in_past(:start_date, today)
+    |> Arrow.Validations.validate_not_in_past(:end_date, today)
   end
+
+  @spec validate_not_deleting_past_exception(Ecto.Changeset.t(), Date.t()) ::
+          Ecto.Changeset.t(t())
+  defp validate_not_deleting_past_exception(changeset, today) do
+    if deleting_past_exception?(changeset, today) do
+      add_error(changeset, :exceptions, "can't be deleted from the past.")
+    else
+      changeset
+    end
+  end
+
+  @spec deleting_past_exception?(Ecto.Changeset.t(), Date.t()) :: boolean()
+  defp deleting_past_exception?(%{changes: %{exceptions: [_ | _] = exceptions}}, today) do
+    Enum.any?(exceptions, fn excp ->
+      date = excp.data.excluded_date
+      not is_nil(date) and Date.compare(date, today) == :lt and excp.action in [:delete, :replace]
+    end)
+  end
+
+  defp deleting_past_exception?(_, _), do: false
 end

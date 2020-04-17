@@ -65,7 +65,8 @@ defmodule Arrow.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:guardian, "~> 2.0"},
       {:ueberauth, "~> 0.6"},
-      {:ueberauth_cognito, "~> 0.1"}
+      {:ueberauth_cognito, "~> 0.1"},
+      {:tzdata, "~> 1.0.3"}
     ]
   end
 

@@ -52,4 +52,19 @@ defmodule Arrow.DataCase do
       end)
     end)
   end
+
+  def build_disruption do
+    %Arrow.Disruption{
+      start_date: ~D[2020-04-01],
+      end_date: ~D[2020-05-01],
+      days_of_week: [%Arrow.Disruption.DayOfWeek{day_name: "monday"}],
+      adjustments: [
+        %Arrow.Adjustment{
+          route_id: "Red",
+          source: "gtfs_creator",
+          source_label: "KendallParkStreet"
+        }
+      ]
+    }
+  end
 end
