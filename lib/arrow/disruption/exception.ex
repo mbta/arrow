@@ -17,10 +17,12 @@ defmodule Arrow.Disruption.Exception do
   end
 
   @doc false
-  @spec changeset(t(), map()) :: Ecto.Changeset.t()
-  def changeset(exception, attrs) do
+  @spec changeset(t(), map(), Date.t()) :: Ecto.Changeset.t(t())
+  def changeset(exception, attrs, today) do
     exception
     |> cast(attrs, [:id, :excluded_date])
     |> validate_required([:excluded_date])
+    |> Arrow.Validations.validate_not_in_past(:excluded_date, today)
+    |> Arrow.Validations.validate_not_changing_past(:excluded_date, today)
   end
 end

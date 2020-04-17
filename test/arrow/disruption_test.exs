@@ -7,6 +7,7 @@ defmodule Arrow.DisruptionTest do
 
   @start_date ~D[2019-10-10]
   @end_date ~D[2019-12-12]
+  @current_time DateTime.from_naive!(~N[2019-04-15 12:00:00], "America/New_York")
 
   describe "database" do
     test "defaults to no disruptions" do
@@ -22,7 +23,8 @@ defmodule Arrow.DisruptionTest do
                      start_date: @start_date,
                      end_date: @end_date
                    },
-                   []
+                   [],
+                   @current_time
                  )
                )
 
@@ -46,7 +48,8 @@ defmodule Arrow.DisruptionTest do
                      start_date: @start_date,
                      end_date: @end_date
                    },
-                   [new_adj]
+                   [new_adj],
+                   @current_time
                  )
                )
 
@@ -71,7 +74,8 @@ defmodule Arrow.DisruptionTest do
                      "end_date" => @end_date,
                      "exceptions" => [%{"id" => 1234, "excluded_date" => ~D[2019-12-01]}]
                    },
-                   [new_adj]
+                   [new_adj],
+                   @current_time
                  )
                )
 
@@ -96,7 +100,8 @@ defmodule Arrow.DisruptionTest do
                      "end_date" => @end_date,
                      "trip_short_names" => [%{"trip_short_name" => "006"}]
                    },
-                   [new_adj]
+                   [new_adj],
+                   @current_time
                  )
                )
 
@@ -124,7 +129,8 @@ defmodule Arrow.DisruptionTest do
                        %{"day_name" => "saturday"}
                      ]
                    },
-                   [new_adj]
+                   [new_adj],
+                   @current_time
                  )
                )
 
@@ -161,16 +167,21 @@ defmodule Arrow.DisruptionTest do
               start_date: @start_date,
               end_date: @end_date
             },
-            [new_adj]
+            [new_adj],
+            @current_time
           )
         )
 
       assert {:ok, updated_dis} =
                Repo.update(
-                 Disruption.changeset_for_update(new_dis, %{
-                   start_date: new_start_date,
-                   end_date: new_end_date
-                 })
+                 Disruption.changeset_for_update(
+                   new_dis,
+                   %{
+                     start_date: new_start_date,
+                     end_date: new_end_date
+                   },
+                   @current_time
+                 )
                )
 
       assert updated_dis.start_date == new_start_date
@@ -198,7 +209,8 @@ defmodule Arrow.DisruptionTest do
                 %{"day_name" => "saturday"}
               ]
             },
-            [new_adj]
+            [new_adj],
+            @current_time
           )
         )
 
@@ -206,14 +218,18 @@ defmodule Arrow.DisruptionTest do
 
       assert {:ok, updated_dis} =
                Repo.update(
-                 Disruption.changeset_for_update(new_dis, %{
-                   "start_date" => @start_date,
-                   "end_date" => @end_date,
-                   "days_of_week" => [
-                     %{"id" => saturday_dow.id, "day_name" => saturday_dow.day_name},
-                     %{"day_name" => "sunday"}
-                   ]
-                 })
+                 Disruption.changeset_for_update(
+                   new_dis,
+                   %{
+                     "start_date" => @start_date,
+                     "end_date" => @end_date,
+                     "days_of_week" => [
+                       %{"id" => saturday_dow.id, "day_name" => saturday_dow.day_name},
+                       %{"day_name" => "sunday"}
+                     ]
+                   },
+                   @current_time
+                 )
                )
 
       day_names = Enum.map(updated_dis.days_of_week, & &1.day_name)
@@ -244,7 +260,8 @@ defmodule Arrow.DisruptionTest do
                 %{"excluded_date" => ~D[2019-11-02]}
               ]
             },
-            [new_adj]
+            [new_adj],
+            @current_time
           )
         )
 
@@ -252,17 +269,21 @@ defmodule Arrow.DisruptionTest do
 
       assert {:ok, updated_dis} =
                Repo.update(
-                 Disruption.changeset_for_update(new_dis, %{
-                   "start_date" => @start_date,
-                   "end_date" => @end_date,
-                   "exceptions" => [
-                     %{
-                       "id" => exception_to_keep.id,
-                       "excluded_date" => exception_to_keep.excluded_date
-                     },
-                     %{"excluded_date" => ~D[2019-11-03]}
-                   ]
-                 })
+                 Disruption.changeset_for_update(
+                   new_dis,
+                   %{
+                     "start_date" => @start_date,
+                     "end_date" => @end_date,
+                     "exceptions" => [
+                       %{
+                         "id" => exception_to_keep.id,
+                         "excluded_date" => exception_to_keep.excluded_date
+                       },
+                       %{"excluded_date" => ~D[2019-11-03]}
+                     ]
+                   },
+                   @current_time
+                 )
                )
 
       excluded_dates = Enum.map(updated_dis.exceptions, & &1.excluded_date)
@@ -293,7 +314,8 @@ defmodule Arrow.DisruptionTest do
                 %{"trip_short_name" => "456"}
               ]
             },
-            [new_adj]
+            [new_adj],
+            @current_time
           )
         )
 
@@ -301,17 +323,21 @@ defmodule Arrow.DisruptionTest do
 
       assert {:ok, updated_dis} =
                Repo.update(
-                 Disruption.changeset_for_update(new_dis, %{
-                   "start_date" => @start_date,
-                   "end_date" => @end_date,
-                   "trip_short_names" => [
-                     %{
-                       "id" => short_name_to_keep.id,
-                       "trip_short_name" => short_name_to_keep.trip_short_name
-                     },
-                     %{"trip_short_name" => "789"}
-                   ]
-                 })
+                 Disruption.changeset_for_update(
+                   new_dis,
+                   %{
+                     "start_date" => @start_date,
+                     "end_date" => @end_date,
+                     "trip_short_names" => [
+                       %{
+                         "id" => short_name_to_keep.id,
+                         "trip_short_name" => short_name_to_keep.trip_short_name
+                       },
+                       %{"trip_short_name" => "789"}
+                     ]
+                   },
+                   @current_time
+                 )
                )
 
       short_names = Enum.map(updated_dis.trip_short_names, & &1.trip_short_name)
@@ -319,6 +345,23 @@ defmodule Arrow.DisruptionTest do
       assert Enum.count(short_names) == 2
       assert "456" in short_names
       assert "789" in short_names
+    end
+
+    test "Can't delete exception date that's in the past" do
+      disruption = build_disruption()
+
+      disruption =
+        put_in(disruption.exceptions, [%Arrow.Disruption.Exception{excluded_date: ~D[2000-01-01]}])
+
+      changeset =
+        Disruption.changeset_for_update(
+          disruption,
+          %{"exceptions" => []},
+          @current_time
+        )
+
+      refute changeset.valid?
+      assert %{exceptions: ["can't be deleted from the past."]} = errors_on(changeset)
     end
   end
 end

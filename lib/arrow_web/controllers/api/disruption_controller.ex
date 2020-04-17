@@ -29,6 +29,7 @@ defmodule ArrowWeb.API.DisruptionController do
 
   @spec create(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def create(conn, params) do
+    {:ok, current_time} = DateTime.now(Application.get_env(:arrow, :time_zone))
     params_data = Map.get(params, "data", %{})
     params_relationships = Map.get(params_data, "relationships", %{})
 
@@ -44,7 +45,7 @@ defmodule ArrowWeb.API.DisruptionController do
       Repo.all(from adj in Arrow.Adjustment, where: adj.source_label in ^adjustment_labels)
 
     attrs = Map.merge(attrs, relationships)
-    changeset = Disruption.changeset_for_create(%Disruption{}, attrs, adjustments)
+    changeset = Disruption.changeset_for_create(%Disruption{}, attrs, adjustments, current_time)
 
     case Repo.insert(changeset) do
       {:ok, disruption} ->
@@ -61,6 +62,7 @@ defmodule ArrowWeb.API.DisruptionController do
 
   @spec update(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def update(conn, %{"id" => id} = params) do
+    {:ok, current_time} = DateTime.now(Application.get_env(:arrow, :time_zone))
     params_data = Map.get(params, "data", %{})
     params_relationships = Map.get(params_data, "relationships", %{})
 
@@ -76,7 +78,8 @@ defmodule ArrowWeb.API.DisruptionController do
         |> Repo.preload(:days_of_week)
         |> Repo.preload(:exceptions)
         |> Repo.preload(:trip_short_names),
-        attrs
+        attrs,
+        current_time
       )
 
     case Repo.update(changeset) do

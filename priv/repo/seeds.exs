@@ -127,5 +127,6 @@ for {attrs, adjustments} <- [
          "end_date" => ~D[2020-03-29]
        }, [Repo.get_by!(Adjustment, source_label: "ForgeParkSouthStation")]}
     ] do
-  Repo.insert!(Disruption.changeset_for_create(%Disruption{}, attrs, adjustments))
+  current_time = DateTime.from_naive!(~N[2019-01-01], "America/New_York")
+  Repo.insert!(Disruption.changeset_for_create(%Disruption{}, attrs, adjustments, current_time))
 end

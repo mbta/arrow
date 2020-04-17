@@ -13,17 +13,16 @@ config :arrow,
   run_migrations_at_startup?: false,
   fetch_adjustments_at_startup?: true,
   # Run migrations synchronously before anything else. Must finish in <5 seconds
-  migrate_synchronously?: false
+  migrate_synchronously?: false,
+  redirect_http?: true,
+  cognito_group: "arrow-admin",
+  time_zone: "America/New_York"
 
 # Configures the endpoint
 config :arrow, ArrowWeb.Endpoint,
   url: [host: "localhost"],
   render_errors: [view: ArrowWeb.ErrorView, accepts: ~w(html json)],
   pubsub: [name: Arrow.PubSub, adapter: Phoenix.PubSub.PG2]
-
-config :arrow,
-  redirect_http?: true,
-  cognito_group: "arrow-admin"
 
 config :arrow, ArrowWeb.AuthManager, issuer: "arrow"
 
@@ -57,6 +56,8 @@ config :ex_aws, json_codec: Jason
 
 config :ja_serializer,
   key_format: :underscored
+
+config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
