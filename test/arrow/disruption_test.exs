@@ -363,5 +363,53 @@ defmodule Arrow.DisruptionTest do
       refute changeset.valid?
       assert %{exceptions: ["can't be deleted from the past."]} = errors_on(changeset)
     end
+
+    test "Can't change days of week for disruption in past" do
+      disruption = build_disruption()
+
+      disruption =
+        put_in(disruption.days_of_week, [%Arrow.Disruption.DayOfWeek{day_name: "tuesday"}])
+
+      disruption = put_in(disruption.start_date, ~D[2020-04-01])
+
+      now = DateTime.from_naive!(~N[2020-04-15 12:00:00], "America/New_York")
+
+      changeset =
+        Disruption.changeset_for_update(
+          disruption,
+          %{"days_of_week" => [%{"day_name" => "monday"}]},
+          now
+        )
+
+      refute changeset.valid?
+
+      assert %{days_of_week: ["can't be changed because start date is in the past."]} =
+               errors_on(changeset)
+    end
+
+    test "Can't change trip short names for disruption in past" do
+      disruption = build_disruption()
+
+      disruption =
+        put_in(disruption.trip_short_names, [
+          %Arrow.Disruption.TripShortName{trip_short_name: "short"}
+        ])
+
+      disruption = put_in(disruption.start_date, ~D[2020-04-01])
+
+      now = DateTime.from_naive!(~N[2020-04-15 12:00:00], "America/New_York")
+
+      changeset =
+        Disruption.changeset_for_update(
+          disruption,
+          %{"trip_short_names" => []},
+          now
+        )
+
+      refute changeset.valid?
+
+      assert %{trip_short_names: ["can't be changed because start date is in the past."]} =
+               errors_on(changeset)
+    end
   end
 end
