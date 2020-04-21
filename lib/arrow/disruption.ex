@@ -75,6 +75,8 @@ defmodule Arrow.Disruption do
     |> cast_assoc(:exceptions, with: {Exception, :changeset, [today]})
     |> cast_assoc(:trip_short_names)
     |> validate_not_deleting_past_exception(today)
+    |> validate_not_changing_relationship_in_past(:days_of_week, today)
+    |> validate_not_changing_relationship_in_past(:trip_short_names, today)
   end
 
   @doc false
@@ -106,4 +108,17 @@ defmodule Arrow.Disruption do
   end
 
   defp deleting_past_exception?(_, _), do: false
+
+  @spec validate_not_changing_relationship_in_past(Ecto.Changeset.t(t()), atom(), Date.t()) ::
+          Ecto.Changeset.t(t())
+  defp validate_not_changing_relationship_in_past(changeset, relationship, today) do
+    start_date = get_field(changeset, :start_date)
+
+    if not is_nil(start_date) and Date.compare(start_date, today) == :lt and
+         get_change(changeset, relationship, []) != [] do
+      add_error(changeset, relationship, "can't be changed because start date is in the past.")
+    else
+      changeset
+    end
+  end
 end
