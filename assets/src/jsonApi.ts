@@ -55,7 +55,7 @@ const toModelObject = (response: any): JsonApiResponse => {
         )
     )
     if (
-      maybeModelObjects.some(maybeModelObject => maybeModelObject === "error")
+      maybeModelObjects.some((maybeModelObject) => maybeModelObject === "error")
     ) {
       return "error"
     } else {
@@ -75,7 +75,7 @@ const parseErrors = (raw: any): string[] => {
   if (typeof raw === "object") {
     const rawErrors = raw?.errors
     if (Array.isArray(rawErrors)) {
-      rawErrors.forEach(err => {
+      rawErrors.forEach((err) => {
         const rawDetail = err?.detail
         if (typeof rawDetail === "string") {
           errors.push(rawDetail)

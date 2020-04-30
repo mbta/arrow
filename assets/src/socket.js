@@ -58,11 +58,11 @@ socket.connect()
 const channel = socket.channel("topic:subtopic", {})
 channel
   .join()
-  .receive("ok", resp => {
+  .receive("ok", (resp) => {
     // eslint-disable-next-line no-console
     console.log("Joined successfully", resp)
   })
-  .receive("error", resp => {
+  .receive("error", (resp) => {
     // eslint-disable-next-line no-console
     console.log("Unable to join", resp)
   })

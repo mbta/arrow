@@ -116,7 +116,7 @@ const EditDisruption = ({
   }
 
   const exceptionDates = disruption.exceptions
-    .map(exception => exception.excludedDate)
+    .map((exception) => exception.excludedDate)
     .filter(
       (maybeDate: Date | undefined): maybeDate is Date =>
         typeof maybeDate !== "undefined"
@@ -127,7 +127,7 @@ const EditDisruption = ({
       disruptionId={match.params.id}
       adjustments={disruption.adjustments}
       fromDate={disruption.startDate || null}
-      setFromDate={newDate => {
+      setFromDate={(newDate) => {
         const newDisruption = new Disruption({ ...disruption })
         if (newDate) {
           newDisruption.startDate = newDate
@@ -137,7 +137,7 @@ const EditDisruption = ({
         setDisruption(newDisruption)
       }}
       toDate={disruption.endDate || null}
-      setToDate={newDate => {
+      setToDate={(newDate) => {
         const newDisruption = new Disruption({ ...disruption })
         if (newDate) {
           newDisruption.endDate = newDate
@@ -166,25 +166,25 @@ const setExceptionDatesForDisruption = (
   disruption: Disruption,
   setDisruption: React.Dispatch<Disruption>
 ): React.Dispatch<Date[]> => {
-  return newExceptionDates => {
-    const newExceptionDatesAsTimes = newExceptionDates.map(date =>
+  return (newExceptionDates) => {
+    const newExceptionDatesAsTimes = newExceptionDates.map((date) =>
       date.getTime()
     )
     const currentExceptionDates = (disruption.exceptions
-      .map(exception => exception.excludedDate)
-      .filter(maybeDate => maybeDate instanceof Date) as Date[]).map(date =>
+      .map((exception) => exception.excludedDate)
+      .filter((maybeDate) => maybeDate instanceof Date) as Date[]).map((date) =>
       date.getTime()
     )
 
     const addedDates = newExceptionDatesAsTimes.filter(
-      date => !currentExceptionDates.includes(date)
+      (date) => !currentExceptionDates.includes(date)
     )
     const removedDates = currentExceptionDates.filter(
-      date => !newExceptionDatesAsTimes.includes(date)
+      (date) => !newExceptionDatesAsTimes.includes(date)
     )
 
     // Trim out the removed dates
-    disruption.exceptions = disruption.exceptions.filter(exception => {
+    disruption.exceptions = disruption.exceptions.filter((exception) => {
       return (
         exception.excludedDate instanceof Date &&
         !removedDates.includes(exception.excludedDate.getTime())
@@ -192,7 +192,7 @@ const setExceptionDatesForDisruption = (
     })
     // Add in added dates
     disruption.exceptions = disruption.exceptions.concat(
-      addedDates.map(date => new Exception({ excludedDate: new Date(date) }))
+      addedDates.map((date) => new Exception({ excludedDate: new Date(date) }))
     )
     setDisruption(disruption)
   }
@@ -202,11 +202,11 @@ const setDisruptionDaysOfWeekForDisruption = (
   disruption: Disruption,
   setDisruption: React.Dispatch<Disruption>
 ): React.Dispatch<DayOfWeekTimeRanges> => {
-  return newDisruptionDaysOfWeek => {
+  return (newDisruptionDaysOfWeek) => {
     for (let i = 0; i < newDisruptionDaysOfWeek.length; i++) {
       if (newDisruptionDaysOfWeek[i] === null) {
         disruption.daysOfWeek = disruption.daysOfWeek.filter(
-          dayOfWeek => dayOfWeek.dayName !== ixToDayName(i)
+          (dayOfWeek) => dayOfWeek.dayName !== ixToDayName(i)
         )
       } else {
         let startTime
@@ -230,7 +230,7 @@ const setDisruptionDaysOfWeekForDisruption = (
         }
 
         const dayOfWeekIndex = disruption.daysOfWeek.findIndex(
-          dayOfWeek => dayOfWeek.dayName === ixToDayName(i)
+          (dayOfWeek) => dayOfWeek.dayName === ixToDayName(i)
         )
 
         if (dayOfWeekIndex === -1) {
@@ -286,7 +286,7 @@ const EditDisruptionForm = ({
       {validationErrors.length > 0 && (
         <Alert variant="danger">
           <ul>
-            {validationErrors.map(err => (
+            {validationErrors.map((err) => (
               <li key={err}>{err} </li>
             ))}
           </ul>

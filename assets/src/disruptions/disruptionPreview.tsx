@@ -64,7 +64,7 @@ const DisruptionPreview = ({
   })
 
   const listedExceptionDates: JSX.Element[] = []
-  exceptionDates.forEach(date => {
+  exceptionDates.forEach((date) => {
     listedExceptionDates.push(
       <li key={formatDisruptionDate(date)}>{formatDisruptionDate(date)}</li>
     )

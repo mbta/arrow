@@ -5,8 +5,9 @@ enum TransitMode {
 
 const formatDisruptionDate = (date: Date | null): string => {
   if (date) {
-    return `${date.getUTCMonth() +
-      1}/${date.getUTCDate()}/${date.getUTCFullYear()}`
+    return `${
+      date.getUTCMonth() + 1
+    }/${date.getUTCDate()}/${date.getUTCFullYear()}`
   } else {
     return ""
   }

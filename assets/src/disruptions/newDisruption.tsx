@@ -83,13 +83,13 @@ const AdjustmentsPicker = ({
   setIsAddingAdjustment,
 }: AdjustmentsPickerProps): JSX.Element => {
   const modeAdjustments = allAdjustments.filter(
-    adjustment =>
+    (adjustment) =>
       adjustment.routeId && modeForRoute(adjustment.routeId) === transitMode
   )
 
   const appendAdjustment = (evt: React.FormEvent) => {
     const val = (evt.target as HTMLSelectElement).value
-    const adjustmentForLabel = allAdjustments.find(a => val === a.sourceLabel)
+    const adjustmentForLabel = allAdjustments.find((a) => val === a.sourceLabel)
 
     if (adjustmentForLabel) {
       setIsAddingAdjustment(false)
@@ -99,7 +99,7 @@ const AdjustmentsPicker = ({
 
   const updateAdjustment = (evt: React.FormEvent, i: number) => {
     const val = (evt.target as HTMLSelectElement).value
-    const adjustmentForLabel = allAdjustments.find(a => val === a.sourceLabel)
+    const adjustmentForLabel = allAdjustments.find((a) => val === a.sourceLabel)
 
     if (adjustmentForLabel) {
       setAdjustments(
@@ -126,16 +126,16 @@ const AdjustmentsPicker = ({
                 as="select"
                 id={"adjustment-select-" + i}
                 value={adjustment.sourceLabel}
-                onChange={evt => updateAdjustment(evt, i)}
+                onChange={(evt) => updateAdjustment(evt, i)}
               >
                 {modeAdjustments
                   .filter(
-                    modeAdjustment =>
+                    (modeAdjustment) =>
                       adjustments.findIndex(
-                        a => modeAdjustment.sourceLabel === a.sourceLabel
+                        (a) => modeAdjustment.sourceLabel === a.sourceLabel
                       ) === -1
                   )
-                  .map(a => (
+                  .map((a) => (
                     <option key={a.sourceLabel}>{a.sourceLabel}</option>
                   ))}
                 <option>{adjustment.sourceLabel}</option>
@@ -168,12 +168,12 @@ const AdjustmentsPicker = ({
               <option>Choose Location</option>
               {modeAdjustments
                 .filter(
-                  modeAdjustment =>
+                  (modeAdjustment) =>
                     adjustments.findIndex(
-                      a => modeAdjustment.sourceLabel === a.sourceLabel
+                      (a) => modeAdjustment.sourceLabel === a.sourceLabel
                     ) === -1
                 )
-                .map(modeAdjustment => (
+                .map((modeAdjustment) => (
                   <option key={modeAdjustment.sourceLabel}>
                     {modeAdjustment.sourceLabel}
                   </option>
@@ -291,7 +291,7 @@ const NewDisruption = ({}): JSX.Element => {
     }).then((result: JsonApiResponse) => {
       if (
         Array.isArray(result) &&
-        result.every(res => res instanceof Adjustment)
+        result.every((res) => res instanceof Adjustment)
       ) {
         setAllAdjustments(result)
       } else {
@@ -330,7 +330,7 @@ const NewDisruption = ({}): JSX.Element => {
           {validationErrors.length > 0 && (
             <Alert variant="danger">
               <ul>
-                {validationErrors.map(err => (
+                {validationErrors.map((err) => (
                   <li key={err}>{err} </li>
                 ))}
               </ul>

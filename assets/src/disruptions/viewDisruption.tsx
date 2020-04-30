@@ -66,7 +66,7 @@ const ViewDisruptionForm = ({
 
   if (disruption && disruption !== "error" && disruption.id) {
     const exceptionDates = disruption.exceptions
-      .map(exception => exception.excludedDate)
+      .map((exception) => exception.excludedDate)
       .filter(
         (maybeDate: Date | undefined): maybeDate is Date =>
           typeof maybeDate !== "undefined"

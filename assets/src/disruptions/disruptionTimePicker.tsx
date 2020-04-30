@@ -35,13 +35,13 @@ const DisruptionDateRange = ({
       <DatePicker
         id="disruption-date-range-start"
         selected={fromDate}
-        onChange={date => setFromDate(date)}
+        onChange={(date) => setFromDate(date)}
       />
       <span className="px-3">until</span>
       <DatePicker
         id="disruption-date-range-end"
         selected={toDate}
-        onChange={date => setToDate(date)}
+        onChange={(date) => setToDate(date)}
       />
     </Form.Group>
   )
@@ -219,7 +219,7 @@ const TimeOfDaySelector = ({
             --
           </option>
           {["12", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"].map(
-            hour => {
+            (hour) => {
               return (
                 <option
                   key={`${hour}-${dayOfWeekIndex}-${timeIndex}`}
@@ -245,7 +245,7 @@ const TimeOfDaySelector = ({
           <option value="" disabled>
             --
           </option>
-          {["00", "15", "30", "45"].map(minute => {
+          {["00", "15", "30", "45"].map((minute) => {
             return (
               <option
                 key={`${minute}-${dayOfWeekIndex}-${timeIndex}`}
@@ -271,7 +271,7 @@ const TimeOfDaySelector = ({
           <option value="" disabled>
             --
           </option>
-          {["AM", "PM"].map(period => {
+          {["AM", "PM"].map((period) => {
             return (
               <option
                 key={`${period}-${dayOfWeekIndex}-${timeIndex}`}
@@ -324,7 +324,7 @@ const DisruptionExceptionDateList = ({
             <Col md="auto">
               <DatePicker
                 selected={date}
-                onChange={newDate => {
+                onChange={(newDate) => {
                   if (newDate !== null) {
                     setExceptionDates(
                       exceptionDates
@@ -366,7 +366,7 @@ const DisruptionExceptionDateList = ({
             <Col md="auto">
               <DatePicker
                 selected={null}
-                onChange={newDate => {
+                onChange={(newDate) => {
                   if (newDate !== null) {
                     setExceptionDates(exceptionDates.concat([newDate]))
                     setIsAddingDate(false)

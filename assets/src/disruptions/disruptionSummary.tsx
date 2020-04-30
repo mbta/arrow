@@ -12,7 +12,7 @@ const DisruptionSummary = ({
 }: DisruptionSummaryProps): JSX.Element => {
   return (
     <ul className="m-disruption-summary__adjustment_list">
-      {adjustments.map(adjustment => (
+      {adjustments.map((adjustment) => (
         <li
           className="m-disruption-summary__adjustment"
           key={adjustment.sourceLabel}
