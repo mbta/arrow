@@ -47,7 +47,7 @@ const dayNamesToIndices = {
 }
 
 const isEmpty = (days: DayOfWeekTimeRanges): boolean => {
-  return days.filter(d => d !== null).length === 0
+  return days.filter((d) => d !== null).length === 0
 }
 
 const isHourOption = (hour: string): hour is HourOptions => {
@@ -121,7 +121,7 @@ const fromDaysOfWeek = (
   ]
   let invalidTimeFound = false
 
-  daysOfWeek.forEach(dayOfWeek => {
+  daysOfWeek.forEach((dayOfWeek) => {
     if (dayOfWeek.dayName) {
       const index = dayNamesToIndices[dayOfWeek.dayName]
       const startTime = timeStringToTime(dayOfWeek.startTime)
@@ -260,7 +260,7 @@ type DaysType = "consecutive" | "other"
 
 const getDaysType = (days: DayName[]): DaysType => {
   const sortedDays = days
-    .map(day => ({ day, index: dayToIx(day) }))
+    .map((day) => ({ day, index: dayToIx(day) }))
     .sort((a, b) => a.index - b.index)
   let consecutive = true
   sortedDays.forEach((day, index, array) => {
@@ -293,7 +293,7 @@ const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
   const startTimeSet = new Set<string | undefined>()
   const endTimeSet = new Set<string | undefined>()
   const fallBackStringList: string[] = []
-  daysAndTimes.forEach(dayOfWeek => {
+  daysAndTimes.forEach((dayOfWeek) => {
     const { dayName, startTime, endTime } = dayOfWeek
     if (dayName) {
       startTimeSet.add(startTime)
@@ -303,7 +303,7 @@ const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
   })
   const daysType = getDaysType(
     daysAndTimes
-      .map(day => day.dayName)
+      .map((day) => day.dayName)
       .filter((day: DayName | undefined): day is DayName => !!day)
   )
   const timeType = getTimeType(first, last, startTimeSet, endTimeSet)

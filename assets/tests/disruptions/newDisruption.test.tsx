@@ -364,23 +364,23 @@ describe("NewDisruption", () => {
         document.querySelector("#loading-indicator")
       )
 
-      withElement(container, "#adjustment-select-0", el => {
+      withElement(container, "#adjustment-select-0", (el) => {
         fireEvent.change(el, { target: { value: "Kenmore--Newton Highlands" } })
       })
 
-      withElement(container, "#disruption-date-range-start", el => {
+      withElement(container, "#disruption-date-range-start", (el) => {
         fireEvent.change(el, { target: { value: "2020-03-31" } })
       })
 
-      withElement(container, "#disruption-date-range-end", el => {
+      withElement(container, "#disruption-date-range-end", (el) => {
         fireEvent.change(el, { target: { value: "2020-04-30" } })
       })
 
-      withElement(container, "#preview-disruption-button", el => {
+      withElement(container, "#preview-disruption-button", (el) => {
         fireEvent.click(el)
       })
 
-      withElement(container, "#disruption-preview-create", el => {
+      withElement(container, "#disruption-preview-create", (el) => {
         fireEvent.click(el)
       })
     })
@@ -417,11 +417,11 @@ describe("NewDisruption", () => {
         document.querySelector("#loading-indicator")
       )
 
-      withElement(container, "#preview-disruption-button", el => {
+      withElement(container, "#preview-disruption-button", (el) => {
         fireEvent.click(el)
       })
 
-      withElement(container, "#disruption-preview-create", el => {
+      withElement(container, "#disruption-preview-create", (el) => {
         fireEvent.click(el)
       })
     })

@@ -64,7 +64,7 @@ const apiGet = <T>({
     .then(checkResponseStatus)
     .then((response: Response) => response.json())
     .then((json: any) => parser(json))
-    .catch(error => {
+    .catch((error) => {
       if (typeof defaultResult === "undefined") {
         throw error
       } else {

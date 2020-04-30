@@ -87,7 +87,7 @@ const RouteFilterToggleGroup = ({
 }: RouteFilterToggleGroupProps) => {
   return (
     <div className="mb-1">
-      {routes.map(route => {
+      {routes.map((route) => {
         return (
           <RouteFilterToggle
             key={route}
@@ -143,9 +143,9 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
   const filteredDisruptions = React.useMemo(() => {
     const query = searchQuery.toLowerCase()
     return disruptions.filter(
-      x =>
+      (x) =>
         (!anyRouteFiltersActive ||
-          (x.routes || []).some(route => routeFilters[route])) &&
+          (x.routes || []).some((route) => routeFilters[route])) &&
         (x.label || "").toLowerCase().includes(query)
     )
   }, [disruptions, searchQuery, routeFilters, anyRouteFiltersActive])
@@ -227,14 +227,14 @@ const DisruptionIndex = () => {
     if (disruptions === "error") {
       return []
     } else {
-      return disruptions.map(x => {
+      return disruptions.map((x) => {
         return {
           id: x.id,
           startDate: x.startDate,
           endDate: x.endDate,
-          label: x.adjustments.map(adj => adj.sourceLabel).join(", "),
+          label: x.adjustments.map((adj) => adj.sourceLabel).join(", "),
           routes: x.adjustments
-            .map(adj => {
+            .map((adj) => {
               if (adj.routeId && adj.routeId.startsWith("CR-")) {
                 return "Commuter"
               } else {
@@ -259,7 +259,7 @@ const DisruptionIndex = () => {
     }).then((result: JsonApiResponse) => {
       if (
         Array.isArray(result) &&
-        result.every(res => res instanceof Disruption)
+        result.every((res) => res instanceof Disruption)
       ) {
         setDisruptions(result as Disruption[])
       } else {

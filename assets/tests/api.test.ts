@@ -19,7 +19,7 @@ const mockFetchFailure = () => {
 }
 
 describe("apiSend", () => {
-  test("parses successful create", done => {
+  test("parses successful create", (done) => {
     mockFetch(201, { data: "success" })
     const successParse = jest.fn(() => "success")
     apiSend({
@@ -28,14 +28,14 @@ describe("apiSend", () => {
       json: "{}",
       successParser: successParse,
       errorParser: () => "error",
-    }).then(parsed => {
+    }).then((parsed) => {
       expect(successParse).toHaveBeenCalledWith({ data: "success" })
       expect(parsed).toEqual({ ok: "success" })
       done()
     })
   })
 
-  test("parses successful update", done => {
+  test("parses successful update", (done) => {
     mockFetch(200, { data: "success" })
     const successParse = jest.fn(() => "success")
     apiSend({
@@ -44,14 +44,14 @@ describe("apiSend", () => {
       json: "{}",
       successParser: successParse,
       errorParser: () => "error",
-    }).then(parsed => {
+    }).then((parsed) => {
       expect(successParse).toHaveBeenCalledWith({ data: "success" })
       expect(parsed).toEqual({ ok: "success" })
       done()
     })
   })
 
-  test("parses error response", done => {
+  test("parses error response", (done) => {
     mockFetch(400, { data: "error" })
     const errorParse = jest.fn(() => "error")
     apiSend({
@@ -60,14 +60,14 @@ describe("apiSend", () => {
       json: "{}",
       successParser: () => "success",
       errorParser: errorParse,
-    }).then(parsed => {
+    }).then((parsed) => {
       expect(errorParse).toHaveBeenCalledWith({ data: "error" })
       expect(parsed).toEqual({ error: "error" })
       done()
     })
   })
 
-  test("promise reject if there are errors", done => {
+  test("promise reject if there are errors", (done) => {
     mockFetchFailure()
 
     apiSend({
@@ -76,13 +76,13 @@ describe("apiSend", () => {
       json: "{}",
       successParser: () => "success",
       errorParser: () => "error",
-    }).catch(err => {
+    }).catch((err) => {
       expect(err).toEqual("network failure")
       done()
     })
   })
 
-  test("promise reject if unexpected error code", done => {
+  test("promise reject if unexpected error code", (done) => {
     mockFetch(500, { data: "error" })
     apiSend({
       url: "/",
@@ -90,7 +90,7 @@ describe("apiSend", () => {
       json: "{}",
       successParser: () => "success",
       errorParser: () => "error",
-    }).catch(err => {
+    }).catch((err) => {
       expect(err).toEqual("fetch/parse error")
       done()
     })
@@ -116,7 +116,7 @@ describe("apiGet", () => {
     reloadSpy.mockRestore()
   })
 
-  test("returns parsed data", done => {
+  test("returns parsed data", (done) => {
     mockFetch(200, { data: "raw" })
 
     const parse = jest.fn(() => "parsed")
@@ -124,14 +124,14 @@ describe("apiGet", () => {
     apiGet({
       url: "/",
       parser: parse,
-    }).then(parsed => {
+    }).then((parsed) => {
       expect(parse).toHaveBeenCalledWith({ data: "raw" })
       expect(parsed).toEqual("parsed")
       done()
     })
   })
 
-  test("reloads the page if the response status is a redirect (3xx)", done => {
+  test("reloads the page if the response status is a redirect (3xx)", (done) => {
     mockFetch(302, { data: null })
 
     apiGet({
@@ -143,7 +143,7 @@ describe("apiGet", () => {
     })
   })
 
-  test("reloads the page if the response status is forbidden (403)", done => {
+  test("reloads the page if the response status is forbidden (403)", (done) => {
     mockFetch(403, { data: null })
 
     apiGet({
@@ -155,20 +155,20 @@ describe("apiGet", () => {
     })
   })
 
-  test("returns a default for any other response", done => {
+  test("returns a default for any other response", (done) => {
     mockFetch(500, { data: null })
 
     apiGet({
       url: "/",
       parser: () => null,
       defaultResult: "default",
-    }).then(result => {
+    }).then((result) => {
       expect(result).toEqual("default")
       done()
     })
   })
 
-  test("throws an error for any other response status if there's no default", done => {
+  test("throws an error for any other response status if there's no default", (done) => {
     mockFetch(500, { data: null })
 
     apiGet({
@@ -178,7 +178,7 @@ describe("apiGet", () => {
       .then(() => {
         done("fetchRoutes did not throw an error")
       })
-      .catch(error => {
+      .catch((error) => {
         expect(error).toBeDefined()
         done()
       })

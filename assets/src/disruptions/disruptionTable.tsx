@@ -100,7 +100,7 @@ const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
         </tr>
       </thead>
       <tbody>
-        {sortedDisruptions.map(x => (
+        {sortedDisruptions.map((x) => (
           <tr key={x.id}>
             <td>{x.label}</td>
             {!!x.startDate && !!x.endDate && (
