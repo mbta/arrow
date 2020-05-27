@@ -127,7 +127,7 @@ module.exports = {
         },
       },
     ],
-    "@typescript-eslint/camelcase": ["error", { properties: "never" }],
+    "@typescript-eslint/naming-convention": "error",
   },
   settings: {
     react: {
