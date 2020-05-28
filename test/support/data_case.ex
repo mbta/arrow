@@ -53,8 +53,8 @@ defmodule Arrow.DataCase do
     end)
   end
 
-  def build_disruption do
-    %Arrow.Disruption{
+  def build_disruption(overrides \\ %Arrow.Disruption{}) do
+    disruption = %Arrow.Disruption{
       start_date: ~D[2020-04-01],
       end_date: ~D[2020-05-01],
       days_of_week: [%Arrow.Disruption.DayOfWeek{day_name: "monday"}],
@@ -66,5 +66,7 @@ defmodule Arrow.DataCase do
         }
       ]
     }
+
+    Map.merge(disruption, overrides)
   end
 end

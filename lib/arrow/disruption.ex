@@ -145,7 +145,8 @@ defmodule Arrow.Disruption do
     end
   end
 
-  @spec validate_days_of_week_between_start_and_end_date(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
+  @spec validate_days_of_week_between_start_and_end_date(Ecto.Changeset.t(t())) ::
+          Ecto.Changeset.t(t())
   defp validate_days_of_week_between_start_and_end_date(changeset) do
     start_date = get_field(changeset, :start_date)
     end_date = get_field(changeset, :end_date)
@@ -183,7 +184,8 @@ defmodule Arrow.Disruption do
     end
   end
 
-  @spec validate_exceptions_between_start_and_end_date(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
+  @spec validate_exceptions_between_start_and_end_date(Ecto.Changeset.t(t())) ::
+          Ecto.Changeset.t(t())
   defp validate_exceptions_between_start_and_end_date(changeset) do
     start_date = get_field(changeset, :start_date)
     end_date = get_field(changeset, :end_date)

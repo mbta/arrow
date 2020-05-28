@@ -3,6 +3,7 @@ defmodule Arrow.DisruptionTest do
   use Arrow.DataCase
   alias Arrow.Adjustment
   alias Arrow.Disruption
+  alias Arrow.Disruption.DayOfWeek
   alias Arrow.Repo
 
   @start_date ~D[2019-10-10]
@@ -29,6 +30,31 @@ defmodule Arrow.DisruptionTest do
                )
 
       assert Keyword.get(errors, :adjustments)
+    end
+
+    test "cannot insert a disruption with a start_date later than end_date" do
+      adj = %Adjustment{
+        source: "testing",
+        source_label: "test_insert_disruption",
+        route_id: "test_route"
+      }
+
+      {:ok, new_adj} = Repo.insert(adj)
+
+      assert {:error, %{errors: errors}} =
+               Repo.insert(
+                 Disruption.changeset_for_create(
+                   %Disruption{},
+                   %{
+                     start_date: ~D[2020-02-01],
+                     end_date: ~D[2020-01-20]
+                   },
+                   [new_adj],
+                   @current_time
+                 )
+               )
+
+      assert Keyword.get(errors, :start_date) == {"can't be after end date.", []}
     end
 
     test "can insert a disruption with adjustments" do
@@ -72,7 +98,10 @@ defmodule Arrow.DisruptionTest do
                    %{
                      "start_date" => @start_date,
                      "end_date" => @end_date,
-                     "exceptions" => [%{"id" => 1234, "excluded_date" => ~D[2019-12-01]}]
+                     "exceptions" => [%{"id" => 1234, "excluded_date" => @start_date}],
+                     "days_of_week" => [
+                       %{"day_name" => DayOfWeek.date_to_day_name(@start_date)}
+                     ]
                    },
                    [new_adj],
                    @current_time
@@ -145,6 +174,23 @@ defmodule Arrow.DisruptionTest do
       assert saturday.day_name == "saturday"
       assert saturday.start_time == nil
       assert saturday.end_time == nil
+
+      assert {:ok, new_dis} =
+               Repo.insert(
+                 Disruption.changeset_for_create(
+                   %Disruption{},
+                   %{
+                     "start_date" => ~D[2020-01-02],
+                     "end_date" => ~D[2020-01-05],
+                     "days_of_week" => [
+                       %{"day_name" => "friday", "start_time" => ~T[20:30:00]},
+                       %{"day_name" => "saturday"}
+                     ]
+                   },
+                   [new_adj],
+                   @current_time
+                 )
+               )
     end
 
     test "can update a disruption" do
@@ -255,9 +301,10 @@ defmodule Arrow.DisruptionTest do
             %{
               "start_date" => @start_date,
               "end_date" => @end_date,
+              "days_of_week" => [%{"day_name" => DayOfWeek.date_to_day_name(~D[2019-11-01])}],
               "exceptions" => [
                 %{"excluded_date" => ~D[2019-11-01]},
-                %{"excluded_date" => ~D[2019-11-02]}
+                %{"excluded_date" => ~D[2019-11-08]}
               ]
             },
             [new_adj],
@@ -265,7 +312,7 @@ defmodule Arrow.DisruptionTest do
           )
         )
 
-      exception_to_keep = Enum.find(new_dis.exceptions, &(&1.excluded_date == ~D[2019-11-02]))
+      exception_to_keep = Enum.find(new_dis.exceptions, &(&1.excluded_date == ~D[2019-11-01]))
 
       assert {:ok, updated_dis} =
                Repo.update(
@@ -279,7 +326,7 @@ defmodule Arrow.DisruptionTest do
                          "id" => exception_to_keep.id,
                          "excluded_date" => exception_to_keep.excluded_date
                        },
-                       %{"excluded_date" => ~D[2019-11-03]}
+                       %{"excluded_date" => ~D[2019-11-15]}
                      ]
                    },
                    @current_time
@@ -289,8 +336,8 @@ defmodule Arrow.DisruptionTest do
       excluded_dates = Enum.map(updated_dis.exceptions, & &1.excluded_date)
 
       assert Enum.count(excluded_dates) == 2
-      assert ~D[2019-11-02] in excluded_dates
-      assert ~D[2019-11-03] in excluded_dates
+      assert ~D[2019-11-01] in excluded_dates
+      assert ~D[2019-11-15] in excluded_dates
     end
 
     test "can update trip short names on a disruption" do
@@ -348,16 +395,18 @@ defmodule Arrow.DisruptionTest do
     end
 
     test "Can't delete exception date that's in the past" do
-      disruption = build_disruption()
+      start_date = ~D[2020-01-01]
+      end_date = ~D[2020-01-20]
+      disruption = build_disruption(%Arrow.Disruption{start_date: start_date, end_date: end_date})
 
       disruption =
-        put_in(disruption.exceptions, [%Arrow.Disruption.Exception{excluded_date: ~D[2000-01-01]}])
+        put_in(disruption.exceptions, [%Arrow.Disruption.Exception{excluded_date: ~D[2020-01-02]}])
 
       changeset =
         Disruption.changeset_for_update(
           disruption,
           %{"exceptions" => []},
-          @current_time
+          DateTime.from_naive!(~N[2020-01-15 12:00:00], "America/New_York")
         )
 
       refute changeset.valid?
@@ -410,6 +459,176 @@ defmodule Arrow.DisruptionTest do
 
       assert %{trip_short_names: ["can't be changed because start date is in the past."]} =
                errors_on(changeset)
+    end
+
+    test "Can't insert a disruption with exceptions falling outside the date range" do
+      adj = %Adjustment{
+        source: "testing",
+        source_label: "test_insert_disruption",
+        route_id: "test_route"
+      }
+
+      {:ok, new_adj} = Repo.insert(adj)
+
+      assert {:error, %{errors: errors}} =
+               Repo.insert(
+                 Disruption.changeset_for_create(
+                   %Disruption{},
+                   %{
+                     "start_date" => @start_date,
+                     "end_date" => Date.add(@start_date, 5),
+                     "days_of_week" => [
+                       %{
+                         "day_name" => @start_date |> Date.day_of_week() |> DayOfWeek.day_name(),
+                         "start_time" => ~T[20:30:00]
+                       }
+                     ],
+                     "exceptions" => [
+                       %{
+                         "id" => 1234,
+                         "excluded_date" => @start_date |> Date.add(7)
+                       }
+                     ]
+                   },
+                   [new_adj],
+                   @current_time
+                 )
+               )
+
+      assert Keyword.get(errors, :exceptions) == {"should fall between start and end dates", []}
+    end
+
+    test "Can't insert a disruption with duplicate exceptions" do
+      adj = %Adjustment{
+        source: "testing",
+        source_label: "test_insert_disruption",
+        route_id: "test_route"
+      }
+
+      {:ok, new_adj} = Repo.insert(adj)
+
+      assert {:error, %{errors: errors}} =
+               Repo.insert(
+                 Disruption.changeset_for_create(
+                   %Disruption{},
+                   %{
+                     "start_date" => @start_date,
+                     "end_date" => Date.add(@start_date, 10),
+                     "days_of_week" => [
+                       %{
+                         "day_name" => @start_date |> Date.day_of_week() |> DayOfWeek.day_name(),
+                         "start_time" => ~T[20:30:00]
+                       }
+                     ],
+                     "exceptions" => [
+                       %{"id" => 1234, "excluded_date" => @start_date},
+                       %{"id" => 1235, "excluded_date" => @start_date}
+                     ]
+                   },
+                   [new_adj],
+                   @current_time
+                 )
+               )
+
+      assert Keyword.get(errors, :exceptions) == {"should be unique", []}
+    end
+
+    test "Can't insert a disruption with exceptions not applicable to days_of_week" do
+      adj = %Adjustment{
+        source: "testing",
+        source_label: "test_insert_disruption",
+        route_id: "test_route"
+      }
+
+      {:ok, new_adj} = Repo.insert(adj)
+
+      assert {:error, %{errors: errors}} =
+               Repo.insert(
+                 Disruption.changeset_for_create(
+                   %Disruption{},
+                   %{
+                     "start_date" => @start_date,
+                     "end_date" => Date.add(@start_date, 3),
+                     "days_of_week" => [
+                       %{
+                         "day_name" => @start_date |> Date.day_of_week() |> DayOfWeek.day_name(),
+                         "start_time" => ~T[20:30:00]
+                       }
+                     ],
+                     "exceptions" => [
+                       %{
+                         "id" => 1234,
+                         "excluded_date" => @start_date |> Date.add(2)
+                       }
+                     ]
+                   },
+                   [new_adj],
+                   @current_time
+                 )
+               )
+
+      assert Keyword.get(errors, :exceptions) == {"should be applicable to days of week", []}
+    end
+
+    test "Can't insert a disruption with a day_of_week having a start_time later than end_time" do
+      adj = %Adjustment{
+        source: "testing",
+        source_label: "test_insert_disruption",
+        route_id: "test_route"
+      }
+
+      {:ok, new_adj} = Repo.insert(adj)
+
+      assert {:error, %{errors: errors}} =
+               Repo.insert(
+                 Disruption.changeset_for_create(
+                   %Disruption{},
+                   %{
+                     "start_date" => @start_date,
+                     "end_date" => @end_date,
+                     "days_of_week" => [
+                       %{
+                         "day_name" => "friday",
+                         "start_time" => ~T[20:30:00],
+                         "end_time" => ~T[19:30:00]
+                       },
+                       %{"day_name" => "saturday"}
+                     ]
+                   },
+                   [new_adj],
+                   @current_time
+                 )
+               )
+
+      assert Keyword.get(errors, :days_of_week) == {"start_time should be before end_time", []}
+    end
+
+    test "Can't insert a disruption with a day_of_week falling outside date range" do
+      adj = %Adjustment{
+        source: "testing",
+        source_label: "test_insert_disruption",
+        route_id: "test_route"
+      }
+
+      {:ok, new_adj} = Repo.insert(adj)
+
+      assert {:error, %{errors: errors}} =
+               Repo.insert(
+                 Disruption.changeset_for_create(
+                   %Disruption{},
+                   %{
+                     "start_date" => @start_date,
+                     "end_date" => Date.add(@start_date, 3),
+                     "days_of_week" => [
+                       %{"day_name" => @start_date |> Date.add(5) |> DayOfWeek.date_to_day_name()}
+                     ]
+                   },
+                   [new_adj],
+                   @current_time
+                 )
+               )
+
+      assert Keyword.get(errors, :days_of_week) == {"should fall between start and end dates", []}
     end
   end
 end
