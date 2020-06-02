@@ -41,25 +41,10 @@ defmodule Arrow.Disruption do
   def changeset_for_create(disruption, attrs, adjustments, current_time) do
     today = DateTime.to_date(current_time)
 
-    days_of_week =
-      for dow <- attrs["days_of_week"] || [],
-          do: DayOfWeek.changeset(%DayOfWeek{}, dow)
-
-    exceptions =
-      for exception <- attrs["exceptions"] || [],
-          do: Exception.changeset(%Exception{}, exception, today)
-
-    trip_short_names =
-      for name <- attrs["trip_short_names"] || [],
-          do: TripShortName.changeset(%TripShortName{}, name)
-
     disruption
     |> changeset(attrs, today)
     |> put_assoc(:adjustments, adjustments)
     |> validate_length(:adjustments, min: 1)
-    |> put_assoc(:days_of_week, days_of_week)
-    |> put_assoc(:exceptions, exceptions)
-    |> put_assoc(:trip_short_names, trip_short_names)
   end
 
   @doc false
@@ -68,6 +53,7 @@ defmodule Arrow.Disruption do
     today = DateTime.to_date(current_time)
 
     disruption
+    |> Arrow.Repo.preload([:days_of_week, :exceptions, :trip_short_names])
     |> changeset(attrs, today)
     |> Arrow.Validations.validate_not_changing_past(:start_date, today)
     |> Arrow.Validations.validate_not_changing_past(:end_date, today)
