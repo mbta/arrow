@@ -177,13 +177,18 @@ defmodule Arrow.Disruption do
     end_date = get_field(changeset, :end_date)
     exceptions = get_field(changeset, :exceptions, [])
 
-    if Enum.all?(exceptions, fn exception ->
-         Enum.member?([:lt, :eq], Date.compare(start_date, exception.excluded_date)) and
-           Enum.member?([:gt, :eq], Date.compare(end_date, exception.excluded_date))
-       end) do
-      changeset
-    else
-      add_error(changeset, :exceptions, "should fall between start and end dates")
+    cond do
+      is_nil(start_date) or is_nil(end_date) ->
+        changeset
+
+      Enum.all?(exceptions, fn exception ->
+        Enum.member?([:lt, :eq], Date.compare(start_date, exception.excluded_date)) and
+            Enum.member?([:gt, :eq], Date.compare(end_date, exception.excluded_date))
+      end) ->
+        changeset
+
+      true ->
+        add_error(changeset, :exceptions, "should fall between start and end dates")
     end
   end
 
