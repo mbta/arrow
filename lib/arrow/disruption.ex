@@ -41,10 +41,26 @@ defmodule Arrow.Disruption do
   def changeset_for_create(disruption, attrs, adjustments, current_time) do
     today = DateTime.to_date(current_time)
 
+    days_of_week =
+      for dow <- attrs["days_of_week"] || [],
+          do: DayOfWeek.changeset(%DayOfWeek{}, dow)
+
+    exceptions =
+      for exception <- attrs["exceptions"] || [],
+          do: Exception.changeset(%Exception{}, exception, today)
+
+    trip_short_names =
+      for name <- attrs["trip_short_names"] || [],
+          do: TripShortName.changeset(%TripShortName{}, name)
+
     disruption
     |> changeset(attrs, today)
     |> put_assoc(:adjustments, adjustments)
     |> validate_length(:adjustments, min: 1)
+    |> put_assoc(:days_of_week, days_of_week)
+    |> put_assoc(:exceptions, exceptions)
+    |> put_assoc(:trip_short_names, trip_short_names)
+    |> common_validations()
   end
 
   @doc false
@@ -57,9 +73,13 @@ defmodule Arrow.Disruption do
     |> changeset(attrs, today)
     |> Arrow.Validations.validate_not_changing_past(:start_date, today)
     |> Arrow.Validations.validate_not_changing_past(:end_date, today)
+    |> cast_assoc(:days_of_week)
+    |> cast_assoc(:exceptions, with: {Exception, :changeset, [today]})
+    |> cast_assoc(:trip_short_names)
     |> validate_not_deleting_past_exception(today)
     |> validate_not_changing_relationship_in_past(:days_of_week, today)
     |> validate_not_changing_relationship_in_past(:trip_short_names, today)
+    |> common_validations()
   end
 
   @doc false
@@ -68,11 +88,13 @@ defmodule Arrow.Disruption do
     disruption
     |> cast(attrs, [:id, :start_date, :end_date])
     |> validate_required([:start_date, :end_date])
-    |> cast_assoc(:days_of_week)
-    |> cast_assoc(:exceptions, with: {Exception, :changeset, [today]})
-    |> cast_assoc(:trip_short_names)
     |> Arrow.Validations.validate_not_in_past(:start_date, today)
     |> Arrow.Validations.validate_not_in_past(:end_date, today)
+  end
+
+  @spec common_validations(Ecto.Changeset.t()) :: Ecto.Changeset.t(t())
+  defp common_validations(changeset) do
+    changeset
     |> validate_start_date_before_end_date()
     |> validate_days_of_week_between_start_and_end_date()
     |> validate_exceptions_between_start_and_end_date()
