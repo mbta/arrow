@@ -136,7 +136,7 @@ defmodule Arrow.Disruption do
   defp validate_days_of_week_between_start_and_end_date(changeset) do
     start_date = get_field(changeset, :start_date)
     end_date = get_field(changeset, :end_date)
-    days_of_week = get_field(changeset, :days_of_week)
+    days_of_week = get_field(changeset, :days_of_week, [])
 
     cond do
       is_nil(start_date) or is_nil(end_date) ->
@@ -160,7 +160,7 @@ defmodule Arrow.Disruption do
 
   @spec validate_exceptions_are_unique(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
   defp validate_exceptions_are_unique(changeset) do
-    exceptions = get_field(changeset, :exceptions)
+    exceptions = get_field(changeset, :exceptions, [])
 
     if Enum.uniq_by(exceptions, fn %{excluded_date: excluded_date} -> excluded_date end) ==
          exceptions do
@@ -175,7 +175,7 @@ defmodule Arrow.Disruption do
   defp validate_exceptions_between_start_and_end_date(changeset) do
     start_date = get_field(changeset, :start_date)
     end_date = get_field(changeset, :end_date)
-    exceptions = get_field(changeset, :exceptions)
+    exceptions = get_field(changeset, :exceptions, [])
 
     if Enum.all?(exceptions, fn exception ->
          Enum.member?([:lt, :eq], Date.compare(start_date, exception.excluded_date)) and
@@ -190,8 +190,8 @@ defmodule Arrow.Disruption do
   @spec validate_exceptions_are_applicable(Ecto.Changeset.t(t())) ::
           Ecto.Changeset.t(t())
   defp validate_exceptions_are_applicable(changeset) do
-    days_of_week = get_field(changeset, :days_of_week)
-    exceptions = get_field(changeset, :exceptions)
+    days_of_week = get_field(changeset, :days_of_week, [])
+    exceptions = get_field(changeset, :exceptions, [])
 
     day_of_week_numbers = Enum.map(days_of_week, fn x -> DayOfWeek.day_number(x) end)
 
@@ -206,7 +206,7 @@ defmodule Arrow.Disruption do
 
   @spec validate_start_time_before_end_time(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
   defp validate_start_time_before_end_time(changeset) do
-    days_of_week = get_field(changeset, :days_of_week)
+    days_of_week = get_field(changeset, :days_of_week, [])
 
     if Enum.any?(days_of_week, fn day ->
          not (is_nil(day.start_time) or is_nil(day.end_time)) and
