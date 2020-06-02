@@ -69,7 +69,6 @@ defmodule Arrow.Disruption do
     today = DateTime.to_date(current_time)
 
     disruption
-    |> Arrow.Repo.preload([:days_of_week, :exceptions, :trip_short_names])
     |> changeset(attrs, today)
     |> Arrow.Validations.validate_not_changing_past(:start_date, today)
     |> Arrow.Validations.validate_not_changing_past(:end_date, today)
