@@ -67,6 +67,6 @@ defmodule Arrow.DataCase do
       ]
     }
 
-    Map.merge(disruption, overrides)
+    Map.merge(disruption, overrides, fn _, x, y -> y || x end)
   end
 end

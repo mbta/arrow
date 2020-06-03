@@ -1,6 +1,7 @@
 defmodule ArrowWeb.API.DisruptionController do
   use ArrowWeb, :controller
   alias Arrow.{Repo, Disruption}
+  alias ArrowWeb.Utilities
   import Ecto.Query
 
   @filters ~w{min_start_date max_start_date min_end_date max_end_date}
@@ -56,7 +57,7 @@ defmodule ArrowWeb.API.DisruptionController do
       {:error, changeset} ->
         conn
         |> put_status(400)
-        |> render(:errors, errors: format_errors(changeset))
+        |> render(:errors, errors: Utilities.format_errors(changeset))
     end
   end
 
@@ -91,41 +92,8 @@ defmodule ArrowWeb.API.DisruptionController do
       {:error, changeset} ->
         conn
         |> put_status(400)
-        |> render(:errors, errors: format_errors(changeset))
+        |> render(:errors, errors: Utilities.format_errors(changeset))
     end
-  end
-
-  @spec format_field_name(atom()) :: String.t()
-  def format_field_name(field) do
-    Atom.to_string(field) |> String.replace("_", " ") |> String.capitalize()
-  end
-
-  @spec format_error_message({String.t(), [any()]}) :: String.t()
-  defp format_error_message({msg, opts}) do
-    Enum.reduce(opts, msg, fn {key, value}, acc ->
-      String.replace(acc, "%{#{key}}", to_string(value))
-    end)
-  end
-
-  @spec take_errors(map()) :: [key: String.t()]
-  defp take_errors(errors) do
-    Enum.flat_map(errors, fn {field, [err | _]} ->
-      if is_binary(err) do
-        [{field, err}]
-      else
-        take_errors(err)
-      end
-    end)
-  end
-
-  @spec format_errors(Ecto.Changeset.t(Arrow.Disruption.t())) :: [map()]
-  defp format_errors(changeset) do
-    changeset
-    |> Ecto.Changeset.traverse_errors(fn err -> format_error_message(err) end)
-    |> take_errors()
-    |> Enum.map(fn {field, msg} ->
-      %{detail: "#{format_field_name(field)} #{msg}"}
-    end)
   end
 
   @spec build_query([{String.t(), Date.t()}]) :: Ecto.Query.t()
