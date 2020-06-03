@@ -99,7 +99,6 @@ defmodule Arrow.Disruption do
     |> validate_exceptions_between_start_and_end_date()
     |> validate_exceptions_are_unique()
     |> validate_exceptions_are_applicable()
-    |> validate_start_time_before_end_time()
   end
 
   @spec validate_not_deleting_past_exception(Ecto.Changeset.t(), Date.t()) ::
@@ -227,20 +226,6 @@ defmodule Arrow.Disruption do
       changeset
     else
       add_error(changeset, :exceptions, "should be applicable to days of week")
-    end
-  end
-
-  @spec validate_start_time_before_end_time(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
-  defp validate_start_time_before_end_time(changeset) do
-    days_of_week = get_field(changeset, :days_of_week, [])
-
-    if Enum.any?(days_of_week, fn day ->
-         not (is_nil(day.start_time) or is_nil(day.end_time)) and
-           not (Time.compare(day.start_time, day.end_time) == :lt)
-       end) do
-      add_error(changeset, :days_of_week, "start_time should be before end_time")
-    else
-      changeset
     end
   end
 end

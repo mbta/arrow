@@ -35,6 +35,24 @@ defmodule Arrow.Disruption.DayOfWeek do
       "sunday"
     ])
     |> unique_constraint(:day_name, name: "unique_disruption_weekday")
+    |> validate_start_time_before_end_time()
+  end
+
+  @spec validate_start_time_before_end_time(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
+  defp validate_start_time_before_end_time(changeset) do
+    start_time = get_field(changeset, :start_time)
+    end_time = get_field(changeset, :end_time)
+
+    cond do
+      is_nil(start_time) or is_nil(end_time) ->
+        changeset
+
+      not (Time.compare(start_time, end_time) == :lt) ->
+        add_error(changeset, :days_of_week, "start_time should be before end_time")
+
+      true ->
+        changeset
+    end
   end
 
   @spec day_number(t()) :: 1 | 2 | 3 | 4 | 5 | 6 | 7

@@ -570,39 +570,6 @@ defmodule Arrow.DisruptionTest do
       assert Keyword.get(errors, :exceptions) == {"should be applicable to days of week", []}
     end
 
-    test "Can't insert a disruption with a day_of_week having a start_time later than end_time" do
-      adj = %Adjustment{
-        source: "testing",
-        source_label: "test_insert_disruption",
-        route_id: "test_route"
-      }
-
-      {:ok, new_adj} = Repo.insert(adj)
-
-      assert {:error, %{errors: errors}} =
-               Repo.insert(
-                 Disruption.changeset_for_create(
-                   %Disruption{},
-                   %{
-                     "start_date" => @start_date,
-                     "end_date" => @end_date,
-                     "days_of_week" => [
-                       %{
-                         "day_name" => "friday",
-                         "start_time" => ~T[20:30:00],
-                         "end_time" => ~T[19:30:00]
-                       },
-                       %{"day_name" => "saturday"}
-                     ]
-                   },
-                   [new_adj],
-                   @current_time
-                 )
-               )
-
-      assert Keyword.get(errors, :days_of_week) == {"start_time should be before end_time", []}
-    end
-
     test "Can't insert a disruption with a day_of_week falling outside date range" do
       adj = %Adjustment{
         source: "testing",
