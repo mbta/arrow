@@ -1,6 +1,7 @@
 defmodule ArrowWeb.API.DisruptionController do
   use ArrowWeb, :controller
   alias Arrow.{Repo, Disruption}
+  alias ArrowWeb.Utilities
   import Ecto.Query
 
   @filters ~w{min_start_date max_start_date min_end_date max_end_date}
@@ -56,7 +57,7 @@ defmodule ArrowWeb.API.DisruptionController do
       {:error, changeset} ->
         conn
         |> put_status(400)
-        |> render(:errors, data: changeset)
+        |> render(:errors, errors: Utilities.format_errors(changeset))
     end
   end
 
@@ -91,7 +92,7 @@ defmodule ArrowWeb.API.DisruptionController do
       {:error, changeset} ->
         conn
         |> put_status(400)
-        |> render(:errors, data: changeset)
+        |> render(:errors, errors: Utilities.format_errors(changeset))
     end
   end
 

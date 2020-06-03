@@ -1,6 +1,7 @@
 defmodule ArrowWeb.API.DisruptionControllerTest do
   use ArrowWeb.ConnCase
   alias Arrow.{Disruption, Repo, Adjustment}
+  alias Arrow.Disruption.DayOfWeek
 
   @current_time DateTime.from_naive!(~N[2019-04-15 12:00:00], "America/New_York")
 
@@ -41,9 +42,9 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                "id" => _,
                "relationships" => %{
                  "adjustments" => %{"data" => [%{"id" => id1, "type" => "adjustment"}]},
-                 "days_of_week" => %{"data" => []},
-                 "exceptions" => %{"data" => [%{"id" => id2, "type" => "exception"}]},
-                 "trip_short_names" => %{"data" => [%{"id" => id3, "type" => "trip_short_name"}]}
+                 "days_of_week" => %{"data" => [%{"id" => id2, "type" => "day_of_week"}]},
+                 "exceptions" => %{"data" => [%{"id" => id3, "type" => "exception"}]},
+                 "trip_short_names" => %{"data" => [%{"id" => id4, "type" => "trip_short_name"}]}
                },
                "type" => "disruption"
              } = d1
@@ -52,17 +53,17 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                "attributes" => %{"end_date" => ^end_date2, "start_date" => "2019-11-15"},
                "id" => _,
                "relationships" => %{
-                 "adjustments" => %{"data" => [%{"id" => id4, "type" => "adjustment"}]},
-                 "days_of_week" => %{"data" => [%{"id" => id5, "type" => "day_of_week"}]},
+                 "adjustments" => %{"data" => [%{"id" => id5, "type" => "adjustment"}]},
+                 "days_of_week" => %{"data" => [%{"id" => id6, "type" => "day_of_week"}]},
                  "exceptions" => %{"data" => []},
                  "trip_short_names" => %{"data" => []}
                },
                "type" => "disruption"
              } = d2
 
-      assert length(included) == 5
+      assert length(included) == 6
 
-      Enum.each([id1, id2, id3, id4, id5], fn id ->
+      Enum.each([id1, id2, id3, id4, id5, id6], fn id ->
         assert Enum.find(included, &(&1["id"] == id))
       end)
     end
@@ -243,6 +244,9 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
       insert_disruption(
         start_date: ~D[2019-10-10],
         end_date: future_date(),
+        days_of_week: [
+          %{day_name: DayOfWeek.date_to_day_name(future_date()), start_time: ~T[20:30:00]}
+        ],
         exceptions: [future_date()],
         trip_short_names: ["006"],
         adjustments: [adjustment_1],
@@ -287,12 +291,15 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           source_label: "TheLabel"
         })
 
+      date = future_date()
+      future_iso_date = Date.to_iso8601(date)
+
       post_data = %{
         "data" => %{
           "type" => "disruption",
           "attributes" => %{
-            "start_date" => Date.to_iso8601(future_date()),
-            "end_date" => Date.to_iso8601(future_date())
+            "start_date" => future_iso_date,
+            "end_date" => future_iso_date
           },
           "relationships" => %{
             "days_of_week" => %{
@@ -302,15 +309,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                   "attributes" => %{
                     "start_time" => "10:00:00",
                     "end_time" => "23:00:00",
-                    "day_name" => "monday"
-                  }
-                },
-                %{
-                  "type" => "day_of_week",
-                  "attributes" => %{
-                    "start_time" => "23:45:00",
-                    "end_time" => nil,
-                    "day_name" => "tuesday"
+                    "day_name" => date |> Date.day_of_week() |> DayOfWeek.day_name()
                   }
                 }
               ]
@@ -319,7 +318,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
               "data" => [
                 %{
                   "type" => "exception",
-                  "attributes" => %{"excluded_date" => Date.to_iso8601(future_date())}
+                  "attributes" => %{"excluded_date" => future_iso_date}
                 }
               ]
             },
@@ -380,7 +379,10 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
         insert_disruption(
           start_date: future_date(),
           end_date: Date.add(future_date(), 7),
-          exceptions: [Date.add(future_date(), 5)],
+          exceptions: [future_date()],
+          days_of_week: [
+            %{day_name: DayOfWeek.date_to_day_name(future_date()), start_time: ~T[20:30:00]}
+          ],
           trip_short_names: ["006"],
           adjustments: [adjustment],
           current_time: @current_time
@@ -458,7 +460,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                   "attributes" => %{
                     "start_time" => nil,
                     "end_time" => nil,
-                    "day_name" => "saturday"
+                    "day_name" => DayOfWeek.date_to_day_name(future_date())
                   }
                 }
               ]

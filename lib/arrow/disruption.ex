@@ -60,6 +60,7 @@ defmodule Arrow.Disruption do
     |> put_assoc(:days_of_week, days_of_week)
     |> put_assoc(:exceptions, exceptions)
     |> put_assoc(:trip_short_names, trip_short_names)
+    |> common_validations()
   end
 
   @doc false
@@ -77,6 +78,7 @@ defmodule Arrow.Disruption do
     |> validate_not_deleting_past_exception(today)
     |> validate_not_changing_relationship_in_past(:days_of_week, today)
     |> validate_not_changing_relationship_in_past(:trip_short_names, today)
+    |> common_validations()
   end
 
   @doc false
@@ -87,6 +89,16 @@ defmodule Arrow.Disruption do
     |> validate_required([:start_date, :end_date])
     |> Arrow.Validations.validate_not_in_past(:start_date, today)
     |> Arrow.Validations.validate_not_in_past(:end_date, today)
+  end
+
+  @spec common_validations(Ecto.Changeset.t()) :: Ecto.Changeset.t(t())
+  defp common_validations(changeset) do
+    changeset
+    |> validate_start_date_before_end_date()
+    |> validate_days_of_week_between_start_and_end_date()
+    |> validate_exceptions_between_start_and_end_date()
+    |> validate_exceptions_are_unique()
+    |> validate_exceptions_are_applicable()
   end
 
   @spec validate_not_deleting_past_exception(Ecto.Changeset.t(), Date.t()) ::
@@ -119,6 +131,101 @@ defmodule Arrow.Disruption do
       add_error(changeset, relationship, "can't be changed because start date is in the past.")
     else
       changeset
+    end
+  end
+
+  @spec validate_start_date_before_end_date(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
+  defp validate_start_date_before_end_date(changeset) do
+    start_date = get_field(changeset, :start_date)
+    end_date = get_field(changeset, :end_date)
+
+    cond do
+      is_nil(start_date) or is_nil(end_date) ->
+        changeset
+
+      Date.compare(start_date, end_date) == :gt ->
+        add_error(changeset, :start_date, "can't be after end date.")
+
+      true ->
+        changeset
+    end
+  end
+
+  @spec validate_days_of_week_between_start_and_end_date(Ecto.Changeset.t(t())) ::
+          Ecto.Changeset.t(t())
+  defp validate_days_of_week_between_start_and_end_date(changeset) do
+    start_date = get_field(changeset, :start_date)
+    end_date = get_field(changeset, :end_date)
+    days_of_week = get_field(changeset, :days_of_week, [])
+
+    cond do
+      is_nil(start_date) or is_nil(end_date) ->
+        changeset
+
+      Date.diff(end_date, start_date) >= 6 ->
+        changeset
+
+      Enum.all?(days_of_week, fn day ->
+        Enum.member?(
+          Enum.map(Date.range(start_date, end_date), fn date -> Date.day_of_week(date) end),
+          DayOfWeek.day_number(day)
+        )
+      end) ->
+        changeset
+
+      true ->
+        add_error(changeset, :days_of_week, "should fall between start and end dates")
+    end
+  end
+
+  @spec validate_exceptions_are_unique(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
+  defp validate_exceptions_are_unique(changeset) do
+    exceptions = get_field(changeset, :exceptions, [])
+
+    if Enum.uniq_by(exceptions, fn %{excluded_date: excluded_date} -> excluded_date end) ==
+         exceptions do
+      changeset
+    else
+      add_error(changeset, :exceptions, "should be unique")
+    end
+  end
+
+  @spec validate_exceptions_between_start_and_end_date(Ecto.Changeset.t(t())) ::
+          Ecto.Changeset.t(t())
+  defp validate_exceptions_between_start_and_end_date(changeset) do
+    start_date = get_field(changeset, :start_date)
+    end_date = get_field(changeset, :end_date)
+    exceptions = get_field(changeset, :exceptions, [])
+
+    cond do
+      is_nil(start_date) or is_nil(end_date) ->
+        changeset
+
+      Enum.all?(exceptions, fn exception ->
+        Enum.member?([:lt, :eq], Date.compare(start_date, exception.excluded_date)) and
+            Enum.member?([:gt, :eq], Date.compare(end_date, exception.excluded_date))
+      end) ->
+        changeset
+
+      true ->
+        add_error(changeset, :exceptions, "should fall between start and end dates")
+    end
+  end
+
+  @spec validate_exceptions_are_applicable(Ecto.Changeset.t(t())) ::
+          Ecto.Changeset.t(t())
+  defp validate_exceptions_are_applicable(changeset) do
+    days_of_week = get_field(changeset, :days_of_week, [])
+    exceptions = get_field(changeset, :exceptions, [])
+
+    day_of_week_numbers = Enum.map(days_of_week, fn x -> DayOfWeek.day_number(x) end)
+
+    if Enum.all?(exceptions, fn exception ->
+         Enum.member?(day_of_week_numbers, Date.day_of_week(exception.excluded_date))
+       end) do
+      changeset
+    else
+      add_error(changeset, :exceptions, "should be applicable to days of week")
     end
   end
 end
