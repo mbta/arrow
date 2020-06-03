@@ -48,7 +48,7 @@ defmodule Arrow.Disruption.DayOfWeek do
         changeset
 
       not (Time.compare(start_time, end_time) == :lt) ->
-        add_error(changeset, :days_of_week, "start_time should be before end_time")
+        add_error(changeset, :days_of_week, "start time should be before end time")
 
       true ->
         changeset
