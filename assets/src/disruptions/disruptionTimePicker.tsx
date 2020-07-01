@@ -186,7 +186,7 @@ interface TimeOfDaySelectorProps {
   dayOfWeekIndex: number
   timeIndex: 0 | 1
   time: Time | null
-  setTimeRange(dow: number, idx: number, val: Partial<Time> | null): void
+  setTimeRange: (dow: number, idx: number, val: Partial<Time> | null) => void
 }
 
 const TimeOfDaySelector = ({
