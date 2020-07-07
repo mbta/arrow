@@ -8,3 +8,4 @@
 - [ ] Any new or changed functions have typespecs
 - [ ] Tests were added for any new functionality (don't just rely on Codecov)
 - [ ] This branch was deployed to the staging environment and is currently running with no unexpected increase in warnings, and no errors or crashes.
+- [ ] If adding a new `Shuttle`, run `gmake shuttle_configuration` and open a pull request to save the output in the Arrow repo at [`priv/repo/shuttle.json`](https://github.com/mbta/arrow/blob/master/priv/repo/shuttles.json).
