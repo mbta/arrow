@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 10.5
--- Dumped by pg_dump version 10.5
+-- Dumped from database version 11.6
+-- Dumped by pg_dump version 11.6
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -12,22 +12,9 @@ SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
+SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
-
---
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
---
-
-CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
-
-
---
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
-
 
 --
 -- Name: day_name; Type: TYPE; Schema: public; Owner: -
@@ -79,6 +66,36 @@ CREATE SEQUENCE public.adjustments_id_seq
 --
 
 ALTER SEQUENCE public.adjustments_id_seq OWNED BY public.adjustments.id;
+
+
+--
+-- Name: auth_tokens; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.auth_tokens (
+    id bigint NOT NULL,
+    username text NOT NULL,
+    token text NOT NULL
+);
+
+
+--
+-- Name: auth_tokens_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.auth_tokens_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: auth_tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.auth_tokens_id_seq OWNED BY public.auth_tokens.id;
 
 
 --
@@ -259,6 +276,13 @@ ALTER TABLE ONLY public.adjustments ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
+-- Name: auth_tokens id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_tokens ALTER COLUMN id SET DEFAULT nextval('public.auth_tokens_id_seq'::regclass);
+
+
+--
 -- Name: disruption_adjustments id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -299,6 +323,14 @@ ALTER TABLE ONLY public.disruptions ALTER COLUMN id SET DEFAULT nextval('public.
 
 ALTER TABLE ONLY public.adjustments
     ADD CONSTRAINT adjustments_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: auth_tokens auth_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_tokens
+    ADD CONSTRAINT auth_tokens_pkey PRIMARY KEY (id);
 
 
 --
@@ -354,6 +386,20 @@ ALTER TABLE ONLY public.schema_migrations
 --
 
 CREATE UNIQUE INDEX adjustments_source_label_index ON public.adjustments USING btree (source_label);
+
+
+--
+-- Name: auth_tokens_token_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX auth_tokens_token_index ON public.auth_tokens USING btree (token);
+
+
+--
+-- Name: auth_tokens_username_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX auth_tokens_username_index ON public.auth_tokens USING btree (username);
 
 
 --
@@ -442,5 +488,12 @@ ALTER TABLE ONLY public.disruption_trip_short_names
 -- PostgreSQL database dump complete
 --
 
-INSERT INTO public."schema_migrations" (version) VALUES (20191223181419), (20191223181443), (20191223181711), (20191223181837), (20191223182116), (20191223182231), (20200129212636), (20200326133115);
-
+INSERT INTO public."schema_migrations" (version) VALUES (20191223181419);
+INSERT INTO public."schema_migrations" (version) VALUES (20191223181443);
+INSERT INTO public."schema_migrations" (version) VALUES (20191223181711);
+INSERT INTO public."schema_migrations" (version) VALUES (20191223181837);
+INSERT INTO public."schema_migrations" (version) VALUES (20191223182116);
+INSERT INTO public."schema_migrations" (version) VALUES (20191223182231);
+INSERT INTO public."schema_migrations" (version) VALUES (20200129212636);
+INSERT INTO public."schema_migrations" (version) VALUES (20200326133115);
+INSERT INTO public."schema_migrations" (version) VALUES (20200713155611);
