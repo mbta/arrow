@@ -46,6 +46,7 @@ defmodule ArrowWeb.Router do
     get "/disruptions/new", PageController, :index
     get "/disruptions/:id", PageController, :index
     get "/disruptions/:id/edit", PageController, :index
+    get "/mytoken", MyTokenController, :show
   end
 
   scope "/", ArrowWeb do

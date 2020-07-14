@@ -17,6 +17,7 @@ defmodule ArrowWeb.AuthController do
       %{groups: credentials.other[:groups]},
       ttl: {expiration - current_time, :seconds}
     )
+    |> Plug.Conn.put_session(:arrow_username, username)
     |> redirect(to: ArrowWeb.Router.Helpers.page_path(conn, :index))
   end
 
