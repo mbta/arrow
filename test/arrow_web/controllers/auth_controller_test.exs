@@ -22,6 +22,7 @@ defmodule ArrowWeb.Controllers.AuthControllerTest do
 
       assert response =~ ArrowWeb.Router.Helpers.page_path(conn, :index)
       assert Guardian.Plug.current_claims(conn)["groups"] == ["test1"]
+      assert Plug.Conn.get_session(conn, :arrow_username) == "foo@mbta.com"
     end
 
     test "handles generic failure", %{conn: conn} do

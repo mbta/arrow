@@ -45,7 +45,7 @@ defmodule ArrowWeb.ConnCase do
         conn =
           Phoenix.ConnTest.build_conn()
           |> Plug.Conn.put_req_header("x-forwarded-proto", "https")
-          |> init_test_session(%{})
+          |> init_test_session(%{arrow_username: user})
           |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{groups: [arrow_group]})
 
         {:ok, conn: conn}
@@ -56,7 +56,7 @@ defmodule ArrowWeb.ConnCase do
         conn =
           Phoenix.ConnTest.build_conn()
           |> Plug.Conn.put_req_header("x-forwarded-proto", "https")
-          |> init_test_session(%{})
+          |> init_test_session(%{arrow_username: user})
           |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{groups: []})
 
         {:ok, conn: conn}
