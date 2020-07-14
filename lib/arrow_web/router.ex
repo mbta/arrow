@@ -25,6 +25,10 @@ defmodule ArrowWeb.Router do
     plug(ArrowWeb.AuthManager.Pipeline)
   end
 
+  pipeline :try_api_token_auth do
+    plug(ArrowWeb.TryApiTokenAuth)
+  end
+
   pipeline :ensure_auth do
     plug(Guardian.Plug.EnsureAuthenticated)
   end
@@ -61,16 +65,17 @@ defmodule ArrowWeb.Router do
   end
 
   scope "/api", ArrowWeb.API do
-    pipe_through([:redirect_prod_http, :api, :auth, :ensure_auth, :ensure_arrow_group])
+    pipe_through([
+      :redirect_prod_http,
+      :api,
+      :auth,
+      :try_api_token_auth,
+      :ensure_auth,
+      :ensure_arrow_group
+    ])
 
-    resources("/disruptions", DisruptionController, only: [:show, :create, :update])
+    resources("/disruptions", DisruptionController, only: [:index, :show, :create, :update])
     resources("/adjustments", AdjustmentController, only: [:index])
-  end
-
-  scope "/api", ArrowWeb.API do
-    pipe_through([:redirect_prod_http, :api])
-
-    resources("/disruptions", DisruptionController, only: [:index])
   end
 
   # Other scopes may use custom stacks.
