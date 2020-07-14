@@ -12,10 +12,12 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
   end
 
   describe "index/2" do
+    @tag :authenticated
     test "returns 200", %{conn: conn} do
       assert %{status: 200} = get(conn, "/api/disruptions")
     end
 
+    @tag :authenticated
     test "includes all fields by default", %{conn: conn} do
       insert_disruptions()
 
@@ -66,6 +68,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
       end)
     end
 
+    @tag :authenticated
     test "can include only specified relationships", %{conn: conn} do
       insert_disruptions()
 
@@ -129,6 +132,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                     } = res
     end
 
+    @tag :authenticated
     test "can filter by dates", %{conn: conn} do
       {%{id: disruption_1_id}, %{id: disruption_2_id}} = insert_disruptions()
 
