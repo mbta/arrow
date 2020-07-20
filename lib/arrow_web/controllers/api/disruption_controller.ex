@@ -96,6 +96,27 @@ defmodule ArrowWeb.API.DisruptionController do
     end
   end
 
+  @spec delete(Plug.Conn.t(), map()) :: Plug.Conn.t()
+  def delete(conn, %{"id" => id}) do
+    {:ok, current_time} = DateTime.now(Application.get_env(:arrow, :time_zone))
+
+    disruption = Repo.get(Disruption, id)
+
+    if is_nil(disruption) do
+      conn |> put_status(404) |> render(:errors, errors: [%{detail: "Not found"}])
+    else
+      changeset = Disruption.changeset_for_delete(disruption, current_time)
+
+      case Repo.delete(changeset) do
+        {:ok, _disruption} ->
+          send_resp(conn, 204, "")
+
+        {:error, changeset} ->
+          conn |> put_status(400) |> render(:errors, errors: Utilities.format_errors(changeset))
+      end
+    end
+  end
+
   @spec build_query([{String.t(), Date.t()}]) :: Ecto.Query.t()
   defp build_query(filters) do
     Enum.reduce(filters, from(d in Disruption), &compose_query/2)

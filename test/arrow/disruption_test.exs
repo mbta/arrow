@@ -649,5 +649,31 @@ defmodule Arrow.DisruptionTest do
 
       assert Keyword.get(errors, :days_of_week) == {"should fall between start and end dates", []}
     end
+
+    test "can delete a disruption" do
+      {:ok, disruption} = build_disruption() |> Repo.insert()
+
+      assert {:ok, %Disruption{}} =
+               disruption
+               |> Disruption.changeset_for_delete(@current_time)
+               |> Repo.delete()
+    end
+
+    test "can't delete a disruption with a start date in the past" do
+      {:ok, disruption} =
+        build_disruption(%Disruption{
+          start_date: @current_time |> DateTime.to_date() |> Date.add(-1)
+        })
+        |> Repo.insert()
+
+      assert {:error, changeset} =
+               disruption
+               |> Disruption.changeset_for_delete(@current_time)
+               |> Repo.delete()
+
+      assert changeset.errors == [
+               start_date: {"can't be deleted when start date is in the past", []}
+             ]
+    end
   end
 end
