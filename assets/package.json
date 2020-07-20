@@ -15,6 +15,8 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.29",
     "@fortawesome/free-solid-svg-icons": "^5.13.1",
     "@fortawesome/react-fontawesome": "^0.1.10",
+    "@fullcalendar/daygrid": "^5.1.0",
+    "@fullcalendar/react": "^5.1.0",
     "bootstrap": "^4.5.0",
     "classnames": "^2.2.6",
     "phoenix": "file:../deps/phoenix",
@@ -23,7 +25,8 @@
     "react-bootstrap": "^1.1.1",
     "react-datepicker": "^3.0.0",
     "react-dom": "^16.13.1",
-    "react-router-dom": "^5.2.0"
+    "react-router-dom": "^5.2.0",
+    "rrule": "^2.6.4"
   },
   "devDependencies": {
     "@testing-library/dom": "^7.20.0",

@@ -2,8 +2,9 @@ import * as React from "react"
 import classnames from "classnames"
 import Table from "react-bootstrap/Table"
 import { Link } from "react-router-dom"
-import { DisruptionRow } from "./disruptionIndex"
 import { formatDisruptionDate } from "./disruptions"
+import Disruption from "../models/disruption"
+import { parseDaysAndTimes } from "./time"
 
 interface DisruptionTableHeaderProps {
   active?: boolean
@@ -42,7 +43,7 @@ interface SortState {
 }
 
 interface DisruptionTableProps {
-  disruptions: DisruptionRow[]
+  disruptions: Disruption[]
 }
 const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
   const [sortState, setSortState] = React.useState<SortState>({
@@ -50,9 +51,23 @@ const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
     order: "asc",
   })
 
+  const disruptionRows = React.useMemo(() => {
+    return disruptions.map((x) => {
+      return {
+        id: x.id,
+        startDate: x.startDate,
+        endDate: x.endDate,
+        label: x.adjustments.map((adj) => adj.sourceLabel).join(", "),
+        daysOfWeek: x.daysOfWeek,
+        daysAndTimes:
+          x.daysOfWeek.length > 0 ? parseDaysAndTimes(x.daysOfWeek) : "",
+      }
+    })
+  }, [disruptions])
+
   const sortedDisruptions = React.useMemo(() => {
     const { by, order } = sortState
-    return disruptions.sort((a, b) => {
+    return disruptionRows.sort((a, b) => {
       if (!a[by] || !b[by]) {
         return -1
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -65,7 +80,7 @@ const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
         return 0
       }
     })
-  }, [sortState, disruptions])
+  }, [sortState, disruptionRows])
 
   const handleChangeSort = React.useCallback(
     (field: SortState["by"]) => {

@@ -27,22 +27,57 @@ const DisruptionIndexWithRouter = ({
       ) : (
         <DisruptionIndexView
           disruptions={[
-            {
+            new Disruption({
               id: "1",
-              routes: ["Red"],
-              label: "AlewifeHarvard",
               startDate: new Date("2019-10-31"),
               endDate: new Date("2019-11-15"),
-              daysAndTimes: "Weekends, starting Friday 845",
-            },
-            {
-              id: "2",
-              routes: ["Green-D", "Green-E"],
-              label: "Kenmore—Newton Highlands",
+              adjustments: [new Adjustment({ routeId: "Red" })],
+              daysOfWeek: [
+                new DayOfWeek({
+                  id: "1",
+                  startTime: "20:45:00",
+                  dayName: "friday",
+                }),
+                new DayOfWeek({
+                  id: "2",
+                  dayName: "saturday",
+                }),
+                new DayOfWeek({
+                  id: "3",
+                  dayName: "sunday",
+                }),
+              ],
+              exceptions: [],
+              tripShortNames: [],
+            }),
+            new Disruption({
+              id: "3",
               startDate: new Date("2019-09-22"),
               endDate: new Date("2019-10-22"),
-              daysAndTimes: "Weekends, starting Friday 845",
-            },
+              adjustments: [
+                new Adjustment({
+                  routeId: "Green-D",
+                  sourceLabel: "Kenmore-Newton Highlands",
+                }),
+              ],
+              daysOfWeek: [
+                new DayOfWeek({
+                  id: "1",
+                  startTime: "20:45:00",
+                  dayName: "friday",
+                }),
+                new DayOfWeek({
+                  id: "2",
+                  dayName: "saturday",
+                }),
+                new DayOfWeek({
+                  id: "3",
+                  dayName: "sunday",
+                }),
+              ],
+              exceptions: [],
+              tripShortNames: [],
+            }),
           ]}
         />
       )}
