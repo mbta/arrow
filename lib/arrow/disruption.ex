@@ -82,6 +82,16 @@ defmodule Arrow.Disruption do
   end
 
   @doc false
+  @spec changeset_for_delete(t(), DateTime.t()) :: Ecto.Changeset.t(t())
+  def changeset_for_delete(disruption, current_time) do
+    today = DateTime.to_date(current_time)
+
+    disruption
+    |> changeset(%{}, today)
+    |> validate_start_date_not_in_past(today)
+  end
+
+  @doc false
   @spec changeset(t(), map(), Date.t()) :: Ecto.Changeset.t(t())
   defp changeset(disruption, attrs, today) do
     disruption
@@ -226,6 +236,17 @@ defmodule Arrow.Disruption do
       changeset
     else
       add_error(changeset, :exceptions, "should be applicable to days of week")
+    end
+  end
+
+  @spec validate_start_date_not_in_past(Ecto.Changeset.t(t()), Date.t()) :: Ecto.Changeset.t(t())
+  defp validate_start_date_not_in_past(changeset, today) do
+    start_date = get_field(changeset, :start_date, [])
+
+    if not is_nil(start_date) and Date.compare(start_date, today) == :lt do
+      add_error(changeset, :start_date, "can't be deleted when start date is in the past")
+    else
+      changeset
     end
   end
 end

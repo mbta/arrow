@@ -74,7 +74,10 @@ defmodule ArrowWeb.Router do
       :ensure_arrow_group
     ])
 
-    resources("/disruptions", DisruptionController, only: [:index, :show, :create, :update])
+    resources("/disruptions", DisruptionController,
+      only: [:index, :show, :create, :update, :delete]
+    )
+
     resources("/adjustments", AdjustmentController, only: [:index])
   end
 
