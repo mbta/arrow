@@ -102,7 +102,7 @@ const DisruptionCalendar = ({ disruptions }: DisruptionCalendarProps) => {
     )
   }, [disruptions])
   return (
-    <div id="calendar">
+    <div id="calendar" className="mb-3">
       <FullCalendar
         plugins={[dayGridPlugin]}
         initialView="dayGridMonth"
