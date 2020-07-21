@@ -19,6 +19,11 @@ module.exports = (env, options) => ({
   module: {
     rules: [
       {
+        test: /\.m?js$/,
+        exclude: /node_modules\/(?!(@fullcalendar)).+/,
+        loader: "babel-loader",
+      },
+      {
         test: /\.ts(x?)$/,
         exclude: /node_modules/,
         use: [
@@ -29,8 +34,9 @@ module.exports = (env, options) => ({
       },
       {
         enforce: "pre",
-        test: /\.js$/,
+        test: /\.(t|j)s$/,
         loader: "source-map-loader",
+        exclude: /node_modules\/rrule/,
       },
       {
         test: /\.s?css$/,
@@ -48,7 +54,7 @@ module.exports = (env, options) => ({
   },
   plugins: [
     new MiniCssExtractPlugin({ filename: "../css/app.css" }),
-    new CopyWebpackPlugin({patterns: [{ from: "static/", to: "../" }]}),
+    new CopyWebpackPlugin({ patterns: [{ from: "static/", to: "../" }] }),
   ],
   devtool: "source-map",
   optimization: {
