@@ -1,6 +1,11 @@
 import * as React from "react"
 import { BrowserRouter } from "react-router-dom"
-import { render, fireEvent, screen } from "@testing-library/react"
+import {
+  render,
+  fireEvent,
+  screen,
+  queryByAttribute,
+} from "@testing-library/react"
 
 import {
   DisruptionIndexView,
@@ -31,7 +36,12 @@ const DisruptionIndexWithRouter = ({
               id: "1",
               startDate: new Date("2019-10-31"),
               endDate: new Date("2019-11-15"),
-              adjustments: [new Adjustment({ routeId: "Red" })],
+              adjustments: [
+                new Adjustment({
+                  routeId: "Red",
+                  sourceLabel: "AlewifeHarvard",
+                }),
+              ],
               daysOfWeek: [
                 new DayOfWeek({
                   id: "1",
@@ -120,7 +130,7 @@ describe("DisruptionIndexView", () => {
     let tableRows = container.querySelectorAll("tbody tr")
     expect(tableRows.length).toEqual(2)
     expect(tableRows.item(0).innerHTML).toContain("AlewifeHarvard")
-    expect(tableRows.item(1).innerHTML).toContain("Kenmore—Newton")
+    expect(tableRows.item(1).innerHTML).toContain("Kenmore-Newton")
     expect(container.querySelectorAll("#clear-filter").length).toEqual(0)
     expect(
       container.querySelectorAll(".m-disruption-index__route_filter.active")
@@ -139,7 +149,7 @@ describe("DisruptionIndexView", () => {
 
     tableRows = container.querySelectorAll("tbody tr")
     expect(tableRows.length).toEqual(1)
-    expect(tableRows.item(0).innerHTML).toContain("Kenmore—Newton")
+    expect(tableRows.item(0).innerHTML).toContain("Kenmore-Newton")
     expect(
       container.querySelectorAll(".m-disruption-index__route_filter.active")
         .length
@@ -166,8 +176,7 @@ describe("DisruptionIndexView", () => {
 
     fireEvent.click(greenEselector)
     tableRows = container.querySelectorAll("tbody tr")
-    expect(tableRows.length).toEqual(1)
-    expect(tableRows.item(0).innerHTML).toContain("Kenmore—Newton")
+    expect(tableRows.length).toEqual(0)
     expect(
       container.querySelectorAll(".m-disruption-index__route_filter.active")
         .length
@@ -185,7 +194,7 @@ describe("DisruptionIndexView", () => {
     expect(tableRows.length).toEqual(2)
 
     expect(tableRows.item(0).innerHTML).toContain("AlewifeHarvard")
-    expect(tableRows.item(1).innerHTML).toContain("Kenmore—Newton")
+    expect(tableRows.item(1).innerHTML).toContain("Kenmore-Newton")
 
     clearFilterLink = container.querySelector("#clear-filter")
     expect(clearFilterLink).toBeNull()
@@ -199,7 +208,7 @@ describe("DisruptionIndexView", () => {
   test("can toggle between table and calendar view", () => {
     const { container } = render(<DisruptionIndexWithRouter />)
     expect(screen.queryByText("days + times")).not.toBeNull()
-    expect(screen.queryByText("calendar goes here")).toBeNull()
+    expect(queryByAttribute("id", container, "calendar")).toBeNull()
 
     const toggleButton = container.querySelector("#view-toggle")
     if (!toggleButton) {
@@ -209,12 +218,12 @@ describe("DisruptionIndexView", () => {
 
     fireEvent.click(toggleButton)
     expect(screen.queryByText("days + times")).toBeNull()
-    expect(screen.queryByText("calendar goes here")).not.toBeNull()
+    expect(queryByAttribute("id", container, "calendar")).not.toBeNull()
     expect(toggleButton.textContent).toEqual("list view")
 
     fireEvent.click(toggleButton)
     expect(screen.queryByText("days + times")).not.toBeNull()
-    expect(screen.queryByText("calendar goes here")).toBeNull()
+    expect(queryByAttribute("id", container, "calendar")).toBeNull()
     expect(toggleButton.textContent).toEqual("calendar view")
   })
 })
