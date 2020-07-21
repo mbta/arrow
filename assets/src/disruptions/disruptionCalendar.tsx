@@ -73,7 +73,7 @@ const DisruptionCalendar = ({ disruptions }: DisruptionCalendarProps) => {
               const last = acc.slice(-1)[0].slice(-1)[0]
               if (
                 !last ||
-                curr.getTime() - last.getTime() == 60 * 60 * 24 * 1000
+                curr.getTime() - last.getTime() === 60 * 60 * 24 * 1000
               ) {
                 acc[acc.length - 1].push(curr)
               } else {
