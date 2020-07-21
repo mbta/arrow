@@ -2,8 +2,12 @@ import { createBrowserHistory } from "history"
 import * as React from "react"
 import { BrowserRouter } from "react-router-dom"
 import { act } from "react-dom/test-utils"
+import { MemoryRouter, Route, Switch } from "react-router-dom"
 import * as ReactDOM from "react-dom"
 import * as api from "../../src/api"
+
+import { render, fireEvent, screen } from "@testing-library/react"
+import { waitForElementToBeRemoved } from "@testing-library/dom"
 
 import ViewDisruption from "../../src/disruptions/viewDisruption"
 import Adjustment from "../../src/models/adjustment"
@@ -244,5 +248,223 @@ describe("ViewDisruption", () => {
     expect(document.body.textContent).toMatch(
       "Error parsing day of week information."
     )
+  })
+
+  test("doesn't display delete button for disruption that started in the past", async () => {
+    let startDate = new Date()
+    startDate.setTime(startDate.getTime() - 24 * 60 * 60 * 1000)
+    startDate = new Date(startDate.toDateString())
+
+    const endDate = new Date(new Date().toDateString())
+
+    jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
+      return Promise.resolve(
+        new Disruption({
+          id: "1",
+          startDate,
+          endDate,
+          adjustments: [
+            new Adjustment({
+              id: "1",
+              routeId: "Green-D",
+              source: "gtfs_creator",
+              sourceLabel: "NewtonHighlandsKenmore",
+            }),
+          ],
+          daysOfWeek: [
+            new DayOfWeek({
+              id: "1",
+              startTime: "20:45:00",
+              dayName: "friday",
+            }),
+          ],
+          exceptions: [],
+          tripShortNames: [],
+        })
+      )
+    })
+
+    const { container } = render(
+      <MemoryRouter initialEntries={["/disruptions/1"]}>
+        <Switch>
+          <Route
+            exact={true}
+            path="/disruptions/:id/"
+            component={ViewDisruption}
+          />
+        </Switch>
+      </MemoryRouter>
+    )
+
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
+
+    const deleteButton = container.querySelector("#delete-disruption-button")
+
+    expect(deleteButton).toBeNull()
+  })
+
+  test("can delete a disruption", async () => {
+    let startDate = new Date()
+    startDate.setTime(startDate.getTime() + 24 * 60 * 60 * 1000)
+    startDate = new Date(startDate.toDateString())
+
+    let endDate = new Date()
+    startDate.setTime(startDate.getTime() + 2 * 24 * 60 * 60 * 1000)
+    endDate = new Date(endDate.toDateString())
+
+    jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
+      return Promise.resolve(
+        new Disruption({
+          id: "1",
+          startDate,
+          endDate,
+          adjustments: [
+            new Adjustment({
+              id: "1",
+              routeId: "Green-D",
+              source: "gtfs_creator",
+              sourceLabel: "NewtonHighlandsKenmore",
+            }),
+          ],
+          daysOfWeek: [
+            new DayOfWeek({
+              id: "1",
+              startTime: "20:45:00",
+              dayName: "friday",
+            }),
+          ],
+          exceptions: [],
+          tripShortNames: [],
+        })
+      )
+    })
+
+    const { container } = render(
+      <MemoryRouter initialEntries={["/disruptions/1"]}>
+        <Switch>
+          <Route
+            exact={true}
+            path="/disruptions/:id/"
+            component={ViewDisruption}
+          />
+          <Route exact={true} path="/" render={() => <div>Success!!!</div>} />
+        </Switch>
+      </MemoryRouter>
+    )
+
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
+
+    const deleteButton = container.querySelector(
+      "#delete-disruption-button"
+    ) as Element
+
+    const apiSendSpy = jest
+      .spyOn(api, "apiSend")
+      .mockImplementationOnce(({ successParser }) => {
+        return Promise.resolve({
+          ok: successParser(null),
+        })
+      })
+
+    jest.spyOn(window, "confirm").mockImplementationOnce(() => {
+      return true
+    })
+
+    if (deleteButton) {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      await act(async () => {
+        fireEvent.click(deleteButton)
+      })
+    } else {
+      throw new Error("delete button not found")
+    }
+
+    expect(apiSendSpy).toBeCalled()
+
+    expect(screen.queryByText("Success!!!")).not.toBeNull()
+  })
+
+  test("handles errors from deleting a disruption", async () => {
+    let startDate = new Date()
+    startDate.setTime(startDate.getTime() + 24 * 60 * 60 * 1000)
+    startDate = new Date(startDate.toDateString())
+
+    let endDate = new Date()
+    startDate.setTime(startDate.getTime() + 2 * 24 * 60 * 60 * 1000)
+    endDate = new Date(endDate.toDateString())
+
+    jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
+      return Promise.resolve(
+        new Disruption({
+          id: "1",
+          startDate,
+          endDate,
+          adjustments: [
+            new Adjustment({
+              id: "1",
+              routeId: "Green-D",
+              source: "gtfs_creator",
+              sourceLabel: "NewtonHighlandsKenmore",
+            }),
+          ],
+          daysOfWeek: [
+            new DayOfWeek({
+              id: "1",
+              startTime: "20:45:00",
+              dayName: "friday",
+            }),
+          ],
+          exceptions: [],
+          tripShortNames: [],
+        })
+      )
+    })
+
+    const { container } = render(
+      <MemoryRouter initialEntries={["/disruptions/1"]}>
+        <Switch>
+          <Route
+            exact={true}
+            path="/disruptions/:id/"
+            component={ViewDisruption}
+          />
+        </Switch>
+      </MemoryRouter>
+    )
+
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
+
+    const deleteButton = container.querySelector(
+      "#delete-disruption-button"
+    ) as Element
+
+    const apiSendSpy = jest.spyOn(api, "apiSend").mockImplementationOnce(() => {
+      return Promise.resolve({
+        error: ["Test error"],
+      })
+    })
+
+    jest.spyOn(window, "confirm").mockImplementationOnce(() => {
+      return true
+    })
+
+    if (deleteButton) {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      await act(async () => {
+        fireEvent.click(deleteButton)
+      })
+    } else {
+      throw new Error("delete button not found")
+    }
+
+    expect(apiSendSpy).toBeCalled()
+
+    expect(screen.getByText("Test error")).not.toBeNull()
   })
 })

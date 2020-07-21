@@ -1,7 +1,9 @@
 import * as React from "react"
-import { RouteComponentProps, Link } from "react-router-dom"
+import { RouteComponentProps, Link, Redirect } from "react-router-dom"
+import Alert from "react-bootstrap/Alert"
+import Button from "react-bootstrap/Button"
 
-import { apiGet } from "../api"
+import { apiGet, apiSend } from "../api"
 
 import Header from "../header"
 import Loading from "../loading"
@@ -9,7 +11,7 @@ import { DisruptionPreview } from "./disruptionPreview"
 import { fromDaysOfWeek } from "./time"
 
 import Disruption from "../models/disruption"
-import { JsonApiResponse, toModelObject } from "../jsonApi"
+import { JsonApiResponse, toModelObject, parseErrors } from "../jsonApi"
 
 interface TParams {
   id: string
@@ -33,6 +35,46 @@ const EditDisruptionButton = ({
   )
 }
 
+interface DeleteDisruptionButtonProps {
+  disruptionId: string
+  setDoRedirect: React.Dispatch<React.SetStateAction<boolean>>
+  setDeletionErrors: React.Dispatch<React.SetStateAction<string[]>>
+}
+
+const DeleteDisruptionButton = ({
+  disruptionId,
+  setDoRedirect,
+  setDeletionErrors,
+}: DeleteDisruptionButtonProps): JSX.Element => {
+  return (
+    <Button
+      variant="light"
+      onClick={async () => {
+        if (window.confirm("Really delete this disruption?")) {
+          const result = await apiSend({
+            url: "/api/disruptions/" + encodeURIComponent(disruptionId),
+            method: "DELETE",
+            json: "",
+            successParser: () => {
+              return true
+            },
+            errorParser: parseErrors,
+          })
+
+          if (result.ok) {
+            setDoRedirect(true)
+          } else if (result.error) {
+            setDeletionErrors(result.error)
+          }
+        }
+      }}
+      id="delete-disruption-button"
+    >
+      delete disruption
+    </Button>
+  )
+}
+
 const ViewDisruption = ({
   match,
 }: RouteComponentProps<TParams>): JSX.Element => {
@@ -49,6 +91,8 @@ const ViewDisruptionForm = ({
   const [disruption, setDisruption] = React.useState<
     Disruption | "error" | null
   >(null)
+  const [doRedirect, setDoRedirect] = React.useState<boolean>(false)
+  const [deletionErrors, setDeletionErrors] = React.useState<string[]>([])
 
   React.useEffect(() => {
     apiGet<JsonApiResponse>({
@@ -64,6 +108,10 @@ const ViewDisruptionForm = ({
     })
   }, [disruptionId])
 
+  if (doRedirect) {
+    return <Redirect to={`/`} />
+  }
+
   if (disruption && disruption !== "error" && disruption.id) {
     const exceptionDates = disruption.exceptions
       .map((exception) => exception.excludedDate)
@@ -78,6 +126,15 @@ const ViewDisruptionForm = ({
       return (
         <div>
           <Header />
+          {deletionErrors.length > 0 && (
+            <Alert variant="danger">
+              <ul>
+                {deletionErrors.map((err) => (
+                  <li key={err}>{err} </li>
+                ))}
+              </ul>
+            </Alert>
+          )}
           <DisruptionPreview
             disruptionId={disruption.id}
             adjustments={disruption.adjustments}
@@ -86,7 +143,19 @@ const ViewDisruptionForm = ({
             exceptionDates={exceptionDates}
             disruptionDaysOfWeek={disruptionDaysOfWeek}
           />
-          <EditDisruptionButton disruptionId={disruption.id} />
+          <div>
+            <EditDisruptionButton disruptionId={disruption.id} />
+          </div>
+          {disruption.startDate &&
+            disruption.startDate >= new Date(new Date().toDateString()) && (
+              <div>
+                <DeleteDisruptionButton
+                  disruptionId={disruption.id}
+                  setDoRedirect={setDoRedirect}
+                  setDeletionErrors={setDeletionErrors}
+                />
+              </div>
+            )}
         </div>
       )
     } else {

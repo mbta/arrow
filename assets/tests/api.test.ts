@@ -51,6 +51,26 @@ describe("apiSend", () => {
     })
   })
 
+  test("handles 204 response", (done) => {
+    window.fetch = () =>
+      Promise.resolve({
+        status: 204,
+      } as Response)
+
+    const successParse = jest.fn(() => "success")
+    apiSend({
+      url: "/",
+      method: "DELETE",
+      json: "",
+      successParser: successParse,
+      errorParser: () => "error",
+    }).then((parsed) => {
+      expect(successParse).toHaveBeenCalledWith(null)
+      expect(parsed).toEqual({ ok: "success" })
+      done()
+    })
+  })
+
   test("parses error response", (done) => {
     mockFetch(400, { data: "error" })
     const errorParse = jest.fn(() => "error")
