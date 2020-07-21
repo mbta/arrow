@@ -19,11 +19,6 @@ module.exports = (env, options) => ({
   module: {
     rules: [
       {
-        test: /\.m?js$/,
-        exclude: /node_modules\/(?!(@fullcalendar)).+/,
-        loader: "babel-loader",
-      },
-      {
         test: /\.ts(x?)$/,
         exclude: /node_modules/,
         use: [
