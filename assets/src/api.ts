@@ -28,7 +28,7 @@ const apiSend = async <T, E>({
   errorParser,
 }: {
   url: string
-  method: "POST" | "PATCH"
+  method: "POST" | "PATCH" | "DELETE"
   json: any
   successParser: (json: any) => T
   errorParser: (json: any) => E
@@ -40,10 +40,15 @@ const apiSend = async <T, E>({
     body: json,
   })
   redirectIfUnauthorized(response.status)
+
+  if (response.status === 204) {
+    return { ok: successParser(null) }
+  }
+
   const responseData = await response.json()
   if (response.status === 200 || response.status === 201) {
     return { ok: successParser(responseData) }
-  } else if (response.status === 400) {
+  } else if (Math.floor(response.status / 100) === 4) {
     return { error: errorParser(responseData) }
   }
 
