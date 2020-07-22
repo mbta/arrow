@@ -93,9 +93,7 @@ export const disruptionsToCalendarEvents = (disruptions: Disruption[]) => {
             end:
               group.length === 1
                 ? group[0]
-                : new Date(
-                    group.slice(-1)[0].setDate(group.slice(-1)[0].getDate() + 1)
-                  ),
+                : new Date(group.slice(-1)[0].getTime() + 60 * 60 * 24 * 1000),
             url: `/disruptions/${disruption.id}`,
             eventDisplay: "block",
             allDay: true,

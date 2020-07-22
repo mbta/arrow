@@ -91,7 +91,7 @@ describe("DisruptionCalendar", () => {
         title: "AlewifeHarvard",
         backgroundColor: "#da291c",
         start: new Date("2019-11-02T00:00:00.000Z"),
-        end: new Date("2019-11-04T01:00:00.000Z"),
+        end: new Date("2019-11-04T00:00:00.000Z"),
         url: "/disruptions/1",
         eventDisplay: "block",
         allDay: true,
