@@ -163,8 +163,6 @@ describe("DisruptionCalendar", () => {
                 sourceLabel: "AlewifeHarvard",
               }),
             ],
-            exceptions: [],
-            tripShortNames: [],
             daysOfWeek: [
               new DayOfWeek({
                 id: "1",
@@ -172,6 +170,8 @@ describe("DisruptionCalendar", () => {
                 dayName: "friday",
               }),
             ],
+            exceptions: [],
+            tripShortNames: [],
           }),
         ])
       ).toEqual([])
