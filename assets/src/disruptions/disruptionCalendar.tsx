@@ -69,21 +69,23 @@ export const disruptionsToCalendarEvents = (disruptions: Disruption[]) => {
           }
         })
 
-        const dateGroups = ruleSet.all().reduce(
-          (acc, curr) => {
-            const last = acc.slice(-1)[0].slice(-1)[0]
-            if (
-              !last ||
-              curr.getTime() - last.getTime() === 60 * 60 * 24 * 1000
-            ) {
-              acc[acc.length - 1].push(curr)
-            } else {
-              acc.push([curr])
-            }
-            return acc
-          },
-          [[]] as [Date[]]
-        )
+        const dateGroups = ruleSet.all().length
+          ? ruleSet.all().reduce(
+              (acc, curr) => {
+                const last = acc.slice(-1)[0].slice(-1)[0]
+                if (
+                  !last ||
+                  curr.getTime() - last.getTime() === 60 * 60 * 24 * 1000
+                ) {
+                  acc[acc.length - 1].push(curr)
+                } else {
+                  acc.push([curr])
+                }
+                return acc
+              },
+              [[]] as [Date[]]
+            )
+          : []
         dateGroups.forEach((group) => {
           disruptionsAcc.push({
             id: disruption.id,
