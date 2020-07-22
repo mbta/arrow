@@ -10,6 +10,7 @@ import {
 import {
   DisruptionIndexView,
   DisruptionIndex,
+  getRouteColor,
 } from "../../src/disruptions/disruptionIndex"
 import Disruption from "../../src/models/disruption"
 import Adjustment from "../../src/models/adjustment"
@@ -383,5 +384,23 @@ describe("DisruptionIndexConnected", () => {
     })
 
     expect(container.textContent).toMatch("Something went wrong")
+  })
+})
+
+describe("getRouteColor", () => {
+  test("returns the correct color", () => {
+    ;[
+      ["Red", "#da291c"],
+      ["Blue", "#003da5"],
+      ["Mattapan", "#da291c"],
+      ["Orange", "#ed8b00"],
+      ["Green-B", "#00843d"],
+      ["Green-C", "#00843d"],
+      ["Green-D", "#00843d"],
+      ["Green-E", "#00843d"],
+      ["CR-Fairmont", "#80276c"],
+    ].forEach(([route, color]) => {
+      expect(getRouteColor(route)).toEqual(color)
+    })
   })
 })
