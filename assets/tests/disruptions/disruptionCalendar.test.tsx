@@ -153,6 +153,7 @@ describe("DisruptionCalendar", () => {
     const tree = render(
       <DisruptionCalendar
         initialDate={new Date("2019-11-15")}
+        timeZone="UTC"
         disruptions={SAMPLE_DISRUPTIONS}
       />
     )

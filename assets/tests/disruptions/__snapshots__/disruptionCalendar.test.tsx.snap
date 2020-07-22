@@ -349,13 +349,37 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
+                                      />
+                                      <div
+                                        class="fc-daygrid-day-bg"
+                                      />
+                                    </div>
+                                  </td>
+                                  <td
+                                    class="fc-daygrid-day fc-day fc-day-sat fc-day-past"
+                                    data-date="2019-11-02"
+                                  >
+                                    <div
+                                      class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-top"
+                                      >
+                                        <a
+                                          class="fc-daygrid-day-number"
+                                        >
+                                          2
+                                        </a>
+                                      </div>
+                                      <div
+                                        class="fc-daygrid-day-events"
                                       >
                                         <div
                                           class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
                                           style="visibility: hidden;"
                                         >
                                           <a
-                                            class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past"
+                                            class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past"
                                             href="/disruptions/1"
                                             style="background-color: rgb(218, 41, 28);"
                                           >
@@ -385,30 +409,6 @@ Object {
                                       />
                                     </div>
                                   </td>
-                                  <td
-                                    class="fc-daygrid-day fc-day fc-day-sat fc-day-past"
-                                    data-date="2019-11-02"
-                                  >
-                                    <div
-                                      class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
-                                    >
-                                      <div
-                                        class="fc-daygrid-day-top"
-                                      >
-                                        <a
-                                          class="fc-daygrid-day-number"
-                                        >
-                                          2
-                                        </a>
-                                      </div>
-                                      <div
-                                        class="fc-daygrid-day-events"
-                                      />
-                                      <div
-                                        class="fc-daygrid-day-bg"
-                                      />
-                                    </div>
-                                  </td>
                                 </tr>
                                 <tr>
                                   <td
@@ -429,7 +429,37 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
+                                          style="visibility: hidden;"
+                                        >
+                                          <a
+                                            class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past"
+                                            href="/disruptions/1"
+                                            style="background-color: rgb(218, 41, 28);"
+                                          >
+                                            <div
+                                              class="fc-event-main"
+                                            >
+                                              <div
+                                                class="fc-event-main-frame"
+                                              >
+                                                
+                                                <div
+                                                  class="fc-event-title-container"
+                                                >
+                                                  <div
+                                                    class="fc-event-title fc-sticky"
+                                                  >
+                                                    AlewifeHarvard
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </a>
+                                        </div>
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -525,13 +555,37 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
+                                      />
+                                      <div
+                                        class="fc-daygrid-day-bg"
+                                      />
+                                    </div>
+                                  </td>
+                                  <td
+                                    class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
+                                    data-date="2019-11-08"
+                                  >
+                                    <div
+                                      class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-top"
+                                      >
+                                        <a
+                                          class="fc-daygrid-day-number"
+                                        >
+                                          8
+                                        </a>
+                                      </div>
+                                      <div
+                                        class="fc-daygrid-day-events"
                                       >
                                         <div
                                           class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
                                           style="visibility: hidden;"
                                         >
                                           <a
-                                            class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past"
+                                            class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past"
                                             href="/disruptions/1"
                                             style="background-color: rgb(218, 41, 28);"
                                           >
@@ -556,30 +610,6 @@ Object {
                                           </a>
                                         </div>
                                       </div>
-                                      <div
-                                        class="fc-daygrid-day-bg"
-                                      />
-                                    </div>
-                                  </td>
-                                  <td
-                                    class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
-                                    data-date="2019-11-08"
-                                  >
-                                    <div
-                                      class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
-                                    >
-                                      <div
-                                        class="fc-daygrid-day-top"
-                                      >
-                                        <a
-                                          class="fc-daygrid-day-number"
-                                        >
-                                          8
-                                        </a>
-                                      </div>
-                                      <div
-                                        class="fc-daygrid-day-events"
-                                      />
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -629,7 +659,37 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
+                                          style="visibility: hidden;"
+                                        >
+                                          <a
+                                            class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past"
+                                            href="/disruptions/1"
+                                            style="background-color: rgb(218, 41, 28);"
+                                          >
+                                            <div
+                                              class="fc-event-main"
+                                            >
+                                              <div
+                                                class="fc-event-main-frame"
+                                              >
+                                                
+                                                <div
+                                                  class="fc-event-title-container"
+                                                >
+                                                  <div
+                                                    class="fc-event-title fc-sticky"
+                                                  >
+                                                    AlewifeHarvard
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </a>
+                                        </div>
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -725,13 +785,37 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
+                                      />
+                                      <div
+                                        class="fc-daygrid-day-bg"
+                                      />
+                                    </div>
+                                  </td>
+                                  <td
+                                    class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
+                                    data-date="2019-11-15"
+                                  >
+                                    <div
+                                      class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-top"
+                                      >
+                                        <a
+                                          class="fc-daygrid-day-number"
+                                        >
+                                          15
+                                        </a>
+                                      </div>
+                                      <div
+                                        class="fc-daygrid-day-events"
                                       >
                                         <div
                                           class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
                                           style="visibility: hidden;"
                                         >
                                           <a
-                                            class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past"
+                                            class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past"
                                             href="/disruptions/3"
                                             style="background-color: rgb(0, 132, 61);"
                                           >
@@ -791,30 +875,6 @@ Object {
                                     </div>
                                   </td>
                                   <td
-                                    class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
-                                    data-date="2019-11-15"
-                                  >
-                                    <div
-                                      class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
-                                    >
-                                      <div
-                                        class="fc-daygrid-day-top"
-                                      >
-                                        <a
-                                          class="fc-daygrid-day-number"
-                                        >
-                                          15
-                                        </a>
-                                      </div>
-                                      <div
-                                        class="fc-daygrid-day-events"
-                                      />
-                                      <div
-                                        class="fc-daygrid-day-bg"
-                                      />
-                                    </div>
-                                  </td>
-                                  <td
                                     class="fc-daygrid-day fc-day fc-day-sat fc-day-past"
                                     data-date="2019-11-16"
                                   >
@@ -858,7 +918,37 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
+                                          style="visibility: hidden;"
+                                        >
+                                          <a
+                                            class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past"
+                                            href="/disruptions/3"
+                                            style="background-color: rgb(0, 132, 61);"
+                                          >
+                                            <div
+                                              class="fc-event-main"
+                                            >
+                                              <div
+                                                class="fc-event-main-frame"
+                                              >
+                                                
+                                                <div
+                                                  class="fc-event-title-container"
+                                                >
+                                                  <div
+                                                    class="fc-event-title fc-sticky"
+                                                  >
+                                                    Kenmore-Newton Highlands
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </a>
+                                        </div>
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -954,13 +1044,37 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
+                                      />
+                                      <div
+                                        class="fc-daygrid-day-bg"
+                                      />
+                                    </div>
+                                  </td>
+                                  <td
+                                    class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
+                                    data-date="2019-11-22"
+                                  >
+                                    <div
+                                      class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-top"
+                                      >
+                                        <a
+                                          class="fc-daygrid-day-number"
+                                        >
+                                          22
+                                        </a>
+                                      </div>
+                                      <div
+                                        class="fc-daygrid-day-events"
                                       >
                                         <div
                                           class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
                                           style="visibility: hidden;"
                                         >
                                           <a
-                                            class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past"
+                                            class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past"
                                             href="/disruptions/3"
                                             style="background-color: rgb(0, 132, 61);"
                                           >
@@ -985,30 +1099,6 @@ Object {
                                           </a>
                                         </div>
                                       </div>
-                                      <div
-                                        class="fc-daygrid-day-bg"
-                                      />
-                                    </div>
-                                  </td>
-                                  <td
-                                    class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
-                                    data-date="2019-11-22"
-                                  >
-                                    <div
-                                      class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
-                                    >
-                                      <div
-                                        class="fc-daygrid-day-top"
-                                      >
-                                        <a
-                                          class="fc-daygrid-day-number"
-                                        >
-                                          22
-                                        </a>
-                                      </div>
-                                      <div
-                                        class="fc-daygrid-day-events"
-                                      />
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1058,7 +1148,37 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
+                                          style="visibility: hidden;"
+                                        >
+                                          <a
+                                            class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past"
+                                            href="/disruptions/3"
+                                            style="background-color: rgb(0, 132, 61);"
+                                          >
+                                            <div
+                                              class="fc-event-main"
+                                            >
+                                              <div
+                                                class="fc-event-main-frame"
+                                              >
+                                                
+                                                <div
+                                                  class="fc-event-title-container"
+                                                >
+                                                  <div
+                                                    class="fc-event-title fc-sticky"
+                                                  >
+                                                    Kenmore-Newton Highlands
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </a>
+                                        </div>
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1154,6 +1274,30 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
+                                      />
+                                      <div
+                                        class="fc-daygrid-day-bg"
+                                      />
+                                    </div>
+                                  </td>
+                                  <td
+                                    class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
+                                    data-date="2019-11-29"
+                                  >
+                                    <div
+                                      class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-top"
+                                      >
+                                        <a
+                                          class="fc-daygrid-day-number"
+                                        >
+                                          29
+                                        </a>
+                                      </div>
+                                      <div
+                                        class="fc-daygrid-day-events"
                                       >
                                         <div
                                           class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
@@ -1185,30 +1329,6 @@ Object {
                                           </a>
                                         </div>
                                       </div>
-                                      <div
-                                        class="fc-daygrid-day-bg"
-                                      />
-                                    </div>
-                                  </td>
-                                  <td
-                                    class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
-                                    data-date="2019-11-29"
-                                  >
-                                    <div
-                                      class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
-                                    >
-                                      <div
-                                        class="fc-daygrid-day-top"
-                                      >
-                                        <a
-                                          class="fc-daygrid-day-number"
-                                        >
-                                          29
-                                        </a>
-                                      </div>
-                                      <div
-                                        class="fc-daygrid-day-events"
-                                      />
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1769,13 +1889,37 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
+                                    />
+                                    <div
+                                      class="fc-daygrid-day-bg"
+                                    />
+                                  </div>
+                                </td>
+                                <td
+                                  class="fc-daygrid-day fc-day fc-day-sat fc-day-past"
+                                  data-date="2019-11-02"
+                                >
+                                  <div
+                                    class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
+                                  >
+                                    <div
+                                      class="fc-daygrid-day-top"
+                                    >
+                                      <a
+                                        class="fc-daygrid-day-number"
+                                      >
+                                        2
+                                      </a>
+                                    </div>
+                                    <div
+                                      class="fc-daygrid-day-events"
                                     >
                                       <div
                                         class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
                                         style="visibility: hidden;"
                                       >
                                         <a
-                                          class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past"
+                                          class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past"
                                           href="/disruptions/1"
                                           style="background-color: rgb(218, 41, 28);"
                                         >
@@ -1805,30 +1949,6 @@ Object {
                                     />
                                   </div>
                                 </td>
-                                <td
-                                  class="fc-daygrid-day fc-day fc-day-sat fc-day-past"
-                                  data-date="2019-11-02"
-                                >
-                                  <div
-                                    class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
-                                  >
-                                    <div
-                                      class="fc-daygrid-day-top"
-                                    >
-                                      <a
-                                        class="fc-daygrid-day-number"
-                                      >
-                                        2
-                                      </a>
-                                    </div>
-                                    <div
-                                      class="fc-daygrid-day-events"
-                                    />
-                                    <div
-                                      class="fc-daygrid-day-bg"
-                                    />
-                                  </div>
-                                </td>
                               </tr>
                               <tr>
                                 <td
@@ -1849,7 +1969,37 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
+                                        style="visibility: hidden;"
+                                      >
+                                        <a
+                                          class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past"
+                                          href="/disruptions/1"
+                                          style="background-color: rgb(218, 41, 28);"
+                                        >
+                                          <div
+                                            class="fc-event-main"
+                                          >
+                                            <div
+                                              class="fc-event-main-frame"
+                                            >
+                                              
+                                              <div
+                                                class="fc-event-title-container"
+                                              >
+                                                <div
+                                                  class="fc-event-title fc-sticky"
+                                                >
+                                                  AlewifeHarvard
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </a>
+                                      </div>
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -1945,13 +2095,37 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
+                                    />
+                                    <div
+                                      class="fc-daygrid-day-bg"
+                                    />
+                                  </div>
+                                </td>
+                                <td
+                                  class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
+                                  data-date="2019-11-08"
+                                >
+                                  <div
+                                    class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
+                                  >
+                                    <div
+                                      class="fc-daygrid-day-top"
+                                    >
+                                      <a
+                                        class="fc-daygrid-day-number"
+                                      >
+                                        8
+                                      </a>
+                                    </div>
+                                    <div
+                                      class="fc-daygrid-day-events"
                                     >
                                       <div
                                         class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
                                         style="visibility: hidden;"
                                       >
                                         <a
-                                          class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past"
+                                          class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past"
                                           href="/disruptions/1"
                                           style="background-color: rgb(218, 41, 28);"
                                         >
@@ -1976,30 +2150,6 @@ Object {
                                         </a>
                                       </div>
                                     </div>
-                                    <div
-                                      class="fc-daygrid-day-bg"
-                                    />
-                                  </div>
-                                </td>
-                                <td
-                                  class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
-                                  data-date="2019-11-08"
-                                >
-                                  <div
-                                    class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
-                                  >
-                                    <div
-                                      class="fc-daygrid-day-top"
-                                    >
-                                      <a
-                                        class="fc-daygrid-day-number"
-                                      >
-                                        8
-                                      </a>
-                                    </div>
-                                    <div
-                                      class="fc-daygrid-day-events"
-                                    />
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2049,7 +2199,37 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
+                                        style="visibility: hidden;"
+                                      >
+                                        <a
+                                          class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past"
+                                          href="/disruptions/1"
+                                          style="background-color: rgb(218, 41, 28);"
+                                        >
+                                          <div
+                                            class="fc-event-main"
+                                          >
+                                            <div
+                                              class="fc-event-main-frame"
+                                            >
+                                              
+                                              <div
+                                                class="fc-event-title-container"
+                                              >
+                                                <div
+                                                  class="fc-event-title fc-sticky"
+                                                >
+                                                  AlewifeHarvard
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </a>
+                                      </div>
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2145,13 +2325,37 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
+                                    />
+                                    <div
+                                      class="fc-daygrid-day-bg"
+                                    />
+                                  </div>
+                                </td>
+                                <td
+                                  class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
+                                  data-date="2019-11-15"
+                                >
+                                  <div
+                                    class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
+                                  >
+                                    <div
+                                      class="fc-daygrid-day-top"
+                                    >
+                                      <a
+                                        class="fc-daygrid-day-number"
+                                      >
+                                        15
+                                      </a>
+                                    </div>
+                                    <div
+                                      class="fc-daygrid-day-events"
                                     >
                                       <div
                                         class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
                                         style="visibility: hidden;"
                                       >
                                         <a
-                                          class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past"
+                                          class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past"
                                           href="/disruptions/3"
                                           style="background-color: rgb(0, 132, 61);"
                                         >
@@ -2211,30 +2415,6 @@ Object {
                                   </div>
                                 </td>
                                 <td
-                                  class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
-                                  data-date="2019-11-15"
-                                >
-                                  <div
-                                    class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
-                                  >
-                                    <div
-                                      class="fc-daygrid-day-top"
-                                    >
-                                      <a
-                                        class="fc-daygrid-day-number"
-                                      >
-                                        15
-                                      </a>
-                                    </div>
-                                    <div
-                                      class="fc-daygrid-day-events"
-                                    />
-                                    <div
-                                      class="fc-daygrid-day-bg"
-                                    />
-                                  </div>
-                                </td>
-                                <td
                                   class="fc-daygrid-day fc-day fc-day-sat fc-day-past"
                                   data-date="2019-11-16"
                                 >
@@ -2278,7 +2458,37 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
+                                        style="visibility: hidden;"
+                                      >
+                                        <a
+                                          class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past"
+                                          href="/disruptions/3"
+                                          style="background-color: rgb(0, 132, 61);"
+                                        >
+                                          <div
+                                            class="fc-event-main"
+                                          >
+                                            <div
+                                              class="fc-event-main-frame"
+                                            >
+                                              
+                                              <div
+                                                class="fc-event-title-container"
+                                              >
+                                                <div
+                                                  class="fc-event-title fc-sticky"
+                                                >
+                                                  Kenmore-Newton Highlands
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </a>
+                                      </div>
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2374,13 +2584,37 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
+                                    />
+                                    <div
+                                      class="fc-daygrid-day-bg"
+                                    />
+                                  </div>
+                                </td>
+                                <td
+                                  class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
+                                  data-date="2019-11-22"
+                                >
+                                  <div
+                                    class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
+                                  >
+                                    <div
+                                      class="fc-daygrid-day-top"
+                                    >
+                                      <a
+                                        class="fc-daygrid-day-number"
+                                      >
+                                        22
+                                      </a>
+                                    </div>
+                                    <div
+                                      class="fc-daygrid-day-events"
                                     >
                                       <div
                                         class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
                                         style="visibility: hidden;"
                                       >
                                         <a
-                                          class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past"
+                                          class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past"
                                           href="/disruptions/3"
                                           style="background-color: rgb(0, 132, 61);"
                                         >
@@ -2405,30 +2639,6 @@ Object {
                                         </a>
                                       </div>
                                     </div>
-                                    <div
-                                      class="fc-daygrid-day-bg"
-                                    />
-                                  </div>
-                                </td>
-                                <td
-                                  class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
-                                  data-date="2019-11-22"
-                                >
-                                  <div
-                                    class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
-                                  >
-                                    <div
-                                      class="fc-daygrid-day-top"
-                                    >
-                                      <a
-                                        class="fc-daygrid-day-number"
-                                      >
-                                        22
-                                      </a>
-                                    </div>
-                                    <div
-                                      class="fc-daygrid-day-events"
-                                    />
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2478,7 +2688,37 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
+                                        style="visibility: hidden;"
+                                      >
+                                        <a
+                                          class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past"
+                                          href="/disruptions/3"
+                                          style="background-color: rgb(0, 132, 61);"
+                                        >
+                                          <div
+                                            class="fc-event-main"
+                                          >
+                                            <div
+                                              class="fc-event-main-frame"
+                                            >
+                                              
+                                              <div
+                                                class="fc-event-title-container"
+                                              >
+                                                <div
+                                                  class="fc-event-title fc-sticky"
+                                                >
+                                                  Kenmore-Newton Highlands
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </a>
+                                      </div>
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2574,6 +2814,30 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
+                                    />
+                                    <div
+                                      class="fc-daygrid-day-bg"
+                                    />
+                                  </div>
+                                </td>
+                                <td
+                                  class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
+                                  data-date="2019-11-29"
+                                >
+                                  <div
+                                    class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
+                                  >
+                                    <div
+                                      class="fc-daygrid-day-top"
+                                    >
+                                      <a
+                                        class="fc-daygrid-day-number"
+                                      >
+                                        29
+                                      </a>
+                                    </div>
+                                    <div
+                                      class="fc-daygrid-day-events"
                                     >
                                       <div
                                         class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
@@ -2605,30 +2869,6 @@ Object {
                                         </a>
                                       </div>
                                     </div>
-                                    <div
-                                      class="fc-daygrid-day-bg"
-                                    />
-                                  </div>
-                                </td>
-                                <td
-                                  class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
-                                  data-date="2019-11-29"
-                                >
-                                  <div
-                                    class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
-                                  >
-                                    <div
-                                      class="fc-daygrid-day-top"
-                                    >
-                                      <a
-                                        class="fc-daygrid-day-number"
-                                      >
-                                        29
-                                      </a>
-                                    </div>
-                                    <div
-                                      class="fc-daygrid-day-events"
-                                    />
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />

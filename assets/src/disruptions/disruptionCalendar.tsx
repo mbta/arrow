@@ -8,6 +8,7 @@ import Disruption from "../models/disruption"
 interface DisruptionCalendarProps {
   disruptions: Disruption[]
   initialDate?: Date
+  timeZone?: string
 }
 
 export const dayNameToInt = (day?: string): number => {
@@ -110,6 +111,7 @@ export const disruptionsToCalendarEvents = (disruptions: Disruption[]) => {
 export const DisruptionCalendar = ({
   disruptions,
   initialDate,
+  timeZone,
 }: DisruptionCalendarProps) => {
   const calendarEvents = React.useMemo(() => {
     return disruptionsToCalendarEvents(disruptions)
@@ -118,6 +120,7 @@ export const DisruptionCalendar = ({
     <div id="calendar" className="mb-3">
       <FullCalendar
         initialDate={initialDate}
+        timeZone={timeZone}
         plugins={[dayGridPlugin]}
         initialView="dayGridMonth"
         events={calendarEvents}
