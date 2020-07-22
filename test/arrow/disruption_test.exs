@@ -650,6 +650,46 @@ defmodule Arrow.DisruptionTest do
       assert Keyword.get(errors, :days_of_week) == {"should fall between start and end dates", []}
     end
 
+    test "can't insert a disruption with a blank trip short name" do
+      adj = %Adjustment{
+        source: "testing",
+        source_label: "test_insert_disruption",
+        route_id: "test_route"
+      }
+
+      {:ok, new_adj} = Repo.insert(adj)
+
+      assert {:error,
+              %{
+                changes: %{
+                  trip_short_names: [
+                    %{
+                      changes: %{},
+                      errors: [trip_short_name: {"can't be blank", [validation: :required]}],
+                      valid?: false
+                    }
+                  ]
+                },
+                errors: []
+              }} =
+               Repo.insert(
+                 Disruption.changeset_for_create(
+                   %Disruption{},
+                   %{
+                     "start_date" => @start_date,
+                     "end_date" => @end_date,
+                     "trip_short_names" => [
+                       %{
+                         "trip_short_name" => ""
+                       }
+                     ]
+                   },
+                   [new_adj],
+                   @current_time
+                 )
+               )
+    end
+
     test "can delete a disruption" do
       {:ok, disruption} = build_disruption() |> Repo.insert()
 
