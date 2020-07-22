@@ -14,6 +14,7 @@ import Adjustment from "../../src/models/adjustment"
 import DayOfWeek from "../../src/models/dayOfWeek"
 import Disruption from "../../src/models/disruption"
 import Exception from "../../src/models/exception"
+import TripShortName from "../../src/models/tripShortName"
 
 describe("ViewDisruption", () => {
   test("loads and displays disruption from the API", async () => {
@@ -44,7 +45,10 @@ describe("ViewDisruption", () => {
               excludedDate: new Date("2020-01-20"),
             }),
           ],
-          tripShortNames: [],
+          tripShortNames: [
+            new TripShortName({ tripShortName: "123" }),
+            new TripShortName({ tripShortName: "456" }),
+          ],
         })
       )
     })
@@ -84,6 +88,7 @@ describe("ViewDisruption", () => {
     expect(document.body.textContent).toMatch("1/20/2020")
     expect(document.body.textContent).toMatch("Friday")
     expect(document.body.textContent).toMatch("8:45PM")
+    expect(document.body.textContent).toMatch("Trips: 123, 456")
     expect(document.body.textContent).toMatch("End of service")
   })
 
