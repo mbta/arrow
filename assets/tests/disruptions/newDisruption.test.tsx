@@ -385,6 +385,18 @@ describe("NewDisruption", () => {
       })
 
       withElement(container, "#trip-short-names", (el) => {
+        fireEvent.change(el, { target: { value: "999,888" } })
+      })
+
+      withElement(container, "#trips-all", (el) => {
+        fireEvent.click(el)
+      })
+
+      withElement(container, "#trips-some", (el) => {
+        fireEvent.click(el)
+      })
+
+      withElement(container, "#trip-short-names", (el) => {
         fireEvent.change(el, { target: { value: "123,456" } })
       })
 
