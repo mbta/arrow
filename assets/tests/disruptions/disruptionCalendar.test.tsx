@@ -84,69 +84,98 @@ describe("DisruptionCalendar", () => {
     })
   })
 
-  test("disruptionsToCalendarEvents", () => {
-    expect(disruptionsToCalendarEvents(SAMPLE_DISRUPTIONS)).toEqual([
-      {
-        id: "1",
-        title: "AlewifeHarvard",
-        backgroundColor: "#da291c",
-        start: new Date("2019-11-02T00:00:00.000Z"),
-        end: new Date("2019-11-04T00:00:00.000Z"),
-        url: "/disruptions/1",
-        eventDisplay: "block",
-        allDay: true,
-      },
-      {
-        id: "1",
-        title: "AlewifeHarvard",
-        backgroundColor: "#da291c",
-        start: new Date("2019-11-08T00:00:00.000Z"),
-        end: new Date("2019-11-11T00:00:00.000Z"),
-        url: "/disruptions/1",
-        eventDisplay: "block",
-        allDay: true,
-      },
-      {
-        id: "1",
-        title: "AlewifeHarvard",
-        backgroundColor: "#da291c",
-        start: new Date("2019-11-15T00:00:00.000Z"),
-        end: new Date("2019-11-15T00:00:00.000Z"),
-        url: "/disruptions/1",
-        eventDisplay: "block",
-        allDay: true,
-      },
-      {
-        id: "3",
-        title: "Kenmore-Newton Highlands",
-        backgroundColor: "#00843d",
-        start: new Date("2019-11-15T00:00:00.000Z"),
-        end: new Date("2019-11-18T00:00:00.000Z"),
-        url: "/disruptions/3",
-        eventDisplay: "block",
-        allDay: true,
-      },
-      {
-        id: "3",
-        title: "Kenmore-Newton Highlands",
-        backgroundColor: "#00843d",
-        start: new Date("2019-11-22T00:00:00.000Z"),
-        end: new Date("2019-11-25T00:00:00.000Z"),
-        url: "/disruptions/3",
-        eventDisplay: "block",
-        allDay: true,
-      },
-      {
-        id: "3",
-        title: "Kenmore-Newton Highlands",
-        backgroundColor: "#00843d",
-        start: new Date("2019-11-29T00:00:00.000Z"),
-        end: new Date("2019-12-01T00:00:00.000Z"),
-        url: "/disruptions/3",
-        eventDisplay: "block",
-        allDay: true,
-      },
-    ])
+  describe("disruptionsToCalendarEvents", () => {
+    it("parses disruptions", () => {
+      expect(disruptionsToCalendarEvents(SAMPLE_DISRUPTIONS)).toEqual([
+        {
+          id: "1",
+          title: "AlewifeHarvard",
+          backgroundColor: "#da291c",
+          start: new Date("2019-11-02T00:00:00.000Z"),
+          end: new Date("2019-11-04T00:00:00.000Z"),
+          url: "/disruptions/1",
+          eventDisplay: "block",
+          allDay: true,
+        },
+        {
+          id: "1",
+          title: "AlewifeHarvard",
+          backgroundColor: "#da291c",
+          start: new Date("2019-11-08T00:00:00.000Z"),
+          end: new Date("2019-11-11T00:00:00.000Z"),
+          url: "/disruptions/1",
+          eventDisplay: "block",
+          allDay: true,
+        },
+        {
+          id: "1",
+          title: "AlewifeHarvard",
+          backgroundColor: "#da291c",
+          start: new Date("2019-11-15T00:00:00.000Z"),
+          end: new Date("2019-11-15T00:00:00.000Z"),
+          url: "/disruptions/1",
+          eventDisplay: "block",
+          allDay: true,
+        },
+        {
+          id: "3",
+          title: "Kenmore-Newton Highlands",
+          backgroundColor: "#00843d",
+          start: new Date("2019-11-15T00:00:00.000Z"),
+          end: new Date("2019-11-18T00:00:00.000Z"),
+          url: "/disruptions/3",
+          eventDisplay: "block",
+          allDay: true,
+        },
+        {
+          id: "3",
+          title: "Kenmore-Newton Highlands",
+          backgroundColor: "#00843d",
+          start: new Date("2019-11-22T00:00:00.000Z"),
+          end: new Date("2019-11-25T00:00:00.000Z"),
+          url: "/disruptions/3",
+          eventDisplay: "block",
+          allDay: true,
+        },
+        {
+          id: "3",
+          title: "Kenmore-Newton Highlands",
+          backgroundColor: "#00843d",
+          start: new Date("2019-11-29T00:00:00.000Z"),
+          end: new Date("2019-12-01T00:00:00.000Z"),
+          url: "/disruptions/3",
+          eventDisplay: "block",
+          allDay: true,
+        },
+      ])
+    })
+
+    it("handles invalid days of week gracefully", () => {
+      expect(
+        disruptionsToCalendarEvents([
+          new Disruption({
+            id: "1",
+            startDate: new Date("2020-07-01"),
+            endDate: new Date("2020-07-02"),
+            adjustments: [
+              new Adjustment({
+                routeId: "Red",
+                sourceLabel: "AlewifeHarvard",
+              }),
+            ],
+            exceptions: [],
+            tripShortNames: [],
+            daysOfWeek: [
+              new DayOfWeek({
+                id: "1",
+                startTime: "20:45:00",
+                dayName: "friday",
+              }),
+            ],
+          }),
+        ])
+      ).toEqual([])
+    })
   })
 
   test("renders correctly", () => {
