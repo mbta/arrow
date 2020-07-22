@@ -202,7 +202,7 @@ const TripShortNamesForm = ({
 }: TripShortNamesFormProps) => {
   return (
     <div>
-      <Form.Group controlId="formTransitMode">
+      <Form.Group>
         <Form.Check
           type="radio"
           id="trips-all"
@@ -225,6 +225,7 @@ const TripShortNamesForm = ({
         {whichTrips === "some" && (
           <Form.Control
             className="mb-3"
+            id="trip-short-names"
             type="text"
             value={tripShortNames}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
