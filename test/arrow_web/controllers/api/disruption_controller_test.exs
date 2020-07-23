@@ -245,10 +245,49 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
 
     @tag :authenticated
     test "returns errors with invalid post", %{conn: conn} do
-      conn = post(conn, "/api/disruptions", %{"data" => %{}})
+      conn =
+        post(conn, "/api/disruptions", %{
+          "data" => %{
+            "relationships" => %{
+              "days_of_week" => %{
+                "data" => [
+                  %{
+                    "type" => "day_of_week",
+                    "attributes" => %{
+                      "start_time" => "10:00:00",
+                      "end_time" => "09:00:00",
+                      "day_name" => future_date() |> Date.day_of_week() |> DayOfWeek.day_name()
+                    }
+                  }
+                ]
+              },
+              "trip_short_names" => %{
+                "data" => [
+                  %{
+                    "type" => "trip_short_names",
+                    "attributes" => %{"trip_short_name" => "shortname"}
+                  },
+                  %{
+                    "type" => "trip_short_names",
+                    "attributes" => %{"trip_short_name" => ""}
+                  }
+                ]
+              }
+            }
+          }
+        })
 
       assert resp = json_response(conn, 400)
-      assert %{"errors" => [_ | _]} = resp
+
+      assert %{
+               "errors" => [
+                 %{"detail" => "Adjustments should have at least 1 item(s)"},
+                 %{"detail" => "Days of week start time should be before end time"},
+                 %{"detail" => "End date can't be blank"},
+                 %{"detail" => "Start date can't be blank"},
+                 %{"detail" => "Trip short name can't be blank"}
+               ]
+             } = resp
     end
   end
 

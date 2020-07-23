@@ -12,6 +12,7 @@ describe("DisruptionPreview", () => {
         toDate={new Date(2020, 0, 15)}
         disruptionDaysOfWeek={[null, null, null, null, null, null, null]}
         exceptionDates={[]}
+        tripShortNames=""
       />
     )
 
@@ -27,6 +28,7 @@ describe("DisruptionPreview", () => {
         toDate={null}
         disruptionDaysOfWeek={[null, null, null, null, null, null, null]}
         exceptionDates={[new Date(2020, 0, 10)]}
+        tripShortNames=""
       />
     )
 
@@ -50,6 +52,7 @@ describe("DisruptionPreview", () => {
           null,
         ]}
         exceptionDates={[new Date(2020, 0, 10)]}
+        tripShortNames=""
       />
     )
 
@@ -77,6 +80,7 @@ describe("DisruptionPreview", () => {
           null,
         ]}
         exceptionDates={[new Date(2020, 0, 10)]}
+        tripShortNames=""
       />
     )
 
@@ -93,6 +97,7 @@ describe("DisruptionPreview", () => {
         toDate={null}
         disruptionDaysOfWeek={[null, null, null, null, null, null, null]}
         exceptionDates={[]}
+        tripShortNames=""
       />
     )
 
@@ -107,10 +112,26 @@ describe("DisruptionPreview", () => {
         toDate={null}
         disruptionDaysOfWeek={[null, null, null, null, null, null, null]}
         exceptionDates={[]}
+        tripShortNames=""
       />
     )
 
     expect(container.querySelector("#back-to-edit-link")).toBeNull()
+  })
+
+  test("shows trip short names", () => {
+    render(
+      <DisruptionPreview
+        adjustments={[]}
+        fromDate={null}
+        toDate={null}
+        disruptionDaysOfWeek={[null, null, null, null, null, null, null]}
+        exceptionDates={[]}
+        tripShortNames="123,456,789"
+      />
+    )
+
+    expect(screen.queryByText("Trips: 123,456,789")).not.toBeNull()
   })
 
   test("create callback is invoked", () => {
@@ -126,6 +147,7 @@ describe("DisruptionPreview", () => {
         disruptionDaysOfWeek={[null, null, null, null, null, null, null]}
         exceptionDates={[]}
         createFn={createFn}
+        tripShortNames=""
       />
     )
     const createButton = container.querySelector(

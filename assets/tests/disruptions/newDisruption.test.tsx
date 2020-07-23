@@ -364,8 +364,12 @@ describe("NewDisruption", () => {
         document.querySelector("#loading-indicator")
       )
 
+      withElement(container, "#mode-commuter-rail", (el) => {
+        fireEvent.click(el)
+      })
+
       withElement(container, "#adjustment-select-0", (el) => {
-        fireEvent.change(el, { target: { value: "Kenmore--Newton Highlands" } })
+        fireEvent.change(el, { target: { value: "Fairmount--Newmarket" } })
       })
 
       withElement(container, "#disruption-date-range-start", (el) => {
@@ -374,6 +378,26 @@ describe("NewDisruption", () => {
 
       withElement(container, "#disruption-date-range-end", (el) => {
         fireEvent.change(el, { target: { value: "2020-04-30" } })
+      })
+
+      withElement(container, "#trips-some", (el) => {
+        fireEvent.click(el)
+      })
+
+      withElement(container, "#trip-short-names", (el) => {
+        fireEvent.change(el, { target: { value: "999,888" } })
+      })
+
+      withElement(container, "#trips-all", (el) => {
+        fireEvent.click(el)
+      })
+
+      withElement(container, "#trips-some", (el) => {
+        fireEvent.click(el)
+      })
+
+      withElement(container, "#trip-short-names", (el) => {
+        fireEvent.change(el, { target: { value: "123,456" } })
       })
 
       withElement(container, "#preview-disruption-button", (el) => {
@@ -391,9 +415,13 @@ describe("NewDisruption", () => {
     expect(apiSendCall.url).toEqual("/api/disruptions")
     expect(apiSendData.data.attributes.start_date).toEqual("2020-03-31")
     expect(apiSendData.data.attributes.end_date).toEqual("2020-04-30")
+    expect(apiSendData.data.relationships.trip_short_names.data).toEqual([
+      { attributes: { trip_short_name: "123" }, type: "trip_short_name" },
+      { attributes: { trip_short_name: "456" }, type: "trip_short_name" },
+    ])
     expect(
       apiSendData.data.relationships.adjustments.data[0].attributes.source_label
-    ).toEqual("Kenmore--Newton Highlands")
+    ).toEqual("Fairmount--Newmarket")
   })
 
   test("handles errors with disruptions", async () => {

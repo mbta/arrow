@@ -39,6 +39,7 @@ interface DisruptionPreviewProps {
   toDate: Date | null
   disruptionDaysOfWeek: DayOfWeekTimeRanges
   exceptionDates: Date[]
+  tripShortNames: string
   createFn?: any
 }
 
@@ -50,6 +51,7 @@ const DisruptionPreview = ({
   toDate,
   disruptionDaysOfWeek,
   exceptionDates,
+  tripShortNames,
   createFn,
 }: DisruptionPreviewProps): JSX.Element => {
   const listedDays: JSX.Element[] = []
@@ -77,6 +79,7 @@ const DisruptionPreview = ({
       toDate,
       disruptionDaysOfWeek,
       exceptionDates,
+      tripShortNames,
     })
   }, [
     createFn,
@@ -85,6 +88,7 @@ const DisruptionPreview = ({
     toDate,
     disruptionDaysOfWeek,
     exceptionDates,
+    tripShortNames,
   ])
 
   return (
@@ -94,6 +98,7 @@ const DisruptionPreview = ({
         adjustments={adjustments}
       />
       <h2>When</h2>
+      {tripShortNames && <p>Trips: {tripShortNames}</p>}
       <p>
         {formatDisruptionDate(fromDate)} &ndash; {formatDisruptionDate(toDate)}
       </p>

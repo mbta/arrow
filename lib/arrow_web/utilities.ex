@@ -57,11 +57,11 @@ defmodule ArrowWeb.Utilities do
 
   @spec take_errors(map()) :: [key: String.t()]
   defp take_errors(errors) do
-    Enum.flat_map(errors, fn {field, [err | _]} ->
+    Enum.flat_map(errors, fn {field, [err | _] = field_errors} ->
       if is_binary(err) do
         [{field, err}]
       else
-        take_errors(err)
+        Enum.flat_map(field_errors, fn x -> take_errors(x) end)
       end
     end)
   end
@@ -69,7 +69,9 @@ defmodule ArrowWeb.Utilities do
   @spec format_errors(Ecto.Changeset.t()) :: [map()]
   def format_errors(changeset) do
     changeset
-    |> Ecto.Changeset.traverse_errors(fn err -> format_error_message(err) end)
+    |> Ecto.Changeset.traverse_errors(fn err ->
+      format_error_message(err)
+    end)
     |> take_errors()
     |> Enum.map(fn {field, msg} ->
       %{detail: "#{format_field_name(field)} #{msg}"}

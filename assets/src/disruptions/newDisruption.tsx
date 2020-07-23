@@ -18,6 +18,7 @@ import Loading from "../loading"
 import { DisruptionTimePicker } from "./disruptionTimePicker"
 import { TransitMode, modeForRoute } from "./disruptions"
 import { DisruptionPreview } from "./disruptionPreview"
+import TripShortName from "../models/tripShortName"
 
 interface AdjustmentModePickerProps {
   transitMode: TransitMode
@@ -186,40 +187,54 @@ const AdjustmentsPicker = ({
   )
 }
 
-interface AdjustmentFormProps {
-  adjustments: Adjustment[]
-  setAdjustments: React.Dispatch<Adjustment[]>
-  allAdjustments: Adjustment[]
+interface TripShortNamesFormProps {
+  tripShortNames: string
+  setTripShortNames: React.Dispatch<string>
+  whichTrips: "all" | "some"
+  setWhichTrips: React.Dispatch<"all" | "some">
 }
 
-const AdjustmentForm = ({
-  adjustments,
-  setAdjustments,
-  allAdjustments,
-}: AdjustmentFormProps): JSX.Element => {
-  const [transitMode, setTransitMode] = React.useState<TransitMode>(
-    TransitMode.Subway
-  )
-  const [isAddingAdjustment, setIsAddingAdjustment] = React.useState<boolean>(
-    adjustments.length === 0
-  )
-
+const TripShortNamesForm = ({
+  tripShortNames,
+  setTripShortNames,
+  whichTrips,
+  setWhichTrips,
+}: TripShortNamesFormProps) => {
   return (
     <div>
-      <AdjustmentModePicker
-        transitMode={transitMode}
-        setTransitMode={setTransitMode}
-        setAdjustments={setAdjustments}
-        setIsAddingAdjustment={setIsAddingAdjustment}
-      />
-      <AdjustmentsPicker
-        adjustments={adjustments}
-        setAdjustments={setAdjustments}
-        allAdjustments={allAdjustments}
-        transitMode={transitMode}
-        isAddingAdjustment={isAddingAdjustment}
-        setIsAddingAdjustment={setIsAddingAdjustment}
-      />
+      <Form.Group>
+        <Form.Check
+          type="radio"
+          id="trips-all"
+          label="All Trips"
+          name="which-trips"
+          checked={whichTrips === "all"}
+          onChange={() => {
+            setWhichTrips("all")
+            setTripShortNames("")
+          }}
+        />
+        <Form.Check
+          type="radio"
+          id="trips-some"
+          label="Some Trips"
+          name="which-trips"
+          checked={whichTrips === "some"}
+          onChange={() => setWhichTrips("some")}
+        />
+        {whichTrips === "some" && (
+          <Form.Control
+            className="mb-3"
+            id="trip-short-names"
+            type="text"
+            value={tripShortNames}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setTripShortNames(e.target.value)
+            }
+            placeholder="Enter comma separated trip short names "
+          />
+        )}
+      </Form.Group>
     </div>
   )
 }
@@ -230,6 +245,7 @@ interface ApiCreateDisruptionParams {
   toDate: Date | null
   disruptionDaysOfWeek: DayOfWeekTimeRanges
   exceptionDates: Date[]
+  tripShortNames: string
 }
 
 const disruptionFromState = ({
@@ -238,6 +254,7 @@ const disruptionFromState = ({
   toDate,
   disruptionDaysOfWeek,
   exceptionDates,
+  tripShortNames,
 }: ApiCreateDisruptionParams): Disruption => {
   return new Disruption({
     ...(fromDate && { startDate: fromDate }),
@@ -245,7 +262,11 @@ const disruptionFromState = ({
     adjustments,
     daysOfWeek: dayOfWeekTimeRangesToDayOfWeeks(disruptionDaysOfWeek),
     exceptions: Exception.fromDates(exceptionDates),
-    tripShortNames: [],
+    tripShortNames: tripShortNames
+      ? tripShortNames
+          .split(/\s*,\s*/)
+          .map((tripShortName) => new TripShortName({ tripShortName }))
+      : [],
   })
 }
 
@@ -257,12 +278,20 @@ const NewDisruption = ({}): JSX.Element => {
     DayOfWeekTimeRanges
   >([null, null, null, null, null, null, null])
   const [exceptionDates, setExceptionDates] = React.useState<Date[]>([])
+  const [tripShortNames, setTripShortNames] = React.useState<string>("")
   const [isPreview, setIsPreview] = React.useState<boolean>(false)
   const [allAdjustments, setAllAdjustments] = React.useState<
     Adjustment[] | "error" | null
   >(null)
   const [validationErrors, setValidationErrors] = React.useState<string[]>([])
   const [doRedirect, setDoRedirect] = React.useState<boolean>(false)
+  const [transitMode, setTransitMode] = React.useState<TransitMode>(
+    TransitMode.Subway
+  )
+  const [isAddingAdjustment, setIsAddingAdjustment] = React.useState<boolean>(
+    adjustments.length === 0
+  )
+  const [whichTrips, setWhichTrips] = React.useState<"all" | "some">("all")
 
   const createFn = async (args: ApiCreateDisruptionParams) => {
     const disruption = disruptionFromState(args)
@@ -323,6 +352,7 @@ const NewDisruption = ({}): JSX.Element => {
           toDate={toDate}
           disruptionDaysOfWeek={disruptionDaysOfWeek}
           exceptionDates={exceptionDates}
+          tripShortNames={tripShortNames}
           createFn={createFn}
         />
       ) : (
@@ -337,11 +367,30 @@ const NewDisruption = ({}): JSX.Element => {
             </Alert>
           )}
           <h1>Create new disruption</h1>
-          <AdjustmentForm
-            adjustments={adjustments}
-            setAdjustments={setAdjustments}
-            allAdjustments={allAdjustments}
-          />
+          <div>
+            <AdjustmentModePicker
+              transitMode={transitMode}
+              setTransitMode={setTransitMode}
+              setAdjustments={setAdjustments}
+              setIsAddingAdjustment={setIsAddingAdjustment}
+            />
+            <AdjustmentsPicker
+              adjustments={adjustments}
+              setAdjustments={setAdjustments}
+              allAdjustments={allAdjustments}
+              transitMode={transitMode}
+              isAddingAdjustment={isAddingAdjustment}
+              setIsAddingAdjustment={setIsAddingAdjustment}
+            />
+            {transitMode === TransitMode.CommuterRail && (
+              <TripShortNamesForm
+                whichTrips={whichTrips}
+                setWhichTrips={setWhichTrips}
+                tripShortNames={tripShortNames}
+                setTripShortNames={setTripShortNames}
+              />
+            )}
+          </div>
           <fieldset>
             <legend>During what time?</legend>
             <DisruptionTimePicker

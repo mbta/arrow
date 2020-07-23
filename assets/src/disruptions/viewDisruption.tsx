@@ -142,6 +142,9 @@ const ViewDisruptionForm = ({
             toDate={disruption.endDate || null}
             exceptionDates={exceptionDates}
             disruptionDaysOfWeek={disruptionDaysOfWeek}
+            tripShortNames={disruption.tripShortNames
+              .map((tsn) => tsn.tripShortName)
+              .join(", ")}
           />
           <div>
             <EditDisruptionButton disruptionId={disruption.id} />
