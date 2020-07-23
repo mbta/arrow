@@ -1,5 +1,6 @@
 import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
+import { ModelObject } from "../jsonApi"
 
 class Exception extends JsonApiResourceObject {
   id?: string
@@ -46,6 +47,10 @@ class Exception extends JsonApiResourceObject {
     return exceptions.map(
       (exceptionDate) => new Exception({ excludedDate: exceptionDate })
     )
+  }
+
+  static isOfType(obj: ModelObject): obj is Exception {
+    return obj instanceof Exception
   }
 }
 

@@ -45,6 +45,12 @@ module.exports = {
     "@typescript-eslint/type-annotation-spacing": "off",
     "@typescript-eslint/unified-signatures": "error",
     "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/unbound-method": [
+      "error",
+      {
+        ignoreStatic: true,
+      },
+    ],
     "arrow-parens": ["off", "as-needed"],
     "prefer-arrow/prefer-arrow-functions": [
       "warn",

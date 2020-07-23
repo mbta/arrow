@@ -90,14 +90,18 @@ class Disruption extends JsonApiResourceObject {
         ...(raw.attributes.end_date && {
           endDate: new Date(raw.attributes.end_date + "T00:00:00"),
         }),
-        adjustments: included.filter((i) => i instanceof Adjustment),
-        daysOfWeek: included.filter((i) => i instanceof DayOfWeek),
-        exceptions: included.filter((i) => i instanceof Exception),
-        tripShortNames: included.filter((i) => i instanceof TripShortName),
+        adjustments: included.filter(Adjustment.isOfType),
+        daysOfWeek: included.filter(DayOfWeek.isOfType),
+        exceptions: included.filter(Exception.isOfType),
+        tripShortNames: included.filter(TripShortName.isOfType),
       })
     }
 
     return "error"
+  }
+
+  static isOfType(obj: ModelObject): obj is Disruption {
+    return obj instanceof Disruption
   }
 }
 

@@ -1,5 +1,6 @@
 import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
+import { ModelObject } from "../jsonApi"
 
 export type DayName =
   | "monday"
@@ -76,6 +77,10 @@ class DayOfWeek extends JsonApiResourceObject {
     } else {
       return "error"
     }
+  }
+
+  static isOfType(obj: ModelObject): obj is DayOfWeek {
+    return obj instanceof DayOfWeek
   }
 }
 

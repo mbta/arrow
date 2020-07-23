@@ -210,7 +210,7 @@ const dayOfWeekTimeRangesToDayOfWeeks = (
       const dayName = ixToDayName(ix)
       const [startTime, endTime] = dow
       const dayOfWeek = new DayOfWeek({
-        ...(dayName !== null && { dayName }),
+        dayName,
         ...(startTime !== null && { startTime: timeToString(startTime) }),
         ...(endTime !== null && { endTime: timeToString(endTime) }),
       })

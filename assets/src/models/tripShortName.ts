@@ -1,5 +1,6 @@
 import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
+import { ModelObject } from "../jsonApi"
 
 class TripShortName extends JsonApiResourceObject {
   id?: string
@@ -36,6 +37,10 @@ class TripShortName extends JsonApiResourceObject {
     }
 
     return "error"
+  }
+
+  static isOfType(obj: ModelObject): obj is TripShortName {
+    return obj instanceof TripShortName
   }
 }
 
