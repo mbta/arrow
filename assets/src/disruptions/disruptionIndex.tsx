@@ -10,13 +10,12 @@ import Header from "../header"
 import Button from "react-bootstrap/Button"
 import Icon from "../icons"
 import { DisruptionTable } from "./disruptionTable"
-import DisruptionCalendar from "./disruptionCalendar"
+import { DisruptionCalendar } from "./disruptionCalendar"
 import Disruption from "../models/disruption"
 import { apiGet } from "../api"
 import { JsonApiResponse, toModelObject } from "../jsonApi"
-import { parseDaysAndTimes } from "../disruptions/time"
 
-type Routes =
+export type Routes =
   | "Red"
   | "Blue"
   | "Mattapan"
@@ -31,25 +30,68 @@ type RouteFilterState = {
   [route in Routes]?: boolean
 }
 
-export interface DisruptionRow {
-  id?: string
-  routes?: Routes[]
-  label?: string
-  startDate?: Date
-  endDate?: Date
-  daysAndTimes?: string
+const getRouteIcon = (route?: string): Icon => {
+  switch (route) {
+    case "Red": {
+      return "red-line-small"
+    }
+    case "Blue": {
+      return "blue-line-small"
+    }
+    case "Mattapan": {
+      return "mattapan-line-small"
+    }
+    case "Orange": {
+      return "orange-line-small"
+    }
+    case "Green-B": {
+      return "green-line-b-small"
+    }
+    case "Green-C": {
+      return "green-line-c-small"
+    }
+    case "Green-D": {
+      return "green-line-d-small"
+    }
+    case "Green-E": {
+      return "green-line-e-small"
+    }
+    default: {
+      return "mode-commuter-rail-small"
+    }
+  }
 }
 
-const ROUTE_ICONS: { [route in Routes]: Icon } = {
-  Red: "red-line-small",
-  Blue: "blue-line-small",
-  Mattapan: "mattapan-line-small",
-  Orange: "orange-line-small",
-  "Green-B": "green-line-b-small",
-  "Green-C": "green-line-c-small",
-  "Green-D": "green-line-d-small",
-  "Green-E": "green-line-e-small",
-  Commuter: "mode-commuter-rail-small",
+export const getRouteColor = (route?: string): string => {
+  switch (route) {
+    case "Red": {
+      return "#da291c"
+    }
+    case "Blue": {
+      return "#003da5"
+    }
+    case "Mattapan": {
+      return "#da291c"
+    }
+    case "Orange": {
+      return "#ed8b00"
+    }
+    case "Green-B": {
+      return "#00843d"
+    }
+    case "Green-C": {
+      return "#00843d"
+    }
+    case "Green-D": {
+      return "#00843d"
+    }
+    case "Green-E": {
+      return "#00843d"
+    }
+    default: {
+      return "#80276c"
+    }
+  }
 }
 
 interface RouteFilterToggleProps {
@@ -68,7 +110,7 @@ const RouteFilterToggle = React.memo(
         id={"route-filter-toggle-" + route}
         onClick={() => onClick(route)}
       >
-        <Icon type={ROUTE_ICONS[route]} />
+        <Icon type={getRouteIcon(route)} />
       </a>
     )
   }
@@ -102,7 +144,7 @@ const RouteFilterToggleGroup = ({
 }
 
 interface DisruptionIndexProps {
-  disruptions: DisruptionRow[]
+  disruptions: Disruption[]
 }
 
 const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
@@ -142,12 +184,21 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
 
   const filteredDisruptions = React.useMemo(() => {
     const query = searchQuery.toLowerCase()
-    return disruptions.filter(
-      (x) =>
+    return disruptions.filter((x) => {
+      return (
         (!anyRouteFiltersActive ||
-          (x.routes || []).some((route) => routeFilters[route])) &&
-        (x.label || "").toLowerCase().includes(query)
-    )
+          (x.adjustments || []).some(
+            (adj) =>
+              adj.routeId &&
+              (routeFilters[adj.routeId as Routes] ||
+                (routeFilters.Commuter && adj.routeId.includes("CR-")))
+          )) &&
+        (x.adjustments || []).some(
+          (adj) =>
+            adj.sourceLabel && adj.sourceLabel.toLowerCase().includes(query)
+        )
+      )
+    })
   }, [disruptions, searchQuery, routeFilters, anyRouteFiltersActive])
 
   return (
@@ -159,7 +210,7 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
           {view === "table" ? (
             <DisruptionTable disruptions={filteredDisruptions} />
           ) : (
-            <DisruptionCalendar />
+            <DisruptionCalendar disruptions={filteredDisruptions} />
           )}
         </Col>
         <Col>
@@ -223,34 +274,6 @@ const DisruptionIndex = () => {
   const [disruptions, setDisruptions] = React.useState<Disruption[] | "error">(
     []
   )
-  const disruptionRows = React.useMemo(() => {
-    if (disruptions === "error") {
-      return []
-    } else {
-      return disruptions.map((x) => {
-        return {
-          id: x.id,
-          startDate: x.startDate,
-          endDate: x.endDate,
-          label: x.adjustments.map((adj) => adj.sourceLabel).join(", "),
-          routes: x.adjustments
-            .map((adj) => {
-              if (adj.routeId && adj.routeId.startsWith("CR-")) {
-                return "Commuter"
-              } else {
-                return adj.routeId
-              }
-            })
-            .filter(
-              (routeId: string | undefined): routeId is Routes => !!routeId
-            ),
-          daysAndTimes:
-            x.daysOfWeek.length > 0 ? parseDaysAndTimes(x.daysOfWeek) : "",
-        }
-      })
-    }
-  }, [disruptions])
-
   React.useEffect(() => {
     apiGet<JsonApiResponse>({
       url: "/api/disruptions",
@@ -271,7 +294,7 @@ const DisruptionIndex = () => {
   if (disruptions === "error") {
     return <div>Something went wrong</div>
   } else {
-    return <DisruptionIndexView disruptions={disruptionRows} />
+    return <DisruptionIndexView disruptions={disruptions} />
   }
 }
 

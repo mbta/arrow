@@ -1,10 +1,16 @@
 import * as React from "react"
 import { BrowserRouter } from "react-router-dom"
-import { render, fireEvent, screen } from "@testing-library/react"
+import {
+  render,
+  fireEvent,
+  screen,
+  queryByAttribute,
+} from "@testing-library/react"
 
 import {
   DisruptionIndexView,
   DisruptionIndex,
+  getRouteColor,
 } from "../../src/disruptions/disruptionIndex"
 import Disruption from "../../src/models/disruption"
 import Adjustment from "../../src/models/adjustment"
@@ -27,22 +33,62 @@ const DisruptionIndexWithRouter = ({
       ) : (
         <DisruptionIndexView
           disruptions={[
-            {
+            new Disruption({
               id: "1",
-              routes: ["Red"],
-              label: "AlewifeHarvard",
               startDate: new Date("2019-10-31"),
               endDate: new Date("2019-11-15"),
-              daysAndTimes: "Weekends, starting Friday 845",
-            },
-            {
-              id: "2",
-              routes: ["Green-D", "Green-E"],
-              label: "Kenmore—Newton Highlands",
+              adjustments: [
+                new Adjustment({
+                  routeId: "Red",
+                  sourceLabel: "AlewifeHarvard",
+                }),
+              ],
+              daysOfWeek: [
+                new DayOfWeek({
+                  id: "1",
+                  startTime: "20:45:00",
+                  dayName: "friday",
+                }),
+                new DayOfWeek({
+                  id: "2",
+                  dayName: "saturday",
+                }),
+                new DayOfWeek({
+                  id: "3",
+                  dayName: "sunday",
+                }),
+              ],
+              exceptions: [],
+              tripShortNames: [],
+            }),
+            new Disruption({
+              id: "3",
               startDate: new Date("2019-09-22"),
               endDate: new Date("2019-10-22"),
-              daysAndTimes: "Weekends, starting Friday 845",
-            },
+              adjustments: [
+                new Adjustment({
+                  routeId: "Green-D",
+                  sourceLabel: "Kenmore-Newton Highlands",
+                }),
+              ],
+              daysOfWeek: [
+                new DayOfWeek({
+                  id: "1",
+                  startTime: "20:45:00",
+                  dayName: "friday",
+                }),
+                new DayOfWeek({
+                  id: "2",
+                  dayName: "saturday",
+                }),
+                new DayOfWeek({
+                  id: "3",
+                  dayName: "sunday",
+                }),
+              ],
+              exceptions: [],
+              tripShortNames: [],
+            }),
           ]}
         />
       )}
@@ -85,7 +131,7 @@ describe("DisruptionIndexView", () => {
     let tableRows = container.querySelectorAll("tbody tr")
     expect(tableRows.length).toEqual(2)
     expect(tableRows.item(0).innerHTML).toContain("AlewifeHarvard")
-    expect(tableRows.item(1).innerHTML).toContain("Kenmore—Newton")
+    expect(tableRows.item(1).innerHTML).toContain("Kenmore-Newton")
     expect(container.querySelectorAll("#clear-filter").length).toEqual(0)
     expect(
       container.querySelectorAll(".m-disruption-index__route_filter.active")
@@ -104,7 +150,7 @@ describe("DisruptionIndexView", () => {
 
     tableRows = container.querySelectorAll("tbody tr")
     expect(tableRows.length).toEqual(1)
-    expect(tableRows.item(0).innerHTML).toContain("Kenmore—Newton")
+    expect(tableRows.item(0).innerHTML).toContain("Kenmore-Newton")
     expect(
       container.querySelectorAll(".m-disruption-index__route_filter.active")
         .length
@@ -131,8 +177,7 @@ describe("DisruptionIndexView", () => {
 
     fireEvent.click(greenEselector)
     tableRows = container.querySelectorAll("tbody tr")
-    expect(tableRows.length).toEqual(1)
-    expect(tableRows.item(0).innerHTML).toContain("Kenmore—Newton")
+    expect(tableRows.length).toEqual(0)
     expect(
       container.querySelectorAll(".m-disruption-index__route_filter.active")
         .length
@@ -150,7 +195,7 @@ describe("DisruptionIndexView", () => {
     expect(tableRows.length).toEqual(2)
 
     expect(tableRows.item(0).innerHTML).toContain("AlewifeHarvard")
-    expect(tableRows.item(1).innerHTML).toContain("Kenmore—Newton")
+    expect(tableRows.item(1).innerHTML).toContain("Kenmore-Newton")
 
     clearFilterLink = container.querySelector("#clear-filter")
     expect(clearFilterLink).toBeNull()
@@ -164,7 +209,7 @@ describe("DisruptionIndexView", () => {
   test("can toggle between table and calendar view", () => {
     const { container } = render(<DisruptionIndexWithRouter />)
     expect(screen.queryByText("days + times")).not.toBeNull()
-    expect(screen.queryByText("calendar goes here")).toBeNull()
+    expect(queryByAttribute("id", container, "calendar")).toBeNull()
 
     const toggleButton = container.querySelector("#view-toggle")
     if (!toggleButton) {
@@ -174,12 +219,12 @@ describe("DisruptionIndexView", () => {
 
     fireEvent.click(toggleButton)
     expect(screen.queryByText("days + times")).toBeNull()
-    expect(screen.queryByText("calendar goes here")).not.toBeNull()
+    expect(queryByAttribute("id", container, "calendar")).not.toBeNull()
     expect(toggleButton.textContent).toEqual("list view")
 
     fireEvent.click(toggleButton)
     expect(screen.queryByText("days + times")).not.toBeNull()
-    expect(screen.queryByText("calendar goes here")).toBeNull()
+    expect(queryByAttribute("id", container, "calendar")).toBeNull()
     expect(toggleButton.textContent).toEqual("calendar view")
   })
 })
@@ -339,5 +384,23 @@ describe("DisruptionIndexConnected", () => {
     })
 
     expect(container.textContent).toMatch("Something went wrong")
+  })
+})
+
+describe("getRouteColor", () => {
+  test("returns the correct color", () => {
+    ;[
+      ["Red", "#da291c"],
+      ["Blue", "#003da5"],
+      ["Mattapan", "#da291c"],
+      ["Orange", "#ed8b00"],
+      ["Green-B", "#00843d"],
+      ["Green-C", "#00843d"],
+      ["Green-D", "#00843d"],
+      ["Green-E", "#00843d"],
+      ["CR-Fairmont", "#80276c"],
+    ].forEach(([route, color]) => {
+      expect(getRouteColor(route)).toEqual(color)
+    })
   })
 })

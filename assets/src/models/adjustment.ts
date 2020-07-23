@@ -1,5 +1,6 @@
 import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
+import { ModelObject } from "../jsonApi"
 
 type Source = "gtfs_creator" | "arrow"
 
@@ -69,6 +70,10 @@ class Adjustment extends JsonApiResourceObject {
     }
 
     return "error"
+  }
+
+  static isOfType(obj: ModelObject): obj is Adjustment {
+    return obj instanceof Adjustment
   }
 }
 

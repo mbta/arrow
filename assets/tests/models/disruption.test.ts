@@ -11,7 +11,7 @@ describe("Disruption", () => {
       startDate: new Date(2020, 0, 1),
       endDate: new Date(2020, 2, 1),
       adjustments: [new Adjustment({ id: "1" })],
-      daysOfWeek: [new DayOfWeek({ id: "2" })],
+      daysOfWeek: [new DayOfWeek({ id: "2", dayName: "friday" })],
       exceptions: [new Exception({ id: "3" })],
       tripShortNames: [new TripShortName({ id: "4" })],
     })
@@ -29,7 +29,13 @@ describe("Disruption", () => {
             data: [{ id: "1", type: "adjustment", attributes: {} }],
           },
           days_of_week: {
-            data: [{ id: "2", type: "day_of_week", attributes: {} }],
+            data: [
+              {
+                id: "2",
+                type: "day_of_week",
+                attributes: { day_name: "friday" },
+              },
+            ],
           },
           exceptions: {
             data: [{ id: "3", type: "exception", attributes: {} }],
@@ -83,5 +89,20 @@ describe("Disruption", () => {
 
   test("fromJsonObject error not an object", () => {
     expect(Disruption.fromJsonObject(5, [])).toEqual("error")
+  })
+
+  test("isOfType", () => {
+    expect(
+      Disruption.isOfType(
+        new Disruption({
+          adjustments: [],
+          daysOfWeek: [],
+          exceptions: [],
+          tripShortNames: [],
+        })
+      )
+    ).toBe(true)
+
+    expect(Disruption.isOfType(new Exception({}))).toBe(false)
   })
 })
