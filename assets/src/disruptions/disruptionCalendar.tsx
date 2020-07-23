@@ -4,6 +4,7 @@ import dayGridPlugin from "@fullcalendar/daygrid"
 import { RRule, RRuleSet } from "rrule"
 import { getRouteColor } from "./disruptionIndex"
 import Disruption from "../models/disruption"
+import DayOfWeek from "../models/dayOfWeek"
 
 interface DisruptionCalendarProps {
   disruptions: Disruption[]
@@ -11,7 +12,7 @@ interface DisruptionCalendarProps {
   timeZone?: string
 }
 
-export const dayNameToInt = (day?: string): number => {
+export const dayNameToInt = (day: DayOfWeek["dayName"]): number => {
   switch (day) {
     case "monday": {
       return 0
@@ -31,8 +32,13 @@ export const dayNameToInt = (day?: string): number => {
     case "saturday": {
       return 5
     }
-    default: {
+    case "sunday": {
       return 6
+    }
+    default: {
+      ;((invalidDay: never) => {
+        throw new Error(`invalid day name: ${invalidDay}`)
+      })(day)
     }
   }
 }

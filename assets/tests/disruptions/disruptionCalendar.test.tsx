@@ -71,7 +71,7 @@ const SAMPLE_DISRUPTIONS = [
 
 describe("DisruptionCalendar", () => {
   test("dayNameToInt", () => {
-    ;[
+    ;([
       "monday",
       "tuesday",
       "wednesday",
@@ -79,7 +79,7 @@ describe("DisruptionCalendar", () => {
       "friday",
       "saturday",
       "sunday",
-    ].forEach((day, i) => {
+    ] as DayOfWeek["dayName"][]).forEach((day, i) => {
       expect(dayNameToInt(day)).toEqual(i)
     })
   })
