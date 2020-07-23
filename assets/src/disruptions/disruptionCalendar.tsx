@@ -35,11 +35,6 @@ export const dayNameToInt = (day: DayOfWeek["dayName"]): number => {
     case "sunday": {
       return 6
     }
-    default: {
-      ;((invalidDay: never) => {
-        throw new Error(`invalid day name: ${invalidDay}`)
-      })(day)
-    }
   }
 }
 

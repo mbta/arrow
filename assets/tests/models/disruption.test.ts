@@ -90,4 +90,19 @@ describe("Disruption", () => {
   test("fromJsonObject error not an object", () => {
     expect(Disruption.fromJsonObject(5, [])).toEqual("error")
   })
+
+  test("isOfType", () => {
+    expect(
+      Disruption.isOfType(
+        new Disruption({
+          adjustments: [],
+          daysOfWeek: [],
+          exceptions: [],
+          tripShortNames: [],
+        })
+      )
+    ).toBe(true)
+
+    expect(Disruption.isOfType(new Exception({}))).toBe(false)
+  })
 })
