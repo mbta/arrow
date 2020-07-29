@@ -16,7 +16,8 @@ config :arrow,
   migrate_synchronously?: false,
   redirect_http?: true,
   cognito_group: "arrow-admin",
-  time_zone: "America/New_York"
+  time_zone: "America/New_York",
+  ex_aws_requester: {Fake.ExAws, :arrow_group_request}
 
 # Configures the endpoint
 config :arrow, ArrowWeb.Endpoint,
