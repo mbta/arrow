@@ -21,7 +21,8 @@ config :arrow, ArrowWeb.AuthManager, secret_key: {System, :get_env, ["ARROW_AUTH
 config :logger, level: :info
 
 config :arrow,
-  run_migrations_at_startup?: true
+  run_migrations_at_startup?: true,
+  ex_aws_requester: {ExAws, :request}
 
 config :arrow, Arrow.Repo, ssl: true
 

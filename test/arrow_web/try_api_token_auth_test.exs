@@ -1,6 +1,8 @@
 defmodule ArrowWeb.TryApiTokenAuthTest do
   use ArrowWeb.ConnCase
   use Plug.Test
+  import ExUnit.CaptureLog
+  import Test.Support.Helpers
 
   describe "init/1" do
     test "passes options through unchanged" do
@@ -27,6 +29,18 @@ defmodule ArrowWeb.TryApiTokenAuthTest do
     end
 
     test "signs user in if correct API key given", %{conn: conn} do
+      old_ueberauth_config = Application.get_env(:ueberauth, Ueberauth.Strategy.Cognito)
+
+      on_exit(fn ->
+        Application.put_env(:ueberauth, Ueberauth.Strategy.Cognito, old_ueberauth_config)
+      end)
+
+      Application.put_env(
+        :ueberauth,
+        Ueberauth.Strategy.Cognito,
+        Keyword.put(old_ueberauth_config, :user_pool_id, "dummy_pool")
+      )
+
       token = Arrow.AuthToken.get_or_create_token_for_user("foo@mbta.com")
 
       conn =
@@ -39,7 +53,29 @@ defmodule ArrowWeb.TryApiTokenAuthTest do
 
       assert claims["sub"] == "foo@mbta.com"
       assert claims["typ"] == "access"
+      assert claims["groups"] == ["arrow-admin"]
       assert Plug.Conn.get_session(conn, :arrow_username) == "foo@mbta.com"
+    end
+
+    test "handles unexpected response from Cognito API", %{conn: conn} do
+      reassign_env(:ex_aws_requester, {Fake.ExAws, :unexpected_response})
+
+      token = Arrow.AuthToken.get_or_create_token_for_user("foo@mbta.com")
+
+      log =
+        capture_log([level: :warn], fn ->
+          conn =
+            conn
+            |> init_test_session([])
+            |> put_req_header("x-api-key", token)
+            |> ArrowWeb.TryApiTokenAuth.call([])
+
+          claims = Guardian.Plug.current_claims(conn)
+
+          assert claims["groups"] == []
+        end)
+
+      assert log =~ "unexpected_aws_api_response"
     end
   end
 end
