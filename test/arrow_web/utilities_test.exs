@@ -1,7 +1,7 @@
 defmodule ArrowWeb.UtilitiesTest do
   use ExUnit.Case, async: true
   import ArrowWeb.Utilities
-  alias Arrow.{Disruption, Adjustment}
+  alias Arrow.Disruption
 
   describe "get_json_api_relationships/1" do
     test "parses the data correctly" do
