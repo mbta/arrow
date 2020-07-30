@@ -17,7 +17,8 @@ config :arrow,
   redirect_http?: true,
   cognito_group: "arrow-admin",
   time_zone: "America/New_York",
-  ex_aws_requester: {Fake.ExAws, :arrow_group_request}
+  ex_aws_requester: {Fake.ExAws, :arrow_group_request},
+  http_client: HTTPoison
 
 # Configures the endpoint
 config :arrow, ArrowWeb.Endpoint,
