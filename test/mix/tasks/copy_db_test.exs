@@ -11,7 +11,12 @@ defmodule Mix.Tasks.CopyDbTest do
       Application.put_env(:arrow, :http_client, Fake.HTTPoison.Happy)
       Arrow.Repo.delete_all(Arrow.Disruption)
       Arrow.Repo.delete_all(Arrow.Adjustment)
-      insert_disruptions(@time)
+
+      {%Arrow.Disruption{
+         end_date: dis_1_end_date,
+         days_of_week: [%Arrow.Disruption.DayOfWeek{day_name: dis_1_day_name}],
+         exceptions: [%Arrow.Disruption.Exception{excluded_date: dis_1_excluded_date}]
+       }, %Arrow.Disruption{end_date: dis_2_end_date}} = insert_disruptions(@time)
 
       assert [
                %Arrow.Adjustment{
@@ -37,15 +42,15 @@ defmodule Mix.Tasks.CopyDbTest do
                  ],
                  days_of_week: [
                    %Arrow.Disruption.DayOfWeek{
-                     day_name: "monday",
+                     day_name: ^dis_1_day_name,
                      end_time: nil,
                      start_time: ~T[20:30:00]
                    }
                  ],
-                 end_date: ~D[2020-08-10],
+                 end_date: ^dis_1_end_date,
                  exceptions: [
                    %Arrow.Disruption.Exception{
-                     excluded_date: ~D[2020-08-10]
+                     excluded_date: ^dis_1_excluded_date
                    }
                  ],
                  start_date: ~D[2019-10-10],
@@ -66,7 +71,7 @@ defmodule Mix.Tasks.CopyDbTest do
                      start_time: ~T[20:30:00]
                    }
                  ],
-                 end_date: ~D[2020-08-15],
+                 end_date: ^dis_2_end_date,
                  exceptions: [],
                  start_date: ~D[2019-11-15],
                  trip_short_names: []
