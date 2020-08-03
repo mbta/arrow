@@ -1,7 +1,8 @@
 defmodule ArrowWeb.API.DisruptionControllerTest do
   use ArrowWeb.ConnCase
-  alias Arrow.{Disruption, Repo, Adjustment}
+  alias Arrow.{Repo, Adjustment}
   alias Arrow.Disruption.DayOfWeek
+  import Test.Support.Helpers
 
   @current_time DateTime.from_naive!(~N[2019-04-15 12:00:00], "America/New_York")
 
@@ -13,7 +14,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
 
     @tag :authenticated
     test "includes all fields by default", %{conn: conn} do
-      insert_disruptions()
+      insert_disruptions(@current_time)
 
       res = json_response(get(conn, "/api/disruptions"), 200)
 
@@ -64,7 +65,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
 
     @tag :authenticated
     test "can include only specified relationships", %{conn: conn} do
-      insert_disruptions()
+      insert_disruptions(@current_time)
 
       res = json_response(get(conn, "/api/disruptions", %{"include" => "adjustments"}), 200)
 
@@ -128,7 +129,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
 
     @tag :authenticated
     test "can filter by dates", %{conn: conn} do
-      {%{id: disruption_1_id}, %{id: disruption_2_id}} = insert_disruptions()
+      {%{id: disruption_1_id}, %{id: disruption_2_id}} = insert_disruptions(@current_time)
 
       end_date1 = Date.to_iso8601(future_date())
       end_date2 = future_date() |> Date.add(5) |> Date.to_iso8601()
@@ -157,7 +158,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
   describe "show/2" do
     @tag :authenticated
     test "returns valid disruption", %{conn: conn} do
-      {disruption_1, _disruption_2} = insert_disruptions()
+      {disruption_1, _disruption_2} = insert_disruptions(@current_time)
       disruption_1_id = disruption_1.id
 
       assert %{"data" => %{"id" => disruption_1_id}} =
@@ -377,7 +378,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
 
     @tag :authenticated
     test "fails to update disruption with invalid data", %{conn: conn} do
-      {disruption_1, _} = insert_disruptions()
+      {disruption_1, _} = insert_disruptions(@current_time)
 
       post_data = %{
         "data" => %{
@@ -493,115 +494,5 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                %{"detail" => "Start date can't be deleted when start date is in the past"}
              ]
     end
-  end
-
-  def future_date() do
-    {:ok, now} = DateTime.now(Application.get_env(:arrow, :time_zone))
-    today = DateTime.to_date(now)
-    Date.add(today, 10)
-  end
-
-  def past_date() do
-    {:ok, now} = DateTime.now(Application.get_env(:arrow, :time_zone))
-    today = DateTime.to_date(now)
-    Date.add(today, -10)
-  end
-
-  defp insert_adjustment(opts) do
-    source_label = Keyword.get(opts, :source_label)
-    route_id = Keyword.get(opts, :route_id)
-    source = Keyword.get(opts, :source)
-
-    Repo.insert!(
-      Adjustment.changeset(%Adjustment{}, %{
-        source: source,
-        source_label: source_label,
-        route_id: route_id
-      })
-    )
-  end
-
-  defp insert_disruption(opts) do
-    start_date = Keyword.get(opts, :start_date)
-    end_date = Keyword.get(opts, :end_date)
-
-    exceptions =
-      opts
-      |> Keyword.get(:exceptions, [])
-      |> Enum.map(&%{"excluded_date" => &1})
-
-    trip_short_names =
-      opts
-      |> Keyword.get(:trip_short_names, [])
-      |> Enum.map(&%{"trip_short_name" => &1})
-
-    days_of_week =
-      opts
-      |> Keyword.get(:days_of_week, [])
-      |> Enum.map(
-        &%{
-          day_name: Map.get(&1, :day_name),
-          start_time: Map.get(&1, :start_time),
-          end_time: Map.get(&1, :end_time)
-        }
-      )
-
-    adjustments = Keyword.get(opts, :adjustments, [])
-    current_time = Keyword.get(opts, :current_time)
-
-    Repo.insert!(
-      Disruption.changeset_for_create(
-        %Disruption{},
-        %{
-          "start_date" => start_date,
-          "end_date" => end_date,
-          "exceptions" => exceptions,
-          "trip_short_names" => trip_short_names,
-          "days_of_week" => days_of_week
-        },
-        adjustments,
-        current_time
-      )
-    )
-  end
-
-  defp insert_disruptions do
-    adjustment_1 =
-      insert_adjustment(
-        source_label: "test_adjustment_1",
-        route_id: "test_route_1",
-        source: "arrow"
-      )
-
-    disruption_1 =
-      insert_disruption(
-        start_date: ~D[2019-10-10],
-        end_date: future_date(),
-        days_of_week: [
-          %{day_name: DayOfWeek.date_to_day_name(future_date()), start_time: ~T[20:30:00]}
-        ],
-        exceptions: [future_date()],
-        trip_short_names: ["006"],
-        adjustments: [adjustment_1],
-        current_time: @current_time
-      )
-
-    adjustment_2 =
-      insert_adjustment(
-        source_label: "test_adjustment_2",
-        route_id: "test_route_2",
-        source: "gtfs_creator"
-      )
-
-    disruption_2 =
-      insert_disruption(
-        start_date: ~D[2019-11-15],
-        end_date: Date.add(future_date(), 5),
-        days_of_week: [%{day_name: "friday", start_time: ~T[20:30:00]}],
-        adjustments: [adjustment_2],
-        current_time: @current_time
-      )
-
-    {disruption_1, disruption_2}
   end
 end

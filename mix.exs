@@ -13,6 +13,7 @@ defmodule Arrow.MixProject do
       deps: deps(),
       releases: releases(),
       dialyzer: [
+        plt_add_apps: [:mix],
         plt_add_deps: :transitive,
         flags: [
           :race_conditions,
@@ -58,6 +59,7 @@ defmodule Arrow.MixProject do
       {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false},
       {:ecto_sql, "~> 3.1"},
       {:hackney, "~> 1.9"},
+      {:httpoison, "~> 1.6"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 2.11"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
