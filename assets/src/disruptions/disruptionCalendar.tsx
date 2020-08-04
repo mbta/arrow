@@ -53,6 +53,9 @@ export const disruptionsToCalendarEvents = (disruptions: Disruption[]) => {
       }[],
       disruption: Disruption
     ) => {
+      if (!disruption.daysOfWeek.length) {
+        return disruptionsAcc
+      }
       disruption.adjustments.forEach((adj) => {
         const ruleSet = new RRuleSet()
         ruleSet.rrule(

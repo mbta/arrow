@@ -67,6 +67,20 @@ const SAMPLE_DISRUPTIONS = [
     exceptions: [],
     tripShortNames: [],
   }),
+  new Disruption({
+    id: "4",
+    startDate: new Date("2019-11-15"),
+    endDate: new Date("2019-11-30"),
+    adjustments: [
+      new Adjustment({
+        routeId: "Green-D",
+        sourceLabel: "Kenmore-Newton Highlands",
+      }),
+    ],
+    daysOfWeek: [],
+    exceptions: [],
+    tripShortNames: [],
+  }),
 ]
 
 describe("DisruptionCalendar", () => {
