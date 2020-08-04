@@ -249,4 +249,37 @@ defmodule Arrow.Disruption do
       changeset
     end
   end
+
+  ############ Draft/Published exploration #######
+  @doc "Returns the published view of disruptions, suitable for listing on the home page"
+  def get_all_published do
+  end
+
+  @doc "Returns the draft view of disruptions, suitable for listing on the home page"
+  def get_all_drafts do
+  end
+
+  @doc "Confirms all draft changes. The draft and published views will be identical afterwards"
+  def publish do
+  end
+
+  @doc "Returns an identifier of a disruption (draft or published), suitable for generating a link from"
+  def identifier(_disruption_idable, _draft_or_published) do
+  end
+
+  @doc "Creates a new draft revision of a disruption"
+  def edit_draft(_id, _data, _adjustments, _author) do
+  end
+
+  @doc "Creates a new disruption, initially visible only in the draft view, not published view"
+  def create_draft(_data, _adjustments, _author) do
+  end
+
+  @doc "Deletes a disruption, initially removed only in the draft view, not published view"
+  def delete(_id, _author) do
+  end
+
+  @doc "Generates a list of tuples describing the differences between draft and published, and by whom"
+  def draft_diffs do
+  end
 end
