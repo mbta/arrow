@@ -192,11 +192,64 @@ describe("DisruptionCalendar", () => {
     })
   })
 
+  test("handles daylight savings correctly", () => {
+    const { container } = render(
+      <DisruptionCalendar
+        initialDate={new Date("2020-11-15")}
+        disruptions={[
+          new Disruption({
+            id: "1",
+            startDate: new Date("2020-10-30"),
+            endDate: new Date("2020-11-22"),
+            adjustments: [
+              new Adjustment({
+                routeId: "Red",
+                sourceLabel: "AlewifeHarvard",
+              }),
+            ],
+            daysOfWeek: [
+              new DayOfWeek({
+                id: "1",
+                startTime: "20:45:00",
+                dayName: "friday",
+              }),
+              new DayOfWeek({
+                id: "2",
+                dayName: "saturday",
+              }),
+              new DayOfWeek({
+                id: "3",
+                dayName: "sunday",
+              }),
+            ],
+            exceptions: [
+              new Exception({ excludedDate: new Date("2020-11-15") }),
+            ],
+            tripShortNames: [],
+          }),
+        ]}
+      />
+    )
+
+    const activeDays = ["01", "06", "08", "13", "20", "22"]
+
+    activeDays.forEach((day) => {
+      expect(
+        container.querySelector(
+          `[data-date="2020-11-${day}"] .fc-daygrid-event`
+        )
+      ).not.toBeNull()
+    })
+
+    expect(
+      container.querySelector('[data-date="2020-11-15"] .fc-daygrid-event')
+    ).toBeNull()
+  })
+
   test("renders correctly", () => {
     const tree = render(
       <DisruptionCalendar
         initialDate={new Date("2019-11-15")}
-        timeZone="UTC"
         disruptions={SAMPLE_DISRUPTIONS}
       />
     )
