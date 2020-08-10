@@ -17,6 +17,7 @@ const SAMPLE_DISRUPTIONS = [
     endDate: new Date("2019-11-15"),
     adjustments: [
       new Adjustment({
+        id: "1",
         routeId: "Red",
         sourceLabel: "AlewifeHarvard",
       }),
@@ -45,6 +46,7 @@ const SAMPLE_DISRUPTIONS = [
     endDate: new Date("2019-11-30"),
     adjustments: [
       new Adjustment({
+        id: "2",
         routeId: "Green-D",
         sourceLabel: "Kenmore-Newton Highlands",
       }),
@@ -73,6 +75,7 @@ const SAMPLE_DISRUPTIONS = [
     endDate: new Date("2019-11-30"),
     adjustments: [
       new Adjustment({
+        id: "2",
         routeId: "Green-D",
         sourceLabel: "Kenmore-Newton Highlands",
       }),
@@ -173,6 +176,7 @@ describe("DisruptionCalendar", () => {
             endDate: new Date("2020-07-02"),
             adjustments: [
               new Adjustment({
+                id: "1",
                 routeId: "Red",
                 sourceLabel: "AlewifeHarvard",
               }),

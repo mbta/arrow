@@ -10,7 +10,13 @@ describe("Disruption", () => {
       id: "5",
       startDate: new Date(2020, 0, 1),
       endDate: new Date(2020, 2, 1),
-      adjustments: [new Adjustment({ id: "1" })],
+      adjustments: [
+        new Adjustment({
+          id: "1",
+          routeId: "Red",
+          sourceLabel: "HarvardAlewife",
+        }),
+      ],
       daysOfWeek: [new DayOfWeek({ id: "2", dayName: "friday" })],
       exceptions: [new Exception({ id: "3" })],
       tripShortNames: [new TripShortName({ id: "4" })],
@@ -26,7 +32,13 @@ describe("Disruption", () => {
         },
         relationships: {
           adjustments: {
-            data: [{ id: "1", type: "adjustment", attributes: {} }],
+            data: [
+              {
+                id: "1",
+                type: "adjustment",
+                attributes: { route_id: "Red", source_label: "HarvardAlewife" },
+              },
+            ],
           },
           days_of_week: {
             data: [
