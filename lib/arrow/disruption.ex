@@ -109,6 +109,7 @@ defmodule Arrow.Disruption do
     |> validate_exceptions_between_start_and_end_date()
     |> validate_exceptions_are_unique()
     |> validate_exceptions_are_applicable()
+    |> validate_length(:days_of_week, min: 1)
   end
 
   @spec validate_not_deleting_past_exception(Ecto.Changeset.t(), Date.t()) ::
