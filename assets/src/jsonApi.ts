@@ -13,6 +13,13 @@ type ModelObject =
 
 type JsonApiResponse = ModelObject | ModelObject[] | "error"
 
+const toUTCDate = (dateStr: string): Date => {
+  const [year, month, date] = dateStr.split("-")
+  return new Date(
+    Date.UTC(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(date, 10))
+  )
+}
+
 const toModelObject = (response: any): JsonApiResponse => {
   const includedObjects: {
     [key: string]: ModelObject | "error"
@@ -111,4 +118,4 @@ const modelFromJsonApiResource = (
   return "error"
 }
 
-export { ModelObject, JsonApiResponse, toModelObject, parseErrors }
+export { ModelObject, JsonApiResponse, toModelObject, parseErrors, toUTCDate }

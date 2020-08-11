@@ -1,6 +1,6 @@
 import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
-import { ModelObject } from "../jsonApi"
+import { ModelObject, toUTCDate } from "../jsonApi"
 
 import Adjustment from "./adjustment"
 import DayOfWeek from "./dayOfWeek"
@@ -85,10 +85,10 @@ class Disruption extends JsonApiResourceObject {
       return new Disruption({
         id: raw.id,
         ...(raw.attributes.start_date && {
-          startDate: new Date(raw.attributes.start_date + "T00:00:00"),
+          startDate: toUTCDate(raw.attributes.start_date),
         }),
         ...(raw.attributes.end_date && {
-          endDate: new Date(raw.attributes.end_date + "T00:00:00"),
+          endDate: toUTCDate(raw.attributes.end_date),
         }),
         adjustments: included.filter(Adjustment.isOfType),
         daysOfWeek: included.filter(DayOfWeek.isOfType),

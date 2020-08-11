@@ -26,7 +26,7 @@ describe("Exception", () => {
         attributes: { excluded_date: "2020-03-30" },
       })
     ).toEqual(
-      new Exception({ id: "1", excludedDate: new Date("2020-03-30T00:00:00") })
+      new Exception({ id: "1", excludedDate: new Date("2020-03-30T00:00:00Z") })
     )
   })
 

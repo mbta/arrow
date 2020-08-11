@@ -38,6 +38,10 @@ export const dayNameToInt = (day: DayOfWeek["dayName"]): number => {
   }
 }
 
+const addDay = (date: Date): Date => {
+  return new Date(date.setTime(date.getTime() + 60 * 60 * 24 * 1000))
+}
+
 export const disruptionsToCalendarEvents = (disruptions: Disruption[]) => {
   return disruptions.reduce(
     (
@@ -96,10 +100,7 @@ export const disruptionsToCalendarEvents = (disruptions: Disruption[]) => {
             title: adj.sourceLabel,
             backgroundColor: getRouteColor(adj.routeId),
             start: group[0],
-            end:
-              group.length === 1
-                ? group[0]
-                : new Date(group.slice(-1)[0].getTime() + 60 * 60 * 24 * 1000),
+            end: group.length > 1 ? addDay(group.slice(-1)[0]) : group[0],
             url: `/disruptions/${disruption.id}`,
             eventDisplay: "block",
             allDay: true,
@@ -115,7 +116,6 @@ export const disruptionsToCalendarEvents = (disruptions: Disruption[]) => {
 export const DisruptionCalendar = ({
   disruptions,
   initialDate,
-  timeZone,
 }: DisruptionCalendarProps) => {
   const calendarEvents = React.useMemo(() => {
     return disruptionsToCalendarEvents(disruptions)
@@ -124,7 +124,7 @@ export const DisruptionCalendar = ({
     <div id="calendar" className="mb-3">
       <FullCalendar
         initialDate={initialDate}
-        timeZone={timeZone}
+        timeZone="UTC"
         plugins={[dayGridPlugin]}
         initialView="dayGridMonth"
         events={calendarEvents}
