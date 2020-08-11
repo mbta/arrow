@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 11.6
--- Dumped by pg_dump version 11.6
+-- Dumped from database version 11.8
+-- Dumped by pg_dump version 12.3
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -32,8 +32,6 @@ CREATE TYPE public.day_name AS ENUM (
 
 
 SET default_tablespace = '';
-
-SET default_with_oids = false;
 
 --
 -- Name: adjustments; Type: TABLE; Schema: public; Owner: -
