@@ -72,9 +72,8 @@ export const disruptionsToCalendarEvents = (disruptions: Disruption[]) => {
           })
         )
         disruption.exceptions.forEach((x) => {
-          const excludedDate = x.excludedDate
-          if (excludedDate) {
-            ruleSet.exdate(excludedDate)
+          if (x.excludedDate) {
+            ruleSet.exdate(x.excludedDate)
           }
         })
 
