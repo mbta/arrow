@@ -9,8 +9,16 @@ describe("DisruptionSummary", () => {
     const { container } = render(
       <DisruptionSummary
         adjustments={[
-          new Adjustment({ routeId: "route1", sourceLabel: "adjustment1" }),
-          new Adjustment({ routeId: "route2", sourceLabel: "adjustment2" }),
+          new Adjustment({
+            id: "1",
+            routeId: "route1",
+            sourceLabel: "adjustment1",
+          }),
+          new Adjustment({
+            id: "2",
+            routeId: "route2",
+            sourceLabel: "adjustment2",
+          }),
         ]}
       />
     )
@@ -23,8 +31,16 @@ describe("DisruptionSummary", () => {
       <DisruptionSummary
         disruptionId={"123"}
         adjustments={[
-          new Adjustment({ routeId: "route1", sourceLabel: "adjustment1" }),
-          new Adjustment({ routeId: "route2", sourceLabel: "adjustment2" }),
+          new Adjustment({
+            id: "1",
+            routeId: "route1",
+            sourceLabel: "adjustment1",
+          }),
+          new Adjustment({
+            id: "2",
+            routeId: "route2",
+            sourceLabel: "adjustment2",
+          }),
         ]}
       />
     )

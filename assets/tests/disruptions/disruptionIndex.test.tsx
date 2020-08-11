@@ -39,6 +39,7 @@ const DisruptionIndexWithRouter = ({
               endDate: new Date("2019-11-15"),
               adjustments: [
                 new Adjustment({
+                  id: "1",
                   routeId: "Red",
                   sourceLabel: "AlewifeHarvard",
                 }),
@@ -67,6 +68,7 @@ const DisruptionIndexWithRouter = ({
               endDate: new Date("2019-10-22"),
               adjustments: [
                 new Adjustment({
+                  id: "2",
                   routeId: "Green-D",
                   sourceLabel: "Kenmore-Newton Highlands",
                 }),

@@ -15,7 +15,13 @@ const DisruptionTableWithRouter = () => {
             id: "1",
             startDate: new Date("2019-10-31"),
             endDate: new Date("2019-11-15"),
-            adjustments: [new Adjustment({ routeId: "Red" })],
+            adjustments: [
+              new Adjustment({
+                id: "1",
+                routeId: "Red",
+                sourceLabel: "",
+              }),
+            ],
             daysOfWeek: [
               new DayOfWeek({
                 id: "1",
@@ -40,6 +46,7 @@ const DisruptionTableWithRouter = () => {
             endDate: new Date("2019-10-24"),
             adjustments: [
               new Adjustment({
+                id: "2",
                 routeId: "Green-D",
                 sourceLabel: "Kenmore-Newton Highlands",
               }),
@@ -68,6 +75,7 @@ const DisruptionTableWithRouter = () => {
             endDate: new Date("2019-10-22"),
             adjustments: [
               new Adjustment({
+                id: "2",
                 routeId: "Green-D",
                 sourceLabel: "Kenmore-Newton Highlands",
               }),

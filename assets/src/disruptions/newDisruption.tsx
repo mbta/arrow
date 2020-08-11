@@ -1,6 +1,7 @@
 import * as React from "react"
 
 import { Redirect } from "react-router-dom"
+import Select, { ValueType } from "react-select"
 
 import Button from "react-bootstrap/Button"
 import Form from "react-bootstrap/Form"
@@ -24,14 +25,12 @@ interface AdjustmentModePickerProps {
   transitMode: TransitMode
   setTransitMode: React.Dispatch<TransitMode>
   setAdjustments: React.Dispatch<Adjustment[]>
-  setIsAddingAdjustment: React.Dispatch<boolean>
 }
 
 const AdjustmentModePicker = ({
   transitMode,
   setTransitMode,
   setAdjustments,
-  setIsAddingAdjustment,
 }: AdjustmentModePickerProps): JSX.Element => {
   return (
     <fieldset>
@@ -46,7 +45,6 @@ const AdjustmentModePicker = ({
           onChange={() => {
             setAdjustments([])
             setTransitMode(TransitMode.Subway)
-            setIsAddingAdjustment(true)
           }}
         />
         <Form.Check
@@ -58,7 +56,6 @@ const AdjustmentModePicker = ({
           onChange={() => {
             setAdjustments([])
             setTransitMode(TransitMode.CommuterRail)
-            setIsAddingAdjustment(true)
           }}
         />
       </Form.Group>
@@ -71,8 +68,12 @@ interface AdjustmentsPickerProps {
   transitMode: TransitMode
   adjustments: Adjustment[]
   setAdjustments: React.Dispatch<Adjustment[]>
-  isAddingAdjustment: boolean
-  setIsAddingAdjustment: React.Dispatch<boolean>
+}
+
+interface AdjustmentPickerOption {
+  label: string
+  value: string
+  data: Adjustment
 }
 
 const AdjustmentsPicker = ({
@@ -80,108 +81,46 @@ const AdjustmentsPicker = ({
   transitMode,
   adjustments,
   setAdjustments,
-  isAddingAdjustment,
-  setIsAddingAdjustment,
 }: AdjustmentsPickerProps): JSX.Element => {
-  const modeAdjustments = allAdjustments.filter(
-    (adjustment) =>
-      adjustment.routeId && modeForRoute(adjustment.routeId) === transitMode
-  )
-
-  const appendAdjustment = (evt: React.FormEvent) => {
-    const val = (evt.target as HTMLSelectElement).value
-    const adjustmentForLabel = allAdjustments.find((a) => val === a.sourceLabel)
-
-    if (adjustmentForLabel) {
-      setIsAddingAdjustment(false)
-      setAdjustments(adjustments.slice().concat([adjustmentForLabel]))
-    }
-  }
-
-  const updateAdjustment = (evt: React.FormEvent, i: number) => {
-    const val = (evt.target as HTMLSelectElement).value
-    const adjustmentForLabel = allAdjustments.find((a) => val === a.sourceLabel)
-
-    if (adjustmentForLabel) {
-      setAdjustments(
-        adjustments
-          .slice(0, i)
-          .concat([adjustmentForLabel])
-          .concat(adjustments.slice(i + 1))
+  const modeAdjustmentOptions = React.useMemo(() => {
+    return allAdjustments
+      .filter(
+        (adjustment) =>
+          adjustment.routeId && modeForRoute(adjustment.routeId) === transitMode
       )
-    }
-  }
+      .map((adjustment) => {
+        return {
+          label: adjustment.sourceLabel,
+          value: adjustment.id,
+          data: adjustment,
+        }
+      })
+  }, [allAdjustments, transitMode])
 
-  const deleteAdjustment = (i: number) => {
-    setAdjustments(adjustments.slice(0, i).concat(adjustments.slice(i + 1)))
-  }
+  const modeAdjustmentValues = React.useMemo(() => {
+    return adjustments.map((adj) => {
+      return { label: adj.sourceLabel, value: adj.id, data: adj }
+    })
+  }, [adjustments])
 
   return (
     <fieldset>
       <legend>For which locations?</legend>
       <Form.Group>
-        {adjustments.map((adjustment, i) => {
-          return (
-            <Form.Row key={adjustment.sourceLabel}>
-              <Form.Control
-                as="select"
-                id={"adjustment-select-" + i}
-                value={adjustment.sourceLabel}
-                onChange={(evt) => updateAdjustment(evt, i)}
-              >
-                {modeAdjustments
-                  .filter(
-                    (modeAdjustment) =>
-                      adjustments.findIndex(
-                        (a) => modeAdjustment.sourceLabel === a.sourceLabel
-                      ) === -1
-                  )
-                  .map((a) => (
-                    <option key={a.sourceLabel}>{a.sourceLabel}</option>
-                  ))}
-                <option>{adjustment.sourceLabel}</option>
-              </Form.Control>
-              <button
-                className="btn btn-link"
-                id={"adjustment-delete-" + i}
-                onClick={() => deleteAdjustment(i)}
-              >
-                delete
-              </button>
-            </Form.Row>
-          )
-        })}
-        {!isAddingAdjustment ? (
-          <button
-            id="add-another-adjustment-link"
-            className="btn btn-link"
-            onClick={() => setIsAddingAdjustment(true)}
-          >
-            + another
-          </button>
-        ) : (
-          <Form.Row>
-            <Form.Control
-              as="select"
-              id={"adjustment-select-" + adjustments.length}
-              onChange={appendAdjustment}
-            >
-              <option>Choose Location</option>
-              {modeAdjustments
-                .filter(
-                  (modeAdjustment) =>
-                    adjustments.findIndex(
-                      (a) => modeAdjustment.sourceLabel === a.sourceLabel
-                    ) === -1
-                )
-                .map((modeAdjustment) => (
-                  <option key={modeAdjustment.sourceLabel}>
-                    {modeAdjustment.sourceLabel}
-                  </option>
-                ))}
-            </Form.Control>
-          </Form.Row>
-        )}
+        <Select<AdjustmentPickerOption>
+          inputId="adjustment-select"
+          classNamePrefix="adjustment-select"
+          onChange={(values: ValueType<AdjustmentPickerOption>) => {
+            if (Array.isArray(values)) {
+              setAdjustments(values.map((adj) => adj.data))
+            } else {
+              setAdjustments([])
+            }
+          }}
+          value={modeAdjustmentValues}
+          options={modeAdjustmentOptions}
+          isMulti={true}
+        />
       </Form.Group>
     </fieldset>
   )
@@ -288,9 +227,6 @@ const NewDisruption = ({}): JSX.Element => {
   const [transitMode, setTransitMode] = React.useState<TransitMode>(
     TransitMode.Subway
   )
-  const [isAddingAdjustment, setIsAddingAdjustment] = React.useState<boolean>(
-    adjustments.length === 0
-  )
   const [whichTrips, setWhichTrips] = React.useState<"all" | "some">("all")
 
   const createFn = async (args: ApiCreateDisruptionParams) => {
@@ -318,11 +254,8 @@ const NewDisruption = ({}): JSX.Element => {
       parser: toModelObject,
       defaultResult: "error",
     }).then((result: JsonApiResponse) => {
-      if (
-        Array.isArray(result) &&
-        result.every((res) => res instanceof Adjustment)
-      ) {
-        setAllAdjustments(result)
+      if (Array.isArray(result) && result.every(Adjustment.isOfType)) {
+        setAllAdjustments(result as Adjustment[])
       } else {
         setAllAdjustments("error")
       }
@@ -372,15 +305,12 @@ const NewDisruption = ({}): JSX.Element => {
               transitMode={transitMode}
               setTransitMode={setTransitMode}
               setAdjustments={setAdjustments}
-              setIsAddingAdjustment={setIsAddingAdjustment}
             />
             <AdjustmentsPicker
               adjustments={adjustments}
               setAdjustments={setAdjustments}
               allAdjustments={allAdjustments}
               transitMode={transitMode}
-              isAddingAdjustment={isAddingAdjustment}
-              setIsAddingAdjustment={setIsAddingAdjustment}
             />
             {transitMode === TransitMode.CommuterRail && (
               <TripShortNamesForm

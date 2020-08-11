@@ -5,10 +5,10 @@ import { ModelObject } from "../jsonApi"
 type Source = "gtfs_creator" | "arrow"
 
 class Adjustment extends JsonApiResourceObject {
-  id?: string
-  routeId?: string
+  id: string
+  routeId: string
   source?: Source
-  sourceLabel?: string
+  sourceLabel: string
 
   constructor({
     id,
@@ -16,10 +16,10 @@ class Adjustment extends JsonApiResourceObject {
     source,
     sourceLabel,
   }: {
-    id?: string
-    routeId?: string
+    id: string
+    routeId: string
     source?: Source
-    sourceLabel?: string
+    sourceLabel: string
   }) {
     super()
     this.id = id
