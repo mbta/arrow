@@ -21,6 +21,9 @@ defmodule Arrow.DisruptionTest do
                  Disruption.changeset_for_create(
                    %Disruption{},
                    %{
+                     days_of_week: [
+                       %{"day_name" => DayOfWeek.date_to_day_name(@start_date)}
+                     ],
                      start_date: @start_date,
                      end_date: @end_date
                    },
@@ -47,7 +50,10 @@ defmodule Arrow.DisruptionTest do
                    %Disruption{},
                    %{
                      start_date: ~D[2020-02-01],
-                     end_date: ~D[2020-01-20]
+                     end_date: ~D[2020-01-20],
+                     days_of_week: [
+                       %{"day_name" => DayOfWeek.date_to_day_name(@start_date)}
+                     ]
                    },
                    [new_adj],
                    @current_time
@@ -71,6 +77,34 @@ defmodule Arrow.DisruptionTest do
                  Disruption.changeset_for_create(
                    %Disruption{},
                    %{
+                     "start_date" => @start_date,
+                     "end_date" => @end_date,
+                     "days_of_week" => [
+                       %{day_name: DayOfWeek.date_to_day_name(@start_date)}
+                     ]
+                   },
+                   [new_adj],
+                   @current_time
+                 )
+               )
+
+      assert [_] = new_dis.adjustments
+    end
+
+    test "cannot insert a disruption without days_of_week" do
+      adj = %Adjustment{
+        source: "testing",
+        source_label: "test_insert_disruption",
+        route_id: "test_route"
+      }
+
+      {:ok, new_adj} = Repo.insert(adj)
+
+      assert {:error, %{errors: errors}} =
+               Repo.insert(
+                 Disruption.changeset_for_create(
+                   %Disruption{},
+                   %{
                      start_date: @start_date,
                      end_date: @end_date
                    },
@@ -79,7 +113,7 @@ defmodule Arrow.DisruptionTest do
                  )
                )
 
-      assert [_] = new_dis.adjustments
+      assert Keyword.get(errors, :days_of_week)
     end
 
     test "can insert a disruption with exceptions" do
@@ -127,7 +161,10 @@ defmodule Arrow.DisruptionTest do
                    %{
                      "start_date" => @start_date,
                      "end_date" => @end_date,
-                     "trip_short_names" => [%{"trip_short_name" => "006"}]
+                     "trip_short_names" => [%{"trip_short_name" => "006"}],
+                     "days_of_week" => [
+                       %{"day_name" => DayOfWeek.date_to_day_name(@start_date)}
+                     ]
                    },
                    [new_adj],
                    @current_time
@@ -210,8 +247,11 @@ defmodule Arrow.DisruptionTest do
           Disruption.changeset_for_create(
             %Disruption{},
             %{
-              start_date: @start_date,
-              end_date: @end_date
+              "start_date" => @start_date,
+              "end_date" => @end_date,
+              "days_of_week" => [
+                %{"day_name" => DayOfWeek.date_to_day_name(@start_date)}
+              ]
             },
             [new_adj],
             @current_time
@@ -224,7 +264,10 @@ defmodule Arrow.DisruptionTest do
                    new_dis,
                    %{
                      start_date: new_start_date,
-                     end_date: new_end_date
+                     end_date: new_end_date,
+                     days_of_week: [
+                       %{day_name: DayOfWeek.date_to_day_name(@start_date)}
+                     ]
                    },
                    @current_time
                  )
@@ -356,6 +399,9 @@ defmodule Arrow.DisruptionTest do
             %{
               "start_date" => @start_date,
               "end_date" => @end_date,
+              "days_of_week" => [
+                %{"day_name" => DayOfWeek.date_to_day_name(@start_date)}
+              ],
               "trip_short_names" => [
                 %{"trip_short_name" => "123"},
                 %{"trip_short_name" => "456"}
@@ -375,6 +421,9 @@ defmodule Arrow.DisruptionTest do
                    %{
                      "start_date" => @start_date,
                      "end_date" => @end_date,
+                     "days_of_week" => [
+                       %{"day_name" => DayOfWeek.date_to_day_name(@start_date)}
+                     ],
                      "trip_short_names" => [
                        %{
                          "id" => short_name_to_keep.id,
@@ -678,6 +727,9 @@ defmodule Arrow.DisruptionTest do
                    %{
                      "start_date" => @start_date,
                      "end_date" => @end_date,
+                     "days_of_week" => [
+                       %{"day_name" => DayOfWeek.date_to_day_name(@start_date)}
+                     ],
                      "trip_short_names" => [
                        %{
                          "trip_short_name" => ""
@@ -702,7 +754,10 @@ defmodule Arrow.DisruptionTest do
     test "can't delete a disruption with a start date in the past" do
       {:ok, disruption} =
         build_disruption(%Disruption{
-          start_date: @current_time |> DateTime.to_date() |> Date.add(-1)
+          start_date: @current_time |> DateTime.to_date() |> Date.add(-1),
+          days_of_week: [
+            %DayOfWeek{day_name: DayOfWeek.date_to_day_name(@start_date)}
+          ]
         })
         |> Repo.insert()
 

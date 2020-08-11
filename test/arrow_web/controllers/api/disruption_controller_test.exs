@@ -447,6 +447,9 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
         insert_disruption(
           start_date: future_date(),
           end_date: Date.add(future_date(), 7),
+          days_of_week: [
+            %{day_name: DayOfWeek.date_to_day_name(future_date())}
+          ],
           adjustments: [adjustment],
           current_time: @current_time
         )
@@ -483,6 +486,9 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           start_date: past_date(),
           end_date: future_date(),
           adjustments: [adjustment],
+          days_of_week: [
+            %{day_name: DayOfWeek.date_to_day_name(future_date())}
+          ],
           current_time: @current_time
         )
 
