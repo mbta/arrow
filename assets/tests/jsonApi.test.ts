@@ -106,8 +106,8 @@ describe("toModelObject", () => {
     ).toEqual(
       new Disruption({
         id: "1",
-        startDate: new Date("2019-12-20T00:00:00"),
-        endDate: new Date("2020-01-12T00:00:00"),
+        startDate: new Date("2019-12-20T00:00:00Z"),
+        endDate: new Date("2020-01-12T00:00:00Z"),
         adjustments: [
           new Adjustment({
             id: "12",
@@ -145,7 +145,7 @@ describe("toModelObject", () => {
     ).toEqual(
       new Exception({
         id: "1",
-        excludedDate: new Date("2019-12-20T00:00:00"),
+        excludedDate: new Date("2019-12-20T00:00:00Z"),
       })
     )
   })
@@ -297,8 +297,8 @@ describe("toModelObject", () => {
     ).toEqual([
       new Disruption({
         id: "1",
-        startDate: new Date("2019-12-20T00:00:00"),
-        endDate: new Date("2020-01-12T00:00:00"),
+        startDate: new Date("2019-12-20T00:00:00Z"),
+        endDate: new Date("2020-01-12T00:00:00Z"),
         adjustments: [
           new Adjustment({
             id: "12",
@@ -313,8 +313,8 @@ describe("toModelObject", () => {
       }),
       new Disruption({
         id: "2",
-        startDate: new Date("2019-12-25T00:00:00"),
-        endDate: new Date("2020-01-15T00:00:00"),
+        startDate: new Date("2019-12-25T00:00:00Z"),
+        endDate: new Date("2020-01-15T00:00:00Z"),
         adjustments: [
           new Adjustment({
             id: "13",

@@ -9,12 +9,13 @@ import Disruption from "../../src/models/disruption"
 import Adjustment from "../../src/models/adjustment"
 import DayOfWeek from "../../src/models/dayOfWeek"
 import Exception from "../../src/models/exception"
+import { toUTCDate } from "../../src/jsonApi"
 
 const SAMPLE_DISRUPTIONS = [
   new Disruption({
     id: "1",
-    startDate: new Date("2019-10-31"),
-    endDate: new Date("2019-11-15"),
+    startDate: toUTCDate("2019-10-31"),
+    endDate: toUTCDate("2019-11-15"),
     adjustments: [
       new Adjustment({
         routeId: "Red",
@@ -36,13 +37,13 @@ const SAMPLE_DISRUPTIONS = [
         dayName: "sunday",
       }),
     ],
-    exceptions: [new Exception({ excludedDate: new Date("2019-11-01") })],
+    exceptions: [new Exception({ excludedDate: toUTCDate("2019-11-01") })],
     tripShortNames: [],
   }),
   new Disruption({
     id: "3",
-    startDate: new Date("2019-11-15"),
-    endDate: new Date("2019-11-30"),
+    startDate: toUTCDate("2019-11-15"),
+    endDate: toUTCDate("2019-11-30"),
     adjustments: [
       new Adjustment({
         routeId: "Green-D",
@@ -69,8 +70,8 @@ const SAMPLE_DISRUPTIONS = [
   }),
   new Disruption({
     id: "4",
-    startDate: new Date("2019-11-15"),
-    endDate: new Date("2019-11-30"),
+    startDate: toUTCDate("2019-11-15"),
+    endDate: toUTCDate("2019-11-30"),
     adjustments: [
       new Adjustment({
         routeId: "Green-D",
@@ -105,8 +106,8 @@ describe("DisruptionCalendar", () => {
           id: "1",
           title: "AlewifeHarvard",
           backgroundColor: "#da291c",
-          start: new Date("2019-11-02T00:00:00.000Z"),
-          end: new Date("2019-11-04T00:00:00.000Z"),
+          start: toUTCDate("2019-11-02"),
+          end: toUTCDate("2019-11-04"),
           url: "/disruptions/1",
           eventDisplay: "block",
           allDay: true,
@@ -115,8 +116,8 @@ describe("DisruptionCalendar", () => {
           id: "1",
           title: "AlewifeHarvard",
           backgroundColor: "#da291c",
-          start: new Date("2019-11-08T00:00:00.000Z"),
-          end: new Date("2019-11-11T00:00:00.000Z"),
+          start: toUTCDate("2019-11-08"),
+          end: toUTCDate("2019-11-11"),
           url: "/disruptions/1",
           eventDisplay: "block",
           allDay: true,
@@ -125,8 +126,8 @@ describe("DisruptionCalendar", () => {
           id: "1",
           title: "AlewifeHarvard",
           backgroundColor: "#da291c",
-          start: new Date("2019-11-15T00:00:00.000Z"),
-          end: new Date("2019-11-15T00:00:00.000Z"),
+          start: toUTCDate("2019-11-15"),
+          end: toUTCDate("2019-11-15"),
           url: "/disruptions/1",
           eventDisplay: "block",
           allDay: true,
@@ -135,8 +136,8 @@ describe("DisruptionCalendar", () => {
           id: "3",
           title: "Kenmore-Newton Highlands",
           backgroundColor: "#00843d",
-          start: new Date("2019-11-15T00:00:00.000Z"),
-          end: new Date("2019-11-18T00:00:00.000Z"),
+          start: toUTCDate("2019-11-15"),
+          end: toUTCDate("2019-11-18"),
           url: "/disruptions/3",
           eventDisplay: "block",
           allDay: true,
@@ -145,8 +146,8 @@ describe("DisruptionCalendar", () => {
           id: "3",
           title: "Kenmore-Newton Highlands",
           backgroundColor: "#00843d",
-          start: new Date("2019-11-22T00:00:00.000Z"),
-          end: new Date("2019-11-25T00:00:00.000Z"),
+          start: toUTCDate("2019-11-22"),
+          end: toUTCDate("2019-11-25"),
           url: "/disruptions/3",
           eventDisplay: "block",
           allDay: true,
@@ -155,8 +156,8 @@ describe("DisruptionCalendar", () => {
           id: "3",
           title: "Kenmore-Newton Highlands",
           backgroundColor: "#00843d",
-          start: new Date("2019-11-29T00:00:00.000Z"),
-          end: new Date("2019-12-01T00:00:00.000Z"),
+          start: toUTCDate("2019-11-29"),
+          end: toUTCDate("2019-12-01"),
           url: "/disruptions/3",
           eventDisplay: "block",
           allDay: true,
@@ -169,8 +170,8 @@ describe("DisruptionCalendar", () => {
         disruptionsToCalendarEvents([
           new Disruption({
             id: "1",
-            startDate: new Date("2020-07-01"),
-            endDate: new Date("2020-07-02"),
+            startDate: toUTCDate("2020-07-01"),
+            endDate: toUTCDate("2020-07-02"),
             adjustments: [
               new Adjustment({
                 routeId: "Red",
@@ -195,12 +196,12 @@ describe("DisruptionCalendar", () => {
   test("handles daylight savings correctly", () => {
     const { container } = render(
       <DisruptionCalendar
-        initialDate={new Date("2020-11-15")}
+        initialDate={toUTCDate("2020-11-15")}
         disruptions={[
           new Disruption({
             id: "1",
-            startDate: new Date("2020-10-30"),
-            endDate: new Date("2020-11-22"),
+            startDate: toUTCDate("2020-10-30"),
+            endDate: toUTCDate("2020-11-22"),
             adjustments: [
               new Adjustment({
                 routeId: "Red",
@@ -223,7 +224,7 @@ describe("DisruptionCalendar", () => {
               }),
             ],
             exceptions: [
-              new Exception({ excludedDate: new Date("2020-11-15") }),
+              new Exception({ excludedDate: toUTCDate("2020-11-15") }),
             ],
             tripShortNames: [],
           }),
@@ -249,7 +250,7 @@ describe("DisruptionCalendar", () => {
   test("renders correctly", () => {
     const tree = render(
       <DisruptionCalendar
-        initialDate={new Date("2019-11-15")}
+        initialDate={toUTCDate("2019-11-15")}
         disruptions={SAMPLE_DISRUPTIONS}
       />
     )

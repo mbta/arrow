@@ -67,8 +67,8 @@ describe("Disruption", () => {
     ).toEqual(
       new Disruption({
         id: "1",
-        startDate: new Date("2019-12-20T00:00:00"),
-        endDate: new Date("2020-01-12T00:00:00"),
+        startDate: new Date("2019-12-20T00:00:00Z"),
+        endDate: new Date("2020-01-12T00:00:00Z"),
         adjustments: [],
         daysOfWeek: [
           new DayOfWeek({

@@ -1,6 +1,6 @@
 import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
-import { ModelObject } from "../jsonApi"
+import { ModelObject, toUTCDate } from "../jsonApi"
 
 class Exception extends JsonApiResourceObject {
   id?: string
@@ -35,7 +35,7 @@ class Exception extends JsonApiResourceObject {
       return new Exception({
         id: raw.id,
         ...(raw.attributes.excluded_date && {
-          excludedDate: new Date(raw.attributes.excluded_date + "T00:00:00"),
+          excludedDate: toUTCDate(raw.attributes.excluded_date),
         }),
       })
     }

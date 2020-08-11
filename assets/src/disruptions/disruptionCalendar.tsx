@@ -38,15 +38,6 @@ export const dayNameToInt = (day: DayOfWeek["dayName"]): number => {
   }
 }
 
-const toUTCDate = (date?: Date): Date | undefined => {
-  return (
-    date &&
-    new Date(
-      Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
-    )
-  )
-}
-
 const addDay = (date: Date): Date => {
   return new Date(date.setTime(date.getTime() + 60 * 60 * 24 * 1000))
 }
@@ -76,12 +67,12 @@ export const disruptionsToCalendarEvents = (disruptions: Disruption[]) => {
             byweekday: disruption.daysOfWeek?.map((x) =>
               dayNameToInt(x.dayName)
             ),
-            dtstart: toUTCDate(disruption.startDate),
-            until: toUTCDate(disruption.endDate),
+            dtstart: disruption.startDate,
+            until: disruption.endDate,
           })
         )
         disruption.exceptions.forEach((x) => {
-          const excludedDate = toUTCDate(x.excludedDate)
+          const excludedDate = x.excludedDate
           if (excludedDate) {
             ruleSet.exdate(excludedDate)
           }
