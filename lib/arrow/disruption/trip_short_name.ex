@@ -2,18 +2,19 @@ defmodule Arrow.Disruption.TripShortName do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Arrow.Disruption
+
   @type t :: %__MODULE__{
           trip_short_name: String.t() | nil,
-          disruption: Arrow.Disruption | Ecto.Association.NotLoaded.t(),
-          inserted_at: DateTime.t() | nil,
-          updated_at: DateTime.t() | nil
+          disruption_revision: Disruption.Revision | Ecto.Association.NotLoaded.t(),
+          inserted_at: DateTime.t()
         }
 
   schema "disruption_trip_short_names" do
     field :trip_short_name, :string
-    belongs_to :disruption, Arrow.Disruption
+    belongs_to :disruption_revision, Disruption.Revision
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :utc_datetime, updated_at: false)
   end
 
   @doc false

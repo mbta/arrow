@@ -2,18 +2,19 @@ defmodule Arrow.Disruption.Exception do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Arrow.Disruption
+
   @type t :: %__MODULE__{
           excluded_date: Date.t() | nil,
-          disruption: Arrow.Disruption | Ecto.Association.NotLoaded.t(),
-          inserted_at: DateTime.t() | nil,
-          updated_at: DateTime.t() | nil
+          disruption_revision: Disruption.Revision | Ecto.Association.NotLoaded.t(),
+          inserted_at: DateTime.t()
         }
 
   schema "disruption_exceptions" do
     field :excluded_date, :date
-    belongs_to :disruption, Arrow.Disruption
+    belongs_to :disruption_revision, Disruption.Revision
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :utc_datetime, updated_at: false)
   end
 
   @doc false

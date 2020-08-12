@@ -46,13 +46,13 @@ defmodule ArrowWeb.API.DisruptionController do
       Repo.all(from adj in Arrow.Adjustment, where: adj.source_label in ^adjustment_labels)
 
     attrs = Map.merge(attrs, relationships)
-    changeset = Disruption.changeset_for_create(%Disruption{}, attrs, adjustments, current_time)
+    changeset = Disruption.Revision.changeset_for_create(attrs, adjustments, current_time)
 
-    case Repo.insert(changeset) do
-      {:ok, disruption} ->
+    case Disruption.insert(changeset) do
+      {:ok, revision} ->
         conn
         |> put_status(201)
-        |> render("show.json-api", data: disruption)
+        |> render("show.json-api", data: revision)
 
       {:error, changeset} ->
         conn
@@ -63,31 +63,28 @@ defmodule ArrowWeb.API.DisruptionController do
 
   @spec update(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def update(conn, %{"id" => id} = params) do
+    disruption =
+      Repo.get!(Disruption, id)
+      |> Repo.preload(
+        latest_revision: [:adjustments, :days_of_week, :exceptions, :trip_short_names]
+      )
+
     {:ok, current_time} = DateTime.now(Application.get_env(:arrow, :time_zone))
     params_data = Map.get(params, "data", %{})
     params_relationships = Map.get(params_data, "relationships", %{})
 
     relationships = ArrowWeb.Utilities.get_json_api_relationships(params_relationships)
     attrs = JaSerializer.Params.to_attributes(params_data)
-
     attrs = Map.merge(attrs, relationships)
 
     changeset =
-      Disruption.changeset_for_update(
-        Repo.get(Disruption, id)
-        |> Repo.preload(:adjustments)
-        |> Repo.preload(:days_of_week)
-        |> Repo.preload(:exceptions)
-        |> Repo.preload(:trip_short_names),
-        attrs,
-        current_time
-      )
+      Disruption.Revision.changeset_for_update(disruption.latest_revision, attrs, current_time)
 
-    case Repo.update(changeset) do
-      {:ok, disruption} ->
+    case Disruption.update(changeset) do
+      {:ok, revision} ->
         conn
         |> put_status(200)
-        |> render("show.json-api", data: disruption)
+        |> render("show.json-api", data: revision)
 
       {:error, changeset} ->
         conn
@@ -100,20 +97,15 @@ defmodule ArrowWeb.API.DisruptionController do
   def delete(conn, %{"id" => id}) do
     {:ok, current_time} = DateTime.now(Application.get_env(:arrow, :time_zone))
 
-    disruption = Repo.get(Disruption, id)
+    disruption = Repo.get!(Disruption, id) |> Repo.preload(:latest_revision)
+    changeset = Disruption.Revision.changeset_for_delete(disruption.latest_revision, current_time)
 
-    if is_nil(disruption) do
-      conn |> put_status(404) |> render(:errors, errors: [%{detail: "Not found"}])
-    else
-      changeset = Disruption.changeset_for_delete(disruption, current_time)
+    case Disruption.delete(changeset) do
+      {:ok, _revision} ->
+        send_resp(conn, 204, "")
 
-      case Repo.delete(changeset) do
-        {:ok, _disruption} ->
-          send_resp(conn, 204, "")
-
-        {:error, changeset} ->
-          conn |> put_status(400) |> render(:errors, errors: Utilities.format_errors(changeset))
-      end
+      {:error, changeset} ->
+        conn |> put_status(400) |> render(:errors, errors: Utilities.format_errors(changeset))
     end
   end
 
