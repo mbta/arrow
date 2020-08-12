@@ -1,148 +1,103 @@
 defmodule Mix.Tasks.CopyDbTest do
   use ExUnit.Case
   use Arrow.DataCase
-  import Test.Support.Helpers
   import ExUnit.CaptureLog
 
-  @time DateTime.from_naive!(~N[2019-04-15 12:00:00], "America/New_York")
-
   describe "run/1" do
-    test "replaces current database with values pulled from API" do
-      Application.put_env(:arrow, :http_client, Fake.HTTPoison.Happy)
+    def pre_populate_db do
       Arrow.Repo.delete_all(Arrow.Disruption)
       Arrow.Repo.delete_all(Arrow.Adjustment)
 
-      {%Arrow.Disruption{
-         end_date: dis_1_end_date,
-         days_of_week: [%Arrow.Disruption.DayOfWeek{day_name: dis_1_day_name}],
-         exceptions: [%Arrow.Disruption.Exception{excluded_date: dis_1_excluded_date}]
-       }, %Arrow.Disruption{end_date: dis_2_end_date}} = insert_disruptions(@time)
+      # insert some existing data that should get blown away
+      d1 = insert(:disruption, %{})
+      d2 = insert(:disruption, %{})
 
-      assert [
-               %Arrow.Adjustment{
-                 route_id: "test_route_1",
-                 source: "arrow",
-                 source_label: "test_adjustment_1"
-               },
-               %Arrow.Adjustment{
-                 route_id: "test_route_2",
-                 source: "gtfs_creator",
-                 source_label: "test_adjustment_2"
-               }
-             ] = Arrow.Repo.all(Arrow.Adjustment)
+      dr1 =
+        insert(:disruption_revision, %{
+          start_date: ~D[2020-01-01],
+          end_date: ~D[2020-01-31],
+          disruption: d1
+        })
 
-      assert [
-               %Arrow.Disruption{
-                 adjustments: [
-                   %Arrow.Adjustment{
-                     route_id: "test_route_1",
-                     source: "arrow",
-                     source_label: "test_adjustment_1"
-                   }
-                 ],
-                 days_of_week: [
-                   %Arrow.Disruption.DayOfWeek{
-                     day_name: ^dis_1_day_name,
-                     end_time: nil,
-                     start_time: ~T[20:30:00]
-                   }
-                 ],
-                 end_date: ^dis_1_end_date,
-                 exceptions: [
-                   %Arrow.Disruption.Exception{
-                     excluded_date: ^dis_1_excluded_date
-                   }
-                 ],
-                 start_date: ~D[2019-10-10],
-                 trip_short_names: [%Arrow.Disruption.TripShortName{trip_short_name: "006"}]
-               },
-               %Arrow.Disruption{
-                 adjustments: [
-                   %Arrow.Adjustment{
-                     route_id: "test_route_2",
-                     source: "gtfs_creator",
-                     source_label: "test_adjustment_2"
-                   }
-                 ],
-                 days_of_week: [
-                   %Arrow.Disruption.DayOfWeek{
-                     day_name: "friday",
-                     end_time: nil,
-                     start_time: ~T[20:30:00]
-                   }
-                 ],
-                 end_date: ^dis_2_end_date,
-                 exceptions: [],
-                 start_date: ~D[2019-11-15],
-                 trip_short_names: []
-               }
-             ] =
-               Arrow.Repo.all(Arrow.Disruption)
-               |> Arrow.Repo.preload([
-                 :adjustments,
-                 :days_of_week,
-                 :exceptions,
-                 :trip_short_names
-               ])
+      dr2 =
+        insert(:disruption_revision, %{
+          start_date: ~D[2020-02-01],
+          end_date: ~D[2020-02-28],
+          disruption: d2
+        })
+
+      d1 |> Ecto.Changeset.change(%{published_revision_id: dr1.id}) |> Arrow.Repo.update!()
+      d2 |> Ecto.Changeset.change(%{published_revision_id: dr2.id}) |> Arrow.Repo.update!()
+    end
+
+    test "replaces current database with values pulled from API" do
+      Application.put_env(:arrow, :http_client, Fake.HTTPoison.Happy)
+      pre_populate_db()
 
       Mix.Tasks.CopyDb.run([])
 
       assert [
                %Arrow.Disruption{
-                 adjustments: [],
-                 days_of_week: [
-                   %Arrow.Disruption.DayOfWeek{
-                     day_name: "friday",
-                     end_time: ~T[23:45:00],
-                     start_time: ~T[20:45:00]
-                   },
-                   %Arrow.Disruption.DayOfWeek{
-                     day_name: "saturday",
-                     end_time: nil,
-                     start_time: nil
-                   },
-                   %Arrow.Disruption.DayOfWeek{
-                     day_name: "sunday",
-                     end_time: nil,
-                     start_time: nil
-                   }
-                 ],
-                 end_date: ~D[2020-01-12],
-                 exceptions: [
-                   %Arrow.Disruption.Exception{
-                     excluded_date: ~D[2019-12-29]
-                   }
-                 ],
                  id: 1,
-                 start_date: ~D[2019-12-20],
-                 trip_short_names: [
-                   %Arrow.Disruption.TripShortName{
-                     trip_short_name: "1702"
-                   }
-                 ]
+                 published_revision: %Arrow.DisruptionRevision{
+                   adjustments: [],
+                   days_of_week: [
+                     %Arrow.Disruption.DayOfWeek{
+                       day_name: "friday",
+                       end_time: ~T[23:45:00],
+                       start_time: ~T[20:45:00]
+                     },
+                     %Arrow.Disruption.DayOfWeek{
+                       day_name: "saturday",
+                       end_time: nil,
+                       start_time: nil
+                     },
+                     %Arrow.Disruption.DayOfWeek{
+                       day_name: "sunday",
+                       end_time: nil,
+                       start_time: nil
+                     }
+                   ],
+                   end_date: ~D[2020-01-12],
+                   exceptions: [
+                     %Arrow.Disruption.Exception{
+                       excluded_date: ~D[2019-12-29]
+                     }
+                   ],
+                   start_date: ~D[2019-12-20],
+                   trip_short_names: [
+                     %Arrow.Disruption.TripShortName{
+                       trip_short_name: "1702"
+                     }
+                   ]
+                 }
                },
                %Arrow.Disruption{
-                 adjustments: [],
-                 days_of_week: [
-                   %Arrow.Disruption.DayOfWeek{
-                     day_name: "thursday",
-                     end_time: nil,
-                     start_time: ~T[20:45:00]
-                   },
-                   %Arrow.Disruption.DayOfWeek{
-                     day_name: "sunday",
-                     end_time: nil,
-                     start_time: ~T[20:45:00]
-                   }
-                 ],
-                 end_date: ~D[2020-01-20],
-                 exceptions: [],
-                 start_date: ~D[2019-12-31],
-                 trip_short_names: []
+                 published_revision: %Arrow.DisruptionRevision{
+                   adjustments: [],
+                   days_of_week: [
+                     %Arrow.Disruption.DayOfWeek{
+                       day_name: "thursday",
+                       end_time: nil,
+                       start_time: ~T[20:45:00]
+                     },
+                     %Arrow.Disruption.DayOfWeek{
+                       day_name: "sunday",
+                       end_time: nil,
+                       start_time: ~T[20:45:00]
+                     }
+                   ],
+                   end_date: ~D[2020-01-20],
+                   exceptions: [],
+                   start_date: ~D[2019-12-31],
+                   trip_short_names: []
+                 }
                }
              ] =
-               Arrow.Repo.all(Arrow.Disruption)
-               |> Arrow.Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names])
+               Arrow.Repo.all(from d in Arrow.Disruption, order_by: d.id)
+               |> Arrow.Repo.preload(
+                 published_revision: [:adjustments, :days_of_week, :exceptions, :trip_short_names]
+               )
 
       assert [
                %Arrow.Adjustment{
@@ -187,12 +142,15 @@ defmodule Mix.Tasks.CopyDbTest do
 
     test "does not alter database if transaction fails" do
       Application.put_env(:arrow, :http_client, Fake.HTTPoison.Sad.InvalidData)
-      insert_disruptions(@time)
+      pre_populate_db()
+
       initial_adjustments = Arrow.Repo.all(Arrow.Adjustment)
 
       initial_disruptions =
         Arrow.Repo.all(Arrow.Disruption)
-        |> Arrow.Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names])
+        |> Arrow.Repo.preload(
+          published_revision: [:adjustments, :days_of_week, :exceptions, :trip_short_names]
+        )
 
       log =
         capture_log(fn ->
@@ -206,7 +164,9 @@ defmodule Mix.Tasks.CopyDbTest do
 
       assert initial_disruptions ==
                Arrow.Repo.all(Arrow.Disruption)
-               |> Arrow.Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names])
+               |> Arrow.Repo.preload(
+                 published_revision: [:adjustments, :days_of_week, :exceptions, :trip_short_names]
+               )
     end
   end
 end
@@ -457,7 +417,7 @@ defmodule Fake.HTTPoison do
       {:ok, nil}
     end
 
-    def get!(path, _) do
+    def get!(_path, _) do
       %{status_code: 200, body: ""}
     end
   end
@@ -467,7 +427,7 @@ defmodule Fake.HTTPoison do
       {:ok, nil}
     end
 
-    def get!(path, _) do
+    def get!(_path, _) do
       %{status_code: 401, body: %{}}
     end
   end

@@ -12,93 +12,110 @@ defmodule Arrow.Disruption do
   alias Arrow.Disruption.{DayOfWeek, Exception, TripShortName}
 
   @type t :: %__MODULE__{
-          end_date: Date.t() | nil,
-          start_date: Date.t() | nil,
-          days_of_week: [DayOfWeek.t()] | Ecto.Association.NotLoaded.t(),
-          exceptions: [Exception.t()] | Ecto.Association.NotLoaded.t(),
-          trip_short_names: [TripShortName.t()] | Ecto.Association.NotLoaded.t(),
-          adjustments: [Arrow.Adjustment.t()] | Ecto.Association.NotLoaded.t(),
+          published_revision: Arrow.DisruptionRevision.t() | Ecto.Association.NotLoaded.t(),
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil
         }
 
   schema "disruptions" do
-    field :end_date, :date
-    field :start_date, :date
-
-    has_many :days_of_week, DayOfWeek, on_replace: :delete
-    has_many :exceptions, Exception, on_replace: :delete
-    has_many :trip_short_names, TripShortName, on_replace: :delete
-
-    many_to_many :adjustments, Arrow.Adjustment, join_through: "disruption_adjustments"
-
+    belongs_to :published_revision, Arrow.DisruptionRevision
     timestamps(type: :utc_datetime)
   end
 
-  @doc false
-  @spec changeset_for_create(t(), map(), [Arrow.Adjustment.t()], DateTime.t()) ::
-          Ecto.Changeset.t()
-  def changeset_for_create(disruption, attrs, adjustments, current_time) do
-    today = DateTime.to_date(current_time)
-
+  @spec create(map(), [Arrow.Adjustment.t()]) ::
+          {:ok, Arrow.DisruptionRevision.t()} | {:error, any()}
+  def create(attrs, adjustments) do
     days_of_week =
       for dow <- attrs["days_of_week"] || [],
           do: DayOfWeek.changeset(%DayOfWeek{}, dow)
 
     exceptions =
       for exception <- attrs["exceptions"] || [],
-          do: Exception.changeset(%Exception{}, exception, today)
+          do: Exception.changeset(%Exception{}, exception)
 
     trip_short_names =
       for name <- attrs["trip_short_names"] || [],
           do: TripShortName.changeset(%TripShortName{}, name)
 
-    disruption
-    |> changeset(attrs, today)
-    |> put_assoc(:adjustments, adjustments)
-    |> validate_length(:adjustments, min: 1)
-    |> put_assoc(:days_of_week, days_of_week)
-    |> put_assoc(:exceptions, exceptions)
-    |> put_assoc(:trip_short_names, trip_short_names)
-    |> common_validations()
+    disruption = Arrow.Repo.insert!(%__MODULE__{})
+
+    dr_params =
+      attrs
+      |> Map.take(["start_date", "end_date"])
+      |> Map.put("disruption_id", disruption.id)
+
+    disruption_revision_changeset =
+      %Arrow.DisruptionRevision{}
+      |> Ecto.Changeset.cast(dr_params, [:disruption_id, :start_date, :end_date])
+      |> Ecto.Changeset.validate_required([:disruption_id, :start_date, :end_date])
+      |> Ecto.Changeset.put_assoc(:adjustments, adjustments)
+      |> Ecto.Changeset.put_assoc(:days_of_week, days_of_week)
+      |> Ecto.Changeset.put_assoc(:exceptions, exceptions)
+      |> Ecto.Changeset.put_assoc(:trip_short_names, trip_short_names)
+      |> validate_length(:adjustments, min: 1)
+      |> common_validations()
+
+    case Arrow.Repo.insert(disruption_revision_changeset) do
+      {:ok, disruption_revision} ->
+        # For now, automatically "publish"
+        disruption
+        |> Ecto.Changeset.change(%{published_revision_id: disruption_revision.id})
+        |> Arrow.Repo.update!()
+
+        {:ok, disruption_revision}
+
+      {:error, err} ->
+        Arrow.Repo.delete!(disruption)
+        {:error, err}
+    end
   end
 
-  @doc false
-  @spec changeset_for_update(t(), map(), DateTime.t()) :: Ecto.Changeset.t(t())
-  def changeset_for_update(disruption, attrs, current_time) do
-    today = DateTime.to_date(current_time)
+  def update(disruption_revision_id, attrs) do
+    new_disruption_revision = Arrow.DisruptionRevision.clone!(disruption_revision_id)
 
-    disruption
-    |> changeset(attrs, today)
-    |> Arrow.Validations.validate_not_changing_past(:start_date, today)
-    |> Arrow.Validations.validate_not_changing_past(:end_date, today)
-    |> cast_assoc(:days_of_week)
-    |> cast_assoc(:exceptions, with: {Exception, :changeset, [today]})
-    |> cast_assoc(:trip_short_names)
-    |> validate_not_deleting_past_exception(today)
-    |> validate_not_changing_relationship_in_past(:days_of_week, today)
-    |> validate_not_changing_relationship_in_past(:trip_short_names, today)
-    |> common_validations()
+    dr =
+      Arrow.Repo.get(Arrow.DisruptionRevision, new_disruption_revision.id)
+      |> Arrow.Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names])
+
+    dr_changeset =
+      dr
+      |> Ecto.Changeset.cast(attrs, [:start_date, :end_date])
+      |> Ecto.Changeset.validate_required([:disruption_id, :start_date, :end_date])
+      |> Ecto.Changeset.cast_assoc(:days_of_week)
+      |> Ecto.Changeset.cast_assoc(:exceptions)
+      |> Ecto.Changeset.cast_assoc(:trip_short_names)
+      |> common_validations()
+
+    case Arrow.Repo.update(dr_changeset) do
+      {:ok, disruption_revision} ->
+        # For now, automatically "publish"
+        Arrow.Repo.get!(Arrow.Disruption, disruption_revision.disruption_id)
+        |> Ecto.Changeset.change(%{published_revision_id: disruption_revision.id})
+        |> Arrow.Repo.update!()
+
+        {:ok, disruption_revision}
+
+      {:error, e} ->
+        Arrow.Repo.delete!(dr)
+        {:error, e}
+    end
   end
 
-  @doc false
-  @spec changeset_for_delete(t(), DateTime.t()) :: Ecto.Changeset.t(t())
-  def changeset_for_delete(disruption, current_time) do
-    today = DateTime.to_date(current_time)
+  @spec delete(integer()) :: {:ok, Arrow.DisruptionRevision.t()}
+  def delete(disruption_revision_id) do
+    new_disruption_revision = Arrow.DisruptionRevision.clone!(disruption_revision_id)
 
-    disruption
-    |> changeset(%{}, today)
-    |> validate_start_date_not_in_past(today)
-  end
+    disruption_revision =
+      Arrow.Repo.get(Arrow.DisruptionRevision, new_disruption_revision.id)
+      |> change(%{is_active: false})
+      |> Arrow.Repo.update!()
 
-  @doc false
-  @spec changeset(t(), map(), Date.t()) :: Ecto.Changeset.t(t())
-  defp changeset(disruption, attrs, today) do
-    disruption
-    |> cast(attrs, [:id, :start_date, :end_date])
-    |> validate_required([:start_date, :end_date])
-    |> Arrow.Validations.validate_not_in_past(:start_date, today)
-    |> Arrow.Validations.validate_not_in_past(:end_date, today)
+    # For now, automatically "publish"
+    Arrow.Repo.get!(Arrow.Disruption, disruption_revision.disruption_id)
+    |> Ecto.Changeset.change(%{published_revision_id: disruption_revision.id})
+    |> Arrow.Repo.update!()
+
+    {:ok, disruption_revision}
   end
 
   @spec common_validations(Ecto.Changeset.t()) :: Ecto.Changeset.t(t())
@@ -109,40 +126,8 @@ defmodule Arrow.Disruption do
     |> validate_exceptions_between_start_and_end_date()
     |> validate_exceptions_are_unique()
     |> validate_exceptions_are_applicable()
+    |> validate_length(:adjustments, min: 1)
     |> validate_length(:days_of_week, min: 1)
-  end
-
-  @spec validate_not_deleting_past_exception(Ecto.Changeset.t(), Date.t()) ::
-          Ecto.Changeset.t(t())
-  defp validate_not_deleting_past_exception(changeset, today) do
-    if deleting_past_exception?(changeset, today) do
-      add_error(changeset, :exceptions, "can't be deleted from the past.")
-    else
-      changeset
-    end
-  end
-
-  @spec deleting_past_exception?(Ecto.Changeset.t(), Date.t()) :: boolean()
-  defp deleting_past_exception?(%{changes: %{exceptions: [_ | _] = exceptions}}, today) do
-    Enum.any?(exceptions, fn excp ->
-      date = excp.data.excluded_date
-      not is_nil(date) and Date.compare(date, today) == :lt and excp.action in [:delete, :replace]
-    end)
-  end
-
-  defp deleting_past_exception?(_, _), do: false
-
-  @spec validate_not_changing_relationship_in_past(Ecto.Changeset.t(t()), atom(), Date.t()) ::
-          Ecto.Changeset.t(t())
-  defp validate_not_changing_relationship_in_past(changeset, relationship, today) do
-    start_date = get_field(changeset, :start_date)
-
-    if not is_nil(start_date) and Date.compare(start_date, today) == :lt and
-         get_change(changeset, relationship, []) != [] do
-      add_error(changeset, relationship, "can't be changed because start date is in the past.")
-    else
-      changeset
-    end
   end
 
   @spec validate_start_date_before_end_date(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
@@ -237,17 +222,6 @@ defmodule Arrow.Disruption do
       changeset
     else
       add_error(changeset, :exceptions, "should be applicable to days of week")
-    end
-  end
-
-  @spec validate_start_date_not_in_past(Ecto.Changeset.t(t()), Date.t()) :: Ecto.Changeset.t(t())
-  defp validate_start_date_not_in_past(changeset, today) do
-    start_date = get_field(changeset, :start_date, [])
-
-    if not is_nil(start_date) and Date.compare(start_date, today) == :lt do
-      add_error(changeset, :start_date, "can't be deleted when start date is in the past")
-    else
-      changeset
     end
   end
 end

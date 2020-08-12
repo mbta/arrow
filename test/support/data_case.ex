@@ -24,6 +24,7 @@ defmodule Arrow.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import Arrow.DataCase
+      import Arrow.Factory
     end
   end
 
@@ -51,22 +52,5 @@ defmodule Arrow.DataCase do
         opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
       end)
     end)
-  end
-
-  def build_disruption(overrides \\ %Arrow.Disruption{}) do
-    disruption = %Arrow.Disruption{
-      start_date: ~D[2020-04-01],
-      end_date: ~D[2020-05-01],
-      days_of_week: [%Arrow.Disruption.DayOfWeek{day_name: "monday"}],
-      adjustments: [
-        %Arrow.Adjustment{
-          route_id: "Red",
-          source: "gtfs_creator",
-          source_label: "KendallParkStreet"
-        }
-      ]
-    }
-
-    Map.merge(disruption, overrides, fn _, x, y -> y || x end)
   end
 end

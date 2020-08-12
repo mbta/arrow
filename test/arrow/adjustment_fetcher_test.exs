@@ -1,5 +1,6 @@
 defmodule Arrow.PredictionFetcherTest do
   use ExUnit.Case
+  import Arrow.Factory
 
   @test_json_filename "test_adjustments.json"
 
@@ -51,25 +52,17 @@ defmodule Arrow.PredictionFetcherTest do
     end
 
     test "doesn't remove adjustments that are no longer present if they're still associated with disruptions" do
-      adj = %Arrow.Adjustment{
-        source: "gtfs_creator",
-        source_label: "no_longer_exists",
-        route_id: "bar"
-      }
+      adjustment = insert(:adjustment)
+      disruption = insert(:disruption)
 
-      {:ok, new_adj} = Arrow.Repo.insert(adj)
-
-      disruption = %Arrow.Disruption{
-        adjustments: [new_adj]
-      }
-
-      {:ok, _new_disruption} = Arrow.Repo.insert(disruption)
+      _disruption_revision =
+        insert(:disruption_revision, disruption: disruption, adjustments: [adjustment])
 
       :ignore = Arrow.AdjustmentFetcher.init(path: @test_json_filename)
 
       refute Arrow.Adjustment
              |> Arrow.Repo.all()
-             |> Enum.find(fn a -> a.source_label == "no_longer_exists" end)
+             |> Enum.find(fn a -> a.source_label == adjustment.source_label end)
              |> is_nil()
     end
   end
