@@ -208,6 +208,7 @@ describe("DisruptionCalendar", () => {
             endDate: toUTCDate("2020-11-22"),
             adjustments: [
               new Adjustment({
+                id: "1",
                 routeId: "Red",
                 sourceLabel: "AlewifeHarvard",
               }),
