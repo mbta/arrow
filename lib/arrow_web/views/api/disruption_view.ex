@@ -19,4 +19,8 @@ defmodule ArrowWeb.API.DisruptionView do
   has_many :trip_short_names,
     serializer: ArrowWeb.API.TripShortNameView,
     include: true
+
+  def id(disruption_revision, _conn) do
+    disruption_revision.disruption_id
+  end
 end

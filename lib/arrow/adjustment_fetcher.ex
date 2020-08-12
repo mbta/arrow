@@ -51,7 +51,7 @@ defmodule Arrow.AdjustmentFetcher do
 
     unused_adjustment_ids =
       Arrow.Repo.all(
-        from d in Arrow.Disruption,
+        from d in Arrow.DisruptionRevision,
           right_join: a in assoc(d, :adjustments),
           select: a.id,
           where: is_nil(d.id)

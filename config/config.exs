@@ -13,7 +13,7 @@ config :arrow,
   run_migrations_at_startup?: false,
   fetch_adjustments_at_startup?: true,
   # Run migrations synchronously before anything else. Must finish in <5 seconds
-  migrate_synchronously?: false,
+  migrate_synchronously?: true,
   redirect_http?: true,
   cognito_group: "arrow-admin",
   time_zone: "America/New_York",

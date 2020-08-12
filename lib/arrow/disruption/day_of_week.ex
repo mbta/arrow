@@ -6,7 +6,7 @@ defmodule Arrow.Disruption.DayOfWeek do
           day_name: String.t() | nil,
           start_time: Time.t() | nil,
           end_time: Time.t() | nil,
-          disruption: Arrow.Disruption | Ecto.Association.NotLoaded.t(),
+          disruption_revision: Arrow.DisruptionRevision | Ecto.Association.NotLoaded.t(),
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil
         }
@@ -15,7 +15,7 @@ defmodule Arrow.Disruption.DayOfWeek do
     field :day_name, :string
     field :start_time, :time
     field :end_time, :time
-    belongs_to :disruption, Arrow.Disruption
+    belongs_to :disruption_revision, Arrow.DisruptionRevision
 
     timestamps(type: :utc_datetime)
   end
@@ -24,7 +24,7 @@ defmodule Arrow.Disruption.DayOfWeek do
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(day_of_week, attrs) do
     day_of_week
-    |> cast(attrs, [:id, :day_name, :start_time, :end_time])
+    |> cast(attrs, [:day_name, :start_time, :end_time])
     |> validate_inclusion(:day_name, [
       "monday",
       "tuesday",

@@ -1,5 +1,5 @@
 defmodule ArrowWeb.UtilitiesTest do
-  use ExUnit.Case, async: true
+  use Arrow.DataCase
   import ArrowWeb.Utilities
   alias Arrow.Disruption
 
@@ -19,9 +19,8 @@ defmodule ArrowWeb.UtilitiesTest do
 
   describe "format_errors/1" do
     test "parses changeset errors correctly" do
-      cs =
-        Disruption.changeset_for_create(
-          %Disruption{},
+      {:error, cs} =
+        Disruption.create(
           %{
             "end_date" => ~D[2019-12-12],
             "days_of_week" => [
@@ -33,15 +32,19 @@ defmodule ArrowWeb.UtilitiesTest do
               %{"day_name" => "saturday"}
             ]
           },
-          [],
-          DateTime.from_naive!(~N[2019-04-15 12:00:00], "America/New_York")
+          []
         )
 
-      assert [
-               %{detail: "Adjustments should have at least 1 item(s)"},
-               %{detail: "Days of week start time should be before end time"},
-               %{detail: "Start date can't be blank"}
-             ] = format_errors(cs)
+      formatted = format_errors(cs)
+
+      assert Enum.find(formatted, &(&1.detail == "Adjustments should have at least 1 item(s)"))
+
+      assert Enum.find(
+               formatted,
+               &(&1.detail == "Days of week start time should be before end time")
+             )
+
+      assert Enum.find(formatted, &(&1.detail == "Start date can't be blank"))
     end
   end
 end

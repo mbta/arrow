@@ -1,6 +1,6 @@
 defmodule ArrowWeb.API.DisruptionController do
   use ArrowWeb, :controller
-  alias Arrow.{Repo, Disruption}
+  alias Arrow.{Repo, Disruption, DisruptionRevision}
   alias ArrowWeb.Utilities
   import Ecto.Query
 
@@ -8,29 +8,40 @@ defmodule ArrowWeb.API.DisruptionController do
 
   @spec index(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def index(conn, params) do
-    query = params |> take_filters |> format_filters |> build_query
+    query =
+      params
+      |> take_filters
+      |> format_filters
+      |> build_query
+      |> DisruptionRevision.only_published()
+
+    data =
+      query
+      |> Repo.all()
+      |> Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names])
 
     render(conn, "index.json-api",
-      data:
-        Repo.all(query)
-        |> Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names]),
+      data: data,
       opts: [include: Map.get(params, "include")]
     )
   end
 
   @spec show(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def show(conn, params) do
+    disruption_revision =
+      DisruptionRevision
+      |> DisruptionRevision.only_published()
+      |> Repo.get_by!(disruption_id: params["id"])
+      |> Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names])
+
     render(conn, "index.json-api",
-      data:
-        Repo.get!(Disruption, params["id"])
-        |> Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names]),
+      data: disruption_revision,
       opts: [include: Map.get(params, "include")]
     )
   end
 
   @spec create(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def create(conn, params) do
-    {:ok, current_time} = DateTime.now(Application.get_env(:arrow, :time_zone))
     params_data = Map.get(params, "data", %{})
     params_relationships = Map.get(params_data, "relationships", %{})
 
@@ -46,13 +57,20 @@ defmodule ArrowWeb.API.DisruptionController do
       Repo.all(from adj in Arrow.Adjustment, where: adj.source_label in ^adjustment_labels)
 
     attrs = Map.merge(attrs, relationships)
-    changeset = Disruption.changeset_for_create(%Disruption{}, attrs, adjustments, current_time)
 
-    case Repo.insert(changeset) do
-      {:ok, disruption} ->
+    case Disruption.create(attrs, adjustments) do
+      {:ok, disruption_revision} ->
+        data =
+          Repo.preload(disruption_revision, [
+            :adjustments,
+            :days_of_week,
+            :exceptions,
+            :trip_short_names
+          ])
+
         conn
         |> put_status(201)
-        |> render("show.json-api", data: disruption)
+        |> render("show.json-api", data: data)
 
       {:error, changeset} ->
         conn
@@ -62,8 +80,7 @@ defmodule ArrowWeb.API.DisruptionController do
   end
 
   @spec update(Plug.Conn.t(), map()) :: Plug.Conn.t()
-  def update(conn, %{"id" => id} = params) do
-    {:ok, current_time} = DateTime.now(Application.get_env(:arrow, :time_zone))
+  def update(conn, params) do
     params_data = Map.get(params, "data", %{})
     params_relationships = Map.get(params_data, "relationships", %{})
 
@@ -72,22 +89,16 @@ defmodule ArrowWeb.API.DisruptionController do
 
     attrs = Map.merge(attrs, relationships)
 
-    changeset =
-      Disruption.changeset_for_update(
-        Repo.get(Disruption, id)
-        |> Repo.preload(:adjustments)
-        |> Repo.preload(:days_of_week)
-        |> Repo.preload(:exceptions)
-        |> Repo.preload(:trip_short_names),
-        attrs,
-        current_time
-      )
+    disruption_revision =
+      DisruptionRevision
+      |> DisruptionRevision.only_published()
+      |> Repo.get_by!(disruption_id: params["id"])
 
-    case Repo.update(changeset) do
-      {:ok, disruption} ->
+    case Disruption.update(disruption_revision.id, attrs) do
+      {:ok, disruption_revision} ->
         conn
         |> put_status(200)
-        |> render("show.json-api", data: disruption)
+        |> render("show.json-api", data: disruption_revision)
 
       {:error, changeset} ->
         conn
@@ -98,28 +109,24 @@ defmodule ArrowWeb.API.DisruptionController do
 
   @spec delete(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def delete(conn, %{"id" => id}) do
-    {:ok, current_time} = DateTime.now(Application.get_env(:arrow, :time_zone))
+    disruption_revision =
+      DisruptionRevision
+      |> DisruptionRevision.only_draft()
+      |> Repo.get_by(disruption_id: id)
 
-    disruption = Repo.get(Disruption, id)
-
-    if is_nil(disruption) do
+    if is_nil(disruption_revision) do
       conn |> put_status(404) |> render(:errors, errors: [%{detail: "Not found"}])
     else
-      changeset = Disruption.changeset_for_delete(disruption, current_time)
+      {:ok, _disruption} = Disruption.delete(disruption_revision.id)
 
-      case Repo.delete(changeset) do
-        {:ok, _disruption} ->
-          send_resp(conn, 204, "")
-
-        {:error, changeset} ->
-          conn |> put_status(400) |> render(:errors, errors: Utilities.format_errors(changeset))
-      end
+      send_resp(conn, 204, "")
     end
   end
 
   @spec build_query([{String.t(), Date.t()}]) :: Ecto.Query.t()
   defp build_query(filters) do
-    Enum.reduce(filters, from(d in Disruption), &compose_query/2)
+    query = from(d in DisruptionRevision)
+    Enum.reduce(filters, query, &compose_query/2)
   end
 
   @spec compose_query({String.t(), Date.t()}, Ecto.Query.t()) :: Ecto.Query.t()

@@ -7,7 +7,7 @@ defmodule Mix.Tasks.CopyDb do
   @impl Mix.Task
   def run(_args) do
     api_key = System.get_env("ARROW_API_KEY")
-    domain = System.get_env("ARROW_DOMAIN", "https://arrow.mbtace.com")
+    domain = System.get_env("ARROW_DOMAIN", "https://arrow-dev.mbtace.com")
     fetch_module = Application.get_env(:arrow, :http_client)
 
     Ecto.Migrator.with_repo(Arrow.Repo, fn repo ->
@@ -52,8 +52,7 @@ defmodule Mix.Tasks.CopyDb do
                 String.to_integer(x["id"])
               end)
 
-            %Arrow.Disruption{
-              id: String.to_integer(x["id"]),
+            revision = %Arrow.DisruptionRevision{
               start_date: Date.from_iso8601!(attrs["start_date"]),
               end_date: Date.from_iso8601!(attrs["end_date"]),
               adjustments:
@@ -94,10 +93,14 @@ defmodule Mix.Tasks.CopyDb do
                   }
                 end)
             }
+
+            {String.to_integer(x["id"]), revision}
           end)
 
         operations =
           Ecto.Multi.new()
+          |> Ecto.Multi.update_all(:unpublish, Arrow.Disruption, set: [published_revision_id: nil])
+          |> Ecto.Multi.delete_all(:delete_revisions, Arrow.DisruptionRevision)
           |> Ecto.Multi.delete_all(:delete_disruptions, Arrow.Disruption)
           |> Ecto.Multi.delete_all(:delete_adjustments, Arrow.Adjustment)
           |> Ecto.Multi.insert_all(:insert_adjustments, Arrow.Adjustment, adjustments,
@@ -106,8 +109,14 @@ defmodule Mix.Tasks.CopyDb do
           )
 
         operations =
-          Enum.reduce(disruptions, operations, fn x, acc ->
-            acc |> Ecto.Multi.insert(x.id, x)
+          Enum.reduce(disruptions, operations, fn {disruption_id, revision}, acc ->
+            Ecto.Multi.run(acc, disruption_id, fn repo, _change_map ->
+              d = repo.insert!(%Arrow.Disruption{id: disruption_id})
+              dr = repo.insert!(%{revision | disruption_id: d.id})
+              d = repo.update!(Ecto.Changeset.change(d, %{published_revision_id: dr.id}))
+
+              {:ok, d}
+            end)
           end)
 
         try do
