@@ -1,14 +1,16 @@
 defmodule Arrow.AdjustmentFetcher do
   @moduledoc """
-  Reads in information on what adjustments are present in GTFS Creator
-  and saves them to the database. Currently reads from the `priv`
-  directory once on startup, but eventually this will poll some sort
-  of API on a regular basis.
+  Periodically copies the list of adjustments available in gtfs_creator into the database. These
+  are uploaded to S3 as part of the gtfs_creator deploy process.
   """
 
-  use GenServer, restart: :transient
+  use GenServer
 
   import Ecto.Query, only: [from: 2]
+
+  require Logger
+
+  @fetch_interval_ms 5 * 60 * 1000
 
   @spec start_link(Keyword.t()) :: GenServer.on_start()
   def start_link(opts) do
@@ -16,14 +18,37 @@ defmodule Arrow.AdjustmentFetcher do
   end
 
   @impl true
-  def init(opts \\ []) do
-    :ok =
-      opts[:path]
-      |> File.read!()
-      |> Jason.decode!()
-      |> update_adjustment_data!()
+  def init(opts) do
+    interval = Keyword.get(opts, :interval, @fetch_interval_ms)
+    Process.send_after(self(), :fetch, interval)
+    {:ok, interval}
+  end
 
-    :ignore
+  @impl true
+  def handle_info(:fetch, interval) do
+    _ = Logger.debug("adjustment_fetch_started")
+
+    _ =
+      case fetch() do
+        :ok -> Logger.debug("adjustment_fetch_complete")
+        {:error, reason} -> Logger.warn("adjustment_fetch_failed: #{inspect(reason)}")
+      end
+
+    Process.send_after(self(), :fetch, interval)
+    {:noreply, interval}
+  end
+
+  @spec fetch() :: :ok | {:error, any()}
+  def fetch do
+    http = Application.get_env(:arrow, :http_client)
+    url = Application.get_env(:arrow, :adjustments_url)
+
+    with {:ok, %{status_code: 200, body: body}} <- http.get(url),
+         {:ok, adjustments} <- Jason.decode(body) do
+      :ok = update_adjustment_data!(adjustments)
+    else
+      {_, result} -> {:error, result}
+    end
   end
 
   @spec update_adjustment_data!(map()) :: :ok
