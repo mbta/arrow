@@ -123,11 +123,11 @@ defmodule Mix.Tasks.CopyDb do
           repo.transaction(operations)
         rescue
           err ->
-            Logger.error("Error inserting data: #{IO.inspect(get_error(err))}")
+            Logger.error("Error inserting data: #{get_error(err)}")
         end
       else
         err ->
-          Logger.error("Error parsing response data: #{IO.inspect(get_error(err))}")
+          Logger.error("Error parsing response data: #{get_error(err)}")
       end
     end)
   end
