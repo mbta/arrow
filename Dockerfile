@@ -4,8 +4,8 @@ ENV LANG=C.UTF-8 \
   MIX_ENV=prod
 
 # Instructions from:
-# https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions
-RUN  curl -sL https://deb.nodesource.com/setup_13.x | bash - \
+# https://github.com/nodesource/distributions/blob/master/README.md
+RUN  curl -sL https://deb.nodesource.com/setup_14.x | bash - \
   && apt-get install -y nodejs
 
 WORKDIR /root
