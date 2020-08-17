@@ -6,25 +6,19 @@ defmodule Arrow.Application do
   use Application
 
   def start(_type, _args) do
+    run_adjustment_fetcher? = Application.get_env(:arrow, :fetch_adjustments?)
     run_migrations_at_startup? = Application.get_env(:arrow, :run_migrations_at_startup?)
-
-    run_adjustment_fetcher_at_startup? =
-      Application.get_env(:arrow, :fetch_adjustments_at_startup?)
 
     # List all child processes to be supervised
     children =
       [
         # Start the Ecto repository
-        Arrow.Repo
+        Arrow.Repo,
+        # Start the endpoint when the application starts
+        ArrowWeb.Endpoint
       ] ++
         migrate_children(run_migrations_at_startup?) ++
-        [
-          # Start the endpoint when the application starts
-          ArrowWeb.Endpoint
-          # Starts a worker by calling: Arrow.Worker.start_link(arg)
-          # {Arrow.Worker, arg},
-        ] ++
-        adjustment_fetcher_children(run_adjustment_fetcher_at_startup?)
+        adjustment_fetcher_children(run_adjustment_fetcher?)
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -49,7 +43,7 @@ defmodule Arrow.Application do
   end
 
   def adjustment_fetcher_children(true) do
-    [{Arrow.AdjustmentFetcher, path: Application.app_dir(:arrow, "priv/repo/shuttles.json")}]
+    [{Arrow.AdjustmentFetcher, []}]
   end
 
   def adjustment_fetcher_children(false) do

@@ -1,69 +1,121 @@
-defmodule Arrow.PredictionFetcherTest do
-  use ExUnit.Case
-  import Arrow.Factory
+defmodule Arrow.AdjustmentFetcherTest do
+  use Arrow.DataCase
 
-  @test_json_filename "test_adjustments.json"
+  alias Arrow.{Adjustment, AdjustmentFetcher, HTTPMock, Repo}
+
+  import Arrow.Factory
+  import ExUnit.CaptureLog
+  import Mox
 
   @test_json [%{id: "foo", attributes: %{route_id: "bar"}}] |> Jason.encode!()
 
-  setup do
-    on_exit(fn -> File.rm_rf!(@test_json_filename) end)
+  setup :verify_on_exit!
 
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Arrow.Repo)
+  describe "start_link/1" do
+    test "fetches adjustments on an interval and warns on failure" do
+      parent = self()
 
-    File.write!(@test_json_filename, @test_json)
+      successful_get = fn _url ->
+        send(parent, :requested)
+        {:ok, %{status_code: 200, body: @test_json}}
+      end
+
+      failed_get = fn _url ->
+        send(parent, :requested)
+        {:error, "it went wrong"}
+      end
+
+      log =
+        capture_log(fn ->
+          {:ok, fetcher} = AdjustmentFetcher.start_link(interval: 100)
+
+          HTTPMock
+          |> expect(:get, successful_get)
+          |> expect(:get, failed_get)
+          |> expect(:get, successful_get)
+          |> allow(parent, fetcher)
+
+          # wait for it to make all three requests, then stop it
+          Enum.each(1..3, fn _ -> assert_receive :requested, 200 end)
+          GenServer.stop(fetcher)
+        end)
+
+      assert log =~ "it went wrong"
+    end
   end
 
-  describe "init/1" do
-    test "inserts data" do
-      :ignore = Arrow.AdjustmentFetcher.init(path: @test_json_filename)
+  describe "fetch/0" do
+    defp setup_successful_request do
+      HTTPMock |> expect(:get, fn _url -> {:ok, %{status_code: 200, body: @test_json}} end)
+    end
 
-      assert [%Arrow.Adjustment{source_label: "foo", route_id: "bar", source: "gtfs_creator"}] =
-               Arrow.Repo.all(Arrow.Adjustment)
+    test "inserts data" do
+      setup_successful_request()
+
+      :ok = AdjustmentFetcher.fetch()
+
+      assert [%Adjustment{source_label: "foo", route_id: "bar", source: "gtfs_creator"}] =
+               Repo.all(Adjustment)
     end
 
     test "updates source if an adjustment with the same label already exists" do
-      adj = %Arrow.Adjustment{
-        source: "arrow",
-        source_label: "foo",
-        route_id: "bar"
-      }
+      setup_successful_request()
+      Repo.insert!(%Adjustment{source: "arrow", source_label: "foo", route_id: "bar"})
 
-      {:ok, _new_adj} = Arrow.Repo.insert(adj)
+      :ok = AdjustmentFetcher.fetch()
 
-      :ignore = Arrow.AdjustmentFetcher.init(path: @test_json_filename)
-
-      assert [%Arrow.Adjustment{source_label: "foo", source: "gtfs_creator"}] =
-               Arrow.Repo.all(Arrow.Adjustment)
+      assert [%Adjustment{source_label: "foo", source: "gtfs_creator"}] = Repo.all(Adjustment)
     end
 
-    test "cleans out old gtfs_creator adjustments no longer present in the JSON" do
-      adj = %Arrow.Adjustment{
+    test "removes old gtfs_creator adjustments no longer present in the JSON" do
+      setup_successful_request()
+
+      Repo.insert!(%Adjustment{
         source: "gtfs_creator",
         source_label: "no_longer_exists",
         route_id: "bar"
-      }
+      })
 
-      {:ok, _new_adj} = Arrow.Repo.insert(adj)
+      :ok = AdjustmentFetcher.fetch()
 
-      :ignore = Arrow.AdjustmentFetcher.init(path: @test_json_filename)
-
-      assert is_nil(Arrow.Repo.get_by(Arrow.Adjustment, source_label: "no_longer_exists"))
+      assert is_nil(Repo.get_by(Adjustment, source_label: "no_longer_exists"))
     end
 
-    test "doesn't remove adjustments that are no longer present if they're still associated with disruptions" do
+    test "doesn't remove old adjustments still associated with disruptions" do
+      setup_successful_request()
       adjustment = insert(:adjustment)
       disruption = insert(:disruption)
 
       _disruption_revision =
         insert(:disruption_revision, disruption: disruption, adjustments: [adjustment])
 
-      :ignore = Arrow.AdjustmentFetcher.init(path: @test_json_filename)
+      :ok = AdjustmentFetcher.fetch()
 
       refute Arrow.Adjustment
              |> Arrow.Repo.all()
              |> Enum.find(fn a -> a.source_label == adjustment.source_label end)
              |> is_nil()
+    end
+
+    test "handles a failure to fetch the adjustments" do
+      HTTPMock |> expect(:get, fn _url -> {:ok, %{status_code: 403, body: "forbid"}} end)
+
+      assert {:error, %{status_code: 403}} = AdjustmentFetcher.fetch()
+    end
+
+    test "handles a failure to decode the adjustments" do
+      HTTPMock |> expect(:get, fn _url -> {:ok, %{status_code: 200, body: "not JSON"}} end)
+
+      assert {:error, %Jason.DecodeError{}} = AdjustmentFetcher.fetch()
+    end
+
+    test "leaves existing adjustments intact on failure" do
+      Repo.insert!(%Adjustment{source: "gtfs_creator", source_label: "foo", route_id: "bar"})
+      HTTPMock |> expect(:get, fn _url -> {:error, "oops"} end)
+
+      AdjustmentFetcher.fetch()
+
+      assert [%Adjustment{source_label: "foo", source: "gtfs_creator"}] = Repo.all(Adjustment)
     end
   end
 end
