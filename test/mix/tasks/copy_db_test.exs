@@ -1,7 +1,12 @@
 defmodule Mix.Tasks.CopyDbTest do
-  use ExUnit.Case
   use Arrow.DataCase
   import ExUnit.CaptureLog
+
+  setup do
+    http_client = Application.get_env(:arrow, :http_client)
+    on_exit(fn -> Application.put_env(:arrow, :http_client, http_client) end)
+    :ok
+  end
 
   describe "run/1" do
     def pre_populate_db do
