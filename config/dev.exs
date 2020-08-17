@@ -2,8 +2,8 @@ use Mix.Config
 
 # Configure your database
 config :arrow, Arrow.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: System.get_env("DATABASE_POSTGRESQL_USERNAME") || "postgres",
+  password: System.get_env("DATABASE_POSTGRESQL_PASSWORD") || "postgres",
   database: "arrow_dev",
   hostname: "localhost",
   show_sensitive_data_on_connection_error: true,
