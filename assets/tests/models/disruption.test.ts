@@ -18,7 +18,9 @@ describe("Disruption", () => {
         }),
       ],
       daysOfWeek: [new DayOfWeek({ id: "2", dayName: "friday" })],
-      exceptions: [new Exception({ id: "3" })],
+      exceptions: [
+        new Exception({ id: "3", excludedDate: new Date(2020, 0, 2) }),
+      ],
       tripShortNames: [new TripShortName({ id: "4" })],
     })
 
@@ -50,7 +52,13 @@ describe("Disruption", () => {
             ],
           },
           exceptions: {
-            data: [{ id: "3", type: "exception", attributes: {} }],
+            data: [
+              {
+                id: "3",
+                type: "exception",
+                attributes: { excluded_date: "2020-01-02" },
+              },
+            ],
           },
           trip_short_names: {
             data: [{ id: "4", type: "trip_short_name", attributes: {} }],
@@ -74,6 +82,14 @@ describe("Disruption", () => {
             startTime: "20:45:00",
             dayName: "friday",
           }),
+          new Exception({
+            id: "2",
+            excludedDate: new Date(2020, 1, 1),
+          }),
+          new Exception({
+            id: "1",
+            excludedDate: new Date(2020, 2, 1),
+          }),
         ]
       )
     ).toEqual(
@@ -89,7 +105,16 @@ describe("Disruption", () => {
             dayName: "friday",
           }),
         ],
-        exceptions: [],
+        exceptions: [
+          new Exception({
+            id: "2",
+            excludedDate: new Date(2020, 1, 1),
+          }),
+          new Exception({
+            id: "1",
+            excludedDate: new Date(2020, 2, 1),
+          }),
+        ],
         tripShortNames: [],
       })
     )
@@ -115,6 +140,8 @@ describe("Disruption", () => {
       )
     ).toBe(true)
 
-    expect(Disruption.isOfType(new Exception({}))).toBe(false)
+    expect(
+      Disruption.isOfType(new Exception({ excludedDate: new Date() }))
+    ).toBe(false)
   })
 })
