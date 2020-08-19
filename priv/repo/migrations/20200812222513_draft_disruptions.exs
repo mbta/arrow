@@ -46,7 +46,7 @@ defmodule Arrow.Repo.Migrations.ChangeDisruptionsToRevisions do
 
     execute """
     UPDATE disruption_revisions
-      SET disruption_id = disruptions.published_revision_id
+      SET disruption_id = disruptions.id
       FROM disruptions
       WHERE disruption_revisions.id = disruptions.published_revision_id
     """
