@@ -323,7 +323,13 @@ const DisruptionExceptionDateList = ({
           <Row>
             <Col md="auto">
               <DatePicker
-                selected={date}
+                selected={
+                  new Date(
+                    date.getUTCFullYear(),
+                    date.getUTCMonth(),
+                    date.getUTCDate()
+                  )
+                }
                 onChange={(newDate) => {
                   if (newDate !== null) {
                     setExceptionDates(

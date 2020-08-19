@@ -4,9 +4,9 @@ import { ModelObject, toUTCDate } from "../jsonApi"
 
 class Exception extends JsonApiResourceObject {
   id?: string
-  excludedDate?: Date
+  excludedDate: Date
 
-  constructor({ id, excludedDate }: { id?: string; excludedDate?: Date }) {
+  constructor({ id, excludedDate }: { id?: string; excludedDate: Date }) {
     super()
     this.id = id
     this.excludedDate = excludedDate

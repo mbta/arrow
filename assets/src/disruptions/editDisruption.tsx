@@ -170,11 +170,10 @@ const setExceptionDatesForDisruption = (
     const newExceptionDatesAsTimes = newExceptionDates.map((date) =>
       date.getTime()
     )
-    const currentExceptionDates = (disruption.exceptions
+    const currentExceptionDates = disruption.exceptions
       .map((exception) => exception.excludedDate)
-      .filter((maybeDate) => maybeDate instanceof Date) as Date[]).map((date) =>
-      date.getTime()
-    )
+      .filter((maybeDate) => maybeDate instanceof Date)
+      .map((date) => date.getTime())
 
     const addedDates = newExceptionDatesAsTimes.filter(
       (date) => !currentExceptionDates.includes(date)

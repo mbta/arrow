@@ -92,7 +92,9 @@ class Disruption extends JsonApiResourceObject {
         }),
         adjustments: included.filter(Adjustment.isOfType),
         daysOfWeek: included.filter(DayOfWeek.isOfType),
-        exceptions: included.filter(Exception.isOfType),
+        exceptions: included
+          .filter(Exception.isOfType)
+          .sort((a, b) => a.excludedDate.getTime() - b.excludedDate.getTime()),
         tripShortNames: included.filter(TripShortName.isOfType),
       })
     }
