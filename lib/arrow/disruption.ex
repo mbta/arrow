@@ -65,6 +65,7 @@ defmodule Arrow.Disruption do
     end
   end
 
+  @spec update(integer(), map()) :: {:ok, Arrow.DisruptionRevision.t()} | {:error, any()}
   def update(disruption_revision_id, attrs) do
     new_disruption_revision = Arrow.DisruptionRevision.clone!(disruption_revision_id)
 
