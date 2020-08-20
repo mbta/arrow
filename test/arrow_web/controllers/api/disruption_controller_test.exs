@@ -373,6 +373,84 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                  200
                )
     end
+
+    @tag :authenticated
+    test "returns latest version of disruption by default", %{conn: conn} do
+      d = insert(:disruption)
+
+      dr =
+        insert(:disruption_revision,
+          disruption: d,
+          start_date: ~D[2019-10-10],
+          end_date: ~D[2019-11-01]
+        )
+
+      d |> Ecto.Changeset.change(%{published_revision_id: dr.id}) |> Arrow.Repo.update!()
+
+      {:ok, _dr} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
+
+      assert %{"data" => %{"id" => _, "attributes" => %{"end_date" => "2019-12-01"}}} =
+               json_response(
+                 get(conn, "/api/disruptions/" <> Integer.to_string(d.id)),
+                 200
+               )
+
+      assert %{"data" => %{"id" => _, "attributes" => %{"end_date" => "2019-12-01"}}} =
+               json_response(
+                 get(
+                   conn,
+                   "/api/disruptions/" <> Integer.to_string(d.id) <> "?only_published=false"
+                 ),
+                 200
+               )
+    end
+
+    @tag :authenticated
+    test "returns published version of disruption when paramater is given", %{conn: conn} do
+      d = insert(:disruption)
+
+      dr =
+        insert(:disruption_revision,
+          disruption: d,
+          start_date: ~D[2019-10-10],
+          end_date: ~D[2019-11-01]
+        )
+
+      d |> Ecto.Changeset.change(%{published_revision_id: dr.id}) |> Arrow.Repo.update!()
+
+      {:ok, _dr} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
+
+      assert %{"data" => %{"id" => _, "attributes" => %{"end_date" => "2019-11-01"}}} =
+               json_response(
+                 get(
+                   conn,
+                   "/api/disruptions/" <> Integer.to_string(d.id) <> "?only_published=true"
+                 ),
+                 200
+               )
+    end
+
+    @tag :authenticated
+    test "fails when invalid only_published argument is given", %{conn: conn} do
+      d = insert(:disruption)
+
+      dr =
+        insert(:disruption_revision,
+          disruption: d,
+          start_date: ~D[2019-10-10],
+          end_date: ~D[2019-11-01]
+        )
+
+      d |> Ecto.Changeset.change(%{published_revision_id: dr.id}) |> Arrow.Repo.update!()
+
+      assert json_response(
+               get(
+                 conn,
+                 "/api/disruptions/" <> Integer.to_string(d.id) <> "?only_published=foo"
+               ),
+               400
+             )
+    end
   end
 
   describe "create/2" do

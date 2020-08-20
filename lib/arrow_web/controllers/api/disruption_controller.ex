@@ -14,41 +14,40 @@ defmodule ArrowWeb.API.DisruptionController do
       |> format_filters
       |> build_query
 
-    with {:ok, query} <-
-           case(Map.get(params, "only_published"),
-             do:
-               (
-                 "true" -> {:ok, DisruptionRevision.only_published(query)}
-                 "false" -> {:ok, DisruptionRevision.latest_revision(query)}
-                 nil -> {:ok, DisruptionRevision.latest_revision(query)}
-                 _ -> :error
-               )
-           ),
-         data <-
-           query
-           |> Repo.all()
-           |> Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names]) do
-      render(conn, "index.json-api",
-        data: data,
-        opts: [include: Map.get(params, "include")]
-      )
-    else
-      _ -> conn |> put_status(400) |> render(:errors, errors: [%{detail: "Invalid request"}])
+    case do_only_published_query(query, params) do
+      {:ok, query} ->
+        data =
+          query
+          |> Repo.all()
+          |> Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names])
+
+        render(conn, "index.json-api",
+          data: data,
+          opts: [include: Map.get(params, "include")]
+        )
+
+      :error ->
+        conn |> put_status(400) |> render(:errors, errors: [%{detail: "Invalid request"}])
     end
   end
 
   @spec show(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def show(conn, params) do
-    disruption_revision =
-      DisruptionRevision
-      |> DisruptionRevision.only_published()
-      |> Repo.get_by!(disruption_id: params["id"])
-      |> Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names])
+    case do_only_published_query(DisruptionRevision, params) do
+      {:ok, dr_query} ->
+        disruption_revision =
+          dr_query
+          |> Repo.get_by!(disruption_id: params["id"])
+          |> Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names])
 
-    render(conn, "index.json-api",
-      data: disruption_revision,
-      opts: [include: Map.get(params, "include")]
-    )
+        render(conn, "index.json-api",
+          data: disruption_revision,
+          opts: [include: Map.get(params, "include")]
+        )
+
+      :error ->
+        conn |> put_status(400) |> render(:errors, errors: [%{detail: "Invalid request"}])
+    end
   end
 
   @spec create(Plug.Conn.t(), map()) :: Plug.Conn.t()
@@ -176,4 +175,14 @@ defmodule ArrowWeb.API.DisruptionController do
   end
 
   defp do_format_filter(_), do: []
+
+  @spec do_only_published_query(Ecto.Queryable.t(), map()) :: {:ok, Ecto.Query.t()} | :error
+  defp do_only_published_query(q, params) do
+    case Map.get(params, "only_published") do
+      "true" -> {:ok, DisruptionRevision.only_published(q)}
+      "false" -> {:ok, DisruptionRevision.latest_revision(q)}
+      nil -> {:ok, DisruptionRevision.latest_revision(q)}
+      _ -> :error
+    end
+  end
 end
