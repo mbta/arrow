@@ -35,6 +35,7 @@ defmodule Arrow.DisruptionRevision do
     timestamps(type: :utc_datetime)
   end
 
+  @spec only_published(Ecto.Queryable.t()) :: Ecto.Query.t()
   def only_published(query) do
     published_ids =
       from(d in Disruption, select: d.published_revision_id) |> Repo.all() |> Enum.filter(& &1)
@@ -42,7 +43,8 @@ defmodule Arrow.DisruptionRevision do
     from(dr in query, where: dr.id in ^published_ids and dr.is_active)
   end
 
-  def only_draft(query) do
+  @spec latest_revision(Ecto.Queryable.t()) :: Ecto.Query.t()
+  def latest_revision(query) do
     draft_ids =
       from(dr in __MODULE__, select: max(dr.id), group_by: dr.disruption_id) |> Repo.all()
 

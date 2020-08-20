@@ -85,6 +85,135 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
     end
 
     @tag :authenticated
+    test "includes latest revision by default", %{conn: conn} do
+      d1 = insert(:disruption)
+
+      dr1 =
+        insert(:disruption_revision,
+          disruption: d1,
+          start_date: ~D[2019-10-10],
+          end_date: ~D[2019-11-01]
+        )
+
+      d1 |> Ecto.Changeset.change(%{published_revision_id: dr1.id}) |> Arrow.Repo.update!()
+
+      {:ok, _dr} = Arrow.Disruption.update(dr1.id, %{end_date: ~D[2019-12-01]})
+
+      d2 = insert(:disruption)
+
+      dr2 =
+        insert(:disruption_revision,
+          disruption: d2,
+          start_date: ~D[2019-10-10],
+          end_date: ~D[2019-11-01]
+        )
+
+      d2 |> Ecto.Changeset.change(%{published_revision_id: dr2.id}) |> Arrow.Repo.update!()
+
+      res = json_response(get(conn, "/api/disruptions"), 200)
+
+      assert %{
+               "data" => data,
+               "included" => included,
+               "jsonapi" => %{"version" => "1.0"}
+             } = res
+
+      d1_data = Enum.find(data, &(&1["id"] == Integer.to_string(d1.id)))
+      d2_data = Enum.find(data, &(&1["id"] == Integer.to_string(d2.id)))
+
+      assert %{
+               "attributes" => %{"end_date" => "2019-12-01", "start_date" => "2019-10-10"},
+               "id" => _,
+               "relationships" => %{},
+               "type" => "disruption"
+             } = d1_data
+
+      assert %{
+               "attributes" => %{"end_date" => "2019-11-01", "start_date" => "2019-10-10"},
+               "id" => _,
+               "relationships" => %{},
+               "type" => "disruption"
+             } = d2_data
+    end
+
+    @tag :authenticated
+    test "includes latest revision when only_published flag is false", %{conn: conn} do
+      d = insert(:disruption)
+
+      dr =
+        insert(:disruption_revision,
+          disruption: d,
+          start_date: ~D[2019-10-10],
+          end_date: ~D[2019-11-01]
+        )
+
+      d |> Ecto.Changeset.change(%{published_revision_id: dr.id}) |> Arrow.Repo.update!()
+
+      {:ok, _dr} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
+
+      res = json_response(get(conn, "/api/disruptions?only_published=false"), 200)
+
+      assert %{
+               "data" => data,
+               "included" => included,
+               "jsonapi" => %{"version" => "1.0"}
+             } = res
+
+      assert [
+               %{
+                 "attributes" => %{"end_date" => "2019-12-01", "start_date" => "2019-10-10"},
+                 "id" => _,
+                 "relationships" => %{},
+                 "type" => "disruption"
+               }
+             ] = data
+    end
+
+    @tag :authenticated
+    test "only returns published revision when parameter is given", %{conn: conn} do
+      d = insert(:disruption)
+
+      dr =
+        insert(:disruption_revision,
+          disruption: d,
+          start_date: ~D[2019-10-10],
+          end_date: ~D[2019-11-01]
+        )
+
+      d |> Ecto.Changeset.change(%{published_revision_id: dr.id}) |> Arrow.Repo.update!()
+
+      {:ok, _dr} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
+
+      res = json_response(get(conn, "/api/disruptions?only_published=true"), 200)
+
+      assert %{
+               "data" => data,
+               "included" => included,
+               "jsonapi" => %{"version" => "1.0"}
+             } = res
+
+      assert [
+               %{
+                 "attributes" => %{"end_date" => "2019-11-01", "start_date" => "2019-10-10"},
+                 "id" => _,
+                 "relationships" => %{},
+                 "type" => "disruption"
+               }
+             ] = data
+    end
+
+    @tag :authenticated
+    test "fails when invalid only_published argument is given", %{conn: conn} do
+      assert json_response(
+               get(
+                 conn,
+                 "/api/disruptions/?only_published=foo"
+               ),
+               400
+             )
+    end
+
+    @tag :authenticated
     test "can include only specified relationships", %{conn: conn} do
       d1 = insert(:disruption)
 
