@@ -200,7 +200,7 @@ defmodule Arrow.DisruptionTest do
       d = Repo.get!(Arrow.Disruption, new_dr.disruption_id)
 
       assert new_dr.disruption_id == d.id
-      assert d.published_revision_id == new_dr.id
+      assert d.published_revision_id == dr_id
       assert new_dr.start_date == ~D[2021-01-01]
       assert new_dr.end_date == ~D[2021-11-30]
 
@@ -387,7 +387,7 @@ defmodule Arrow.DisruptionTest do
     test "creates a new revision which isn't active" do
       d = insert(:disruption)
 
-      dr =
+      dr1 =
         insert(:disruption_revision, %{
           disruption: d,
           start_date: ~D[2020-08-17],
@@ -395,15 +395,15 @@ defmodule Arrow.DisruptionTest do
           days_of_week: [build(:day_of_week, %{day_name: "tuesday"})]
         })
 
-      Repo.update!(Ecto.Changeset.change(d, %{published_revision_id: dr.id}))
+      Repo.update!(Ecto.Changeset.change(d, %{published_revision_id: dr1.id}))
 
-      assert {:ok, dr} = Arrow.Disruption.delete(dr.id)
+      assert {:ok, dr2} = Arrow.Disruption.delete(dr1.id)
 
       d = Repo.get(Arrow.Disruption, d.id)
 
       assert Repo.all(from(dr in Arrow.DisruptionRevision, select: count(dr.id))) == [2]
-      assert dr.is_active == false
-      assert d.published_revision_id == dr.id
+      assert dr2.is_active == false
+      assert d.published_revision_id == dr1.id
     end
   end
 end
