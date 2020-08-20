@@ -57,11 +57,6 @@ defmodule Arrow.Disruption do
 
     case Arrow.Repo.insert(disruption_revision_changeset) do
       {:ok, disruption_revision} ->
-        # For now, automatically "publish"
-        disruption
-        |> Ecto.Changeset.change(%{published_revision_id: disruption_revision.id})
-        |> Arrow.Repo.update!()
-
         {:ok, disruption_revision}
 
       {:error, err} ->
@@ -88,11 +83,6 @@ defmodule Arrow.Disruption do
 
     case Arrow.Repo.update(dr_changeset) do
       {:ok, disruption_revision} ->
-        # For now, automatically "publish"
-        Arrow.Repo.get!(Arrow.Disruption, disruption_revision.disruption_id)
-        |> Ecto.Changeset.change(%{published_revision_id: disruption_revision.id})
-        |> Arrow.Repo.update!()
-
         {:ok, disruption_revision}
 
       {:error, e} ->
@@ -109,11 +99,6 @@ defmodule Arrow.Disruption do
       Arrow.Repo.get(Arrow.DisruptionRevision, new_disruption_revision.id)
       |> change(%{is_active: false})
       |> Arrow.Repo.update!()
-
-    # For now, automatically "publish"
-    Arrow.Repo.get!(Arrow.Disruption, disruption_revision.disruption_id)
-    |> Ecto.Changeset.change(%{published_revision_id: disruption_revision.id})
-    |> Arrow.Repo.update!()
 
     {:ok, disruption_revision}
   end
