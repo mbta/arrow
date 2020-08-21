@@ -9,7 +9,6 @@ import { RouteComponentProps, Link } from "react-router-dom"
 
 import { apiGet, apiSend } from "../api"
 
-import Header from "../header"
 import Loading from "../loading"
 import { DisruptionSummary } from "./disruptionSummary"
 import {
@@ -26,6 +25,7 @@ import Disruption from "../models/disruption"
 import Exception from "../models/exception"
 import { JsonApiResponse, toModelObject, parseErrors } from "../jsonApi"
 import DayOfWeek from "../models/dayOfWeek"
+import { Page } from "../page"
 
 interface TParams {
   id: string
@@ -280,8 +280,7 @@ const EditDisruptionForm = ({
   validationErrors,
 }: EditDisruptionFormProps): JSX.Element => {
   return (
-    <div>
-      <Header />
+    <Page>
       {validationErrors.length > 0 && (
         <Alert variant="danger">
           <ul>
@@ -309,7 +308,7 @@ const EditDisruptionForm = ({
         />
       </fieldset>
       <SaveCancelButton disruptionId={disruptionId} saveFn={saveDisruption} />
-    </div>
+    </Page>
   )
 }
 

@@ -14,12 +14,12 @@ import Adjustment from "../models/adjustment"
 import Exception from "../models/exception"
 import { DayOfWeekTimeRanges, dayOfWeekTimeRangesToDayOfWeeks } from "./time"
 
-import Header from "../header"
 import Loading from "../loading"
 import { DisruptionTimePicker } from "./disruptionTimePicker"
 import { TransitMode, modeForRoute } from "./disruptions"
 import { DisruptionPreview } from "./disruptionPreview"
 import TripShortName from "../models/tripShortName"
+import { Page } from "../page"
 
 interface AdjustmentModePickerProps {
   transitMode: TransitMode
@@ -275,8 +275,7 @@ const NewDisruption = ({}): JSX.Element => {
   }
 
   return (
-    <div>
-      <Header />
+    <Page>
       {isPreview ? (
         <DisruptionPreview
           adjustments={adjustments}
@@ -343,7 +342,7 @@ const NewDisruption = ({}): JSX.Element => {
           </Button>
         </>
       )}
-    </div>
+    </Page>
   )
 }
 

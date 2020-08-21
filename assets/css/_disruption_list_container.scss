@@ -1,0 +1,19 @@
+.m-disruption-list-container_nav-link {
+  color: inherit;
+  padding: inherit 0;
+  margin-right: 2em;
+  text-decoration: inherit;
+
+  &:hover {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  &.active {
+    border-bottom: 5px solid;
+  }
+
+  &:not(.active) {
+    color: grey;
+  }
+}

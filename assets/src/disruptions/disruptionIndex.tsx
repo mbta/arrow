@@ -6,7 +6,6 @@ import classnames from "classnames"
 import Row from "react-bootstrap/Row"
 import Col from "react-bootstrap/Col"
 import Form from "react-bootstrap/Form"
-import Header from "../header"
 import Button from "react-bootstrap/Button"
 import Icon from "../icons"
 import { DisruptionTable } from "./disruptionTable"
@@ -14,6 +13,8 @@ import { DisruptionCalendar } from "./disruptionCalendar"
 import Disruption from "../models/disruption"
 import { apiGet } from "../api"
 import { JsonApiResponse, toModelObject } from "../jsonApi"
+import { Page } from "../page"
+import { DisruptionListContainer } from "./disruptionListContainer"
 
 export type Routes =
   | "Red"
@@ -202,63 +203,63 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
   }, [disruptions, searchQuery, routeFilters, anyRouteFiltersActive])
 
   return (
-    <div>
-      <Header includeHomeLink={false} />
-      <h1>Disruptions</h1>
-      <Row>
-        <Col xs={9}>
-          {view === "table" ? (
-            <DisruptionTable disruptions={filteredDisruptions} />
-          ) : (
-            <DisruptionCalendar disruptions={filteredDisruptions} />
-          )}
-        </Col>
-        <Col>
-          <Button
-            id="view-toggle"
-            className="mb-3 border"
-            variant="light"
-            onClick={toggleView}
-          >
-            {view === "calendar" ? "list view" : "calendar view"}
-          </Button>
-          <Form.Control
-            className="mb-3"
-            type="text"
-            value={searchQuery}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setSearchQuery(e.target.value)
-            }
-            placeholder="Search Disruptions"
-          />
-          <h6>Filter by route</h6>
-          <RouteFilterToggleGroup
-            routes={["Blue", "Mattapan", "Orange", "Red"]}
-            toggleRouteFilterState={toggleRouteFilterState}
-            isRouteActive={isRouteActive}
-          />
-          <RouteFilterToggleGroup
-            routes={["Green-B", "Green-C", "Green-D", "Green-E"]}
-            toggleRouteFilterState={toggleRouteFilterState}
-            isRouteActive={isRouteActive}
-          />
-          <RouteFilterToggleGroup
-            routes={["Commuter"]}
-            toggleRouteFilterState={toggleRouteFilterState}
-            isRouteActive={isRouteActive}
-          />
-          {anyRouteFiltersActive && (
-            <a
-              className="m-disruption-index__clear_filter_button"
-              id="clear-filter"
-              onClick={clearRouteFilters}
+    <Page includeHomeLink={false}>
+      <DisruptionListContainer>
+        <Row>
+          <Col xs={9}>
+            {view === "table" ? (
+              <DisruptionTable disruptions={filteredDisruptions} />
+            ) : (
+              <DisruptionCalendar disruptions={filteredDisruptions} />
+            )}
+          </Col>
+          <Col>
+            <Button
+              id="view-toggle"
+              className="my-3 border"
+              variant="light"
+              onClick={toggleView}
             >
-              <FontAwesomeIcon icon={faTimes} className="mr-1" />
-              clear filter
-            </a>
-          )}
-        </Col>
-      </Row>
+              {view === "calendar" ? "list view" : "calendar view"}
+            </Button>
+            <Form.Control
+              className="mb-3"
+              type="text"
+              value={searchQuery}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSearchQuery(e.target.value)
+              }
+              placeholder="Search Disruptions"
+            />
+            <h6>Filter by route</h6>
+            <RouteFilterToggleGroup
+              routes={["Blue", "Mattapan", "Orange", "Red"]}
+              toggleRouteFilterState={toggleRouteFilterState}
+              isRouteActive={isRouteActive}
+            />
+            <RouteFilterToggleGroup
+              routes={["Green-B", "Green-C", "Green-D", "Green-E"]}
+              toggleRouteFilterState={toggleRouteFilterState}
+              isRouteActive={isRouteActive}
+            />
+            <RouteFilterToggleGroup
+              routes={["Commuter"]}
+              toggleRouteFilterState={toggleRouteFilterState}
+              isRouteActive={isRouteActive}
+            />
+            {anyRouteFiltersActive && (
+              <a
+                className="m-disruption-index__clear_filter_button"
+                id="clear-filter"
+                onClick={clearRouteFilters}
+              >
+                <FontAwesomeIcon icon={faTimes} className="mr-1" />
+                clear filter
+              </a>
+            )}
+          </Col>
+        </Row>
+      </DisruptionListContainer>
       <Row>
         <Col>
           <Link to="/disruptions/new">
@@ -266,7 +267,7 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
           </Link>
         </Col>
       </Row>
-    </div>
+    </Page>
   )
 }
 
