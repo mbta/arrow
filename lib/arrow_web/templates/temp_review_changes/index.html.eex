@@ -1,0 +1,3 @@
+<%= form_for @conn, Routes.temp_review_changes_path(@conn, :index), fn _f-> %>
+  <%=  submit "Publish all" %>
+<% end %>

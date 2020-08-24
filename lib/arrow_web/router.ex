@@ -51,6 +51,8 @@ defmodule ArrowWeb.Router do
     get "/disruptions/:id", PageController, :index
     get "/disruptions/:id/edit", PageController, :index
     get "/mytoken", MyTokenController, :show
+    get "/temp_review_changes", TempReviewChangesController, :index
+    post "/temp_review_changes", TempReviewChangesController, :create
   end
 
   scope "/", ArrowWeb do
