@@ -17,7 +17,7 @@
     "@fortawesome/react-fontawesome": "^0.1.10",
     "@fullcalendar/daygrid": "^5.1.0",
     "@fullcalendar/react": "^5.1.0",
-    "bootstrap": "^4.5.0",
+    "bootstrap": "^4.5.2",
     "classnames": "^2.2.6",
     "lodash": "^4.17.19",
     "phoenix": "file:../deps/phoenix",
