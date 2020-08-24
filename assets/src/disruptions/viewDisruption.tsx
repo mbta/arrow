@@ -5,13 +5,13 @@ import Button from "react-bootstrap/Button"
 
 import { apiGet, apiSend } from "../api"
 
-import Header from "../header"
 import Loading from "../loading"
 import { DisruptionPreview } from "./disruptionPreview"
 import { fromDaysOfWeek } from "./time"
 
 import Disruption from "../models/disruption"
 import { JsonApiResponse, toModelObject, parseErrors } from "../jsonApi"
+import { Page } from "../page"
 
 interface TParams {
   id: string
@@ -124,8 +124,7 @@ const ViewDisruptionForm = ({
 
     if (disruptionDaysOfWeek !== "error") {
       return (
-        <div>
-          <Header />
+        <Page>
           {deletionErrors.length > 0 && (
             <Alert variant="danger">
               <ul>
@@ -159,7 +158,7 @@ const ViewDisruptionForm = ({
                 />
               </div>
             )}
-        </div>
+        </Page>
       )
     } else {
       return <div>Error parsing day of week information.</div>

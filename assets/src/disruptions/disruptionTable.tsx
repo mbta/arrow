@@ -22,7 +22,7 @@ const DisruptionTableHeader = ({
   onClick,
 }: DisruptionTableHeaderProps) => {
   return (
-    <th>
+    <th className="border-0">
       <span
         onClick={onClick}
         className={classnames({
@@ -93,7 +93,7 @@ const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
     [sortState]
   )
   return (
-    <Table striped>
+    <Table className="m-disruption-table" striped>
       <thead>
         <tr>
           <DisruptionTableHeader
@@ -111,7 +111,7 @@ const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
             onClick={() => handleChangeSort("startDate")}
           />
           <DisruptionTableHeader label="days + times" />
-          <th />
+          <th className="border-0" />
         </tr>
       </thead>
       <tbody>

@@ -121,7 +121,7 @@ export const DisruptionCalendar = ({
     return disruptionsToCalendarEvents(disruptions)
   }, [disruptions])
   return (
-    <div id="calendar" className="mb-3">
+    <div id="calendar" className="my-3">
       <FullCalendar
         initialDate={initialDate}
         timeZone="UTC"
