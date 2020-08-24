@@ -5,6 +5,7 @@ import { act } from "react-dom/test-utils"
 import { MemoryRouter, Route, Switch } from "react-router-dom"
 import * as ReactDOM from "react-dom"
 import * as api from "../../src/api"
+import { toModelObject } from "../../src/jsonApi"
 
 import { render, fireEvent, screen } from "@testing-library/react"
 import { waitForElementToBeRemoved } from "@testing-library/dom"
@@ -108,6 +109,7 @@ describe("ViewDisruption", () => {
     })
 
     const history = createBrowserHistory()
+    history.push("/disruptions/1?v=draft")
 
     const container = document.createElement("div")
     document.body.appendChild(container)
@@ -347,7 +349,7 @@ describe("ViewDisruption", () => {
     })
 
     const { container } = render(
-      <MemoryRouter initialEntries={["/disruptions/1"]}>
+      <MemoryRouter initialEntries={["/disruptions/1?v=draft"]}>
         <Switch>
           <Route
             exact={true}
@@ -430,7 +432,7 @@ describe("ViewDisruption", () => {
     })
 
     const { container } = render(
-      <MemoryRouter initialEntries={["/disruptions/1"]}>
+      <MemoryRouter initialEntries={["/disruptions/1?v=draft"]}>
         <Switch>
           <Route
             exact={true}
@@ -471,5 +473,91 @@ describe("ViewDisruption", () => {
     expect(apiSendSpy).toBeCalled()
 
     expect(screen.getByText("Test error")).not.toBeNull()
+  })
+
+  test("can toggle between published and draft view", async () => {
+    let startDate = new Date()
+    startDate.setTime(startDate.getTime() + 24 * 60 * 60 * 1000)
+    startDate = new Date(startDate.toDateString())
+
+    let endDate = new Date()
+    startDate.setTime(startDate.getTime() + 2 * 24 * 60 * 60 * 1000)
+    endDate = new Date(endDate.toDateString())
+
+    const spy = jest.spyOn(api, "apiGet").mockImplementation(() => {
+      return Promise.resolve(
+        new Disruption({
+          id: "1",
+          startDate,
+          endDate,
+          adjustments: [
+            new Adjustment({
+              id: "1",
+              routeId: "Green-D",
+              source: "gtfs_creator",
+              sourceLabel: "NewtonHighlandsKenmore",
+            }),
+          ],
+          daysOfWeek: [
+            new DayOfWeek({
+              id: "1",
+              startTime: "20:45:00",
+              dayName: "friday",
+            }),
+          ],
+          exceptions: [],
+          tripShortNames: [],
+        })
+      )
+    })
+
+    const { container } = render(
+      <MemoryRouter initialEntries={["/disruptions/1"]}>
+        <Switch>
+          <Route
+            exact={true}
+            path="/disruptions/:id/"
+            component={ViewDisruption}
+          />
+          <Route exact={true} path="/" render={() => <div>Success!!!</div>} />
+        </Switch>
+      </MemoryRouter>
+    )
+
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
+
+    expect(spy).toHaveBeenCalledWith({
+      url: "/api/disruptions/1?published_only=true",
+      parser: toModelObject,
+      defaultResult: "error",
+    })
+
+    const publishedButton = container.querySelector("#published")
+    expect(publishedButton?.classList).toContain("active")
+    const draftButton = container.querySelector("#draft")
+    expect(draftButton?.classList).not.toContain("active")
+    expect(container.querySelector("#edit-disruption-link")).toBeNull()
+    expect(container.querySelector("#delete-disruption-button")).toBeNull()
+
+    if (draftButton) {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      await act(async () => {
+        fireEvent.click(draftButton)
+      })
+    } else {
+      throw new Error("draft button not found")
+    }
+
+    expect(spy).toHaveBeenCalledWith({
+      url: "/api/disruptions/1?published_only=false",
+      parser: toModelObject,
+      defaultResult: "error",
+    })
+    expect(publishedButton?.classList).not.toContain("active")
+    expect(draftButton?.classList).toContain("active")
+    expect(container.querySelector("#edit-disruption-link")).not.toBeNull()
+    expect(container.querySelector("#delete-disruption-button")).not.toBeNull()
   })
 })

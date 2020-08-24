@@ -12,6 +12,13 @@ import { fromDaysOfWeek } from "./time"
 import Disruption from "../models/disruption"
 import { JsonApiResponse, toModelObject, parseErrors } from "../jsonApi"
 import { Page } from "../page"
+import {
+  DisruptionViewToggle,
+  useDisruptionViewParam,
+  DisruptionView,
+} from "./viewToggle"
+import Row from "react-bootstrap/Row"
+import Col from "react-bootstrap/Col"
 
 interface TParams {
   id: string
@@ -93,10 +100,15 @@ const ViewDisruptionForm = ({
   >(null)
   const [doRedirect, setDoRedirect] = React.useState<boolean>(false)
   const [deletionErrors, setDeletionErrors] = React.useState<string[]>([])
-
+  const view = useDisruptionViewParam()
   React.useEffect(() => {
     apiGet<JsonApiResponse>({
-      url: "/api/disruptions/" + encodeURIComponent(disruptionId),
+      url:
+        "/api/disruptions/" +
+        encodeURIComponent(disruptionId) +
+        `?published_only=${
+          view === DisruptionView.Published ? "true" : "false"
+        }`,
       parser: toModelObject,
       defaultResult: "error",
     }).then((result: JsonApiResponse) => {
@@ -106,7 +118,7 @@ const ViewDisruptionForm = ({
         setDisruption("error")
       }
     })
-  }, [disruptionId])
+  }, [disruptionId, view])
 
   if (doRedirect) {
     return <Redirect to={`/`} />
@@ -125,39 +137,51 @@ const ViewDisruptionForm = ({
     if (disruptionDaysOfWeek !== "error") {
       return (
         <Page>
-          {deletionErrors.length > 0 && (
-            <Alert variant="danger">
-              <ul>
-                {deletionErrors.map((err) => (
-                  <li key={err}>{err} </li>
-                ))}
-              </ul>
-            </Alert>
-          )}
-          <DisruptionPreview
-            disruptionId={disruption.id}
-            adjustments={disruption.adjustments}
-            fromDate={disruption.startDate || null}
-            toDate={disruption.endDate || null}
-            exceptionDates={exceptionDates}
-            disruptionDaysOfWeek={disruptionDaysOfWeek}
-            tripShortNames={disruption.tripShortNames
-              .map((tsn) => tsn.tripShortName)
-              .join(", ")}
-          />
-          <div>
-            <EditDisruptionButton disruptionId={disruption.id} />
-          </div>
-          {disruption.startDate &&
-            disruption.startDate >= new Date(new Date().toDateString()) && (
-              <div>
-                <DeleteDisruptionButton
-                  disruptionId={disruption.id}
-                  setDoRedirect={setDoRedirect}
-                  setDeletionErrors={setDeletionErrors}
-                />
-              </div>
-            )}
+          <Row>
+            <Col xs={9}>
+              {deletionErrors.length > 0 && (
+                <Alert variant="danger">
+                  <ul>
+                    {deletionErrors.map((err) => (
+                      <li key={err}>{err} </li>
+                    ))}
+                  </ul>
+                </Alert>
+              )}
+              <DisruptionPreview
+                disruptionId={disruption.id}
+                adjustments={disruption.adjustments}
+                fromDate={disruption.startDate || null}
+                toDate={disruption.endDate || null}
+                exceptionDates={exceptionDates}
+                disruptionDaysOfWeek={disruptionDaysOfWeek}
+                tripShortNames={disruption.tripShortNames
+                  .map((tsn) => tsn.tripShortName)
+                  .join(", ")}
+              />
+              {view === DisruptionView.Draft && (
+                <>
+                  <div>
+                    <EditDisruptionButton disruptionId={disruption.id} />
+                  </div>
+                  {disruption.startDate &&
+                    disruption.startDate >=
+                      new Date(new Date().toDateString()) && (
+                      <div>
+                        <DeleteDisruptionButton
+                          disruptionId={disruption.id}
+                          setDoRedirect={setDoRedirect}
+                          setDeletionErrors={setDeletionErrors}
+                        />
+                      </div>
+                    )}
+                </>
+              )}
+            </Col>
+            <Col>
+              <DisruptionViewToggle />
+            </Col>
+          </Row>
         </Page>
       )
     } else {

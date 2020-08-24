@@ -1,0 +1,21 @@
+.m-disruption-view-toggle {
+  display: flex;
+  flex-direction: column;
+}
+
+.m-disruption-view-toggle_button {
+  background-color: #f8f9fa;
+  border-color: #f8f9fa;
+
+  &:first-child {
+    border-radius: 0.25rem 0.25rem 0 0;
+  }
+
+  &:last-child {
+    border-radius: 0 0 0.25rem 0.25rem;
+  }
+
+  &.active {
+    background-color: #cfe3f4;
+  }
+}
