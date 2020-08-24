@@ -1,5 +1,5 @@
 import * as React from "react"
-import { BrowserRouter } from "react-router-dom"
+import { BrowserRouter, MemoryRouter, Switch, Route } from "react-router-dom"
 import {
   render,
   fireEvent,
@@ -20,6 +20,7 @@ import * as api from "../../src/api"
 
 import ReactDOM from "react-dom"
 import { act } from "react-dom/test-utils"
+import { toModelObject } from "../../src/jsonApi"
 
 const DisruptionIndexWithRouter = ({
   connected = false,
@@ -386,6 +387,49 @@ describe("DisruptionIndexConnected", () => {
     })
 
     expect(container.textContent).toMatch("Something went wrong")
+  })
+
+  test("can toggle between published and draft view", async () => {
+    const spy = jest.spyOn(api, "apiGet").mockImplementation(() => {
+      return Promise.resolve([])
+    })
+    const { container } = render(
+      <MemoryRouter initialEntries={["/"]}>
+        <Switch>
+          <Route exact={true} path="/" component={DisruptionIndex} />
+        </Switch>
+      </MemoryRouter>
+    )
+
+    expect(spy).toHaveBeenCalledWith({
+      url: "/api/disruptions?published_only=true",
+      parser: toModelObject,
+      defaultResult: "error",
+    })
+
+    const publishedButton = container.querySelector("#published")
+    expect(publishedButton?.classList).toContain("active")
+    const draftButton = container.querySelector("#draft")
+    expect(draftButton?.classList).not.toContain("active")
+    expect(container.querySelector("#new-disruption-link")).toBeNull()
+
+    if (draftButton) {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      await act(async () => {
+        fireEvent.click(draftButton)
+      })
+    } else {
+      throw new Error("draft button not found")
+    }
+
+    expect(spy).toHaveBeenCalledWith({
+      url: "/api/disruptions?published_only=false",
+      parser: toModelObject,
+      defaultResult: "error",
+    })
+    expect(publishedButton?.classList).not.toContain("active")
+    expect(draftButton?.classList).toContain("active")
+    expect(container.querySelector("#new-disruption-link")).not.toBeNull()
   })
 })
 

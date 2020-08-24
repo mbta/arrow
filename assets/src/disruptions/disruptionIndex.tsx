@@ -15,6 +15,11 @@ import { apiGet } from "../api"
 import { JsonApiResponse, toModelObject } from "../jsonApi"
 import { Page } from "../page"
 import { DisruptionListContainer } from "./disruptionListContainer"
+import {
+  DisruptionViewToggle,
+  useDisruptionViewParam,
+  DisruptionView,
+} from "./viewToggle"
 
 export type Routes =
   | "Red"
@@ -150,6 +155,7 @@ interface DisruptionIndexProps {
 
 const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
   const [view, setView] = React.useState<"table" | "calendar">("table")
+  const disruptionStatusView = useDisruptionViewParam()
   const toggleView = React.useCallback(() => {
     if (view === "table") {
       setView("calendar")
@@ -214,6 +220,7 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
             )}
           </Col>
           <Col>
+            <DisruptionViewToggle />
             <Button
               id="view-toggle"
               className="my-3 border"
@@ -260,24 +267,29 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
           </Col>
         </Row>
       </DisruptionListContainer>
-      <Row>
-        <Col>
-          <Link to="/disruptions/new">
-            <Button>create new disruption</Button>
-          </Link>
-        </Col>
-      </Row>
+      {disruptionStatusView === DisruptionView.Draft && (
+        <Row>
+          <Col>
+            <Link id="new-disruption-link" to="/disruptions/new">
+              <Button>create new disruption</Button>
+            </Link>
+          </Col>
+        </Row>
+      )}
     </Page>
   )
 }
 
 const DisruptionIndex = () => {
+  const view = useDisruptionViewParam()
   const [disruptions, setDisruptions] = React.useState<Disruption[] | "error">(
     []
   )
   React.useEffect(() => {
     apiGet<JsonApiResponse>({
-      url: "/api/disruptions?only_published=true",
+      url:
+        "/api/disruptions?published_only=" +
+        (view === DisruptionView.Published ? "true" : "false"),
       parser: toModelObject,
       defaultResult: "error",
     }).then((result: JsonApiResponse) => {
@@ -290,7 +302,7 @@ const DisruptionIndex = () => {
         setDisruptions("error")
       }
     })
-  }, [])
+  }, [view])
 
   if (disruptions === "error") {
     return <div>Something went wrong</div>
