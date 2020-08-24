@@ -19,7 +19,7 @@ defmodule Arrow.Factory do
     %Arrow.DisruptionRevision{
       start_date: ~D[2020-01-01],
       end_date: ~D[2020-01-15],
-      disruption: [build(:disruption)],
+      disruption: build(:disruption),
       days_of_week: [build(:day_of_week)],
       adjustments: [build(:adjustment)],
       trip_short_names: [build(:trip_short_name)]

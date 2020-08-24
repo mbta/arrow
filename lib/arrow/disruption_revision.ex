@@ -93,4 +93,23 @@ defmodule Arrow.DisruptionRevision do
     |> Ecto.Changeset.put_assoc(:trip_short_names, trip_short_names)
     |> Arrow.Repo.insert!()
   end
+
+  @spec publish_all!() :: :ok
+  def publish_all!() do
+    draft_map =
+      from(dr in Arrow.DisruptionRevision,
+        select: %{disruption_id: dr.disruption_id, draft_id: max(dr.id)},
+        group_by: dr.disruption_id
+      )
+
+    from(d in Arrow.Disruption,
+      join: dm in subquery(draft_map),
+      on: dm.disruption_id == d.id,
+      where: is_nil(d.published_revision_id) or dm.draft_id != d.published_revision_id,
+      update: [set: [published_revision_id: dm.draft_id]]
+    )
+    |> Arrow.Repo.update_all([])
+
+    :ok
+  end
 end
