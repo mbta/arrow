@@ -180,8 +180,7 @@ defmodule ArrowWeb.API.DisruptionController do
   defp do_only_published_query(q, params) do
     case Map.get(params, "only_published") do
       "true" -> {:ok, DisruptionRevision.only_published(q)}
-      "false" -> {:ok, DisruptionRevision.latest_revision(q)}
-      nil -> {:ok, DisruptionRevision.latest_revision(q)}
+      val when val in [nil, "", "false"] -> {:ok, DisruptionRevision.latest_revision(q)}
       _ -> :error
     end
   end
