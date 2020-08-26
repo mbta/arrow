@@ -1,14 +1,18 @@
 import * as React from "react"
-import { BrowserRouter } from "react-router-dom"
+import { MemoryRouter } from "react-router-dom"
 import { render, fireEvent, screen } from "@testing-library/react"
 import { DisruptionTable } from "../../src/disruptions/disruptionTable"
 import Adjustment from "../../src/models/adjustment"
 import DayOfWeek from "../../src/models/dayOfWeek"
 import Disruption from "../../src/models/disruption"
 
-const DisruptionTableWithRouter = () => {
+const DisruptionTableWithRouter = ({
+  initialEntries,
+}: {
+  initialEntries?: string[]
+}) => {
   return (
-    <BrowserRouter>
+    <MemoryRouter initialEntries={initialEntries}>
       <DisruptionTable
         disruptions={[
           new Disruption({
@@ -100,7 +104,7 @@ const DisruptionTableWithRouter = () => {
           }),
         ]}
       />
-    </BrowserRouter>
+    </MemoryRouter>
   )
 }
 
@@ -158,5 +162,27 @@ describe("DisruptionTable", () => {
     expect(activeSortToggle.className).toMatch("asc")
     expect(firstRowData.item(0).textContent).toEqual("Kenmore-Newton Highlands")
     expect(firstRowData.item(1).textContent).toEqual("9/22/2019 - 10/22/2019")
+  })
+
+  test("correctly adds view query param to detail page links", () => {
+    const { container: publishedContainer } = render(
+      <DisruptionTableWithRouter initialEntries={["/"]} />
+    )
+    let tableRows = publishedContainer.querySelectorAll("tbody tr")
+    expect(tableRows.length).toEqual(3)
+    tableRows.forEach((r) => {
+      expect(r.querySelector("a")?.getAttribute("href")).not.toContain(
+        "?v=draft"
+      )
+    })
+
+    const { container: draftContainer } = render(
+      <DisruptionTableWithRouter initialEntries={["/?v=draft"]} />
+    )
+    tableRows = draftContainer.querySelectorAll("tbody tr")
+    expect(tableRows.length).toEqual(3)
+    tableRows.forEach((r) => {
+      expect(r.querySelector("a")?.getAttribute("href")).toContain("?v=draft")
+    })
   })
 })

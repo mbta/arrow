@@ -5,6 +5,7 @@ import { RRule, RRuleSet } from "rrule"
 import { getRouteColor } from "./disruptionIndex"
 import Disruption from "../models/disruption"
 import DayOfWeek from "../models/dayOfWeek"
+import { useDisruptionViewParam, DisruptionView } from "./viewToggle"
 
 interface DisruptionCalendarProps {
   disruptions: Disruption[]
@@ -42,7 +43,10 @@ const addDay = (date: Date): Date => {
   return new Date(date.setTime(date.getTime() + 60 * 60 * 24 * 1000))
 }
 
-export const disruptionsToCalendarEvents = (disruptions: Disruption[]) => {
+export const disruptionsToCalendarEvents = (
+  disruptions: Disruption[],
+  view: DisruptionView
+) => {
   return disruptions.reduce(
     (
       disruptionsAcc: {
@@ -101,7 +105,9 @@ export const disruptionsToCalendarEvents = (disruptions: Disruption[]) => {
             backgroundColor: getRouteColor(adj.routeId),
             start: group[0],
             end: group.length > 1 ? addDay(group.slice(-1)[0]) : group[0],
-            url: `/disruptions/${disruption.id}`,
+            url:
+              `/disruptions/${disruption.id}` +
+              (view === DisruptionView.Draft ? "?v=draft" : ""),
             eventDisplay: "block",
             allDay: true,
           })
@@ -117,9 +123,10 @@ export const DisruptionCalendar = ({
   disruptions,
   initialDate,
 }: DisruptionCalendarProps) => {
+  const view = useDisruptionViewParam()
   const calendarEvents = React.useMemo(() => {
-    return disruptionsToCalendarEvents(disruptions)
-  }, [disruptions])
+    return disruptionsToCalendarEvents(disruptions, view)
+  }, [disruptions, view])
   return (
     <div id="calendar" className="my-3">
       <FullCalendar
