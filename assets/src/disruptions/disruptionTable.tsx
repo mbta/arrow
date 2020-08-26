@@ -5,6 +5,7 @@ import { Link } from "react-router-dom"
 import { formatDisruptionDate } from "./disruptions"
 import Disruption from "../models/disruption"
 import { parseDaysAndTimes } from "./time"
+import { useDisruptionViewParam, DisruptionView } from "./viewToggle"
 
 interface DisruptionTableHeaderProps {
   active?: boolean
@@ -92,6 +93,8 @@ const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
     },
     [sortState]
   )
+
+  const view = useDisruptionViewParam()
   return (
     <Table className="m-disruption-table" striped>
       <thead>
@@ -125,7 +128,14 @@ const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
             )}
             <td>{x.daysAndTimes}</td>
             <td>
-              <Link to={`/disruptions/${x.id}`}>See details</Link>
+              <Link
+                to={
+                  `/disruptions/${x.id}` +
+                  (view === DisruptionView.Draft ? "?v=draft" : "")
+                }
+              >
+                See details
+              </Link>
             </td>
           </tr>
         ))}
