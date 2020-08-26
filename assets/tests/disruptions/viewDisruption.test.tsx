@@ -529,7 +529,7 @@ describe("ViewDisruption", () => {
     )
 
     expect(spy).toHaveBeenCalledWith({
-      url: "/api/disruptions/1?published_only=true",
+      url: "/api/disruptions/1?only_published=true",
       parser: toModelObject,
       defaultResult: "error",
     })
@@ -551,7 +551,7 @@ describe("ViewDisruption", () => {
     }
 
     expect(spy).toHaveBeenCalledWith({
-      url: "/api/disruptions/1?published_only=false",
+      url: "/api/disruptions/1?only_published=false",
       parser: toModelObject,
       defaultResult: "error",
     })

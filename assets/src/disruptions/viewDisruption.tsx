@@ -106,7 +106,7 @@ const ViewDisruptionForm = ({
       url:
         "/api/disruptions/" +
         encodeURIComponent(disruptionId) +
-        `?published_only=${
+        `?only_published=${
           view === DisruptionView.Published ? "true" : "false"
         }`,
       parser: toModelObject,
