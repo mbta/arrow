@@ -21,58 +21,47 @@ const toUTCDate = (dateStr: string): Date => {
 }
 
 const toModelObject = (response: any): JsonApiResponse => {
-  const includedObjects: {
-    [key: string]: ModelObject | "error"
-  } = Array.isArray(response?.included)
-    ? response.included.reduce(
-        (acc: any, curr: { [keys: string]: ModelObject | "error" }) => {
-          acc[`${curr.type}-${curr.id}`] = modelFromJsonApiResource(curr, [])
-          return acc
-        },
-        {}
-      )
-    : {}
+  const includedObjects: { [key: string]: ModelObject } = {}
+
   if (Array.isArray(response?.included)) {
-    if (
-      Object.values(includedObjects).some(
-        (modelObject: ModelObject | "error") => modelObject === "error"
-      )
-    ) {
-      return "error"
+    for (const obj of response.included) {
+      // On this first pass, we use {} for the included objects
+      const model = modelFromJsonApiResource(obj, {})
+      if (model === "error") {
+        return "error"
+      } else {
+        includedObjects[`${obj.type}-${obj.id}`] = model
+      }
+    }
+
+    for (const obj of response.included) {
+      // On this second pass we can now load the nested included objects
+      const model = modelFromJsonApiResource(
+        obj,
+        includedObjects
+      ) as ModelObject
+      includedObjects[`${obj.type}-${obj.id}`] = model
     }
   } else if (typeof response?.included !== "undefined") {
     return "error"
   }
+
   if (Array.isArray(response.data)) {
-    const maybeModelObjects: (ModelObject | "error")[] = response.data.map(
-      (data: any) =>
-        modelFromJsonApiResource(
-          data,
-          Object.values(data?.relationships || []).reduce(
-            (acc: any, curr: any) => {
-              return [
-                ...acc,
-                ...(curr?.data || []).map(
-                  (x: any) => includedObjects[`${x.type}-${x.id}`]
-                ),
-              ]
-            },
-            [] as ModelObject[]
-          ) as ModelObject[]
-        )
-    )
-    if (
-      maybeModelObjects.some((maybeModelObject) => maybeModelObject === "error")
-    ) {
-      return "error"
-    } else {
-      return maybeModelObjects as ModelObject[]
+    const modelObjects: ModelObject[] = []
+
+    for (const data of response.data) {
+      const model = modelFromJsonApiResource(data, includedObjects)
+
+      if (model === "error") {
+        return "error"
+      } else {
+        modelObjects.push(model)
+      }
     }
+
+    return modelObjects
   } else {
-    return modelFromJsonApiResource(
-      response.data,
-      Object.values(includedObjects) as ModelObject[]
-    )
+    return modelFromJsonApiResource(response.data, includedObjects)
   }
 }
 
@@ -96,7 +85,7 @@ const parseErrors = (raw: any): string[] => {
 
 const modelFromJsonApiResource = (
   raw: any,
-  includedObjects: ModelObject[]
+  includedObjects: { [key: string]: ModelObject }
 ): ModelObject | "error" => {
   if (typeof raw === "object") {
     switch (raw.type) {
@@ -118,4 +107,28 @@ const modelFromJsonApiResource = (
   return "error"
 }
 
-export { ModelObject, JsonApiResponse, toModelObject, parseErrors, toUTCDate }
+const loadRelationship = (
+  relationship: any,
+  included: { [key: string]: ModelObject }
+): ModelObject[] => {
+  if (typeof relationship === "object") {
+    if (Array.isArray(relationship.data)) {
+      return relationship.data
+        .map((r: { id: string; type: string }) => included[`${r.type}-${r.id}`])
+        .filter((o: any) => typeof o !== "undefined")
+    } else if (typeof relationship.data === "object") {
+      const key = relationship.data
+      return [included[`${key.type}-${key.id}`]]
+    }
+  }
+  return []
+}
+
+export {
+  ModelObject,
+  JsonApiResponse,
+  toModelObject,
+  parseErrors,
+  toUTCDate,
+  loadRelationship,
+}

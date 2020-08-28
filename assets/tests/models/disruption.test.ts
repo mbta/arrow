@@ -75,22 +75,31 @@ describe("Disruption", () => {
           id: "1",
           type: "disruption",
           attributes: { start_date: "2019-12-20", end_date: "2020-01-12" },
+          relationships: {
+            days_of_week: { data: [{ id: "1", type: "day_of_week" }] },
+            exceptions: {
+              data: [
+                { id: "2", type: "exception" },
+                { id: "1", type: "exception" },
+              ],
+            },
+          },
         },
-        [
-          new DayOfWeek({
+        {
+          "day_of_week-1": new DayOfWeek({
             id: "1",
             startTime: "20:45:00",
             dayName: "friday",
           }),
-          new Exception({
+          "exception-2": new Exception({
             id: "2",
             excludedDate: new Date(2020, 1, 1),
           }),
-          new Exception({
+          "exception-1": new Exception({
             id: "1",
             excludedDate: new Date(2020, 2, 1),
           }),
-        ]
+        }
       )
     ).toEqual(
       new Disruption({
@@ -121,11 +130,11 @@ describe("Disruption", () => {
   })
 
   test("fromJsonObject error wrong format", () => {
-    expect(Disruption.fromJsonObject({}, [])).toEqual("error")
+    expect(Disruption.fromJsonObject({}, {})).toEqual("error")
   })
 
   test("fromJsonObject error not an object", () => {
-    expect(Disruption.fromJsonObject(5, [])).toEqual("error")
+    expect(Disruption.fromJsonObject(5, {})).toEqual("error")
   })
 
   test("isOfType", () => {
