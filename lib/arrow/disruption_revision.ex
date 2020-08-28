@@ -48,7 +48,7 @@ defmodule Arrow.DisruptionRevision do
     draft_ids =
       from(dr in __MODULE__, select: max(dr.id), group_by: dr.disruption_id) |> Repo.all()
 
-    from(dr in query, where: dr.id in ^draft_ids)
+    from(dr in query, where: dr.id in ^draft_ids and dr.is_active)
   end
 
   @spec clone!(integer()) :: __MODULE__.t()
