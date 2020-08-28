@@ -1,6 +1,6 @@
 import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
-import { ModelObject, toUTCDate } from "../jsonApi"
+import { ModelObject, toUTCDate, loadRelationship } from "../jsonApi"
 
 import Adjustment from "./adjustment"
 import DayOfWeek from "./dayOfWeek"
@@ -79,9 +79,12 @@ class Disruption extends JsonApiResourceObject {
 
   static fromJsonObject(
     raw: any,
-    included: ModelObject[]
+    included: { [key: string]: ModelObject }
   ): Disruption | "error" {
-    if (typeof raw.attributes === "object") {
+    if (
+      typeof raw.attributes === "object" &&
+      typeof raw.relationships === "object"
+    ) {
       return new Disruption({
         id: raw.id,
         ...(raw.attributes.start_date && {
@@ -90,12 +93,24 @@ class Disruption extends JsonApiResourceObject {
         ...(raw.attributes.end_date && {
           endDate: toUTCDate(raw.attributes.end_date),
         }),
-        adjustments: included.filter(Adjustment.isOfType),
-        daysOfWeek: included.filter(DayOfWeek.isOfType),
-        exceptions: included
-          .filter(Exception.isOfType)
-          .sort((a, b) => a.excludedDate.getTime() - b.excludedDate.getTime()),
-        tripShortNames: included.filter(TripShortName.isOfType),
+        adjustments: loadRelationship(
+          raw.relationships.adjustments,
+          included
+        ) as Adjustment[],
+        daysOfWeek: loadRelationship(
+          raw.relationships.days_of_week,
+          included
+        ) as DayOfWeek[],
+        exceptions: (loadRelationship(
+          raw.relationships.exceptions,
+          included
+        ) as Exception[]).sort(
+          (a, b) => a.excludedDate.getTime() - b.excludedDate.getTime()
+        ),
+        tripShortNames: loadRelationship(
+          raw.relationships.trip_short_names,
+          included
+        ) as TripShortName[],
       })
     }
 
