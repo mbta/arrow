@@ -8,22 +8,26 @@ defmodule Arrow.Disruption do
   """
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
 
   alias Arrow.Disruption.{DayOfWeek, Exception, TripShortName}
+  alias Arrow.DisruptionRevision
 
   @type t :: %__MODULE__{
-          published_revision: Arrow.DisruptionRevision.t() | Ecto.Association.NotLoaded.t(),
+          published_revision: DisruptionRevision.t() | Ecto.Association.NotLoaded.t(),
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil
         }
 
   schema "disruptions" do
-    belongs_to :published_revision, Arrow.DisruptionRevision
+    belongs_to :published_revision, DisruptionRevision
+    has_many :revisions, DisruptionRevision
+
     timestamps(type: :utc_datetime)
   end
 
   @spec create(map(), [Arrow.Adjustment.t()]) ::
-          {:ok, Arrow.DisruptionRevision.t()} | {:error, any()}
+          {:ok, DisruptionRevision.t()} | {:error, any()}
   def create(attrs, adjustments) do
     days_of_week =
       for dow <- attrs["days_of_week"] || [],
@@ -45,7 +49,7 @@ defmodule Arrow.Disruption do
       |> Map.put("disruption_id", disruption.id)
 
     disruption_revision_changeset =
-      %Arrow.DisruptionRevision{}
+      %DisruptionRevision{}
       |> Ecto.Changeset.cast(dr_params, [:disruption_id, :start_date, :end_date])
       |> Ecto.Changeset.validate_required([:disruption_id, :start_date, :end_date])
       |> Ecto.Changeset.put_assoc(:adjustments, adjustments)
@@ -65,13 +69,13 @@ defmodule Arrow.Disruption do
     end
   end
 
-  @spec update(integer(), map()) :: {:ok, Arrow.DisruptionRevision.t()} | {:error, any()}
+  @spec update(integer(), map()) :: {:ok, DisruptionRevision.t()} | {:error, any()}
   def update(disruption_revision_id, attrs) do
-    new_disruption_revision = Arrow.DisruptionRevision.clone!(disruption_revision_id)
+    new_disruption_revision = DisruptionRevision.clone!(disruption_revision_id)
 
     dr =
-      Arrow.Repo.get(Arrow.DisruptionRevision, new_disruption_revision.id)
-      |> Arrow.Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names])
+      Arrow.Repo.get(DisruptionRevision, new_disruption_revision.id)
+      |> Arrow.Repo.preload(DisruptionRevision.associations())
 
     dr_changeset =
       dr
@@ -92,16 +96,61 @@ defmodule Arrow.Disruption do
     end
   end
 
-  @spec delete(integer()) :: {:ok, Arrow.DisruptionRevision.t()}
+  @spec delete(integer()) :: {:ok, DisruptionRevision.t()}
   def delete(disruption_revision_id) do
-    new_disruption_revision = Arrow.DisruptionRevision.clone!(disruption_revision_id)
+    new_disruption_revision = DisruptionRevision.clone!(disruption_revision_id)
 
     disruption_revision =
-      Arrow.Repo.get(Arrow.DisruptionRevision, new_disruption_revision.id)
+      Arrow.Repo.get(DisruptionRevision, new_disruption_revision.id)
       |> change(%{is_active: false})
       |> Arrow.Repo.update!()
 
     {:ok, disruption_revision}
+  end
+
+  @doc """
+  Returns all the disruptions whose draft and published revisions are
+  different, preloaded with all the revisions between the two.
+  """
+  @spec draft_vs_published() :: {[t()], [t()]}
+  def draft_vs_published do
+    draft_map =
+      from(dr in DisruptionRevision,
+        select: %{disruption_id: dr.disruption_id, draft_id: max(dr.id)},
+        group_by: dr.disruption_id
+      )
+
+    updated =
+      from(d in Arrow.Disruption,
+        join: dm in subquery(draft_map),
+        as: :draft_map,
+        on: dm.disruption_id == d.id,
+        join: dr in assoc(d, :revisions),
+        on: dr.disruption_id == d.id,
+        where: d.published_revision_id != dm.draft_id,
+        where: dr.id >= d.published_revision_id and dr.id <= as(:draft_map).draft_id,
+        preload: [revisions: {dr, ^DisruptionRevision.associations()}]
+      )
+      |> Arrow.Repo.all()
+
+    new =
+      from(d in Arrow.Disruption, where: is_nil(d.published_revision_id))
+      |> Arrow.Repo.all()
+      |> Arrow.Repo.preload(revisions: DisruptionRevision.associations())
+
+    {updated, new}
+  end
+
+  @spec diff_revisions(t()) :: [[String.t()]]
+  def diff_revisions(disruption) do
+    do_diff_revisions(disruption.revisions, [])
+  end
+
+  def do_diff_revisions([], diffs), do: Enum.reverse(diffs)
+  def do_diff_revisions([_one], diffs), do: Enum.reverse(diffs)
+
+  def do_diff_revisions([older, newer | rest], diffs) do
+    do_diff_revisions([newer | rest], [DisruptionRevision.diff(older, newer) | diffs])
   end
 
   @spec common_validations(Ecto.Changeset.t()) :: Ecto.Changeset.t(t())

@@ -1,4 +1,6 @@
 import Exception from "../../src/models/exception"
+import { toUTCDate } from "../../src/jsonApi"
+import DayOfWeek from "../../src/models/dayOfWeek"
 
 describe("Exception", () => {
   test("toJsonApi", () => {
@@ -42,5 +44,17 @@ describe("Exception", () => {
     expect(Exception.fromDates([new Date("2020-03-31")])).toEqual([
       new Exception({ excludedDate: new Date("2020-03-31") }),
     ])
+  })
+
+  test("isOfType identifies if it is", () => {
+    expect(
+      Exception.isOfType(
+        new Exception({ excludedDate: toUTCDate("2020-01-01") })
+      )
+    ).toEqual(true)
+
+    expect(Exception.isOfType(new DayOfWeek({ dayName: "monday" }))).toEqual(
+      false
+    )
   })
 })

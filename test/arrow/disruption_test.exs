@@ -2,6 +2,7 @@ defmodule Arrow.DisruptionTest do
   @moduledoc false
   use Arrow.DataCase
   alias Arrow.Disruption
+  alias Arrow.DisruptionRevision
   alias Arrow.Repo
 
   describe "database" do
@@ -27,9 +28,9 @@ defmodule Arrow.DisruptionTest do
       [d] = Repo.all(Arrow.Disruption)
 
       [dr] =
-        Arrow.DisruptionRevision
+        DisruptionRevision
         |> Repo.all()
-        |> Repo.preload([:days_of_week, :exceptions, :trip_short_names])
+        |> Repo.preload(DisruptionRevision.associations())
 
       assert dr.disruption_id == d.id
       assert dr.start_date == ~D[2021-01-01]
@@ -188,14 +189,14 @@ defmodule Arrow.DisruptionTest do
 
       assert {:ok, _dr} = Arrow.Disruption.update(dr_id, new_attrs)
 
-      dr_ids = Repo.all(Ecto.Query.from(dr in Arrow.DisruptionRevision, select: dr.id))
+      dr_ids = Repo.all(Ecto.Query.from(dr in DisruptionRevision, select: dr.id))
       assert length(dr_ids) == 2
       new_dr_id = Enum.find(dr_ids, &(&1 != dr_id))
 
       new_dr =
-        Arrow.DisruptionRevision
+        DisruptionRevision
         |> Repo.get!(new_dr_id)
-        |> Repo.preload([:exceptions, :days_of_week, :trip_short_names])
+        |> Repo.preload(DisruptionRevision.associations())
 
       d = Repo.get!(Arrow.Disruption, new_dr.disruption_id)
 
@@ -264,7 +265,7 @@ defmodule Arrow.DisruptionTest do
       }
 
       assert {:error, e} = Arrow.Disruption.update(dr.id, attrs)
-      assert Repo.all(from(dr in Arrow.DisruptionRevision, select: count(dr.id))) == [1]
+      assert Repo.all(from(dr in DisruptionRevision, select: count(dr.id))) == [1]
 
       assert [
                %{detail: "Days of week should fall between start and end dates"}
@@ -292,7 +293,7 @@ defmodule Arrow.DisruptionTest do
       }
 
       assert {:error, e} = Arrow.Disruption.update(dr.id, attrs)
-      assert Repo.all(from(dr in Arrow.DisruptionRevision, select: count(dr.id))) == [1]
+      assert Repo.all(from(dr in DisruptionRevision, select: count(dr.id))) == [1]
 
       assert [
                %{detail: "Exceptions should fall between start and end dates"}
@@ -320,7 +321,7 @@ defmodule Arrow.DisruptionTest do
       }
 
       assert {:error, e} = Arrow.Disruption.update(dr.id, attrs)
-      assert Repo.all(from(dr in Arrow.DisruptionRevision, select: count(dr.id))) == [1]
+      assert Repo.all(from(dr in DisruptionRevision, select: count(dr.id))) == [1]
 
       assert [
                %{detail: "Exceptions should be unique"}
@@ -348,7 +349,7 @@ defmodule Arrow.DisruptionTest do
       }
 
       assert {:error, e} = Arrow.Disruption.update(dr.id, attrs)
-      assert Repo.all(from(dr in Arrow.DisruptionRevision, select: count(dr.id))) == [1]
+      assert Repo.all(from(dr in DisruptionRevision, select: count(dr.id))) == [1]
 
       assert [
                %{detail: "Exceptions should be applicable to days of week"}
@@ -375,7 +376,7 @@ defmodule Arrow.DisruptionTest do
       }
 
       assert {:error, e} = Arrow.Disruption.update(dr.id, attrs)
-      assert Repo.all(from(dr in Arrow.DisruptionRevision, select: count(dr.id))) == [1]
+      assert Repo.all(from(dr in DisruptionRevision, select: count(dr.id))) == [1]
 
       assert [
                %{detail: "Days of week should have at least 1 item(s)"}
@@ -401,9 +402,109 @@ defmodule Arrow.DisruptionTest do
 
       d = Repo.get(Arrow.Disruption, d.id)
 
-      assert Repo.all(from(dr in Arrow.DisruptionRevision, select: count(dr.id))) == [2]
+      assert Repo.all(from(dr in DisruptionRevision, select: count(dr.id))) == [2]
       assert dr2.is_active == false
       assert d.published_revision_id == dr1.id
+    end
+  end
+
+  describe "draft_vs_published" do
+    test "returns all revisions between draft and published" do
+      d = insert(:disruption)
+      _dr1 = insert(:disruption_revision, %{disruption: d})
+      dr2 = insert(:disruption_revision, %{disruption: d})
+      dr3 = insert(:disruption_revision, %{disruption: d})
+      dr4 = insert(:disruption_revision, %{disruption: d})
+      Repo.update!(Ecto.Changeset.change(d, %{published_revision_id: dr2.id}))
+
+      dr2_id = dr2.id
+      dr3_id = dr3.id
+      dr4_id = dr4.id
+
+      assert {[queried_d], []} = Arrow.Disruption.draft_vs_published()
+      assert queried_d.id == d.id
+
+      assert [
+               %DisruptionRevision{id: ^dr2_id},
+               %DisruptionRevision{id: ^dr3_id},
+               %DisruptionRevision{id: ^dr4_id}
+             ] = queried_d.revisions
+    end
+
+    test "does not return a disruption without a different draft" do
+      d = insert(:disruption)
+      _dr1 = insert(:disruption_revision, %{disruption: d})
+      dr2 = insert(:disruption_revision, %{disruption: d})
+      Repo.update!(Ecto.Changeset.change(d, %{published_revision_id: dr2.id}))
+
+      assert Arrow.Disruption.draft_vs_published() == {[], []}
+    end
+
+    test "returns a newly created disruption" do
+      d = insert(:disruption)
+      dr1 = insert(:disruption_revision, %{disruption: d})
+      dr2 = insert(:disruption_revision, %{disruption: d})
+
+      dr1_id = dr1.id
+      dr2_id = dr2.id
+
+      assert {[], [queried_d]} = Arrow.Disruption.draft_vs_published()
+
+      assert [%DisruptionRevision{id: ^dr1_id}, %DisruptionRevision{id: ^dr2_id}] =
+               queried_d.revisions
+    end
+  end
+
+  describe "diff_revisions/1" do
+    test "calculates diffs from revision to revision" do
+      d = insert(:disruption)
+
+      _dr1 =
+        insert(:disruption_revision, %{
+          disruption: d
+        })
+
+      _dr2 =
+        insert(:disruption_revision, %{
+          disruption: d,
+          exceptions: [build(:exception, %{excluded_date: ~D[2020-01-01]})]
+        })
+
+      _dr3 =
+        insert(:disruption_revision, %{
+          disruption: d,
+          exceptions: [
+            build(:exception, %{excluded_date: ~D[2020-01-01]}),
+            build(:exception, %{excluded_date: ~D[2020-02-01]})
+          ]
+        })
+
+      disruption =
+        Arrow.Repo.get(Arrow.Disruption, d.id)
+        |> Repo.preload(revisions: DisruptionRevision.associations())
+
+      assert [
+               ["The following exception dates were added: 2020-01-01"],
+               ["The following exception dates were added: 2020-02-01"]
+             ] = Disruption.diff_revisions(disruption)
+    end
+
+    test "returns no diffs if only one revision, or no revisions" do
+      d1 = insert(:disruption)
+
+      d2 = insert(:disruption)
+      _dr1 = insert(:disruption_revision, %{disruption: d2})
+
+      disruption1 =
+        Arrow.Repo.get(Disruption, d1.id)
+        |> Repo.preload(revisions: DisruptionRevision.associations())
+
+      disruption2 =
+        Arrow.Repo.get(Disruption, d2.id)
+        |> Repo.preload(revisions: DisruptionRevision.associations())
+
+      assert Disruption.diff_revisions(disruption1) == []
+      assert Disruption.diff_revisions(disruption2) == []
     end
   end
 end

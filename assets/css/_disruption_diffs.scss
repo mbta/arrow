@@ -1,0 +1,27 @@
+.m-disruption-diffs__disruption_container {
+  border: 1px solid #ddd;
+  margin: 0.5em 0em;
+}
+
+.m-disruption-diffs__disruption {
+  background-color: #eaeaea;
+  padding: 0.5em;
+}
+
+.m-disruption-diffs__adjustments {
+  font-weight: bold;
+}
+
+.m-disruption-diffs__date_range {
+  font-style: italic;
+}
+
+.m-disruption-diffs__diff_container {
+  border: 1px solid #eaeaea;
+  padding: 0.5em;
+}
+
+.m-disruption-diffs__newly_created {
+  text-transform: uppercase;
+  padding: 0.5em;
+}

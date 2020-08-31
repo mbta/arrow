@@ -1,6 +1,7 @@
-import { toModelObject, parseErrors } from "../src/jsonApi"
+import { toModelObject, parseErrors, toUTCDate } from "../src/jsonApi"
 import Adjustment from "../src/models/adjustment"
 import DayOfWeek from "../src/models/dayOfWeek"
+import DisruptionDiff from "../src/models/disruptionDiff"
 import Disruption from "../src/models/disruption"
 import Exception from "../src/models/exception"
 import TripShortName from "../src/models/tripShortName"
@@ -326,6 +327,128 @@ describe("toModelObject", () => {
         daysOfWeek: [],
         exceptions: [],
         tripShortNames: [],
+      }),
+    ])
+  })
+
+  test("properly parses nested relationships like with DisruptionDiff", () => {
+    expect(
+      toModelObject({
+        data: [
+          {
+            attributes: {
+              "created?": true,
+              diffs: [],
+            },
+            id: "6",
+            relationships: {
+              latest_revision: {
+                data: {
+                  id: "6",
+                  type: "disruption",
+                },
+              },
+            },
+            type: "disruption_diff",
+          },
+        ],
+        included: [
+          {
+            attributes: {
+              end_date: "2020-09-03",
+              start_date: "2020-08-02",
+            },
+            id: "6",
+            relationships: {
+              adjustments: {
+                data: [
+                  {
+                    id: "42",
+                    type: "adjustment",
+                  },
+                ],
+              },
+              days_of_week: {
+                data: [
+                  {
+                    id: "19",
+                    type: "day_of_week",
+                  },
+                  {
+                    id: "20",
+                    type: "day_of_week",
+                  },
+                ],
+              },
+              exceptions: {
+                data: [],
+              },
+              trip_short_names: {
+                data: [],
+              },
+            },
+            type: "disruption",
+          },
+
+          {
+            attributes: {
+              day_name: "wednesday",
+              end_time: null,
+              start_time: null,
+            },
+            id: "19",
+            type: "day_of_week",
+          },
+          {
+            attributes: {
+              day_name: "friday",
+              end_time: null,
+              start_time: null,
+            },
+            id: "20",
+            type: "day_of_week",
+          },
+          {
+            attributes: {
+              route_id: "Green-B",
+              source: "gtfs_creator",
+              source_label: "BostonCollegeWashingtonStreet",
+            },
+            id: "42",
+            type: "adjustment",
+          },
+        ],
+      })
+    ).toEqual([
+      new DisruptionDiff({
+        id: "6",
+        disruption: new Disruption({
+          id: "6",
+          startDate: toUTCDate("2020-08-02"),
+          endDate: toUTCDate("2020-09-03"),
+          adjustments: [
+            new Adjustment({
+              id: "42",
+              routeId: "Green-B",
+              source: "gtfs_creator",
+              sourceLabel: "BostonCollegeWashingtonStreet",
+            }),
+          ],
+          daysOfWeek: [
+            new DayOfWeek({
+              id: "19",
+              dayName: "wednesday",
+            }),
+            new DayOfWeek({
+              id: "20",
+              dayName: "friday",
+            }),
+          ],
+          exceptions: [],
+          tripShortNames: [],
+        }),
+        isCreated: true,
+        diffs: [],
       }),
     ])
   })

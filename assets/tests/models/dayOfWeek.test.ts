@@ -1,4 +1,5 @@
 import DayOfWeek from "../../src/models/dayOfWeek"
+import TripShortName from "../../src/models/tripShortName"
 
 describe("DayOfWeek", () => {
   test("toJsonApi", () => {
@@ -52,5 +53,12 @@ describe("DayOfWeek", () => {
 
   test("fromJsonObject error not an object", () => {
     expect(DayOfWeek.fromJsonObject(5)).toEqual("error")
+  })
+
+  test("isOfType identifies it", () => {
+    expect(DayOfWeek.isOfType(new DayOfWeek({ dayName: "monday" }))).toEqual(
+      true
+    )
+    expect(DayOfWeek.isOfType(new TripShortName({}))).toEqual(false)
   })
 })
