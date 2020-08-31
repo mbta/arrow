@@ -100,9 +100,7 @@ defmodule Mix.Tasks.CopyDbTest do
                }
              ] =
                Arrow.Repo.all(from d in Arrow.Disruption, order_by: d.id)
-               |> Arrow.Repo.preload(
-                 published_revision: [:adjustments, :days_of_week, :exceptions, :trip_short_names]
-               )
+               |> Arrow.Repo.preload(published_revision: Arrow.DisruptionRevision.associations())
 
       assert [
                %Arrow.Adjustment{
@@ -153,9 +151,7 @@ defmodule Mix.Tasks.CopyDbTest do
 
       initial_disruptions =
         Arrow.Repo.all(Arrow.Disruption)
-        |> Arrow.Repo.preload(
-          published_revision: [:adjustments, :days_of_week, :exceptions, :trip_short_names]
-        )
+        |> Arrow.Repo.preload(published_revision: Arrow.DisruptionRevision.associations())
 
       log =
         capture_log(fn ->
@@ -169,9 +165,7 @@ defmodule Mix.Tasks.CopyDbTest do
 
       assert initial_disruptions ==
                Arrow.Repo.all(Arrow.Disruption)
-               |> Arrow.Repo.preload(
-                 published_revision: [:adjustments, :days_of_week, :exceptions, :trip_short_names]
-               )
+               |> Arrow.Repo.preload(published_revision: Arrow.DisruptionRevision.associations())
     end
   end
 end

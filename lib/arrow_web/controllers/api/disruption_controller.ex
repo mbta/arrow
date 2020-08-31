@@ -19,7 +19,7 @@ defmodule ArrowWeb.API.DisruptionController do
         data =
           query
           |> Repo.all()
-          |> Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names])
+          |> Repo.preload(DisruptionRevision.associations())
 
         render(conn, "index.json-api",
           data: data,
@@ -38,7 +38,7 @@ defmodule ArrowWeb.API.DisruptionController do
         disruption_revision =
           dr_query
           |> Repo.get_by!(disruption_id: params["id"])
-          |> Repo.preload([:adjustments, :days_of_week, :exceptions, :trip_short_names])
+          |> Repo.preload(DisruptionRevision.associations())
 
         render(conn, "index.json-api",
           data: disruption_revision,
@@ -70,13 +70,7 @@ defmodule ArrowWeb.API.DisruptionController do
 
     case Disruption.create(attrs, adjustments) do
       {:ok, disruption_revision} ->
-        data =
-          Repo.preload(disruption_revision, [
-            :adjustments,
-            :days_of_week,
-            :exceptions,
-            :trip_short_names
-          ])
+        data = Repo.preload(disruption_revision, DisruptionRevision.associations())
 
         conn
         |> put_status(201)
