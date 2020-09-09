@@ -106,9 +106,7 @@ const ViewDisruptionForm = ({
       url:
         "/api/disruptions/" +
         encodeURIComponent(disruptionId) +
-        `?only_published=${
-          view === DisruptionView.Published ? "true" : "false"
-        }`,
+        `?only_ready=${view === DisruptionView.Ready ? "true" : "false"}`,
       parser: toModelObject,
       defaultResult: "error",
     }).then((result: JsonApiResponse) => {

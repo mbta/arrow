@@ -389,7 +389,7 @@ describe("DisruptionIndexConnected", () => {
     expect(container.textContent).toMatch("Something went wrong")
   })
 
-  test("can toggle between published and draft view", async () => {
+  test("can toggle between ready and draft view", async () => {
     const spy = jest.spyOn(api, "apiGet").mockImplementation(() => {
       return Promise.resolve([])
     })
@@ -402,13 +402,13 @@ describe("DisruptionIndexConnected", () => {
     )
 
     expect(spy).toHaveBeenCalledWith({
-      url: "/api/disruptions?only_published=true",
+      url: "/api/disruptions?only_ready=true",
       parser: toModelObject,
       defaultResult: "error",
     })
 
-    const publishedButton = container.querySelector("#published")
-    expect(publishedButton?.classList).toContain("active")
+    const readyButton = container.querySelector("#ready")
+    expect(readyButton?.classList).toContain("active")
     const draftButton = container.querySelector("#draft")
     expect(draftButton?.classList).not.toContain("active")
     expect(container.querySelector("#new-disruption-link")).toBeNull()
@@ -423,11 +423,11 @@ describe("DisruptionIndexConnected", () => {
     }
 
     expect(spy).toHaveBeenCalledWith({
-      url: "/api/disruptions?only_published=false",
+      url: "/api/disruptions?only_ready=false",
       parser: toModelObject,
       defaultResult: "error",
     })
-    expect(publishedButton?.classList).not.toContain("active")
+    expect(readyButton?.classList).not.toContain("active")
     expect(draftButton?.classList).toContain("active")
     expect(container.querySelector("#new-disruption-link")).not.toBeNull()
   })

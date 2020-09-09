@@ -165,10 +165,10 @@ describe("DisruptionTable", () => {
   })
 
   test("correctly adds view query param to detail page links", () => {
-    const { container: publishedContainer } = render(
+    const { container: readyContainer } = render(
       <DisruptionTableWithRouter initialEntries={["/"]} />
     )
-    let tableRows = publishedContainer.querySelectorAll("tbody tr")
+    let tableRows = readyContainer.querySelectorAll("tbody tr")
     expect(tableRows.length).toEqual(3)
     tableRows.forEach((r) => {
       expect(r.querySelector("a")?.getAttribute("href")).not.toContain(

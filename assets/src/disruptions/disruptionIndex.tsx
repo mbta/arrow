@@ -288,8 +288,8 @@ const DisruptionIndex = () => {
   React.useEffect(() => {
     apiGet<JsonApiResponse>({
       url:
-        "/api/disruptions?only_published=" +
-        (view === DisruptionView.Published ? "true" : "false"),
+        "/api/disruptions?only_ready=" +
+        (view === DisruptionView.Ready ? "true" : "false"),
       parser: toModelObject,
       defaultResult: "error",
     }).then((result: JsonApiResponse) => {

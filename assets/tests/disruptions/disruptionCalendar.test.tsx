@@ -107,10 +107,7 @@ describe("DisruptionCalendar", () => {
   describe("disruptionsToCalendarEvents", () => {
     it("parses disruptions", () => {
       expect(
-        disruptionsToCalendarEvents(
-          SAMPLE_DISRUPTIONS,
-          DisruptionView.Published
-        )
+        disruptionsToCalendarEvents(SAMPLE_DISRUPTIONS, DisruptionView.Ready)
       ).toEqual([
         {
           id: "1",
@@ -179,7 +176,7 @@ describe("DisruptionCalendar", () => {
       expect(
         disruptionsToCalendarEvents(
           SAMPLE_DISRUPTIONS,
-          DisruptionView.Published
+          DisruptionView.Ready
         ).every((x) => !x.url.includes("?v=draft"))
       ).toEqual(true)
 
@@ -217,7 +214,7 @@ describe("DisruptionCalendar", () => {
               tripShortNames: [],
             }),
           ],
-          DisruptionView.Published
+          DisruptionView.Ready
         )
       ).toEqual([])
     })
