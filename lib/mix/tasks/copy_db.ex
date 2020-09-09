@@ -99,6 +99,7 @@ defmodule Mix.Tasks.CopyDb do
 
         operations =
           Ecto.Multi.new()
+          |> Ecto.Multi.update_all(:unready, Arrow.Disruption, set: [ready_revision_id: nil])
           |> Ecto.Multi.update_all(:unpublish, Arrow.Disruption, set: [published_revision_id: nil])
           |> Ecto.Multi.delete_all(:delete_revisions, Arrow.DisruptionRevision)
           |> Ecto.Multi.delete_all(:delete_disruptions, Arrow.Disruption)
@@ -113,7 +114,14 @@ defmodule Mix.Tasks.CopyDb do
             Ecto.Multi.run(acc, disruption_id, fn repo, _change_map ->
               d = repo.insert!(%Arrow.Disruption{id: disruption_id})
               dr = repo.insert!(%{revision | disruption_id: d.id})
-              d = repo.update!(Ecto.Changeset.change(d, %{published_revision_id: dr.id}))
+
+              d =
+                repo.update!(
+                  Ecto.Changeset.change(d, %{
+                    ready_revision_id: dr.id,
+                    published_revision_id: dr.id
+                  })
+                )
 
               {:ok, d}
             end)

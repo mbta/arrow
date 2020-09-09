@@ -4,7 +4,7 @@ import queryString from "query-string"
 
 enum DisruptionView {
   Draft,
-  Published,
+  Ready,
 }
 
 const useDisruptionViewParam = (): DisruptionView => {
@@ -14,7 +14,7 @@ const useDisruptionViewParam = (): DisruptionView => {
       return DisruptionView.Draft
     }
     default: {
-      return DisruptionView.Published
+      return DisruptionView.Ready
     }
   }
 }
@@ -35,14 +35,14 @@ const DisruptionViewToggle = () => {
         create or edit
       </NavLink>
       <NavLink
-        id="published"
+        id="ready"
         className="btn m-disruption-view-toggle_button"
         to="?"
         activeClassName="active"
-        isActive={() => view === DisruptionView.Published}
+        isActive={() => view === DisruptionView.Ready}
         replace
       >
-        published
+        ready
       </NavLink>
     </div>
   )

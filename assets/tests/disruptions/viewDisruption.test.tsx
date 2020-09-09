@@ -475,7 +475,7 @@ describe("ViewDisruption", () => {
     expect(screen.getByText("Test error")).not.toBeNull()
   })
 
-  test("can toggle between published and draft view", async () => {
+  test("can toggle between ready and draft view", async () => {
     let startDate = new Date()
     startDate.setTime(startDate.getTime() + 24 * 60 * 60 * 1000)
     startDate = new Date(startDate.toDateString())
@@ -529,13 +529,13 @@ describe("ViewDisruption", () => {
     )
 
     expect(spy).toHaveBeenCalledWith({
-      url: "/api/disruptions/1?only_published=true",
+      url: "/api/disruptions/1?only_ready=true",
       parser: toModelObject,
       defaultResult: "error",
     })
 
-    const publishedButton = container.querySelector("#published")
-    expect(publishedButton?.classList).toContain("active")
+    const readyButton = container.querySelector("#ready")
+    expect(readyButton?.classList).toContain("active")
     const draftButton = container.querySelector("#draft")
     expect(draftButton?.classList).not.toContain("active")
     expect(container.querySelector("#edit-disruption-link")).toBeNull()
@@ -551,11 +551,11 @@ describe("ViewDisruption", () => {
     }
 
     expect(spy).toHaveBeenCalledWith({
-      url: "/api/disruptions/1?only_published=false",
+      url: "/api/disruptions/1?only_ready=false",
       parser: toModelObject,
       defaultResult: "error",
     })
-    expect(publishedButton?.classList).not.toContain("active")
+    expect(readyButton?.classList).not.toContain("active")
     expect(draftButton?.classList).toContain("active")
     expect(container.querySelector("#edit-disruption-link")).not.toBeNull()
     expect(container.querySelector("#delete-disruption-button")).not.toBeNull()

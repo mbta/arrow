@@ -3,7 +3,7 @@ defmodule ArrowWeb.API.DisruptionDiffController do
   alias Arrow.Disruption
 
   def index(conn, _params) do
-    {updated, new} = Disruption.draft_vs_published()
+    {updated, new} = Disruption.draft_vs_ready()
 
     updated =
       Enum.map(updated, fn disruption ->

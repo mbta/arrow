@@ -8,7 +8,7 @@ defmodule ArrowWeb.TempReviewChangesController do
 
   @spec create(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def create(conn, _params) do
-    :ok = Arrow.DisruptionRevision.publish_all!()
+    :ok = Arrow.DisruptionRevision.ready_all!()
 
     redirect(conn, to: ArrowWeb.Router.Helpers.page_path(conn, :index))
   end

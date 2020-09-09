@@ -31,8 +31,13 @@ defmodule Mix.Tasks.CopyDbTest do
           disruption: d2
         })
 
-      d1 |> Ecto.Changeset.change(%{published_revision_id: dr1.id}) |> Arrow.Repo.update!()
-      d2 |> Ecto.Changeset.change(%{published_revision_id: dr2.id}) |> Arrow.Repo.update!()
+      d1
+      |> Ecto.Changeset.change(%{ready_revision_id: dr1.id, published_revision_id: dr1.id})
+      |> Arrow.Repo.update!()
+
+      d2
+      |> Ecto.Changeset.change(%{ready_revision_id: dr2.id, published_revision_id: dr2.id})
+      |> Arrow.Repo.update!()
     end
 
     test "replaces current database with values pulled from API" do
@@ -44,6 +49,38 @@ defmodule Mix.Tasks.CopyDbTest do
       assert [
                %Arrow.Disruption{
                  id: 1,
+                 ready_revision: %Arrow.DisruptionRevision{
+                   adjustments: [],
+                   days_of_week: [
+                     %Arrow.Disruption.DayOfWeek{
+                       day_name: "friday",
+                       end_time: ~T[23:45:00],
+                       start_time: ~T[20:45:00]
+                     },
+                     %Arrow.Disruption.DayOfWeek{
+                       day_name: "saturday",
+                       end_time: nil,
+                       start_time: nil
+                     },
+                     %Arrow.Disruption.DayOfWeek{
+                       day_name: "sunday",
+                       end_time: nil,
+                       start_time: nil
+                     }
+                   ],
+                   end_date: ~D[2020-01-12],
+                   exceptions: [
+                     %Arrow.Disruption.Exception{
+                       excluded_date: ~D[2019-12-29]
+                     }
+                   ],
+                   start_date: ~D[2019-12-20],
+                   trip_short_names: [
+                     %Arrow.Disruption.TripShortName{
+                       trip_short_name: "1702"
+                     }
+                   ]
+                 },
                  published_revision: %Arrow.DisruptionRevision{
                    adjustments: [],
                    days_of_week: [
@@ -78,6 +115,25 @@ defmodule Mix.Tasks.CopyDbTest do
                  }
                },
                %Arrow.Disruption{
+                 ready_revision: %Arrow.DisruptionRevision{
+                   adjustments: [],
+                   days_of_week: [
+                     %Arrow.Disruption.DayOfWeek{
+                       day_name: "thursday",
+                       end_time: nil,
+                       start_time: ~T[20:45:00]
+                     },
+                     %Arrow.Disruption.DayOfWeek{
+                       day_name: "sunday",
+                       end_time: nil,
+                       start_time: ~T[20:45:00]
+                     }
+                   ],
+                   end_date: ~D[2020-01-20],
+                   exceptions: [],
+                   start_date: ~D[2019-12-31],
+                   trip_short_names: []
+                 },
                  published_revision: %Arrow.DisruptionRevision{
                    adjustments: [],
                    days_of_week: [
@@ -100,7 +156,10 @@ defmodule Mix.Tasks.CopyDbTest do
                }
              ] =
                Arrow.Repo.all(from d in Arrow.Disruption, order_by: d.id)
-               |> Arrow.Repo.preload(published_revision: Arrow.DisruptionRevision.associations())
+               |> Arrow.Repo.preload(
+                 ready_revision: Arrow.DisruptionRevision.associations(),
+                 published_revision: Arrow.DisruptionRevision.associations()
+               )
 
       assert [
                %Arrow.Adjustment{

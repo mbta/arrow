@@ -23,7 +23,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           trip_short_names: [build(:trip_short_name)]
         )
 
-      d1 |> Ecto.Changeset.change(%{published_revision_id: dr1.id}) |> Arrow.Repo.update!()
+      d1 |> Ecto.Changeset.change(%{ready_revision_id: dr1.id}) |> Arrow.Repo.update!()
 
       d2 = insert(:disruption)
 
@@ -35,7 +35,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           trip_short_names: []
         )
 
-      d2 |> Ecto.Changeset.change(%{published_revision_id: dr2.id}) |> Arrow.Repo.update!()
+      d2 |> Ecto.Changeset.change(%{ready_revision_id: dr2.id}) |> Arrow.Repo.update!()
 
       res = json_response(get(conn, "/api/disruptions"), 200)
 
@@ -95,7 +95,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           end_date: ~D[2019-11-01]
         )
 
-      d1 |> Ecto.Changeset.change(%{published_revision_id: dr1.id}) |> Arrow.Repo.update!()
+      d1 |> Ecto.Changeset.change(%{ready_revision_id: dr1.id}) |> Arrow.Repo.update!()
 
       {:ok, _dr} = Arrow.Disruption.update(dr1.id, %{end_date: ~D[2019-12-01]})
 
@@ -108,7 +108,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           end_date: ~D[2019-11-01]
         )
 
-      d2 |> Ecto.Changeset.change(%{published_revision_id: dr2.id}) |> Arrow.Repo.update!()
+      d2 |> Ecto.Changeset.change(%{ready_revision_id: dr2.id}) |> Arrow.Repo.update!()
 
       res = json_response(get(conn, "/api/disruptions"), 200)
 
@@ -137,7 +137,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
     end
 
     @tag :authenticated
-    test "includes latest revision when only_published flag is false", %{conn: conn} do
+    test "includes latest revision when only_ready flag is false", %{conn: conn} do
       d = insert(:disruption)
 
       dr =
@@ -147,11 +147,11 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           end_date: ~D[2019-11-01]
         )
 
-      d |> Ecto.Changeset.change(%{published_revision_id: dr.id}) |> Arrow.Repo.update!()
+      d |> Ecto.Changeset.change(%{ready_revision_id: dr.id}) |> Arrow.Repo.update!()
 
       {:ok, _dr} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
 
-      res = json_response(get(conn, "/api/disruptions?only_published=false"), 200)
+      res = json_response(get(conn, "/api/disruptions?only_ready=false"), 200)
 
       assert %{
                "data" => data,
@@ -170,7 +170,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
     end
 
     @tag :authenticated
-    test "only returns published revision when parameter is given", %{conn: conn} do
+    test "only returns ready revision when parameter is given", %{conn: conn} do
       d = insert(:disruption)
 
       dr =
@@ -180,11 +180,11 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           end_date: ~D[2019-11-01]
         )
 
-      d |> Ecto.Changeset.change(%{published_revision_id: dr.id}) |> Arrow.Repo.update!()
+      d |> Ecto.Changeset.change(%{ready_revision_id: dr.id}) |> Arrow.Repo.update!()
 
       {:ok, _dr} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
 
-      res = json_response(get(conn, "/api/disruptions?only_published=true"), 200)
+      res = json_response(get(conn, "/api/disruptions?only_ready=true"), 200)
 
       assert %{
                "data" => data,
@@ -203,11 +203,11 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
     end
 
     @tag :authenticated
-    test "fails when invalid only_published argument is given", %{conn: conn} do
+    test "fails when invalid only_ready argument is given", %{conn: conn} do
       assert json_response(
                get(
                  conn,
-                 "/api/disruptions/?only_published=foo"
+                 "/api/disruptions/?only_ready=foo"
                ),
                400
              )
@@ -226,7 +226,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           trip_short_names: [build(:trip_short_name)]
         )
 
-      d1 |> Ecto.Changeset.change(%{published_revision_id: dr1.id}) |> Arrow.Repo.update!()
+      d1 |> Ecto.Changeset.change(%{ready_revision_id: dr1.id}) |> Arrow.Repo.update!()
 
       d2 = insert(:disruption)
 
@@ -237,7 +237,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           end_date: ~D[2019-12-01]
         )
 
-      d2 |> Ecto.Changeset.change(%{published_revision_id: dr2.id}) |> Arrow.Repo.update!()
+      d2 |> Ecto.Changeset.change(%{ready_revision_id: dr2.id}) |> Arrow.Repo.update!()
 
       res = json_response(get(conn, "/api/disruptions", %{"include" => "adjustments"}), 200)
 
@@ -311,7 +311,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           trip_short_names: [build(:trip_short_name)]
         )
 
-      d1 |> Ecto.Changeset.change(%{published_revision_id: dr1.id}) |> Arrow.Repo.update!()
+      d1 |> Ecto.Changeset.change(%{ready_revision_id: dr1.id}) |> Arrow.Repo.update!()
 
       d2 = insert(:disruption)
 
@@ -322,7 +322,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           end_date: ~D[2019-12-01]
         )
 
-      d2 |> Ecto.Changeset.change(%{published_revision_id: dr2.id}) |> Arrow.Repo.update!()
+      d2 |> Ecto.Changeset.change(%{ready_revision_id: dr2.id}) |> Arrow.Repo.update!()
 
       disruption_1_id = d1.id
       disruption_2_id = d2.id
@@ -365,7 +365,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           trip_short_names: [build(:trip_short_name)]
         )
 
-      d1 |> Ecto.Changeset.change(%{published_revision_id: dr1.id}) |> Arrow.Repo.update!()
+      d1 |> Ecto.Changeset.change(%{ready_revision_id: dr1.id}) |> Arrow.Repo.update!()
 
       assert %{"data" => %{"id" => disruption_1_id}} =
                json_response(
@@ -385,7 +385,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           end_date: ~D[2019-11-01]
         )
 
-      d |> Ecto.Changeset.change(%{published_revision_id: dr.id}) |> Arrow.Repo.update!()
+      d |> Ecto.Changeset.change(%{ready_revision_id: dr.id}) |> Arrow.Repo.update!()
 
       {:ok, _dr} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
 
@@ -397,7 +397,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
     end
 
     @tag :authenticated
-    test "returns latest revision when only_published flag is false", %{conn: conn} do
+    test "returns latest revision when only_ready flag is false", %{conn: conn} do
       d = insert(:disruption)
 
       dr =
@@ -407,7 +407,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           end_date: ~D[2019-11-01]
         )
 
-      d |> Ecto.Changeset.change(%{published_revision_id: dr.id}) |> Arrow.Repo.update!()
+      d |> Ecto.Changeset.change(%{ready_revision_id: dr.id}) |> Arrow.Repo.update!()
 
       {:ok, _dr} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
 
@@ -417,7 +417,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                    conn,
                    "/api/disruptions/" <>
                      Integer.to_string(d.id) <>
-                     "?only_published=false"
+                     "?only_ready=false"
                  ),
                  200
                )
@@ -434,7 +434,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           end_date: ~D[2019-11-01]
         )
 
-      d |> Ecto.Changeset.change(%{published_revision_id: dr.id}) |> Arrow.Repo.update!()
+      d |> Ecto.Changeset.change(%{ready_revision_id: dr.id}) |> Arrow.Repo.update!()
 
       {:ok, _dr} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
 
@@ -442,14 +442,14 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                json_response(
                  get(
                    conn,
-                   "/api/disruptions/" <> Integer.to_string(d.id) <> "?only_published="
+                   "/api/disruptions/" <> Integer.to_string(d.id) <> "?only_ready="
                  ),
                  200
                )
     end
 
     @tag :authenticated
-    test "returns published version of disruption when paramater is given", %{conn: conn} do
+    test "returns ready version of disruption when paramater is given", %{conn: conn} do
       d = insert(:disruption)
 
       dr =
@@ -459,7 +459,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           end_date: ~D[2019-11-01]
         )
 
-      d |> Ecto.Changeset.change(%{published_revision_id: dr.id}) |> Arrow.Repo.update!()
+      d |> Ecto.Changeset.change(%{ready_revision_id: dr.id}) |> Arrow.Repo.update!()
 
       {:ok, _dr} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
 
@@ -467,14 +467,14 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                json_response(
                  get(
                    conn,
-                   "/api/disruptions/" <> Integer.to_string(d.id) <> "?only_published=true"
+                   "/api/disruptions/" <> Integer.to_string(d.id) <> "?only_ready=true"
                  ),
                  200
                )
     end
 
     @tag :authenticated
-    test "fails when invalid only_published argument is given", %{conn: conn} do
+    test "fails when invalid only_ready argument is given", %{conn: conn} do
       d = insert(:disruption)
 
       dr =
@@ -484,12 +484,12 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           end_date: ~D[2019-11-01]
         )
 
-      d |> Ecto.Changeset.change(%{published_revision_id: dr.id}) |> Arrow.Repo.update!()
+      d |> Ecto.Changeset.change(%{ready_revision_id: dr.id}) |> Arrow.Repo.update!()
 
       assert json_response(
                get(
                  conn,
-                 "/api/disruptions/" <> Integer.to_string(d.id) <> "?only_published=foo"
+                 "/api/disruptions/" <> Integer.to_string(d.id) <> "?only_ready=foo"
                ),
                400
              )
@@ -657,7 +657,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
         )
 
       disruption
-      |> Ecto.Changeset.change(%{published_revision_id: disruption_revision.id})
+      |> Ecto.Changeset.change(%{ready_revision_id: disruption_revision.id})
       |> Arrow.Repo.update!()
 
       post_data = %{
@@ -741,7 +741,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
         )
 
       disruption
-      |> Ecto.Changeset.change(%{published_revision_id: disruption_revision.id})
+      |> Ecto.Changeset.change(%{ready_revision_id: disruption_revision.id})
       |> Arrow.Repo.update!()
 
       post_data = %{
@@ -819,7 +819,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
         )
 
       disruption
-      |> Ecto.Changeset.change(%{published_revision_id: disruption_revision.id})
+      |> Ecto.Changeset.change(%{ready_revision_id: disruption_revision.id})
       |> Arrow.Repo.update!()
 
       conn = delete(conn, ArrowWeb.Router.Helpers.disruption_path(conn, :delete, disruption.id))

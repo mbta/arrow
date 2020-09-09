@@ -14,7 +14,7 @@ defmodule ArrowWeb.API.DisruptionController do
       |> format_filters
       |> build_query
 
-    case do_only_published_query(query, params) do
+    case do_only_ready_query(query, params) do
       {:ok, query} ->
         data =
           query
@@ -33,7 +33,7 @@ defmodule ArrowWeb.API.DisruptionController do
 
   @spec show(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def show(conn, params) do
-    case do_only_published_query(DisruptionRevision, params) do
+    case do_only_ready_query(DisruptionRevision, params) do
       {:ok, dr_query} ->
         disruption_revision =
           dr_query
@@ -95,7 +95,7 @@ defmodule ArrowWeb.API.DisruptionController do
 
     disruption_revision =
       DisruptionRevision
-      |> DisruptionRevision.only_published()
+      |> DisruptionRevision.only_ready()
       |> Repo.get_by!(disruption_id: params["id"])
 
     case Disruption.update(disruption_revision.id, attrs) do
@@ -170,10 +170,10 @@ defmodule ArrowWeb.API.DisruptionController do
 
   defp do_format_filter(_), do: []
 
-  @spec do_only_published_query(Ecto.Queryable.t(), map()) :: {:ok, Ecto.Query.t()} | :error
-  defp do_only_published_query(q, params) do
-    case Map.get(params, "only_published") do
-      "true" -> {:ok, DisruptionRevision.only_published(q)}
+  @spec do_only_ready_query(Ecto.Queryable.t(), map()) :: {:ok, Ecto.Query.t()} | :error
+  defp do_only_ready_query(q, params) do
+    case Map.get(params, "only_ready") do
+      "true" -> {:ok, DisruptionRevision.only_ready(q)}
       val when val in [nil, "", "false"] -> {:ok, DisruptionRevision.latest_revision(q)}
       _ -> :error
     end

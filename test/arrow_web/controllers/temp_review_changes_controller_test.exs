@@ -20,6 +20,6 @@ defmodule ArrowWeb.TempReviewChangesControllerTest do
     new_dr =
       Arrow.DisruptionRevision |> Arrow.Repo.get(dr.id) |> Arrow.Repo.preload([:disruption])
 
-    assert new_dr.disruption.published_revision_id == dr.id
+    assert new_dr.disruption.ready_revision_id == dr.id
   end
 end

@@ -17,11 +17,11 @@ defmodule ArrowWeb.API.DisruptionDiffControllerTest do
           exceptions: [build(:exception, %{excluded_date: ~D[2020-03-31]})]
         })
 
-      d2 |> Ecto.Changeset.change(%{published_revision_id: d2r1.id}) |> Arrow.Repo.update!()
+      d2 |> Ecto.Changeset.change(%{ready_revision_id: d2r1.id}) |> Arrow.Repo.update!()
 
       d3 = insert(:disruption)
       d3r1 = insert(:disruption_revision, %{disruption: d3})
-      d3 |> Ecto.Changeset.change(%{published_revision_id: d3r1.id}) |> Arrow.Repo.update!()
+      d3 |> Ecto.Changeset.change(%{ready_revision_id: d3r1.id}) |> Arrow.Repo.update!()
 
       res = json_response(get(conn, "/api/disruption_diffs"), 200)
 

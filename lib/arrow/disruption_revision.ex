@@ -41,11 +41,11 @@ defmodule Arrow.DisruptionRevision do
     @associations
   end
 
-  @spec only_published(Ecto.Queryable.t()) :: Ecto.Query.t()
-  def only_published(query) do
-    published_ids = from(d in Disruption, select: d.published_revision_id)
+  @spec only_ready(Ecto.Queryable.t()) :: Ecto.Query.t()
+  def only_ready(query) do
+    ready_ids = from(d in Disruption, select: d.ready_revision_id)
 
-    from(dr in query, where: dr.id in subquery(published_ids) and dr.is_active)
+    from(dr in query, where: dr.id in subquery(ready_ids) and dr.is_active)
   end
 
   @spec latest_revision(Ecto.Queryable.t()) :: Ecto.Query.t()
@@ -98,8 +98,8 @@ defmodule Arrow.DisruptionRevision do
     |> Arrow.Repo.insert!()
   end
 
-  @spec publish_all!() :: :ok
-  def publish_all!() do
+  @spec ready_all!() :: :ok
+  def ready_all!() do
     draft_map =
       from(dr in Arrow.DisruptionRevision,
         select: %{disruption_id: dr.disruption_id, draft_id: max(dr.id)},
@@ -109,8 +109,8 @@ defmodule Arrow.DisruptionRevision do
     from(d in Arrow.Disruption,
       join: dm in subquery(draft_map),
       on: dm.disruption_id == d.id,
-      where: is_nil(d.published_revision_id) or dm.draft_id != d.published_revision_id,
-      update: [set: [published_revision_id: dm.draft_id]]
+      where: is_nil(d.ready_revision_id) or dm.draft_id != d.ready_revision_id,
+      update: [set: [ready_revision_id: dm.draft_id]]
     )
     |> Arrow.Repo.update_all([])
 
