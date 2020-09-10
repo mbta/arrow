@@ -11,81 +11,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
     end
 
     @tag :authenticated
-    test "includes all fields by default", %{conn: conn} do
-      d1 = insert(:disruption)
-
-      dr1 =
-        insert(:disruption_revision,
-          disruption: d1,
-          start_date: ~D[2019-10-10],
-          end_date: ~D[2019-11-01],
-          exceptions: [build(:exception)],
-          trip_short_names: [build(:trip_short_name)]
-        )
-
-      d1 |> Ecto.Changeset.change(%{ready_revision_id: dr1.id}) |> Arrow.Repo.update!()
-
-      d2 = insert(:disruption)
-
-      dr2 =
-        insert(:disruption_revision,
-          disruption: d2,
-          start_date: ~D[2019-11-15],
-          end_date: ~D[2019-12-01],
-          trip_short_names: []
-        )
-
-      d2 |> Ecto.Changeset.change(%{ready_revision_id: dr2.id}) |> Arrow.Repo.update!()
-
-      res = json_response(get(conn, "/api/disruptions"), 200)
-
-      assert %{
-               "data" => data,
-               "included" => included,
-               "jsonapi" => %{"version" => "1.0"}
-             } = res
-
-      assert length(data) == 2
-
-      d1 = Enum.find(data, &(&1["attributes"]["start_date"] == Date.to_string(dr1.start_date)))
-      d2 = Enum.find(data, &(&1["attributes"]["start_date"] == Date.to_string(dr2.start_date)))
-
-      end_date1 = Date.to_string(dr1.end_date)
-      end_date2 = Date.to_string(dr2.end_date)
-
-      assert %{
-               "attributes" => %{"end_date" => ^end_date1, "start_date" => "2019-10-10"},
-               "id" => _,
-               "relationships" => %{
-                 "adjustments" => %{"data" => [%{"id" => id1, "type" => "adjustment"}]},
-                 "days_of_week" => %{"data" => [%{"id" => id2, "type" => "day_of_week"}]},
-                 "exceptions" => %{"data" => [%{"id" => id3, "type" => "exception"}]},
-                 "trip_short_names" => %{"data" => [%{"id" => id4, "type" => "trip_short_name"}]}
-               },
-               "type" => "disruption"
-             } = d1
-
-      assert %{
-               "attributes" => %{"end_date" => ^end_date2, "start_date" => "2019-11-15"},
-               "id" => _,
-               "relationships" => %{
-                 "adjustments" => %{"data" => [%{"id" => id5, "type" => "adjustment"}]},
-                 "days_of_week" => %{"data" => [%{"id" => id6, "type" => "day_of_week"}]},
-                 "exceptions" => %{"data" => []},
-                 "trip_short_names" => %{"data" => []}
-               },
-               "type" => "disruption"
-             } = d2
-
-      assert length(included) == 6
-
-      Enum.each([id1, id2, id3, id4, id5, id6], fn id ->
-        assert Enum.find(included, &(&1["id"] == id))
-      end)
-    end
-
-    @tag :authenticated
-    test "includes latest revision by default", %{conn: conn} do
+    test "includes all revisions for all disruptions", %{conn: conn} do
       d1 = insert(:disruption)
 
       dr1 =
@@ -94,10 +20,6 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           start_date: ~D[2019-10-10],
           end_date: ~D[2019-11-01]
         )
-
-      d1 |> Ecto.Changeset.change(%{ready_revision_id: dr1.id}) |> Arrow.Repo.update!()
-
-      {:ok, _dr} = Arrow.Disruption.update(dr1.id, %{end_date: ~D[2019-12-01]})
 
       d2 = insert(:disruption)
 
@@ -108,7 +30,19 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           end_date: ~D[2019-11-01]
         )
 
-      d2 |> Ecto.Changeset.change(%{ready_revision_id: dr2.id}) |> Arrow.Repo.update!()
+      {:ok, new_d1} = Arrow.Disruption.update(dr1.id, %{end_date: ~D[2019-12-01]})
+      :ok = Arrow.DisruptionRevision.ready_all!()
+
+      new_d1 =
+        Arrow.Disruption
+        |> Arrow.Repo.get(new_d1.id)
+        |> Arrow.Repo.preload([:revisions])
+
+      new_d1
+      |> Ecto.Changeset.change(%{published_revision_id: Enum.at(new_d1.revisions, -1).id})
+      |> Arrow.Repo.update!()
+
+      {:ok, _newer_d1} = Arrow.Disruption.update(dr1.id, %{end_date: ~D[2020-01-01]})
 
       res = json_response(get(conn, "/api/disruptions"), 200)
 
@@ -117,265 +51,92 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
                "included" => included,
                "jsonapi" => %{"version" => "1.0"}
              } = res
+
+      included_map = Map.new(included, fn inc -> {{inc["type"], inc["id"]}, inc} end)
 
       d1_data = Enum.find(data, &(&1["id"] == Integer.to_string(d1.id)))
       d2_data = Enum.find(data, &(&1["id"] == Integer.to_string(d2.id)))
 
+      d1_ready_id = Integer.to_string(Enum.at(new_d1.revisions, -1).id)
+      d2_ready_id = Integer.to_string(dr2.id)
+
       assert %{
-               "attributes" => %{"end_date" => "2019-12-01", "start_date" => "2019-10-10"},
                "id" => _,
-               "relationships" => %{},
+               "relationships" => %{
+                 "published_revision" => %{
+                   "data" => %{
+                     "id" => ^d1_ready_id,
+                     "type" => "disruption_revision"
+                   }
+                 },
+                 "ready_revision" => %{
+                   "data" => %{
+                     "id" => ^d1_ready_id,
+                     "type" => "disruption_revision"
+                   }
+                 },
+                 "revisions" => %{"data" => d1_revisions}
+               },
                "type" => "disruption"
              } = d1_data
 
+      d1_revision_ids =
+        d1_revisions
+        |> Enum.map(&String.to_integer(&1["id"]))
+        |> Enum.sort()
+        |> Enum.map(&Integer.to_string(&1))
+
+      d1_revision1 = included_map[{"disruption_revision", Enum.at(d1_revision_ids, 0)}]
+      d1_revision2 = included_map[{"disruption_revision", Enum.at(d1_revision_ids, 1)}]
+
       assert %{
-               "attributes" => %{"end_date" => "2019-11-01", "start_date" => "2019-10-10"},
+               "attributes" => %{
+                 "start_date" => "2019-10-10",
+                 "end_date" => "2019-12-01",
+                 "is_active" => true
+               }
+             } = d1_revision1
+
+      assert %{
+               "attributes" => %{
+                 "start_date" => "2019-10-10",
+                 "end_date" => "2020-01-01",
+                 "is_active" => true
+               }
+             } = d1_revision2
+
+      assert %{
                "id" => _,
-               "relationships" => %{},
+               "relationships" => %{
+                 "published_revision" => %{"data" => nil},
+                 "ready_revision" => %{
+                   "data" => %{
+                     "id" => ^d2_ready_id,
+                     "type" => "disruption_revision"
+                   }
+                 },
+                 "revisions" => %{
+                   "data" => [%{"id" => ^d2_ready_id, "type" => "disruption_revision"}]
+                 }
+               },
                "type" => "disruption"
              } = d2_data
-    end
 
-    @tag :authenticated
-    test "includes latest revision when only_ready flag is false", %{conn: conn} do
-      d = insert(:disruption)
-
-      dr =
-        insert(:disruption_revision,
-          disruption: d,
-          start_date: ~D[2019-10-10],
-          end_date: ~D[2019-11-01]
-        )
-
-      d |> Ecto.Changeset.change(%{ready_revision_id: dr.id}) |> Arrow.Repo.update!()
-
-      {:ok, _dr} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
-
-      res = json_response(get(conn, "/api/disruptions?only_ready=false"), 200)
+      d2_revision1 = included_map[{"disruption_revision", d2_ready_id}]
 
       assert %{
-               "data" => data,
-               "included" => included,
-               "jsonapi" => %{"version" => "1.0"}
-             } = res
-
-      assert [
-               %{
-                 "attributes" => %{"end_date" => "2019-12-01", "start_date" => "2019-10-10"},
-                 "id" => _,
-                 "relationships" => %{},
-                 "type" => "disruption"
+               "attributes" => %{
+                 "start_date" => "2019-10-10",
+                 "end_date" => "2019-11-01",
+                 "is_active" => true
                }
-             ] = data
-    end
-
-    @tag :authenticated
-    test "only returns ready revision when parameter is given", %{conn: conn} do
-      d = insert(:disruption)
-
-      dr =
-        insert(:disruption_revision,
-          disruption: d,
-          start_date: ~D[2019-10-10],
-          end_date: ~D[2019-11-01]
-        )
-
-      d |> Ecto.Changeset.change(%{ready_revision_id: dr.id}) |> Arrow.Repo.update!()
-
-      {:ok, _dr} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
-
-      res = json_response(get(conn, "/api/disruptions?only_ready=true"), 200)
-
-      assert %{
-               "data" => data,
-               "included" => included,
-               "jsonapi" => %{"version" => "1.0"}
-             } = res
-
-      assert [
-               %{
-                 "attributes" => %{"end_date" => "2019-11-01", "start_date" => "2019-10-10"},
-                 "id" => _,
-                 "relationships" => %{},
-                 "type" => "disruption"
-               }
-             ] = data
-    end
-
-    @tag :authenticated
-    test "fails when invalid only_ready argument is given", %{conn: conn} do
-      assert json_response(
-               get(
-                 conn,
-                 "/api/disruptions/?only_ready=foo"
-               ),
-               400
-             )
-    end
-
-    @tag :authenticated
-    test "can include only specified relationships", %{conn: conn} do
-      d1 = insert(:disruption)
-
-      dr1 =
-        insert(:disruption_revision,
-          disruption: d1,
-          start_date: ~D[2019-10-10],
-          end_date: ~D[2019-11-01],
-          exceptions: [build(:exception)],
-          trip_short_names: [build(:trip_short_name)]
-        )
-
-      d1 |> Ecto.Changeset.change(%{ready_revision_id: dr1.id}) |> Arrow.Repo.update!()
-
-      d2 = insert(:disruption)
-
-      dr2 =
-        insert(:disruption_revision,
-          disruption: d2,
-          start_date: ~D[2019-11-15],
-          end_date: ~D[2019-12-01]
-        )
-
-      d2 |> Ecto.Changeset.change(%{ready_revision_id: dr2.id}) |> Arrow.Repo.update!()
-
-      res = json_response(get(conn, "/api/disruptions", %{"include" => "adjustments"}), 200)
-
-      end_date1 = Date.to_string(dr1.end_date)
-      end_date2 = Date.to_string(dr2.end_date)
-
-      source_label1 = Enum.at(dr1.adjustments, 0).source_label
-      source_label2 = Enum.at(dr2.adjustments, 0).source_label
-
-      assert %{
-               "data" => [
-                 %{
-                   "attributes" => %{
-                     "end_date" => ^end_date1,
-                     "start_date" => "2019-10-10"
-                   },
-                   "relationships" => %{
-                     "adjustments" => %{
-                       "data" => [%{"type" => "adjustment"}]
-                     },
-                     "days_of_week" => %{},
-                     "exceptions" => %{},
-                     "trip_short_names" => %{}
-                   },
-                   "type" => "disruption"
-                 },
-                 %{
-                   "attributes" => %{
-                     "end_date" => ^end_date2,
-                     "start_date" => "2019-11-15"
-                   },
-                   "relationships" => %{
-                     "adjustments" => %{
-                       "data" => [%{"type" => "adjustment"}]
-                     },
-                     "days_of_week" => %{},
-                     "exceptions" => %{},
-                     "trip_short_names" => %{}
-                   },
-                   "type" => "disruption"
-                 }
-               ],
-               "included" => [
-                 %{
-                   "attributes" => %{
-                     "source_label" => ^source_label1
-                   },
-                   "type" => "adjustment"
-                 },
-                 %{
-                   "attributes" => %{
-                     "source_label" => ^source_label2
-                   },
-                   "type" => "adjustment"
-                 }
-               ],
-               "jsonapi" => %{"version" => "1.0"}
-             } = res
-    end
-
-    @tag :authenticated
-    test "can filter by dates", %{conn: conn} do
-      d1 = insert(:disruption)
-
-      dr1 =
-        insert(:disruption_revision,
-          disruption: d1,
-          start_date: ~D[2019-10-10],
-          end_date: ~D[2019-11-01],
-          exceptions: [build(:exception)],
-          trip_short_names: [build(:trip_short_name)]
-        )
-
-      d1 |> Ecto.Changeset.change(%{ready_revision_id: dr1.id}) |> Arrow.Repo.update!()
-
-      d2 = insert(:disruption)
-
-      dr2 =
-        insert(:disruption_revision,
-          disruption: d2,
-          start_date: ~D[2019-11-15],
-          end_date: ~D[2019-12-01]
-        )
-
-      d2 |> Ecto.Changeset.change(%{ready_revision_id: dr2.id}) |> Arrow.Repo.update!()
-
-      disruption_1_id = d1.id
-      disruption_2_id = d2.id
-
-      end_date1 = Date.to_string(dr1.end_date)
-      end_date2 = Date.to_string(dr2.end_date)
-
-      Enum.each(
-        [
-          {"min_start_date", "2019-11-01", disruption_2_id},
-          {"max_start_date", "2019-11-01", disruption_1_id},
-          {"min_end_date", end_date2, disruption_2_id},
-          {"max_end_date", end_date1, disruption_1_id}
-        ],
-        fn {filter, value, expected_id} ->
-          data =
-            json_response(
-              get(conn, "/api/disruptions", %{"filter" => %{filter => value}}),
-              200
-            )["data"]
-
-          assert Kernel.length(data) == 1
-          assert List.first(data)["id"] == Integer.to_string(expected_id)
-        end
-      )
+             } = d2_revision1
     end
   end
 
   describe "show/2" do
     @tag :authenticated
-    test "returns valid disruption", %{conn: conn} do
-      d1 = insert(:disruption)
-
-      dr1 =
-        insert(:disruption_revision,
-          disruption: d1,
-          start_date: ~D[2019-10-10],
-          end_date: ~D[2019-11-01],
-          exceptions: [build(:exception)],
-          trip_short_names: [build(:trip_short_name)]
-        )
-
-      d1 |> Ecto.Changeset.change(%{ready_revision_id: dr1.id}) |> Arrow.Repo.update!()
-
-      assert %{"data" => %{"id" => disruption_1_id}} =
-               json_response(
-                 get(conn, "/api/disruptions/" <> Integer.to_string(d1.id), %{}),
-                 200
-               )
-    end
-
-    @tag :authenticated
-    test "returns latest version of disruption by default", %{conn: conn} do
+    test "returns valid disruption with all revisions from published on, in order", %{conn: conn} do
       d = insert(:disruption)
 
       dr =
@@ -385,114 +146,81 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           end_date: ~D[2019-11-01]
         )
 
-      d |> Ecto.Changeset.change(%{ready_revision_id: dr.id}) |> Arrow.Repo.update!()
+      {:ok, new_disruption} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
 
-      {:ok, _dr} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
+      :ok = Arrow.DisruptionRevision.ready_all!()
 
-      assert %{"data" => %{"id" => _, "attributes" => %{"end_date" => "2019-12-01"}}} =
-               json_response(
-                 get(conn, "/api/disruptions/" <> Integer.to_string(d.id)),
-                 200
-               )
-    end
+      new_disruption =
+        Arrow.Disruption
+        |> Arrow.Repo.get(new_disruption.id)
+        |> Arrow.Repo.preload([:revisions])
 
-    @tag :authenticated
-    test "returns latest revision when only_ready flag is false", %{conn: conn} do
-      d = insert(:disruption)
+      new_disruption
+      |> Ecto.Changeset.change(%{published_revision_id: Enum.at(new_disruption.revisions, -1).id})
+      |> Arrow.Repo.update!()
 
-      dr =
-        insert(:disruption_revision,
-          disruption: d,
-          start_date: ~D[2019-10-10],
-          end_date: ~D[2019-11-01]
+      {:ok, _newer_disruption} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2020-01-01]})
+
+      res =
+        json_response(
+          get(conn, "/api/disruptions/" <> Integer.to_string(d.id)),
+          200
         )
 
-      d |> Ecto.Changeset.change(%{ready_revision_id: dr.id}) |> Arrow.Repo.update!()
+      assert %{
+               "data" => data,
+               "included" => included,
+               "jsonapi" => %{"version" => "1.0"}
+             } = res
 
-      {:ok, _dr} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
+      ready_revision_id = Integer.to_string(new_disruption.ready_revision_id)
 
-      assert %{"data" => %{"id" => _, "attributes" => %{"end_date" => "2019-12-01"}}} =
-               json_response(
-                 get(
-                   conn,
-                   "/api/disruptions/" <>
-                     Integer.to_string(d.id) <>
-                     "?only_ready=false"
-                 ),
-                 200
-               )
-    end
+      assert %{
+               "id" => _,
+               "relationships" => %{
+                 "published_revision" => %{
+                   "data" => %{
+                     "id" => ^ready_revision_id,
+                     "type" => "disruption_revision"
+                   }
+                 },
+                 "ready_revision" => %{
+                   "data" => %{
+                     "id" => ^ready_revision_id,
+                     "type" => "disruption_revision"
+                   }
+                 },
+                 "revisions" => %{"data" => d_revisions}
+               },
+               "type" => "disruption"
+             } = data
 
-    @tag :authenticated
-    test "returns latest version of disruption with empty string query param", %{conn: conn} do
-      d = insert(:disruption)
+      included_map = Map.new(included, fn inc -> {{inc["type"], inc["id"]}, inc} end)
 
-      dr =
-        insert(:disruption_revision,
-          disruption: d,
-          start_date: ~D[2019-10-10],
-          end_date: ~D[2019-11-01]
-        )
+      d_revision_ids =
+        d_revisions
+        |> Enum.map(&String.to_integer(&1["id"]))
+        |> Enum.sort()
+        |> Enum.map(&Integer.to_string(&1))
 
-      d |> Ecto.Changeset.change(%{ready_revision_id: dr.id}) |> Arrow.Repo.update!()
+      d_revision1 = included_map[{"disruption_revision", Enum.at(d_revision_ids, 0)}]
+      d_revision2 = included_map[{"disruption_revision", Enum.at(d_revision_ids, 1)}]
 
-      {:ok, _dr} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
+      assert %{
+               "attributes" => %{
+                 "start_date" => "2019-10-10",
+                 "end_date" => "2019-12-01",
+                 "is_active" => true
+               }
+             } = d_revision1
 
-      assert %{"data" => %{"id" => _, "attributes" => %{"end_date" => "2019-12-01"}}} =
-               json_response(
-                 get(
-                   conn,
-                   "/api/disruptions/" <> Integer.to_string(d.id) <> "?only_ready="
-                 ),
-                 200
-               )
-    end
-
-    @tag :authenticated
-    test "returns ready version of disruption when paramater is given", %{conn: conn} do
-      d = insert(:disruption)
-
-      dr =
-        insert(:disruption_revision,
-          disruption: d,
-          start_date: ~D[2019-10-10],
-          end_date: ~D[2019-11-01]
-        )
-
-      d |> Ecto.Changeset.change(%{ready_revision_id: dr.id}) |> Arrow.Repo.update!()
-
-      {:ok, _dr} = Arrow.Disruption.update(dr.id, %{end_date: ~D[2019-12-01]})
-
-      assert %{"data" => %{"id" => _, "attributes" => %{"end_date" => "2019-11-01"}}} =
-               json_response(
-                 get(
-                   conn,
-                   "/api/disruptions/" <> Integer.to_string(d.id) <> "?only_ready=true"
-                 ),
-                 200
-               )
-    end
-
-    @tag :authenticated
-    test "fails when invalid only_ready argument is given", %{conn: conn} do
-      d = insert(:disruption)
-
-      dr =
-        insert(:disruption_revision,
-          disruption: d,
-          start_date: ~D[2019-10-10],
-          end_date: ~D[2019-11-01]
-        )
-
-      d |> Ecto.Changeset.change(%{ready_revision_id: dr.id}) |> Arrow.Repo.update!()
-
-      assert json_response(
-               get(
-                 conn,
-                 "/api/disruptions/" <> Integer.to_string(d.id) <> "?only_ready=foo"
-               ),
-               400
-             )
+      assert %{
+               "attributes" => %{
+                 "start_date" => "2019-10-10",
+                 "end_date" => "2020-01-01",
+                 "is_active" => true
+               }
+             } = d_revision2
     end
   end
 
