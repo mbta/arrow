@@ -2,25 +2,33 @@ defmodule ArrowWeb.API.DisruptionView do
   use ArrowWeb, :view
   use JaSerializer.PhoenixView
 
-  attributes([:start_date, :end_date])
-
-  has_many :adjustments,
-    serializer: ArrowWeb.API.AdjustmentView,
+  has_many :revisions,
+    serializer: ArrowWeb.API.DisruptionRevisionView,
     include: true
 
-  has_many :days_of_week,
-    serializer: ArrowWeb.API.DayOfWeekView,
-    include: true
+  has_one :ready_revision,
+    serializer: ArrowWeb.API.DisruptionRevisionView,
+    include: false
 
-  has_many :exceptions,
-    serializer: ArrowWeb.API.ExceptionView,
-    include: true
+  has_one :published_revision,
+    serializer: ArrowWeb.API.DisruptionRevisionView,
+    include: false
 
-  has_many :trip_short_names,
-    serializer: ArrowWeb.API.TripShortNameView,
-    include: true
+  def ready_revision(disruption, _conn) do
+    if disruption.ready_revision_id do
+      %{
+        id: disruption.ready_revision_id,
+        type: "disruption_revision"
+      }
+    end
+  end
 
-  def id(disruption_revision, _conn) do
-    disruption_revision.disruption_id
+  def published_revision(disruption, _conn) do
+    if disruption.published_revision_id do
+      %{
+        id: disruption.published_revision_id,
+        type: "disruption_revision"
+      }
+    end
   end
 end

@@ -5,7 +5,7 @@ defmodule ArrowWeb.API.DisruptionDiffView do
   attributes([:created?, :diffs])
 
   has_one :latest_revision,
-    serializer: ArrowWeb.API.DisruptionView,
+    serializer: ArrowWeb.API.DisruptionRevisionView,
     include: true
 
   def id(disruption, _conn) do

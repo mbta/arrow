@@ -50,14 +50,15 @@ defmodule Arrow.DisruptionRevisionTest do
 
       assert new_dr.disruption.ready_revision_id == dr.id
 
-      {:ok, newer_dr} = Arrow.Disruption.update(new_dr.id, %{end_date: ~D[2020-01-31]})
+      {:ok, newer_d} = Arrow.Disruption.update(new_dr.id, %{end_date: ~D[2020-01-31]})
+
+      newer_d = Arrow.Repo.preload(newer_d, [:revisions])
 
       :ok = DisruptionRevision.ready_all!()
 
-      newest_dr =
-        DisruptionRevision |> Arrow.Repo.get(newer_dr.id) |> Arrow.Repo.preload([:disruption])
+      newest_d = Arrow.Repo.get(Arrow.Disruption, newer_d.id)
 
-      assert newest_dr.disruption.ready_revision_id == newer_dr.id
+      assert newest_d.ready_revision_id == newer_d.revisions |> Enum.map(& &1.id) |> Enum.max()
     end
   end
 

@@ -4,50 +4,36 @@ defmodule ArrowWeb.API.DisruptionController do
   alias ArrowWeb.Utilities
   import Ecto.Query
 
-  @filters ~w{min_start_date max_start_date min_end_date max_end_date}
-
   @spec index(Plug.Conn.t(), map()) :: Plug.Conn.t()
-  def index(conn, params) do
-    query =
-      params
-      |> take_filters
-      |> format_filters
-      |> build_query
+  def index(conn, _params) do
+    data =
+      from(d in Disruption,
+        join: dr in assoc(d, :revisions),
+        order_by: [d.id, dr.id],
+        where: dr.id >= d.published_revision_id or is_nil(d.published_revision_id),
+        preload: [revisions: {dr, ^DisruptionRevision.associations()}]
+      )
+      |> Repo.all()
 
-    case do_only_ready_query(query, params) do
-      {:ok, query} ->
-        data =
-          query
-          |> Repo.all()
-          |> Repo.preload(DisruptionRevision.associations())
-
-        render(conn, "index.json-api",
-          data: data,
-          opts: [include: Map.get(params, "include")]
-        )
-
-      :error ->
-        conn |> put_status(400) |> render(:errors, errors: [%{detail: "Invalid request"}])
-    end
+    render(conn, "index.json-api", data: data)
   end
 
   @spec show(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def show(conn, params) do
-    case do_only_ready_query(DisruptionRevision, params) do
-      {:ok, dr_query} ->
-        disruption_revision =
-          dr_query
-          |> Repo.get_by!(disruption_id: params["id"])
-          |> Repo.preload(DisruptionRevision.associations())
+    disruption_id = params["id"]
 
-        render(conn, "index.json-api",
-          data: disruption_revision,
-          opts: [include: Map.get(params, "include")]
-        )
+    data =
+      from(d in Disruption,
+        join: dr in assoc(d, :revisions),
+        order_by: [d.id, dr.id],
+        where:
+          d.id == ^disruption_id and
+            (dr.id >= d.published_revision_id or is_nil(d.published_revision_id)),
+        preload: [revisions: {dr, ^DisruptionRevision.associations()}]
+      )
+      |> Repo.one!()
 
-      :error ->
-        conn |> put_status(400) |> render(:errors, errors: [%{detail: "Invalid request"}])
-    end
+    render(conn, "show.json-api", data: data)
   end
 
   @spec create(Plug.Conn.t(), map()) :: Plug.Conn.t()
@@ -69,8 +55,8 @@ defmodule ArrowWeb.API.DisruptionController do
     attrs = Map.merge(attrs, relationships)
 
     case Disruption.create(attrs, adjustments) do
-      {:ok, disruption_revision} ->
-        data = Repo.preload(disruption_revision, DisruptionRevision.associations())
+      {:ok, disruption} ->
+        data = Repo.preload(disruption, revisions: DisruptionRevision.associations())
 
         conn
         |> put_status(201)
@@ -99,10 +85,12 @@ defmodule ArrowWeb.API.DisruptionController do
       |> Repo.get_by!(disruption_id: params["id"])
 
     case Disruption.update(disruption_revision.id, attrs) do
-      {:ok, disruption_revision} ->
+      {:ok, disruption} ->
+        data = Repo.preload(disruption, revisions: DisruptionRevision.associations())
+
         conn
         |> put_status(200)
-        |> render("show.json-api", data: disruption_revision)
+        |> render("show.json-api", data: data)
 
       {:error, changeset} ->
         conn
@@ -124,58 +112,6 @@ defmodule ArrowWeb.API.DisruptionController do
       {:ok, _disruption} = Disruption.delete(disruption_revision.id)
 
       send_resp(conn, 204, "")
-    end
-  end
-
-  @spec build_query([{String.t(), Date.t()}]) :: Ecto.Query.t()
-  defp build_query(filters) do
-    query = from(d in DisruptionRevision)
-    Enum.reduce(filters, query, &compose_query/2)
-  end
-
-  @spec compose_query({String.t(), Date.t()}, Ecto.Query.t()) :: Ecto.Query.t()
-  defp compose_query({"min_start_date", date}, query),
-    do: from(d in query, where: d.start_date >= ^date)
-
-  defp compose_query({"min_end_date", date}, query),
-    do: from(d in query, where: d.end_date >= ^date)
-
-  defp compose_query({"max_start_date", date}, query),
-    do: from(d in query, where: d.start_date <= ^date)
-
-  defp compose_query({"max_end_date", date}, query),
-    do: from(d in query, where: d.end_date <= ^date)
-
-  @spec take_filters(map()) :: map()
-  defp take_filters(params) do
-    Map.take(Map.get(params, "filter", %{}), @filters)
-  end
-
-  @spec format_filters(map()) :: [{String.t(), Date.t()}]
-  defp format_filters(filters) do
-    Enum.reduce(filters, [], fn filter, acc -> acc ++ do_format_filter(filter) end)
-  end
-
-  @spec do_format_filter({String.t(), String.t()}) :: [{String.t(), Date.t()}]
-  defp do_format_filter({filter, value})
-       when filter in @filters do
-    case Date.from_iso8601(value) do
-      {:ok, date} ->
-        [{filter, date}]
-
-      {:error, _} ->
-        []
-    end
-  end
-
-  defp do_format_filter(_), do: []
-
-  @spec do_only_ready_query(Ecto.Queryable.t(), map()) :: {:ok, Ecto.Query.t()} | :error
-  defp do_only_ready_query(q, params) do
-    case Map.get(params, "only_ready") do
-      "true" -> {:ok, DisruptionRevision.only_ready(q)}
-      val when val in [nil, "", "false"] -> {:ok, DisruptionRevision.latest_revision(q)}
-      _ -> :error
     end
   end
 end

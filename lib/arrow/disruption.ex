@@ -29,7 +29,7 @@ defmodule Arrow.Disruption do
   end
 
   @spec create(map(), [Arrow.Adjustment.t()]) ::
-          {:ok, DisruptionRevision.t()} | {:error, any()}
+          {:ok, __MODULE__.t()} | {:error, any()}
   def create(attrs, adjustments) do
     days_of_week =
       for dow <- attrs["days_of_week"] || [],
@@ -62,8 +62,8 @@ defmodule Arrow.Disruption do
       |> common_validations()
 
     case Arrow.Repo.insert(disruption_revision_changeset) do
-      {:ok, disruption_revision} ->
-        {:ok, disruption_revision}
+      {:ok, _disruption_revision} ->
+        {:ok, disruption}
 
       {:error, err} ->
         Arrow.Repo.delete!(disruption)
@@ -71,7 +71,7 @@ defmodule Arrow.Disruption do
     end
   end
 
-  @spec update(integer(), map()) :: {:ok, DisruptionRevision.t()} | {:error, any()}
+  @spec update(integer(), map()) :: {:ok, __MODULE__.t()} | {:error, any()}
   def update(disruption_revision_id, attrs) do
     new_disruption_revision = DisruptionRevision.clone!(disruption_revision_id)
 
@@ -90,7 +90,7 @@ defmodule Arrow.Disruption do
 
     case Arrow.Repo.update(dr_changeset) do
       {:ok, disruption_revision} ->
-        {:ok, disruption_revision}
+        {:ok, Arrow.Repo.get!(__MODULE__, disruption_revision.disruption_id)}
 
       {:error, e} ->
         Arrow.Repo.delete!(dr)
