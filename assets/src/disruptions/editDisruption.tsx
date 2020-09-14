@@ -19,9 +19,11 @@ import {
   ixToDayName,
 } from "./time"
 import { DisruptionTimePicker } from "./disruptionTimePicker"
+import { DisruptionView, revisionFromDisruptionForView } from "./viewToggle"
 
 import Adjustment from "../models/adjustment"
 import Disruption from "../models/disruption"
+import DisruptionRevision from "../models/disruptionRevision"
 import Exception from "../models/exception"
 import { JsonApiResponse, toModelObject, parseErrors } from "../jsonApi"
 import DayOfWeek from "../models/dayOfWeek"
@@ -59,8 +61,8 @@ const SaveCancelButton = ({
 const EditDisruption = ({
   match,
 }: RouteComponentProps<TParams>): JSX.Element => {
-  const [disruption, setDisruption] = React.useState<
-    Disruption | "error" | null
+  const [disruptionRevision, setDisruptionRevision] = React.useState<
+    DisruptionRevision | "error" | null
   >(null)
   const [validationErrors, setValidationErrors] = React.useState<string[]>([])
   const [doRedirect, setDoRedirect] = React.useState<boolean>(false)
@@ -69,7 +71,9 @@ const EditDisruption = ({
     const result = await apiSend({
       url: "/api/disruptions/" + encodeURIComponent(match.params.id),
       method: "PATCH",
-      json: JSON.stringify((disruption as Disruption).toJsonApi()),
+      json: JSON.stringify(
+        (disruptionRevision as DisruptionRevision).toJsonApi()
+      ),
       successParser: toModelObject,
       errorParser: parseErrors,
     })
@@ -79,7 +83,7 @@ const EditDisruption = ({
     } else if (result.error) {
       setValidationErrors(result.error)
     }
-  }, [disruption, match])
+  }, [disruptionRevision, match])
 
   React.useEffect(() => {
     apiGet<JsonApiResponse>({
@@ -88,9 +92,16 @@ const EditDisruption = ({
       defaultResult: "error",
     }).then((result: JsonApiResponse) => {
       if (result instanceof Disruption) {
-        setDisruption(result)
+        const revisionFromResponse = revisionFromDisruptionForView(
+          result,
+          DisruptionView.Draft
+        )
+
+        if (typeof revisionFromResponse !== "undefined") {
+          setDisruptionRevision(revisionFromResponse)
+        }
       } else {
-        setDisruption("error")
+        setDisruptionRevision("error")
       }
     })
   }, [match.params.id])
@@ -101,21 +112,21 @@ const EditDisruption = ({
     )
   }
 
-  if (disruption === "error") {
+  if (disruptionRevision === "error") {
     return <div>Error loading disruption.</div>
   }
 
-  if (disruption === null) {
+  if (disruptionRevision === null) {
     return <Loading />
   }
 
-  const disruptionDaysOfWeek = fromDaysOfWeek(disruption.daysOfWeek)
+  const disruptionDaysOfWeek = fromDaysOfWeek(disruptionRevision.daysOfWeek)
 
   if (disruptionDaysOfWeek === "error") {
     return <div>Error parsing day of week information.</div>
   }
 
-  const exceptionDates = disruption.exceptions
+  const exceptionDates = disruptionRevision.exceptions
     .map((exception) => exception.excludedDate)
     .filter(
       (maybeDate: Date | undefined): maybeDate is Date =>
@@ -125,36 +136,40 @@ const EditDisruption = ({
   return (
     <EditDisruptionForm
       disruptionId={match.params.id}
-      adjustments={disruption.adjustments}
-      fromDate={disruption.startDate || null}
+      adjustments={disruptionRevision.adjustments}
+      fromDate={disruptionRevision.startDate || null}
       setFromDate={(newDate) => {
-        const newDisruption = new Disruption({ ...disruption })
+        const newDisruptionRevision = new DisruptionRevision({
+          ...disruptionRevision,
+        })
         if (newDate) {
-          newDisruption.startDate = newDate
+          newDisruptionRevision.startDate = newDate
         } else {
-          delete newDisruption.startDate
+          delete newDisruptionRevision.startDate
         }
-        setDisruption(newDisruption)
+        setDisruptionRevision(newDisruptionRevision)
       }}
-      toDate={disruption.endDate || null}
+      toDate={disruptionRevision.endDate || null}
       setToDate={(newDate) => {
-        const newDisruption = new Disruption({ ...disruption })
+        const newDisruptionRevision = new DisruptionRevision({
+          ...disruptionRevision,
+        })
         if (newDate) {
-          newDisruption.endDate = newDate
+          newDisruptionRevision.endDate = newDate
         } else {
-          delete newDisruption.endDate
+          delete newDisruptionRevision.endDate
         }
-        setDisruption(newDisruption)
+        setDisruptionRevision(newDisruptionRevision)
       }}
       exceptionDates={exceptionDates}
       setExceptionDates={setExceptionDatesForDisruption(
-        new Disruption({ ...disruption }),
-        setDisruption
+        new DisruptionRevision({ ...disruptionRevision }),
+        setDisruptionRevision
       )}
       disruptionDaysOfWeek={disruptionDaysOfWeek}
       setDisruptionDaysOfWeek={setDisruptionDaysOfWeekForDisruption(
-        new Disruption({ ...disruption }),
-        setDisruption
+        new DisruptionRevision({ ...disruptionRevision }),
+        setDisruptionRevision
       )}
       saveDisruption={saveDisruption}
       validationErrors={validationErrors}
@@ -163,14 +178,14 @@ const EditDisruption = ({
 }
 
 const setExceptionDatesForDisruption = (
-  disruption: Disruption,
-  setDisruption: React.Dispatch<Disruption>
+  disruptionRevision: DisruptionRevision,
+  setDisruptionRevision: React.Dispatch<DisruptionRevision>
 ): React.Dispatch<Date[]> => {
   return (newExceptionDates) => {
     const newExceptionDatesAsTimes = newExceptionDates.map((date) =>
       date.getTime()
     )
-    const currentExceptionDates = disruption.exceptions
+    const currentExceptionDates = disruptionRevision.exceptions
       .map((exception) => exception.excludedDate)
       .filter((maybeDate) => maybeDate instanceof Date)
       .map((date) => date.getTime())
@@ -183,28 +198,30 @@ const setExceptionDatesForDisruption = (
     )
 
     // Trim out the removed dates
-    disruption.exceptions = disruption.exceptions.filter((exception) => {
-      return (
-        exception.excludedDate instanceof Date &&
-        !removedDates.includes(exception.excludedDate.getTime())
-      )
-    })
+    disruptionRevision.exceptions = disruptionRevision.exceptions.filter(
+      (exception) => {
+        return (
+          exception.excludedDate instanceof Date &&
+          !removedDates.includes(exception.excludedDate.getTime())
+        )
+      }
+    )
     // Add in added dates
-    disruption.exceptions = disruption.exceptions.concat(
+    disruptionRevision.exceptions = disruptionRevision.exceptions.concat(
       addedDates.map((date) => new Exception({ excludedDate: new Date(date) }))
     )
-    setDisruption(disruption)
+    setDisruptionRevision(disruptionRevision)
   }
 }
 
 const setDisruptionDaysOfWeekForDisruption = (
-  disruption: Disruption,
-  setDisruption: React.Dispatch<Disruption>
+  disruptionRevision: DisruptionRevision,
+  setDisruptionRevision: React.Dispatch<DisruptionRevision>
 ): React.Dispatch<DayOfWeekTimeRanges> => {
   return (newDisruptionDaysOfWeek) => {
     for (let i = 0; i < newDisruptionDaysOfWeek.length; i++) {
       if (newDisruptionDaysOfWeek[i] === null) {
-        disruption.daysOfWeek = disruption.daysOfWeek.filter(
+        disruptionRevision.daysOfWeek = disruptionRevision.daysOfWeek.filter(
           (dayOfWeek) => dayOfWeek.dayName !== ixToDayName(i)
         )
       } else {
@@ -228,12 +245,12 @@ const setDisruptionDaysOfWeekForDisruption = (
           )
         }
 
-        const dayOfWeekIndex = disruption.daysOfWeek.findIndex(
+        const dayOfWeekIndex = disruptionRevision.daysOfWeek.findIndex(
           (dayOfWeek) => dayOfWeek.dayName === ixToDayName(i)
         )
 
         if (dayOfWeekIndex === -1) {
-          disruption.daysOfWeek = disruption.daysOfWeek.concat([
+          disruptionRevision.daysOfWeek = disruptionRevision.daysOfWeek.concat([
             new DayOfWeek({
               startTime,
               endTime,
@@ -241,12 +258,12 @@ const setDisruptionDaysOfWeekForDisruption = (
             }),
           ])
         } else {
-          disruption.daysOfWeek[dayOfWeekIndex].startTime = startTime
-          disruption.daysOfWeek[dayOfWeekIndex].endTime = endTime
+          disruptionRevision.daysOfWeek[dayOfWeekIndex].startTime = startTime
+          disruptionRevision.daysOfWeek[dayOfWeekIndex].endTime = endTime
         }
       }
     }
-    setDisruption(disruption)
+    setDisruptionRevision(disruptionRevision)
   }
 }
 

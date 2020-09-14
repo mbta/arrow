@@ -16,9 +16,11 @@ import {
   DisruptionViewToggle,
   useDisruptionViewParam,
   DisruptionView,
+  revisionFromDisruptionForView,
 } from "./viewToggle"
 import Row from "react-bootstrap/Row"
 import Col from "react-bootstrap/Col"
+import DisruptionRevision from "../models/disruptionRevision"
 
 interface TParams {
   id: string
@@ -95,25 +97,24 @@ interface ViewDisruptionFormProps {
 const ViewDisruptionForm = ({
   disruptionId,
 }: ViewDisruptionFormProps): JSX.Element => {
-  const [disruption, setDisruption] = React.useState<
-    Disruption | "error" | null
+  const [disruptionRevision, setDisruptionRevision] = React.useState<
+    DisruptionRevision | "error" | null
   >(null)
   const [doRedirect, setDoRedirect] = React.useState<boolean>(false)
   const [deletionErrors, setDeletionErrors] = React.useState<string[]>([])
   const view = useDisruptionViewParam()
   React.useEffect(() => {
     apiGet<JsonApiResponse>({
-      url:
-        "/api/disruptions/" +
-        encodeURIComponent(disruptionId) +
-        `?only_ready=${view === DisruptionView.Ready ? "true" : "false"}`,
+      url: "/api/disruptions/" + encodeURIComponent(disruptionId),
       parser: toModelObject,
       defaultResult: "error",
     }).then((result: JsonApiResponse) => {
       if (result instanceof Disruption) {
-        setDisruption(result)
+        setDisruptionRevision(
+          revisionFromDisruptionForView(result, view) || null
+        )
       } else {
-        setDisruption("error")
+        setDisruptionRevision("error")
       }
     })
   }, [disruptionId, view])
@@ -122,15 +123,19 @@ const ViewDisruptionForm = ({
     return <Redirect to={`/`} />
   }
 
-  if (disruption && disruption !== "error" && disruption.id) {
-    const exceptionDates = disruption.exceptions
+  if (
+    disruptionRevision &&
+    disruptionRevision !== "error" &&
+    disruptionRevision.id
+  ) {
+    const exceptionDates = disruptionRevision.exceptions
       .map((exception) => exception.excludedDate)
       .filter(
         (maybeDate: Date | undefined): maybeDate is Date =>
           typeof maybeDate !== "undefined"
       )
 
-    const disruptionDaysOfWeek = fromDaysOfWeek(disruption.daysOfWeek)
+    const disruptionDaysOfWeek = fromDaysOfWeek(disruptionRevision.daysOfWeek)
 
     if (disruptionDaysOfWeek !== "error") {
       return (
@@ -147,27 +152,32 @@ const ViewDisruptionForm = ({
                 </Alert>
               )}
               <DisruptionPreview
-                disruptionId={disruption.id}
-                adjustments={disruption.adjustments}
-                fromDate={disruption.startDate || null}
-                toDate={disruption.endDate || null}
+                disruptionId={disruptionRevision.disruptionId}
+                adjustments={disruptionRevision.adjustments}
+                fromDate={disruptionRevision.startDate || null}
+                toDate={disruptionRevision.endDate || null}
                 exceptionDates={exceptionDates}
                 disruptionDaysOfWeek={disruptionDaysOfWeek}
-                tripShortNames={disruption.tripShortNames
+                tripShortNames={disruptionRevision.tripShortNames
                   .map((tsn) => tsn.tripShortName)
                   .join(", ")}
               />
               {view === DisruptionView.Draft && (
                 <>
                   <div>
-                    <EditDisruptionButton disruptionId={disruption.id} />
+                    {disruptionRevision.disruptionId && (
+                      <EditDisruptionButton
+                        disruptionId={disruptionRevision.disruptionId}
+                      />
+                    )}
                   </div>
-                  {disruption.startDate &&
-                    disruption.startDate >=
+                  {disruptionRevision.disruptionId &&
+                    disruptionRevision.startDate &&
+                    disruptionRevision.startDate >=
                       new Date(new Date().toDateString()) && (
                       <div>
                         <DeleteDisruptionButton
-                          disruptionId={disruption.id}
+                          disruptionId={disruptionRevision.disruptionId}
                           setDoRedirect={setDoRedirect}
                           setDeletionErrors={setDeletionErrors}
                         />
@@ -185,7 +195,7 @@ const ViewDisruptionForm = ({
     } else {
       return <div>Error parsing day of week information.</div>
     }
-  } else if (disruption === "error") {
+  } else if (disruptionRevision === "error") {
     return <div>Error fetching or parsing disruption.</div>
   } else {
     return <Loading />

@@ -2,6 +2,9 @@ import * as React from "react"
 import { NavLink, useHistory } from "react-router-dom"
 import queryString from "query-string"
 
+import Disruption from "../models/disruption"
+import DisruptionRevision from "../models/disruptionRevision"
+
 enum DisruptionView {
   Draft,
   Ready,
@@ -48,4 +51,27 @@ const DisruptionViewToggle = () => {
   )
 }
 
-export { DisruptionViewToggle, DisruptionView, useDisruptionViewParam }
+const revisionFromDisruptionForView = (
+  disruption: Disruption,
+  view: DisruptionView
+): DisruptionRevision | undefined => {
+  switch (view) {
+    case DisruptionView.Draft: {
+      const sortedRevisions = disruption.revisions.sort((r1, r2) => {
+        return parseInt(r1.id || "", 10) - parseInt(r2.id || "", 10)
+      })
+
+      return sortedRevisions[sortedRevisions.length - 1]
+    }
+    case DisruptionView.Ready: {
+      return disruption.readyRevision
+    }
+  }
+}
+
+export {
+  DisruptionViewToggle,
+  DisruptionView,
+  useDisruptionViewParam,
+  revisionFromDisruptionForView,
+}

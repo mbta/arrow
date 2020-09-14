@@ -5,7 +5,7 @@ import {
   dayNameToInt,
 } from "../../src/disruptions/disruptionCalendar"
 import { render } from "@testing-library/react"
-import Disruption from "../../src/models/disruption"
+import DisruptionRevision from "../../src/models/disruptionRevision"
 import Adjustment from "../../src/models/adjustment"
 import DayOfWeek from "../../src/models/dayOfWeek"
 import Exception from "../../src/models/exception"
@@ -14,10 +14,12 @@ import { BrowserRouter } from "react-router-dom"
 import { DisruptionView } from "../../src/disruptions/viewToggle"
 
 const SAMPLE_DISRUPTIONS = [
-  new Disruption({
+  new DisruptionRevision({
     id: "1",
+    disruptionId: "1",
     startDate: toUTCDate("2019-10-31"),
     endDate: toUTCDate("2019-11-15"),
+    isActive: true,
     adjustments: [
       new Adjustment({
         id: "1",
@@ -43,10 +45,12 @@ const SAMPLE_DISRUPTIONS = [
     exceptions: [new Exception({ excludedDate: toUTCDate("2019-11-01") })],
     tripShortNames: [],
   }),
-  new Disruption({
+  new DisruptionRevision({
     id: "3",
+    disruptionId: "3",
     startDate: toUTCDate("2019-11-15"),
     endDate: toUTCDate("2019-11-30"),
+    isActive: true,
     adjustments: [
       new Adjustment({
         id: "2",
@@ -72,10 +76,12 @@ const SAMPLE_DISRUPTIONS = [
     exceptions: [],
     tripShortNames: [],
   }),
-  new Disruption({
+  new DisruptionRevision({
     id: "4",
+    disruptionId: "4",
     startDate: toUTCDate("2019-11-15"),
     endDate: toUTCDate("2019-11-30"),
+    isActive: true,
     adjustments: [
       new Adjustment({
         id: "2",
@@ -192,10 +198,12 @@ describe("DisruptionCalendar", () => {
       expect(
         disruptionsToCalendarEvents(
           [
-            new Disruption({
+            new DisruptionRevision({
               id: "1",
+              disruptionId: "1",
               startDate: toUTCDate("2020-07-01"),
               endDate: toUTCDate("2020-07-02"),
+              isActive: true,
               adjustments: [
                 new Adjustment({
                   id: "1",
@@ -225,11 +233,13 @@ describe("DisruptionCalendar", () => {
       <BrowserRouter>
         <DisruptionCalendar
           initialDate={toUTCDate("2020-11-15")}
-          disruptions={[
-            new Disruption({
+          disruptionRevisions={[
+            new DisruptionRevision({
               id: "1",
+              disruptionId: "1",
               startDate: toUTCDate("2020-10-30"),
               endDate: toUTCDate("2020-11-22"),
+              isActive: true,
               adjustments: [
                 new Adjustment({
                   id: "1",
@@ -282,7 +292,7 @@ describe("DisruptionCalendar", () => {
       <BrowserRouter>
         <DisruptionCalendar
           initialDate={toUTCDate("2019-11-15")}
-          disruptions={SAMPLE_DISRUPTIONS}
+          disruptionRevisions={SAMPLE_DISRUPTIONS}
         />
       </BrowserRouter>
     )

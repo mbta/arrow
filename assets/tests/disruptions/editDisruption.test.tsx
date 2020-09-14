@@ -10,6 +10,7 @@ import EditDisruption from "../../src/disruptions/editDisruption"
 import Adjustment from "../../src/models/adjustment"
 import DayOfWeek from "../../src/models/dayOfWeek"
 import Disruption from "../../src/models/disruption"
+import DisruptionRevision from "../../src/models/disruptionRevision"
 import Exception from "../../src/models/exception"
 
 describe("EditDisruption", () => {
@@ -20,31 +21,64 @@ describe("EditDisruption", () => {
     apiCallSpy = jest.spyOn(api, "apiGet").mockImplementation(() => {
       return Promise.resolve(
         new Disruption({
-          id: "1",
-          startDate: new Date("2020-01-15T00:00:00"),
-          endDate: new Date("2020-01-30T00:00:00"),
-          adjustments: [
-            new Adjustment({
+          readyRevision: new DisruptionRevision({
+            id: "1",
+            startDate: new Date("2020-01-15T00:00:00"),
+            endDate: new Date("2020-01-30T00:00:00"),
+            isActive: true,
+            adjustments: [
+              new Adjustment({
+                id: "1",
+                routeId: "Green-D",
+                source: "gtfs_creator",
+                sourceLabel: "NewtonHighlandsKenmore",
+              }),
+            ],
+            daysOfWeek: [
+              new DayOfWeek({
+                id: "1",
+                startTime: "20:45:00",
+                dayName: "friday",
+              }),
+            ],
+            exceptions: [
+              new Exception({
+                id: "1",
+                excludedDate: new Date("2020-01-20T00:00:00"),
+              }),
+            ],
+            tripShortNames: [],
+          }),
+          revisions: [
+            new DisruptionRevision({
               id: "1",
-              routeId: "Green-D",
-              source: "gtfs_creator",
-              sourceLabel: "NewtonHighlandsKenmore",
+              startDate: new Date("2020-01-15T00:00:00"),
+              endDate: new Date("2020-01-30T00:00:00"),
+              isActive: true,
+              adjustments: [
+                new Adjustment({
+                  id: "1",
+                  routeId: "Green-D",
+                  source: "gtfs_creator",
+                  sourceLabel: "NewtonHighlandsKenmore",
+                }),
+              ],
+              daysOfWeek: [
+                new DayOfWeek({
+                  id: "1",
+                  startTime: "20:45:00",
+                  dayName: "friday",
+                }),
+              ],
+              exceptions: [
+                new Exception({
+                  id: "1",
+                  excludedDate: new Date("2020-01-20T00:00:00"),
+                }),
+              ],
+              tripShortNames: [],
             }),
           ],
-          daysOfWeek: [
-            new DayOfWeek({
-              id: "1",
-              startTime: "20:45:00",
-              dayName: "friday",
-            }),
-          ],
-          exceptions: [
-            new Exception({
-              id: "1",
-              excludedDate: new Date("2020-01-20T00:00:00"),
-            }),
-          ],
-          tripShortNames: [],
         })
       )
     })
@@ -136,15 +170,32 @@ describe("EditDisruption", () => {
     apiCallSpy = jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
       return Promise.resolve(
         new Disruption({
-          adjustments: [],
-          daysOfWeek: [
-            new DayOfWeek({
-              startTime: "20:37:00",
-              dayName: "friday",
+          readyRevision: new DisruptionRevision({
+            isActive: true,
+            adjustments: [],
+            daysOfWeek: [
+              new DayOfWeek({
+                startTime: "20:37:00",
+                dayName: "friday",
+              }),
+            ],
+            exceptions: [],
+            tripShortNames: [],
+          }),
+          revisions: [
+            new DisruptionRevision({
+              isActive: true,
+              adjustments: [],
+              daysOfWeek: [
+                new DayOfWeek({
+                  startTime: "20:37:00",
+                  dayName: "friday",
+                }),
+              ],
+              exceptions: [],
+              tripShortNames: [],
             }),
           ],
-          exceptions: [],
-          tripShortNames: [],
         })
       )
     })

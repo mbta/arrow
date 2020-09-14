@@ -1,8 +1,9 @@
 import { toModelObject, parseErrors, toUTCDate } from "../src/jsonApi"
 import Adjustment from "../src/models/adjustment"
 import DayOfWeek from "../src/models/dayOfWeek"
-import DisruptionDiff from "../src/models/disruptionDiff"
 import Disruption from "../src/models/disruption"
+import DisruptionDiff from "../src/models/disruptionDiff"
+import DisruptionRevision from "../src/models/disruptionRevision"
 import Exception from "../src/models/exception"
 import TripShortName from "../src/models/tripShortName"
 
@@ -76,9 +77,36 @@ describe("toModelObject", () => {
     expect(
       toModelObject({
         data: {
+          attributes: {},
+          id: "1",
+          relationships: {
+            revisions: {
+              data: [],
+            },
+            ready_revision: { data: null },
+            published_revision: { data: null },
+          },
+          type: "disruption",
+        },
+        included: [],
+        jsonapi: { version: "1.0" },
+      })
+    ).toEqual(
+      new Disruption({
+        id: "1",
+        revisions: [],
+      })
+    )
+  })
+
+  test("succeeds with valid disruption_revision input", () => {
+    expect(
+      toModelObject({
+        data: {
           attributes: {
             end_date: "2020-01-12",
             start_date: "2019-12-20",
+            is_active: true,
           },
           id: "1",
           relationships: {
@@ -89,7 +117,7 @@ describe("toModelObject", () => {
             exceptions: { data: [] },
             trip_short_names: { data: [] },
           },
-          type: "disruption",
+          type: "disruption_revision",
         },
         included: [
           {
@@ -105,10 +133,11 @@ describe("toModelObject", () => {
         jsonapi: { version: "1.0" },
       })
     ).toEqual(
-      new Disruption({
+      new DisruptionRevision({
         id: "1",
         startDate: new Date("2019-12-20T00:00:00Z"),
         endDate: new Date("2020-01-12T00:00:00Z"),
+        isActive: true,
         adjustments: [
           new Adjustment({
             id: "12",
@@ -244,6 +273,7 @@ describe("toModelObject", () => {
             attributes: {
               end_date: "2020-01-12",
               start_date: "2019-12-20",
+              is_active: true,
             },
             id: "1",
             relationships: {
@@ -254,12 +284,13 @@ describe("toModelObject", () => {
               exceptions: { data: [] },
               trip_short_names: { data: [] },
             },
-            type: "disruption",
+            type: "disruption_revision",
           },
           {
             attributes: {
               end_date: "2020-01-15",
               start_date: "2019-12-25",
+              is_active: true,
             },
             id: "2",
             relationships: {
@@ -270,7 +301,7 @@ describe("toModelObject", () => {
               exceptions: { data: [] },
               trip_short_names: { data: [] },
             },
-            type: "disruption",
+            type: "disruption_revision",
           },
         ],
         included: [
@@ -296,10 +327,11 @@ describe("toModelObject", () => {
         jsonapi: { version: "1.0" },
       })
     ).toEqual([
-      new Disruption({
+      new DisruptionRevision({
         id: "1",
         startDate: new Date("2019-12-20T00:00:00Z"),
         endDate: new Date("2020-01-12T00:00:00Z"),
+        isActive: true,
         adjustments: [
           new Adjustment({
             id: "12",
@@ -312,10 +344,11 @@ describe("toModelObject", () => {
         exceptions: [],
         tripShortNames: [],
       }),
-      new Disruption({
+      new DisruptionRevision({
         id: "2",
         startDate: new Date("2019-12-25T00:00:00Z"),
         endDate: new Date("2020-01-15T00:00:00Z"),
+        isActive: true,
         adjustments: [
           new Adjustment({
             id: "13",
@@ -345,7 +378,7 @@ describe("toModelObject", () => {
               latest_revision: {
                 data: {
                   id: "6",
-                  type: "disruption",
+                  type: "disruption_revision",
                 },
               },
             },
@@ -357,6 +390,7 @@ describe("toModelObject", () => {
             attributes: {
               end_date: "2020-09-03",
               start_date: "2020-08-02",
+              is_active: true,
             },
             id: "6",
             relationships: {
@@ -387,9 +421,8 @@ describe("toModelObject", () => {
                 data: [],
               },
             },
-            type: "disruption",
+            type: "disruption_revision",
           },
-
           {
             attributes: {
               day_name: "wednesday",
@@ -422,10 +455,11 @@ describe("toModelObject", () => {
     ).toEqual([
       new DisruptionDiff({
         id: "6",
-        disruption: new Disruption({
+        disruptionRevision: new DisruptionRevision({
           id: "6",
           startDate: toUTCDate("2020-08-02"),
           endDate: toUTCDate("2020-09-03"),
+          isActive: true,
           adjustments: [
             new Adjustment({
               id: "42",

@@ -59,14 +59,18 @@ const DisruptionNeedsReviewView = ({
         >
           <div className="m-disruption-diffs__disruption">
             <div className="m-disruption-diffs__adjustments">
-              {disruptionDiff.disruption.adjustments.map((a) => a.sourceLabel)}
+              {disruptionDiff.disruptionRevision.adjustments.map(
+                (a) => a.sourceLabel
+              )}
             </div>
             <div className="m-disruption-diffs__date_range">
-              {disruptionDiff.disruption.startDate &&
-                formatDisruptionDate(disruptionDiff.disruption.startDate)}{" "}
+              {disruptionDiff.disruptionRevision.startDate &&
+                formatDisruptionDate(
+                  disruptionDiff.disruptionRevision.startDate
+                )}{" "}
               -{" "}
-              {disruptionDiff.disruption.endDate &&
-                formatDisruptionDate(disruptionDiff.disruption.endDate)}
+              {disruptionDiff.disruptionRevision.endDate &&
+                formatDisruptionDate(disruptionDiff.disruptionRevision.endDate)}
             </div>
           </div>
           {disruptionDiff.isCreated && (

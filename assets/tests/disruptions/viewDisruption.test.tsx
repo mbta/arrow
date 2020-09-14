@@ -14,6 +14,7 @@ import ViewDisruption from "../../src/disruptions/viewDisruption"
 import Adjustment from "../../src/models/adjustment"
 import DayOfWeek from "../../src/models/dayOfWeek"
 import Disruption from "../../src/models/disruption"
+import DisruptionRevision from "../../src/models/disruptionRevision"
 import Exception from "../../src/models/exception"
 import TripShortName from "../../src/models/tripShortName"
 
@@ -23,32 +24,71 @@ describe("ViewDisruption", () => {
       return Promise.resolve(
         new Disruption({
           id: "1",
-          startDate: new Date("2020-01-15"),
-          endDate: new Date("2020-01-30"),
-          adjustments: [
-            new Adjustment({
+          readyRevision: new DisruptionRevision({
+            id: "1",
+            disruptionId: "1",
+            startDate: new Date("2020-01-15"),
+            endDate: new Date("2020-01-30"),
+            isActive: true,
+            adjustments: [
+              new Adjustment({
+                id: "1",
+                routeId: "Green-D",
+                source: "gtfs_creator",
+                sourceLabel: "NewtonHighlandsKenmore",
+              }),
+            ],
+            daysOfWeek: [
+              new DayOfWeek({
+                id: "1",
+                startTime: "20:45:00",
+                dayName: "friday",
+              }),
+            ],
+            exceptions: [
+              new Exception({
+                id: "1",
+                excludedDate: new Date("2020-01-20"),
+              }),
+            ],
+            tripShortNames: [
+              new TripShortName({ tripShortName: "123" }),
+              new TripShortName({ tripShortName: "456" }),
+            ],
+          }),
+          revisions: [
+            new DisruptionRevision({
               id: "1",
-              routeId: "Green-D",
-              source: "gtfs_creator",
-              sourceLabel: "NewtonHighlandsKenmore",
+              disruptionId: "1",
+              startDate: new Date("2020-01-15"),
+              endDate: new Date("2020-01-30"),
+              isActive: true,
+              adjustments: [
+                new Adjustment({
+                  id: "1",
+                  routeId: "Green-D",
+                  source: "gtfs_creator",
+                  sourceLabel: "NewtonHighlandsKenmore",
+                }),
+              ],
+              daysOfWeek: [
+                new DayOfWeek({
+                  id: "1",
+                  startTime: "20:45:00",
+                  dayName: "friday",
+                }),
+              ],
+              exceptions: [
+                new Exception({
+                  id: "1",
+                  excludedDate: new Date("2020-01-20"),
+                }),
+              ],
+              tripShortNames: [
+                new TripShortName({ tripShortName: "123" }),
+                new TripShortName({ tripShortName: "456" }),
+              ],
             }),
-          ],
-          daysOfWeek: [
-            new DayOfWeek({
-              id: "1",
-              startTime: "20:45:00",
-              dayName: "friday",
-            }),
-          ],
-          exceptions: [
-            new Exception({
-              id: "1",
-              excludedDate: new Date("2020-01-20"),
-            }),
-          ],
-          tripShortNames: [
-            new TripShortName({ tripShortName: "123" }),
-            new TripShortName({ tripShortName: "456" }),
           ],
         })
       )
@@ -98,12 +138,30 @@ describe("ViewDisruption", () => {
       return Promise.resolve(
         new Disruption({
           id: "1",
-          startDate: new Date("2020-01-15"),
-          endDate: new Date("2020-01-30"),
-          adjustments: [],
-          daysOfWeek: [],
-          exceptions: [],
-          tripShortNames: [],
+          readyRevision: new DisruptionRevision({
+            id: "1",
+            disruptionId: "1",
+            startDate: new Date("2020-01-15"),
+            endDate: new Date("2020-01-30"),
+            isActive: true,
+            adjustments: [],
+            daysOfWeek: [],
+            exceptions: [],
+            tripShortNames: [],
+          }),
+          revisions: [
+            new DisruptionRevision({
+              id: "1",
+              disruptionId: "1",
+              startDate: new Date("2020-01-15"),
+              endDate: new Date("2020-01-30"),
+              isActive: true,
+              adjustments: [],
+              daysOfWeek: [],
+              exceptions: [],
+              tripShortNames: [],
+            }),
+          ],
         })
       )
     })
@@ -195,30 +253,66 @@ describe("ViewDisruption", () => {
       return Promise.resolve(
         new Disruption({
           id: "1",
-          startDate: new Date("2020-01-15"),
-          endDate: new Date("2020-01-30"),
-          adjustments: [
-            new Adjustment({
+          readyRevision: new DisruptionRevision({
+            id: "1",
+            disruptionId: "1",
+            startDate: new Date("2020-01-15"),
+            endDate: new Date("2020-01-30"),
+            isActive: true,
+            adjustments: [
+              new Adjustment({
+                id: "1",
+                routeId: "Green-D",
+                source: "gtfs_creator",
+                sourceLabel: "NewtonHighlandsKenmore",
+              }),
+            ],
+            daysOfWeek: [
+              new DayOfWeek({
+                id: "1",
+                startTime: "20:37:00",
+                dayName: "friday",
+              }),
+            ],
+            exceptions: [
+              new Exception({
+                id: "1",
+                excludedDate: new Date("2020-01-20"),
+              }),
+            ],
+            tripShortNames: [],
+          }),
+          revisions: [
+            new DisruptionRevision({
               id: "1",
-              routeId: "Green-D",
-              source: "gtfs_creator",
-              sourceLabel: "NewtonHighlandsKenmore",
+              disruptionId: "1",
+              startDate: new Date("2020-01-15"),
+              endDate: new Date("2020-01-30"),
+              isActive: true,
+              adjustments: [
+                new Adjustment({
+                  id: "1",
+                  routeId: "Green-D",
+                  source: "gtfs_creator",
+                  sourceLabel: "NewtonHighlandsKenmore",
+                }),
+              ],
+              daysOfWeek: [
+                new DayOfWeek({
+                  id: "1",
+                  startTime: "20:37:00",
+                  dayName: "friday",
+                }),
+              ],
+              exceptions: [
+                new Exception({
+                  id: "1",
+                  excludedDate: new Date("2020-01-20"),
+                }),
+              ],
+              tripShortNames: [],
             }),
           ],
-          daysOfWeek: [
-            new DayOfWeek({
-              id: "1",
-              startTime: "20:37:00",
-              dayName: "friday",
-            }),
-          ],
-          exceptions: [
-            new Exception({
-              id: "1",
-              excludedDate: new Date("2020-01-20"),
-            }),
-          ],
-          tripShortNames: [],
         })
       )
     })
@@ -268,25 +362,56 @@ describe("ViewDisruption", () => {
       return Promise.resolve(
         new Disruption({
           id: "1",
-          startDate,
-          endDate,
-          adjustments: [
-            new Adjustment({
+          readyRevision: new DisruptionRevision({
+            id: "1",
+            disruptionId: "1",
+            startDate,
+            endDate,
+            isActive: true,
+            adjustments: [
+              new Adjustment({
+                id: "1",
+                routeId: "Green-D",
+                source: "gtfs_creator",
+                sourceLabel: "NewtonHighlandsKenmore",
+              }),
+            ],
+            daysOfWeek: [
+              new DayOfWeek({
+                id: "1",
+                startTime: "20:45:00",
+                dayName: "friday",
+              }),
+            ],
+            exceptions: [],
+            tripShortNames: [],
+          }),
+          revisions: [
+            new DisruptionRevision({
               id: "1",
-              routeId: "Green-D",
-              source: "gtfs_creator",
-              sourceLabel: "NewtonHighlandsKenmore",
+              disruptionId: "1",
+              startDate,
+              endDate,
+              isActive: true,
+              adjustments: [
+                new Adjustment({
+                  id: "1",
+                  routeId: "Green-D",
+                  source: "gtfs_creator",
+                  sourceLabel: "NewtonHighlandsKenmore",
+                }),
+              ],
+              daysOfWeek: [
+                new DayOfWeek({
+                  id: "1",
+                  startTime: "20:45:00",
+                  dayName: "friday",
+                }),
+              ],
+              exceptions: [],
+              tripShortNames: [],
             }),
           ],
-          daysOfWeek: [
-            new DayOfWeek({
-              id: "1",
-              startTime: "20:45:00",
-              dayName: "friday",
-            }),
-          ],
-          exceptions: [],
-          tripShortNames: [],
         })
       )
     })
@@ -325,25 +450,56 @@ describe("ViewDisruption", () => {
       return Promise.resolve(
         new Disruption({
           id: "1",
-          startDate,
-          endDate,
-          adjustments: [
-            new Adjustment({
+          readyRevision: new DisruptionRevision({
+            id: "1",
+            disruptionId: "1",
+            startDate,
+            endDate,
+            isActive: true,
+            adjustments: [
+              new Adjustment({
+                id: "1",
+                routeId: "Green-D",
+                source: "gtfs_creator",
+                sourceLabel: "NewtonHighlandsKenmore",
+              }),
+            ],
+            daysOfWeek: [
+              new DayOfWeek({
+                id: "1",
+                startTime: "20:45:00",
+                dayName: "friday",
+              }),
+            ],
+            exceptions: [],
+            tripShortNames: [],
+          }),
+          revisions: [
+            new DisruptionRevision({
               id: "1",
-              routeId: "Green-D",
-              source: "gtfs_creator",
-              sourceLabel: "NewtonHighlandsKenmore",
+              disruptionId: "1",
+              startDate,
+              endDate,
+              isActive: true,
+              adjustments: [
+                new Adjustment({
+                  id: "1",
+                  routeId: "Green-D",
+                  source: "gtfs_creator",
+                  sourceLabel: "NewtonHighlandsKenmore",
+                }),
+              ],
+              daysOfWeek: [
+                new DayOfWeek({
+                  id: "1",
+                  startTime: "20:45:00",
+                  dayName: "friday",
+                }),
+              ],
+              exceptions: [],
+              tripShortNames: [],
             }),
           ],
-          daysOfWeek: [
-            new DayOfWeek({
-              id: "1",
-              startTime: "20:45:00",
-              dayName: "friday",
-            }),
-          ],
-          exceptions: [],
-          tripShortNames: [],
         })
       )
     })
@@ -408,25 +564,56 @@ describe("ViewDisruption", () => {
       return Promise.resolve(
         new Disruption({
           id: "1",
-          startDate,
-          endDate,
-          adjustments: [
-            new Adjustment({
+          readyRevision: new DisruptionRevision({
+            id: "1",
+            disruptionId: "1",
+            startDate,
+            endDate,
+            isActive: true,
+            adjustments: [
+              new Adjustment({
+                id: "1",
+                routeId: "Green-D",
+                source: "gtfs_creator",
+                sourceLabel: "NewtonHighlandsKenmore",
+              }),
+            ],
+            daysOfWeek: [
+              new DayOfWeek({
+                id: "1",
+                startTime: "20:45:00",
+                dayName: "friday",
+              }),
+            ],
+            exceptions: [],
+            tripShortNames: [],
+          }),
+          revisions: [
+            new DisruptionRevision({
               id: "1",
-              routeId: "Green-D",
-              source: "gtfs_creator",
-              sourceLabel: "NewtonHighlandsKenmore",
+              disruptionId: "1",
+              startDate,
+              endDate,
+              isActive: true,
+              adjustments: [
+                new Adjustment({
+                  id: "1",
+                  routeId: "Green-D",
+                  source: "gtfs_creator",
+                  sourceLabel: "NewtonHighlandsKenmore",
+                }),
+              ],
+              daysOfWeek: [
+                new DayOfWeek({
+                  id: "1",
+                  startTime: "20:45:00",
+                  dayName: "friday",
+                }),
+              ],
+              exceptions: [],
+              tripShortNames: [],
             }),
           ],
-          daysOfWeek: [
-            new DayOfWeek({
-              id: "1",
-              startTime: "20:45:00",
-              dayName: "friday",
-            }),
-          ],
-          exceptions: [],
-          tripShortNames: [],
         })
       )
     })
@@ -488,25 +675,56 @@ describe("ViewDisruption", () => {
       return Promise.resolve(
         new Disruption({
           id: "1",
-          startDate,
-          endDate,
-          adjustments: [
-            new Adjustment({
+          readyRevision: new DisruptionRevision({
+            id: "1",
+            disruptionId: "1",
+            startDate,
+            endDate,
+            isActive: true,
+            adjustments: [
+              new Adjustment({
+                id: "1",
+                routeId: "Green-D",
+                source: "gtfs_creator",
+                sourceLabel: "NewtonHighlandsKenmore",
+              }),
+            ],
+            daysOfWeek: [
+              new DayOfWeek({
+                id: "1",
+                startTime: "20:45:00",
+                dayName: "friday",
+              }),
+            ],
+            exceptions: [],
+            tripShortNames: [],
+          }),
+          revisions: [
+            new DisruptionRevision({
               id: "1",
-              routeId: "Green-D",
-              source: "gtfs_creator",
-              sourceLabel: "NewtonHighlandsKenmore",
+              disruptionId: "1",
+              startDate,
+              endDate,
+              isActive: true,
+              adjustments: [
+                new Adjustment({
+                  id: "1",
+                  routeId: "Green-D",
+                  source: "gtfs_creator",
+                  sourceLabel: "NewtonHighlandsKenmore",
+                }),
+              ],
+              daysOfWeek: [
+                new DayOfWeek({
+                  id: "1",
+                  startTime: "20:45:00",
+                  dayName: "friday",
+                }),
+              ],
+              exceptions: [],
+              tripShortNames: [],
             }),
           ],
-          daysOfWeek: [
-            new DayOfWeek({
-              id: "1",
-              startTime: "20:45:00",
-              dayName: "friday",
-            }),
-          ],
-          exceptions: [],
-          tripShortNames: [],
         })
       )
     })
@@ -529,7 +747,7 @@ describe("ViewDisruption", () => {
     )
 
     expect(spy).toHaveBeenCalledWith({
-      url: "/api/disruptions/1?only_ready=true",
+      url: "/api/disruptions/1",
       parser: toModelObject,
       defaultResult: "error",
     })
@@ -551,7 +769,7 @@ describe("ViewDisruption", () => {
     }
 
     expect(spy).toHaveBeenCalledWith({
-      url: "/api/disruptions/1?only_ready=false",
+      url: "/api/disruptions/1",
       parser: toModelObject,
       defaultResult: "error",
     })

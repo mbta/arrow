@@ -4,7 +4,7 @@ import { render, fireEvent, screen } from "@testing-library/react"
 import { DisruptionTable } from "../../src/disruptions/disruptionTable"
 import Adjustment from "../../src/models/adjustment"
 import DayOfWeek from "../../src/models/dayOfWeek"
-import Disruption from "../../src/models/disruption"
+import DisruptionRevision from "../../src/models/disruptionRevision"
 
 const DisruptionTableWithRouter = ({
   initialEntries,
@@ -14,11 +14,13 @@ const DisruptionTableWithRouter = ({
   return (
     <MemoryRouter initialEntries={initialEntries}>
       <DisruptionTable
-        disruptions={[
-          new Disruption({
+        disruptionRevisions={[
+          new DisruptionRevision({
             id: "1",
+            disruptionId: "1",
             startDate: new Date("2019-10-31"),
             endDate: new Date("2019-11-15"),
+            isActive: true,
             adjustments: [
               new Adjustment({
                 id: "1",
@@ -44,10 +46,12 @@ const DisruptionTableWithRouter = ({
             exceptions: [],
             tripShortNames: [],
           }),
-          new Disruption({
+          new DisruptionRevision({
             id: "2",
+            disruptionId: "2",
             startDate: new Date("2019-10-23"),
             endDate: new Date("2019-10-24"),
+            isActive: true,
             adjustments: [
               new Adjustment({
                 id: "2",
@@ -73,10 +77,12 @@ const DisruptionTableWithRouter = ({
             exceptions: [],
             tripShortNames: [],
           }),
-          new Disruption({
+          new DisruptionRevision({
             id: "3",
+            disruptionId: "3",
             startDate: new Date("2019-09-22"),
             endDate: new Date("2019-10-22"),
+            isActive: true,
             adjustments: [
               new Adjustment({
                 id: "2",

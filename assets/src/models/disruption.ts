@@ -1,47 +1,36 @@
 import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
-import { ModelObject, toUTCDate, loadRelationship } from "../jsonApi"
+import {
+  ModelObject,
+  loadRelationship,
+  loadSingleRelationship,
+} from "../jsonApi"
 
-import Adjustment from "./adjustment"
-import DayOfWeek from "./dayOfWeek"
-import Exception from "./exception"
-import TripShortName from "./tripShortName"
+import DisruptionRevision from "./disruptionRevision"
 
 class Disruption extends JsonApiResourceObject {
   id?: string
-  startDate?: Date
-  endDate?: Date
 
-  adjustments: Adjustment[]
-  daysOfWeek: DayOfWeek[]
-  exceptions: Exception[]
-  tripShortNames: TripShortName[]
+  readyRevision?: DisruptionRevision
+  publishedRevision?: DisruptionRevision
+  revisions: DisruptionRevision[]
 
   constructor({
     id,
-    endDate,
-    startDate,
-    adjustments,
-    daysOfWeek,
-    exceptions,
-    tripShortNames,
+    readyRevision,
+    publishedRevision,
+    revisions,
   }: {
     id?: string
-    startDate?: Date
-    endDate?: Date
-    adjustments: Adjustment[]
-    daysOfWeek: DayOfWeek[]
-    exceptions: Exception[]
-    tripShortNames: TripShortName[]
+    readyRevision?: DisruptionRevision
+    publishedRevision?: DisruptionRevision
+    revisions: DisruptionRevision[]
   }) {
     super()
     this.id = id
-    this.endDate = endDate
-    this.startDate = startDate
-    this.adjustments = adjustments
-    this.daysOfWeek = daysOfWeek
-    this.exceptions = exceptions
-    this.tripShortNames = tripShortNames
+    this.readyRevision = readyRevision
+    this.publishedRevision = publishedRevision
+    this.revisions = revisions
   }
 
   toJsonApi(): JsonApiResource {
@@ -51,29 +40,10 @@ class Disruption extends JsonApiResourceObject {
   }
 
   toJsonApiData(): JsonApiResourceData {
+    // Implement later if we actually need it
     return {
       type: "disruption",
-      ...(this.id && { id: this.id.toString() }),
-      attributes: {
-        ...(this.startDate && {
-          start_date: this.startDate.toISOString().slice(0, 10),
-        }),
-        ...(this.endDate && {
-          end_date: this.endDate.toISOString().slice(0, 10),
-        }),
-      },
-      relationships: {
-        adjustments: {
-          data: this.adjustments.map((adj) => adj.toJsonApiData()),
-        },
-        days_of_week: {
-          data: this.daysOfWeek.map((dow) => dow.toJsonApiData()),
-        },
-        exceptions: { data: this.exceptions.map((ex) => ex.toJsonApiData()) },
-        trip_short_names: {
-          data: this.tripShortNames.map((tsn) => tsn.toJsonApiData()),
-        },
-      },
+      attributes: {},
     }
   }
 
@@ -85,33 +55,36 @@ class Disruption extends JsonApiResourceObject {
       typeof raw.attributes === "object" &&
       typeof raw.relationships === "object"
     ) {
-      return new Disruption({
+      const disruption = new Disruption({
         id: raw.id,
-        ...(raw.attributes.start_date && {
-          startDate: toUTCDate(raw.attributes.start_date),
-        }),
-        ...(raw.attributes.end_date && {
-          endDate: toUTCDate(raw.attributes.end_date),
-        }),
-        adjustments: loadRelationship(
-          raw.relationships.adjustments,
+        readyRevision: loadSingleRelationship(
+          raw.relationships.ready_revision,
           included
-        ) as Adjustment[],
-        daysOfWeek: loadRelationship(
-          raw.relationships.days_of_week,
+        ) as DisruptionRevision,
+        publishedRevision: loadSingleRelationship(
+          raw.relationships.published_revision,
           included
-        ) as DayOfWeek[],
-        exceptions: (loadRelationship(
-          raw.relationships.exceptions,
+        ) as DisruptionRevision,
+        revisions: loadRelationship(
+          raw.relationships.revisions,
           included
-        ) as Exception[]).sort(
-          (a, b) => a.excludedDate.getTime() - b.excludedDate.getTime()
-        ),
-        tripShortNames: loadRelationship(
-          raw.relationships.trip_short_names,
-          included
-        ) as TripShortName[],
+        ) as DisruptionRevision[],
       })
+
+      if (disruption.readyRevision) {
+        disruption.readyRevision.disruptionId = raw.id
+      }
+
+      if (disruption.publishedRevision) {
+        disruption.publishedRevision.disruptionId = raw.id
+      }
+
+      disruption.revisions = disruption.revisions.map((dr) => {
+        dr.disruptionId = raw.id
+        return dr
+      })
+
+      return disruption
     }
 
     return "error"

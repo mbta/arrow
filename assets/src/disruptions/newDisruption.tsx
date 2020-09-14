@@ -9,7 +9,7 @@ import Alert from "react-bootstrap/Alert"
 
 import { apiGet, apiSend } from "../api"
 import { toModelObject, JsonApiResponse, parseErrors } from "../jsonApi"
-import Disruption from "../models/disruption"
+import DisruptionRevision from "../models/disruptionRevision"
 import Adjustment from "../models/adjustment"
 import Exception from "../models/exception"
 import { DayOfWeekTimeRanges, dayOfWeekTimeRangesToDayOfWeeks } from "./time"
@@ -187,17 +187,18 @@ interface ApiCreateDisruptionParams {
   tripShortNames: string
 }
 
-const disruptionFromState = ({
+const disruptionRevisionFromState = ({
   adjustments,
   fromDate,
   toDate,
   disruptionDaysOfWeek,
   exceptionDates,
   tripShortNames,
-}: ApiCreateDisruptionParams): Disruption => {
-  return new Disruption({
+}: ApiCreateDisruptionParams): DisruptionRevision => {
+  return new DisruptionRevision({
     ...(fromDate && { startDate: fromDate }),
     ...(toDate && { endDate: toDate }),
+    isActive: true,
     adjustments,
     daysOfWeek: dayOfWeekTimeRangesToDayOfWeeks(disruptionDaysOfWeek),
     exceptions: Exception.fromDates(exceptionDates),
@@ -230,12 +231,12 @@ const NewDisruption = ({}): JSX.Element => {
   const [whichTrips, setWhichTrips] = React.useState<"all" | "some">("all")
 
   const createFn = async (args: ApiCreateDisruptionParams) => {
-    const disruption = disruptionFromState(args)
+    const disruptionRevision = disruptionRevisionFromState(args)
 
     const result = await apiSend({
       url: "/api/disruptions",
       method: "POST",
-      json: JSON.stringify(disruption.toJsonApi()),
+      json: JSON.stringify(disruptionRevision.toJsonApi()),
       successParser: toModelObject,
       errorParser: parseErrors,
     })
