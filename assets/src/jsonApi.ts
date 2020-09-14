@@ -1,6 +1,7 @@
 import Adjustment from "./models/adjustment"
 import DayOfWeek from "./models/dayOfWeek"
 import Disruption from "./models/disruption"
+import DisruptionRevision from "./models/disruptionRevision"
 import Exception from "./models/exception"
 import TripShortName from "./models/tripShortName"
 import DisruptionDiff from "./models/disruptionDiff"
@@ -9,6 +10,7 @@ type ModelObject =
   | Adjustment
   | DayOfWeek
   | Disruption
+  | DisruptionRevision
   | Exception
   | TripShortName
   | DisruptionDiff
@@ -97,6 +99,8 @@ const modelFromJsonApiResource = (
         return DayOfWeek.fromJsonObject(raw)
       case "disruption":
         return Disruption.fromJsonObject(raw, includedObjects)
+      case "disruption_revision":
+        return DisruptionRevision.fromJsonObject(raw, includedObjects)
       case "exception":
         return Exception.fromJsonObject(raw)
       case "trip_short_name":
@@ -120,12 +124,21 @@ const loadRelationship = (
       return relationship.data
         .map((r: { id: string; type: string }) => included[`${r.type}-${r.id}`])
         .filter((o: any) => typeof o !== "undefined")
-    } else if (typeof relationship.data === "object") {
+    } else if (relationship.data && typeof relationship.data === "object") {
       const key = relationship.data
       return [included[`${key.type}-${key.id}`]]
     }
   }
   return []
+}
+
+const loadSingleRelationship = (
+  relationship: any,
+  included: { [key: string]: ModelObject }
+): ModelObject | undefined => {
+  const loaded = loadRelationship(relationship, included)
+
+  return loaded[0]
 }
 
 export {
@@ -135,4 +148,5 @@ export {
   parseErrors,
   toUTCDate,
   loadRelationship,
+  loadSingleRelationship,
 }

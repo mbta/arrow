@@ -3,12 +3,12 @@ import FullCalendar from "@fullcalendar/react"
 import dayGridPlugin from "@fullcalendar/daygrid"
 import { RRule, RRuleSet } from "rrule"
 import { getRouteColor } from "./disruptionIndex"
-import Disruption from "../models/disruption"
+import DisruptionRevision from "../models/disruptionRevision"
 import DayOfWeek from "../models/dayOfWeek"
 import { useDisruptionViewParam, DisruptionView } from "./viewToggle"
 
 interface DisruptionCalendarProps {
-  disruptions: Disruption[]
+  disruptionRevisions: DisruptionRevision[]
   initialDate?: Date
   timeZone?: string
 }
@@ -44,12 +44,12 @@ const addDay = (date: Date): Date => {
 }
 
 export const disruptionsToCalendarEvents = (
-  disruptions: Disruption[],
+  disruptionRevisions: DisruptionRevision[],
   view: DisruptionView
 ) => {
-  return disruptions.reduce(
+  return disruptionRevisions.reduce(
     (
-      disruptionsAcc: {
+      disruptionRevisionsAcc: {
         id?: string
         title?: string
         backgroundColor: string
@@ -59,23 +59,23 @@ export const disruptionsToCalendarEvents = (
         eventDisplay: "block"
         allDay: true
       }[],
-      disruption: Disruption
+      disruptionRevision: DisruptionRevision
     ) => {
-      if (!disruption.daysOfWeek.length) {
-        return disruptionsAcc
+      if (!disruptionRevision.daysOfWeek.length) {
+        return disruptionRevisionsAcc
       }
-      disruption.adjustments.forEach((adj) => {
+      disruptionRevision.adjustments.forEach((adj) => {
         const ruleSet = new RRuleSet()
         ruleSet.rrule(
           new RRule({
-            byweekday: disruption.daysOfWeek?.map((x) =>
+            byweekday: disruptionRevision.daysOfWeek?.map((x) =>
               dayNameToInt(x.dayName)
             ),
-            dtstart: disruption.startDate,
-            until: disruption.endDate,
+            dtstart: disruptionRevision.startDate,
+            until: disruptionRevision.endDate,
           })
         )
-        disruption.exceptions.forEach((x) => {
+        disruptionRevision.exceptions.forEach((x) => {
           if (x.excludedDate) {
             ruleSet.exdate(x.excludedDate)
           }
@@ -99,34 +99,34 @@ export const disruptionsToCalendarEvents = (
             )
           : []
         dateGroups.forEach((group) => {
-          disruptionsAcc.push({
-            id: disruption.id,
+          disruptionRevisionsAcc.push({
+            id: disruptionRevision.id,
             title: adj.sourceLabel,
             backgroundColor: getRouteColor(adj.routeId),
             start: group[0],
             end: group.length > 1 ? addDay(group.slice(-1)[0]) : group[0],
             url:
-              `/disruptions/${disruption.id}` +
+              `/disruptions/${disruptionRevision.disruptionId}` +
               (view === DisruptionView.Draft ? "?v=draft" : ""),
             eventDisplay: "block",
             allDay: true,
           })
         })
       })
-      return disruptionsAcc
+      return disruptionRevisionsAcc
     },
     []
   )
 }
 
 export const DisruptionCalendar = ({
-  disruptions,
+  disruptionRevisions,
   initialDate,
 }: DisruptionCalendarProps) => {
   const view = useDisruptionViewParam()
   const calendarEvents = React.useMemo(() => {
-    return disruptionsToCalendarEvents(disruptions, view)
-  }, [disruptions, view])
+    return disruptionsToCalendarEvents(disruptionRevisions, view)
+  }, [disruptionRevisions, view])
   return (
     <div id="calendar" className="my-3">
       <FullCalendar

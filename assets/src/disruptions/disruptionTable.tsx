@@ -3,7 +3,7 @@ import classnames from "classnames"
 import Table from "react-bootstrap/Table"
 import { Link } from "react-router-dom"
 import { formatDisruptionDate } from "./disruptions"
-import Disruption from "../models/disruption"
+import DisruptionRevision from "../models/disruptionRevision"
 import { parseDaysAndTimes } from "./time"
 import { useDisruptionViewParam, DisruptionView } from "./viewToggle"
 
@@ -44,18 +44,18 @@ interface SortState {
 }
 
 interface DisruptionTableProps {
-  disruptions: Disruption[]
+  disruptionRevisions: DisruptionRevision[]
 }
-const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
+const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
   const [sortState, setSortState] = React.useState<SortState>({
     by: "label",
     order: "asc",
   })
 
   const disruptionRows = React.useMemo(() => {
-    return disruptions.map((x) => {
+    return disruptionRevisions.map((x) => {
       return {
-        id: x.id,
+        disruptionId: x.disruptionId,
         startDate: x.startDate,
         endDate: x.endDate,
         label: x.adjustments.map((adj) => adj.sourceLabel).join(", "),
@@ -64,7 +64,7 @@ const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
           x.daysOfWeek.length > 0 ? parseDaysAndTimes(x.daysOfWeek) : "",
       }
     })
-  }, [disruptions])
+  }, [disruptionRevisions])
 
   const sortedDisruptions = React.useMemo(() => {
     const { by, order } = sortState
@@ -119,7 +119,7 @@ const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
       </thead>
       <tbody>
         {sortedDisruptions.map((x) => (
-          <tr key={x.id}>
+          <tr key={x.disruptionId}>
             <td>{x.label}</td>
             {!!x.startDate && !!x.endDate && (
               <td>{`${formatDisruptionDate(
@@ -130,7 +130,7 @@ const DisruptionTable = ({ disruptions }: DisruptionTableProps) => {
             <td>
               <Link
                 to={
-                  `/disruptions/${x.id}` +
+                  `/disruptions/${x.disruptionId}` +
                   (view === DisruptionView.Draft ? "?v=draft" : "")
                 }
               >

@@ -11,6 +11,7 @@ import Icon from "../icons"
 import { DisruptionTable } from "./disruptionTable"
 import { DisruptionCalendar } from "./disruptionCalendar"
 import Disruption from "../models/disruption"
+import DisruptionRevision from "../models/disruptionRevision"
 import { apiGet } from "../api"
 import { JsonApiResponse, toModelObject } from "../jsonApi"
 import { Page } from "../page"
@@ -19,6 +20,7 @@ import {
   DisruptionViewToggle,
   useDisruptionViewParam,
   DisruptionView,
+  revisionFromDisruptionForView,
 } from "./viewToggle"
 
 export type Routes =
@@ -150,10 +152,10 @@ const RouteFilterToggleGroup = ({
 }
 
 interface DisruptionIndexProps {
-  disruptions: Disruption[]
+  disruptionRevisions: DisruptionRevision[]
 }
 
-const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
+const DisruptionIndexView = ({ disruptionRevisions }: DisruptionIndexProps) => {
   const [view, setView] = React.useState<"table" | "calendar">("table")
   const disruptionStatusView = useDisruptionViewParam()
   const toggleView = React.useCallback(() => {
@@ -189,9 +191,9 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
     [anyRouteFiltersActive, routeFilters]
   )
 
-  const filteredDisruptions = React.useMemo(() => {
+  const filteredDisruptionRevisions = React.useMemo(() => {
     const query = searchQuery.toLowerCase()
-    return disruptions.filter((x) => {
+    return disruptionRevisions.filter((x) => {
       return (
         (!anyRouteFiltersActive ||
           (x.adjustments || []).some(
@@ -206,7 +208,7 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
         )
       )
     })
-  }, [disruptions, searchQuery, routeFilters, anyRouteFiltersActive])
+  }, [disruptionRevisions, searchQuery, routeFilters, anyRouteFiltersActive])
 
   return (
     <Page includeHomeLink={false}>
@@ -214,9 +216,13 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
         <Row>
           <Col xs={9}>
             {view === "table" ? (
-              <DisruptionTable disruptions={filteredDisruptions} />
+              <DisruptionTable
+                disruptionRevisions={filteredDisruptionRevisions}
+              />
             ) : (
-              <DisruptionCalendar disruptions={filteredDisruptions} />
+              <DisruptionCalendar
+                disruptionRevisions={filteredDisruptionRevisions}
+              />
             )}
           </Col>
           <Col>
@@ -282,14 +288,12 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
 
 const DisruptionIndex = () => {
   const view = useDisruptionViewParam()
-  const [disruptions, setDisruptions] = React.useState<Disruption[] | "error">(
-    []
-  )
+  const [disruptionRevisions, setDisruptionRevisions] = React.useState<
+    DisruptionRevision[] | "error"
+  >([])
   React.useEffect(() => {
     apiGet<JsonApiResponse>({
-      url:
-        "/api/disruptions?only_ready=" +
-        (view === DisruptionView.Ready ? "true" : "false"),
+      url: "/api/disruptions",
       parser: toModelObject,
       defaultResult: "error",
     }).then((result: JsonApiResponse) => {
@@ -297,17 +301,25 @@ const DisruptionIndex = () => {
         Array.isArray(result) &&
         result.every((res) => res instanceof Disruption)
       ) {
-        setDisruptions(result as Disruption[])
+        setDisruptionRevisions(
+          (result as Disruption[])
+            .map((d) => {
+              return revisionFromDisruptionForView(d, view)
+            })
+            .filter((dr) => {
+              return typeof dr !== "undefined" && dr.isActive
+            }) as DisruptionRevision[]
+        )
       } else {
-        setDisruptions("error")
+        setDisruptionRevisions("error")
       }
     })
   }, [view])
 
-  if (disruptions === "error") {
+  if (disruptionRevisions === "error") {
     return <div>Something went wrong</div>
   } else {
-    return <DisruptionIndexView disruptions={disruptions} />
+    return <DisruptionIndexView disruptionRevisions={disruptionRevisions} />
   }
 }
 

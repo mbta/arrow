@@ -1,25 +1,25 @@
-import Disruption from "./disruption"
+import DisruptionRevision from "./disruptionRevision"
 import { ModelObject, loadRelationship } from "../jsonApi"
 
 class DisruptionDiff {
   id: string
-  disruption: Disruption
+  disruptionRevision: DisruptionRevision
   isCreated: boolean
   diffs: string[][]
 
   constructor({
     id,
-    disruption,
+    disruptionRevision,
     isCreated,
     diffs,
   }: {
     id: string
-    disruption: Disruption
+    disruptionRevision: DisruptionRevision
     isCreated: boolean
     diffs: string[][]
   }) {
     this.id = id
-    this.disruption = disruption
+    this.disruptionRevision = disruptionRevision
     this.isCreated = isCreated
     this.diffs = diffs
   }
@@ -33,21 +33,21 @@ class DisruptionDiff {
 
     if (typeof attrs === "object" && typeof rels === "object") {
       const id = raw.id
-      const disruption = loadRelationship(
+      const disruptionRevision = loadRelationship(
         rels.latest_revision,
         included
-      )[0] as Disruption
+      )[0] as DisruptionRevision
       const isCreated = attrs["created?"]
       const diffs = attrs.diffs
 
       if (
         typeof id === "string" &&
-        typeof disruption !== "undefined" &&
+        typeof disruptionRevision !== "undefined" &&
         typeof isCreated === "boolean"
       ) {
         return new DisruptionDiff({
           id,
-          disruption,
+          disruptionRevision,
           isCreated,
           diffs,
         })
