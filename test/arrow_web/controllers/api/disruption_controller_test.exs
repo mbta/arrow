@@ -296,7 +296,44 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
 
       conn = post(conn, "/api/disruptions", post_data)
 
-      assert resp = json_response(conn, 201)
+      assert %{
+               "data" => %{
+                 "attributes" => %{},
+                 "id" => disruption_id,
+                 "relationships" => %{
+                   "published_revision" => %{"data" => nil},
+                   "ready_revision" => %{"data" => nil},
+                   "revisions" => %{
+                     "data" => [
+                       %{"id" => disruption_revision_id, "type" => "disruption_revision"}
+                     ]
+                   }
+                 },
+                 "type" => "disruption"
+               },
+               "included" => included,
+               "jsonapi" => %{"version" => "1.0"}
+             } = json_response(conn, 201)
+
+      disruption_revision_response =
+        Enum.find(
+          included,
+          &(&1["type"] == "disruption_revision" and &1["id"] == disruption_revision_id)
+        )
+
+      assert %{
+               "attributes" => %{
+                 "end_date" => "2019-11-01",
+                 "is_active" => true,
+                 "start_date" => "2019-11-01"
+               }
+             } = disruption_revision_response
+
+      assert %Arrow.DisruptionRevision{
+               start_date: ~D[2019-11-01],
+               end_date: ~D[2019-11-01],
+               is_active: true
+             } = Repo.get!(Arrow.DisruptionRevision, String.to_integer(disruption_revision_id))
     end
 
     @tag :authenticated
@@ -438,7 +475,61 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
 
       conn = patch(conn, "/api/disruptions/" <> Integer.to_string(disruption.id), post_data)
 
-      assert resp = json_response(conn, 200)
+      assert %{
+               "data" => %{
+                 "attributes" => %{},
+                 "id" => disruption_id,
+                 "relationships" => %{
+                   "published_revision" => %{"data" => nil},
+                   "ready_revision" => %{
+                     "data" => %{"id" => dr1_id, "type" => "disruption_revision"}
+                   },
+                   "revisions" => %{
+                     "data" => [
+                       %{"id" => dr1_id, "type" => "disruption_revision"},
+                       %{"id" => dr2_id, "type" => "disruption_revision"}
+                     ]
+                   }
+                 },
+                 "type" => "disruption"
+               },
+               "included" => included,
+               "jsonapi" => %{"version" => "1.0"}
+             } = json_response(conn, 200)
+
+      dr1_response =
+        Enum.find(
+          included,
+          &(&1["type"] == "disruption_revision" and &1["id"] == dr1_id)
+        )
+
+      dr2_response =
+        Enum.find(
+          included,
+          &(&1["type"] == "disruption_revision" and &1["id"] == dr2_id)
+        )
+
+      assert %{
+               "attributes" => %{
+                 "end_date" => "2019-11-01",
+                 "is_active" => true,
+                 "start_date" => "2019-10-10"
+               }
+             } = dr1_response
+
+      assert %{
+               "attributes" => %{
+                 "end_date" => "2019-12-01",
+                 "is_active" => true,
+                 "start_date" => "2019-10-10"
+               }
+             } = dr2_response
+
+      assert %Arrow.DisruptionRevision{
+               start_date: ~D[2019-10-10],
+               end_date: ~D[2019-12-01],
+               is_active: true
+             } = Repo.get!(Arrow.DisruptionRevision, String.to_integer(dr2_id))
     end
 
     @tag :authenticated
@@ -555,6 +646,15 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
       response = response(conn, 204)
 
       assert response == ""
+
+      new_disruption_revision =
+        Arrow.Disruption
+        |> Arrow.Repo.get!(disruption.id)
+        |> Arrow.Repo.preload([:revisions])
+        |> Map.get(:revisions)
+        |> Enum.at(-1)
+
+      refute new_disruption_revision.is_active
     end
 
     @tag :authenticated
