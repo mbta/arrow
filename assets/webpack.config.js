@@ -34,6 +34,15 @@ module.exports = (env, options) => ({
         exclude: /node_modules\/rrule/,
       },
       {
+        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+        use: [
+          {
+            loader: "file-loader",
+            options: { name: "[name].[ext]", outputPath: "../fonts" },
+          },
+        ],
+      },
+      {
         test: /\.s?css$/,
         use: [
           MiniCssExtractPlugin.loader,
@@ -42,6 +51,14 @@ module.exports = (env, options) => ({
           },
           {
             loader: "sass-loader",
+          },
+          {
+            loader: "postcss-loader",
+            options: {
+              postcssOptions: {
+                plugins: ["autoprefixer"],
+              },
+            },
           },
         ],
       },

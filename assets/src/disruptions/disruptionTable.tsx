@@ -118,15 +118,49 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
         </tr>
       </thead>
       <tbody>
-        {sortedDisruptions.map((x) => (
-          <tr key={x.disruptionId}>
-            <td>{x.label}</td>
+        {sortedDisruptions.map((x, i, self) => (
+          <tr
+            key={i}
+            className={x.status === DisruptionView.Draft ? "bg-light-pink" : ""}
+          >
+            {x.disruptionId !== self[i - 1]?.disruptionId ||
+            x.label !== self[i - 1]?.label ? (
+              <>
+                <td>
+                  {x.routes.map((route, i) => (
+                    <Icon key={i} type={getRouteIcon(route)} className="mr-1" />
+                  ))}
+                </td>
+                <td>{x.label}</td>
+              </>
+            ) : (
+              <>
+                <td className="border-0" />
+                <td className="border-0 text-right">{"\u2198"}</td>
+              </>
+            )}
             {!!x.startDate && !!x.endDate && (
               <td>{`${formatDisruptionDate(
                 x.startDate
               )} - ${formatDisruptionDate(x.endDate)}`}</td>
             )}
-            <td>{x.daysAndTimes}</td>
+            <td>{x.exceptions}</td>
+            <td>
+              {x.daysAndTimes.split(", ").map((x, i) => (
+                <div key={i}>{x}</div>
+              ))}
+            </td>
+            <td>
+              {
+                <Button
+                  variant={`outline-${
+                    x.status === DisruptionView.Draft ? "primary" : "dark"
+                  }`}
+                >
+                  {getStatusText(x.status || DisruptionView.Draft)}
+                </Button>
+              }
+            </td>
             <td>
               <Link
                 to={

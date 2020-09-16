@@ -1,0 +1,25 @@
+@import "overrides";
+
+.btn-primary,
+.btn-outline-primary {
+  &:hover,
+  &:not(:disabled):not(.disabled):active,
+  &:focus {
+    background-color: $light-pink;
+    color: $primary;
+  }
+}
+
+.btn-dark,
+.btn-outline-dark {
+  border-color: $blue-grey;
+
+  &:hover,
+  &:active,
+  &:focus {
+    border-color: $dark;
+    background-color: $white;
+    color: $dark;
+    font-weight: 500;
+  }
+}
