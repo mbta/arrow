@@ -62,6 +62,67 @@ defmodule Arrow.DisruptionRevisionTest do
     end
   end
 
+  describe "publish!/1" do
+    test "updates published revision ID" do
+      d = insert(:disruption)
+      dr = insert(:disruption_revision, %{disruption: d})
+
+      :ok = DisruptionRevision.ready_all!()
+
+      assert :ok = DisruptionRevision.publish!([dr.id])
+
+      new_d = Arrow.Repo.get(Arrow.Disruption, d.id)
+
+      assert new_d.published_revision_id == dr.id
+    end
+
+    test "raises exception when trying to publish revision more recent than ready revision" do
+      d1 = insert(:disruption)
+      dr1 = insert(:disruption_revision, %{disruption: d1})
+
+      d2 = insert(:disruption)
+      _dr2_1 = insert(:disruption_revision, %{disruption: d2})
+
+      :ok = DisruptionRevision.ready_all!()
+
+      dr2_2 = insert(:disruption_revision, %{disruption: d2})
+
+      assert_raise Arrow.Disruption.PublishedAfterReadyError, fn ->
+        DisruptionRevision.publish!([dr1.id, dr2_2.id])
+      end
+
+      new_d1 = Arrow.Repo.get(Arrow.Disruption, d1.id)
+
+      assert is_nil(new_d1.published_revision_id)
+
+      new_d2 = Arrow.Repo.get(Arrow.Disruption, d2.id)
+
+      assert is_nil(new_d2.published_revision_id)
+    end
+
+    test "raises exception when trying to publish revision with no ready revision" do
+      d1 = insert(:disruption)
+      dr1 = insert(:disruption_revision, %{disruption: d1})
+
+      :ok = DisruptionRevision.ready_all!()
+
+      d2 = insert(:disruption)
+      dr2 = insert(:disruption_revision, %{disruption: d2})
+
+      assert_raise Arrow.Disruption.PublishedAfterReadyError, fn ->
+        DisruptionRevision.publish!([dr1.id, dr2.id])
+      end
+
+      new_d1 = Arrow.Repo.get(Arrow.Disruption, d1.id)
+
+      assert is_nil(new_d1.published_revision_id)
+
+      new_d2 = Arrow.Repo.get(Arrow.Disruption, d2.id)
+
+      assert is_nil(new_d2.published_revision_id)
+    end
+  end
+
   describe "only_ready/1 and latest_revision/1" do
     test "Returns the respective views of the disruption" do
       d = insert(:disruption)

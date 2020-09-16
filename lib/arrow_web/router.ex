@@ -9,10 +9,14 @@ defmodule ArrowWeb.Router do
     plug :put_secure_browser_headers
   end
 
-  pipeline :api do
+  pipeline :json_api do
     plug :accepts, ["json-api"]
     plug :fetch_session
     plug JaSerializer.ContentTypeNegotiation
+  end
+
+  pipeline :api do
+    plug :fetch_session
   end
 
   pipeline :redirect_prod_http do
@@ -69,7 +73,7 @@ defmodule ArrowWeb.Router do
   scope "/api", ArrowWeb.API do
     pipe_through([
       :redirect_prod_http,
-      :api,
+      :json_api,
       :auth,
       :try_api_token_auth,
       :ensure_auth,
@@ -82,6 +86,19 @@ defmodule ArrowWeb.Router do
 
     resources("/disruption_diffs", DisruptionDiffController, only: [:index])
     resources("/adjustments", AdjustmentController, only: [:index])
+  end
+
+  scope "/api", ArrowWeb.API do
+    pipe_through([
+      :redirect_prod_http,
+      :api,
+      :auth,
+      :try_api_token_auth,
+      :ensure_auth,
+      :ensure_arrow_group
+    ])
+
+    post "/publish_notice", PublishNoticeController, :create
   end
 
   # Other scopes may use custom stacks.
