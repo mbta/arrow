@@ -82,6 +82,9 @@ const convertSortable = (
     case "daysAndTimes": {
       return dayNameToInt(item.daysOfWeek[0].dayName)
     }
+    case "disruptionId": {
+      return item.disruptionId && parseInt(item.disruptionId, 10)
+    }
     default: {
       return item[key]
     }

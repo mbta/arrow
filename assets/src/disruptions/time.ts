@@ -289,23 +289,25 @@ const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
   if (daysAndTimes.length === 1) {
     return describeSingleDay(daysAndTimes[0])
   }
-  const first = daysAndTimes[0]
-  const last = daysAndTimes[daysAndTimes.length - 1]
+  const sortedDaysAndTimes = daysAndTimes.sort(
+    (a, b) => dayNameToInt(a.dayName) - dayNameToInt(b.dayName)
+  )
+  const first = sortedDaysAndTimes[0]
+  const last = sortedDaysAndTimes[sortedDaysAndTimes.length - 1]
   const startTimeSet = new Set<string | undefined>()
   const endTimeSet = new Set<string | undefined>()
   const fallBackStringList: string[] = []
-  daysAndTimes
-    .sort((a, b) => dayNameToInt(a.dayName) - dayNameToInt(b.dayName))
-    .forEach((dayOfWeek) => {
-      const { dayName, startTime, endTime } = dayOfWeek
-      if (dayName) {
-        startTimeSet.add(startTime)
-        endTimeSet.add(endTime)
-        fallBackStringList.push(describeSingleDay(dayOfWeek))
-      }
-    })
+
+  sortedDaysAndTimes.forEach((dayOfWeek) => {
+    const { dayName, startTime, endTime } = dayOfWeek
+    if (dayName) {
+      startTimeSet.add(startTime)
+      endTimeSet.add(endTime)
+      fallBackStringList.push(describeSingleDay(dayOfWeek))
+    }
+  })
   const daysType = getDaysType(
-    daysAndTimes
+    sortedDaysAndTimes
       .map((day) => day.dayName)
       .filter((day: DayName | undefined): day is DayName => !!day)
   )
