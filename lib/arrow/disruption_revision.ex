@@ -117,6 +117,26 @@ defmodule Arrow.DisruptionRevision do
     :ok
   end
 
+  @spec publish!([integer()]) :: :ok
+  def publish!(ids) do
+    Arrow.Repo.transaction(fn ->
+      {updated, _} =
+        from(d in Arrow.Disruption,
+          join: dr in __MODULE__,
+          on: dr.disruption_id == d.id,
+          where: dr.id in ^ids and dr.id <= d.ready_revision_id,
+          update: [set: [published_revision_id: dr.id]]
+        )
+        |> Arrow.Repo.update_all([])
+
+      if updated != Enum.count(ids) do
+        raise Disruption.PublishedAfterReadyError
+      end
+    end)
+
+    :ok
+  end
+
   @spec diff(t(), t()) :: [String.t()]
   def diff(%__MODULE__{} = dr1, %__MODULE__{} = dr2) do
     was_deleted(dr1.is_active, dr2.is_active) ++
