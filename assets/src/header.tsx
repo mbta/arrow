@@ -31,7 +31,6 @@ const Header = ({ includeHomeLink }: HeaderProps) => (
         &lt; back to home
       </a>
     )}
-    <hr />
   </div>
 )
 

@@ -5,10 +5,16 @@ import { Link } from "react-router-dom"
 import { formatDisruptionDate } from "./disruptions"
 import DisruptionRevision from "../models/disruptionRevision"
 import { parseDaysAndTimes } from "./time"
-import { useDisruptionViewParam, DisruptionView } from "./viewToggle"
+import { DisruptionView } from "./viewToggle"
+import Icon from "../icons"
+import { getRouteIcon } from "./disruptionIndex"
+import { Button } from "../button"
+import DayOfWeek from "../models/dayOfWeek"
+import { dayNameToInt } from "./disruptionCalendar"
 
 interface DisruptionTableHeaderProps {
   active?: boolean
+
   sortable?: boolean
   sortOrder?: "asc" | "desc"
   label: string
@@ -23,24 +29,63 @@ const DisruptionTableHeader = ({
   onClick,
 }: DisruptionTableHeaderProps) => {
   return (
-    <th className="border-0">
+    <th>
       <span
         onClick={onClick}
         className={classnames({
           "m-disruption-table__sortable": sortable,
-          asc: active && sortOrder === "asc",
-          desc: active && sortOrder === "desc",
+          active,
         })}
       >
         {label}
+        <span className={"m-disruption-table__sortable-indicator mx-1"}>
+          {sortable && (active && sortOrder === "desc" ? "\u2193" : "\u2191")}
+        </span>
       </span>
     </th>
   )
 }
 
 interface SortState {
-  by: "label" | "startDate"
+  by:
+    | "label"
+    | "startDate"
+    | "routes"
+    | "exceptions"
+    | "daysAndTimes"
+    | "status"
+    | "disruptionId"
   order: "asc" | "desc"
+}
+
+interface DisruptionTableRow {
+  id?: string
+  status?: DisruptionView
+  disruptionId?: string
+  startDate?: Date
+  endDate?: Date
+  exceptions: number
+  routes: string[]
+  label: string
+  daysOfWeek: DayOfWeek[]
+  daysAndTimes: string
+}
+
+const convertSortable = (
+  key: SortState["by"],
+  item: DisruptionTableRow
+): string | number | Date | undefined => {
+  switch (key) {
+    case "routes": {
+      return item.routes.join("")
+    }
+    case "daysAndTimes": {
+      return dayNameToInt(item.daysOfWeek[0].dayName)
+    }
+    default: {
+      return item[key]
+    }
+  }
 }
 
 interface DisruptionTableProps {
@@ -53,29 +98,35 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
   })
 
   const disruptionRows = React.useMemo(() => {
-    return disruptionRevisions.map((x) => {
-      return {
-        disruptionId: x.disruptionId,
-        startDate: x.startDate,
-        endDate: x.endDate,
-        label: x.adjustments.map((adj) => adj.sourceLabel).join(", "),
-        daysOfWeek: x.daysOfWeek,
-        daysAndTimes:
-          x.daysOfWeek.length > 0 ? parseDaysAndTimes(x.daysOfWeek) : "",
+    return disruptionRevisions.map(
+      (x): DisruptionTableRow => {
+        return {
+          id: x.id,
+          status: x.status,
+          disruptionId: x.disruptionId,
+          startDate: x.startDate,
+          endDate: x.endDate,
+          exceptions: x.exceptions.length,
+          routes: x.adjustments.map((adj) => adj.routeId),
+          label: x.adjustments.map((adj) => adj.sourceLabel).join(", "),
+          daysOfWeek: x.daysOfWeek,
+          daysAndTimes:
+            x.daysOfWeek.length > 0 ? parseDaysAndTimes(x.daysOfWeek) : "",
+        }
       }
-    })
+    )
   }, [disruptionRevisions])
 
   const sortedDisruptions = React.useMemo(() => {
     const { by, order } = sortState
-    return disruptionRows.sort((a, b) => {
-      if (!a[by] || !b[by]) {
-        return -1
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      } else if (a[by]! > b[by]!) {
+    return disruptionRows.sort((aRaw, bRaw) => {
+      const a = convertSortable(by, aRaw)
+      const b = convertSortable(by, bRaw)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      if (a! > b!) {
         return order === "asc" ? 1 : -1
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      } else if (a[by]! < b[by]!) {
+      } else if (a! < b!) {
         return order === "asc" ? -1 : 1
       } else {
         return 0
@@ -94,41 +145,91 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
     [sortState]
   )
 
-  const view = useDisruptionViewParam()
+  const getStatusText = React.useCallback((status: DisruptionView) => {
+    switch (status) {
+      case DisruptionView.Draft: {
+        return "needs review"
+      }
+      case DisruptionView.Ready: {
+        return "ready"
+      }
+      case DisruptionView.Published: {
+        return "published"
+      }
+    }
+  }, [])
+
   return (
-    <Table className="m-disruption-table" striped>
+    <Table className="m-disruption-table border-top-dark">
       <thead>
         <tr>
           <DisruptionTableHeader
-            label="stops"
+            sortable
+            sortOrder={sortState.order}
+            active={sortState.by === "routes"}
+            onClick={() => handleChangeSort("routes")}
+            label="route"
+          />
+          <DisruptionTableHeader
+            label="adjustments"
             sortable
             sortOrder={sortState.order}
             active={sortState.by === "label"}
             onClick={() => handleChangeSort("label")}
           />
           <DisruptionTableHeader
-            label="dates"
+            label="date range"
             sortable
             sortOrder={sortState.order}
             active={sortState.by === "startDate"}
             onClick={() => handleChangeSort("startDate")}
           />
-          <DisruptionTableHeader label="days + times" />
-          <th className="border-0" />
+          <DisruptionTableHeader
+            label="exceptions"
+            sortable
+            sortOrder={sortState.order}
+            active={sortState.by === "exceptions"}
+            onClick={() => handleChangeSort("exceptions")}
+          />
+          <DisruptionTableHeader
+            label="time period"
+            sortable
+            sortOrder={sortState.order}
+            active={sortState.by === "daysAndTimes"}
+            onClick={() => handleChangeSort("daysAndTimes")}
+          />
+          <DisruptionTableHeader
+            label="status"
+            sortable
+            sortOrder={sortState.order}
+            active={sortState.by === "status"}
+            onClick={() => handleChangeSort("status")}
+          />
+          <DisruptionTableHeader
+            label="ID"
+            sortable
+            sortOrder={sortState.order}
+            active={sortState.by === "disruptionId"}
+            onClick={() => handleChangeSort("disruptionId")}
+          />
         </tr>
       </thead>
       <tbody>
         {sortedDisruptions.map((x, i, self) => (
           <tr
-            key={i}
+            key={`${x.id}${i}`}
             className={x.status === DisruptionView.Draft ? "bg-light-pink" : ""}
           >
             {x.disruptionId !== self[i - 1]?.disruptionId ||
             x.label !== self[i - 1]?.label ? (
               <>
                 <td>
-                  {x.routes.map((route, i) => (
-                    <Icon key={i} type={getRouteIcon(route)} className="mr-1" />
+                  {x.routes.map((route) => (
+                    <Icon
+                      key={route}
+                      type={getRouteIcon(route)}
+                      className="mr-1"
+                    />
                   ))}
                 </td>
                 <td>{x.label}</td>
@@ -140,14 +241,15 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
               </>
             )}
             {!!x.startDate && !!x.endDate && (
-              <td>{`${formatDisruptionDate(
-                x.startDate
-              )} - ${formatDisruptionDate(x.endDate)}`}</td>
+              <td>
+                <div>{formatDisruptionDate(x.startDate)}</div>
+                <div>{formatDisruptionDate(x.endDate)}</div>
+              </td>
             )}
             <td>{x.exceptions}</td>
             <td>
-              {x.daysAndTimes.split(", ").map((x, i) => (
-                <div key={i}>{x}</div>
+              {x.daysAndTimes.split(", ").map((line, ix) => (
+                <div key={ix}>{line}</div>
               ))}
             </td>
             <td>
@@ -163,12 +265,11 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
             </td>
             <td>
               <Link
-                to={
-                  `/disruptions/${x.disruptionId}` +
-                  (view === DisruptionView.Draft ? "?v=draft" : "")
-                }
+                to={`/disruptions/${x.disruptionId}?v=${
+                  x.status === DisruptionView.Draft ? "draft" : ""
+                }`}
               >
-                See details
+                {x.disruptionId}
               </Link>
             </td>
           </tr>

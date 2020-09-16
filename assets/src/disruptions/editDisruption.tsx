@@ -1,7 +1,7 @@
 import * as React from "react"
 
 import Alert from "react-bootstrap/Alert"
-import Button from "react-bootstrap/Button"
+import { PrimaryButton } from "../button"
 import ButtonGroup from "react-bootstrap/ButtonGroup"
 
 import { Redirect } from "react-router-dom"
@@ -44,9 +44,9 @@ const SaveCancelButton = ({
 }: SaveCancelButtonProps): JSX.Element => {
   return (
     <ButtonGroup vertical>
-      <Button variant="primary" onClick={saveFn} id="save-changes-button">
+      <PrimaryButton onClick={saveFn} id="save-changes-button">
         save changes
-      </Button>
+      </PrimaryButton>
       <Link
         to={"/disruptions/" + encodeURIComponent(disruptionId)}
         id="cancel-button"

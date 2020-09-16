@@ -1,7 +1,7 @@
 import * as React from "react"
 import { RouteComponentProps, Link, Redirect } from "react-router-dom"
 import Alert from "react-bootstrap/Alert"
-import Button from "react-bootstrap/Button"
+import { Button } from "../button"
 
 import { apiGet, apiSend } from "../api"
 

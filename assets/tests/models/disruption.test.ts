@@ -156,6 +156,7 @@ describe("Disruption", () => {
             }),
           ],
           tripShortNames: [],
+          status: 2,
         }),
         publishedRevision: new DisruptionRevision({
           id: "1",
@@ -192,6 +193,7 @@ describe("Disruption", () => {
             }),
           ],
           tripShortNames: [],
+          status: 2,
         }),
         revisions: [
           new DisruptionRevision({
@@ -229,6 +231,7 @@ describe("Disruption", () => {
               }),
             ],
             tripShortNames: [],
+            status: 2,
           }),
         ],
       })

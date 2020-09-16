@@ -7,10 +7,10 @@ import {
 } from "../jsonApi"
 
 import DisruptionRevision from "./disruptionRevision"
+import { DisruptionView } from "../disruptions/viewToggle"
 
 class Disruption extends JsonApiResourceObject {
   id?: string
-
   readyRevision?: DisruptionRevision
   publishedRevision?: DisruptionRevision
   revisions: DisruptionRevision[]
@@ -55,6 +55,10 @@ class Disruption extends JsonApiResourceObject {
       typeof raw.attributes === "object" &&
       typeof raw.relationships === "object"
     ) {
+      const revisions = loadRelationship(
+        raw.relationships.revisions,
+        included
+      ) as DisruptionRevision[]
       const disruption = new Disruption({
         id: raw.id,
         readyRevision: loadSingleRelationship(
@@ -65,18 +69,17 @@ class Disruption extends JsonApiResourceObject {
           raw.relationships.published_revision,
           included
         ) as DisruptionRevision,
-        revisions: loadRelationship(
-          raw.relationships.revisions,
-          included
-        ) as DisruptionRevision[],
+        revisions,
       })
 
       if (disruption.readyRevision) {
         disruption.readyRevision.disruptionId = raw.id
+        disruption.readyRevision.status = DisruptionView.Ready
       }
 
       if (disruption.publishedRevision) {
         disruption.publishedRevision.disruptionId = raw.id
+        disruption.publishedRevision.status = DisruptionView.Published
       }
 
       disruption.revisions = disruption.revisions.map((dr) => {

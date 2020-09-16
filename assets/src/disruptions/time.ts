@@ -1,4 +1,5 @@
 import DayOfWeek, { DayName } from "../models/dayOfWeek"
+import { dayNameToInt } from "./disruptionCalendar"
 
 type HourOptions =
   | "12"
@@ -293,14 +294,16 @@ const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
   const startTimeSet = new Set<string | undefined>()
   const endTimeSet = new Set<string | undefined>()
   const fallBackStringList: string[] = []
-  daysAndTimes.forEach((dayOfWeek) => {
-    const { dayName, startTime, endTime } = dayOfWeek
-    if (dayName) {
-      startTimeSet.add(startTime)
-      endTimeSet.add(endTime)
-      fallBackStringList.push(describeSingleDay(dayOfWeek))
-    }
-  })
+  daysAndTimes
+    .sort((a, b) => dayNameToInt(a.dayName) - dayNameToInt(b.dayName))
+    .forEach((dayOfWeek) => {
+      const { dayName, startTime, endTime } = dayOfWeek
+      if (dayName) {
+        startTimeSet.add(startTime)
+        endTimeSet.add(endTime)
+        fallBackStringList.push(describeSingleDay(dayOfWeek))
+      }
+    })
   const daysType = getDaysType(
     daysAndTimes
       .map((day) => day.dayName)

@@ -8,6 +8,7 @@ import DisruptionRevision from "../models/disruptionRevision"
 enum DisruptionView {
   Draft,
   Ready,
+  Published,
 }
 
 const useDisruptionViewParam = (): DisruptionView => {
@@ -65,6 +66,9 @@ const revisionFromDisruptionForView = (
     }
     case DisruptionView.Ready: {
       return disruption.readyRevision
+    }
+    case DisruptionView.Published: {
+      return disruption.publishedRevision
     }
   }
 }
