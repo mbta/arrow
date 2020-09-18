@@ -210,7 +210,7 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
       <tbody>
         {sortedDisruptions.map((x, i, self) => (
           <tr
-            key={`${x.id}${i}`}
+            key={`${x.id}-${i}`}
             className={x.status === DisruptionView.Draft ? "bg-light-pink" : ""}
           >
             {x.disruptionId !== self[i - 1]?.disruptionId ||
