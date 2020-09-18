@@ -155,8 +155,11 @@ const useFilterGroup = <G extends string>(
   isFilterActive: (filter: G) => boolean
   toggleFilter: (filter: G) => void
   clearFilters: () => void
+  updateFiltersState: React.Dispatch<{ [filter in G]?: boolean }>
 } => {
-  const [filtersState, updateFiltersState] = React.useState(
+  const [filtersState, updateFiltersState] = React.useState<
+    { [filter in G]?: boolean }
+  >(
     group.reduce((acc: { [filter in G]?: boolean }, curr: G) => {
       return { ...acc, [curr]: false }
     }, {})
@@ -189,6 +192,7 @@ const useFilterGroup = <G extends string>(
     isFilterActive,
     toggleFilter,
     clearFilters,
+    updateFiltersState,
   }
 }
 
@@ -197,15 +201,6 @@ interface DisruptionIndexProps {
 }
 
 const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
-  const [view, setView] = React.useState<"table" | "calendar">("table")
-  const toggleView = React.useCallback(() => {
-    if (view === "table") {
-      setView("calendar")
-    } else {
-      setView("table")
-    }
-  }, [view, setView])
-
   const routeFilters = useFilterGroup([
     "Red",
     "Blue",
@@ -218,7 +213,17 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
     "Commuter",
   ])
 
-  const statusFilters = useFilterGroup(["published_ready", "needs_review"])
+  const statusFilters = useFilterGroup(["published", "ready", "needs_review"])
+  const [view, setView] = React.useState<"table" | "calendar">("table")
+  const toggleView = React.useCallback(() => {
+    if (view === "table") {
+      setView("calendar")
+      statusFilters.updateFiltersState({ published: true })
+    } else {
+      statusFilters.clearFilters()
+      setView("table")
+    }
+  }, [view, setView, statusFilters])
 
   const [searchQuery, setSearchQuery] = React.useState<string>("")
   const filteredDisruptionRevisions = React.useMemo(() => {
@@ -245,8 +250,10 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
                   (routeFilters.state.Commuter && adj.routeId.includes("CR-")))
             )) &&
           (!statusFilters.anyActive ||
-            (revision.status !== DisruptionView.Draft &&
-              statusFilters.state.published_ready) ||
+            (revision.status === DisruptionView.Published &&
+              statusFilters.state.published) ||
+            (revision.status === DisruptionView.Ready &&
+              statusFilters.state.ready) ||
             (revision.status === DisruptionView.Draft &&
               statusFilters.state.needs_review)) &&
           (revision.adjustments || []).some(
@@ -312,14 +319,22 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
             <div>
               <SecondaryButton
                 id="status-filter-toggle-published-ready"
+                disabled={view === "calendar"}
                 className={classnames("mx-2", {
-                  active: statusFilters.state.published_ready,
+                  active:
+                    statusFilters.state.published && statusFilters.state.ready,
                 })}
-                onClick={() => statusFilters.toggleFilter("published_ready")}
+                onClick={() =>
+                  statusFilters.updateFiltersState({
+                    published: !statusFilters.state.published,
+                    ready: !statusFilters.state.ready,
+                  })
+                }
               >
                 published/ready
               </SecondaryButton>
               <SecondaryButton
+                disabled={view === "calendar"}
                 id="status-filter-toggle-needs-review"
                 className={classnames("mx-2", {
                   active: statusFilters.state.needs_review,
