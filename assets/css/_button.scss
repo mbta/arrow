@@ -26,8 +26,7 @@
   &:focus,
   &:not(:disabled):not(.disabled).active {
     border-color: $dark;
-    background-color: $white;
+    background-color: #e2e5ec;
     color: $dark;
-    font-weight: 500;
   }
 }
