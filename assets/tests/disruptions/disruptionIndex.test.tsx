@@ -422,7 +422,7 @@ describe("DisruptionIndexConnected", () => {
       [
         [
           "NewtonHighlandsKenmore",
-          "1/15/20201/30/2020",
+          "01/15/202001/30/2020",
           "Friday, 8:45PM - End of service",
         ],
       ],
@@ -530,7 +530,7 @@ describe("DisruptionIndexConnected", () => {
       [
         [
           "NewtonHighlandsKenmoreHarvardAlewifeFairmount--Newmarket",
-          "1/15/20201/30/2020",
+          "01/15/202001/30/2020",
           "Saturday 8:45PM - Sunday 8:45PM",
         ],
       ],
@@ -589,7 +589,7 @@ describe("DisruptionIndexConnected", () => {
           ],
         }),
       ],
-      [["NewtonHighlandsKenmore", "1/15/20201/30/2020", ""]],
+      [["NewtonHighlandsKenmore", "01/15/202001/30/2020", ""]],
     ],
   ])(`Renders the table correctly`, async (disruptions, expected) => {
     jest.spyOn(api, "apiGet").mockImplementationOnce(() => {

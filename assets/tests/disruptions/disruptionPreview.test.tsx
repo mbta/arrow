@@ -16,7 +16,7 @@ describe("DisruptionPreview", () => {
       />
     )
 
-    expect(screen.queryByText("1/1/2020 – 1/15/2020")).not.toBeNull()
+    expect(screen.queryByText("01/01/2020 – 01/15/2020")).not.toBeNull()
   })
 
   test("includes formatted exception dates", () => {
@@ -32,7 +32,7 @@ describe("DisruptionPreview", () => {
       />
     )
 
-    expect(screen.queryByText("1/10/2020")).not.toBeNull()
+    expect(screen.queryByText("01/10/2020")).not.toBeNull()
   })
 
   test("Days of week are included and translated", () => {
