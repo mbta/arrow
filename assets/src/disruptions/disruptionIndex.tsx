@@ -142,20 +142,55 @@ const RouteFilterToggleGroup = ({
   )
 }
 
-const useFilterGroup = <G extends string>(
-  group: G[]
-): {
-  state: { [filter in G]?: boolean }
+type FilterGroupState<G extends string> = {
+  [K in G]?: boolean
+}
+
+type FilterGroup<G extends string> = {
+  state: FilterGroupState<G>
   anyActive: boolean
   isFilterActive: (filter: G) => boolean
   toggleFilter: (filter: G) => void
   clearFilters: () => void
-  updateFiltersState: React.Dispatch<{ [filter in G]?: boolean }>
-} => {
+  updateFiltersState: React.Dispatch<FilterGroupState<G>>
+}
+
+const anyMatchesFilter = (
+  revisions: DisruptionRevision[],
+  query: string,
+  routeFilters: FilterGroup<Routes>,
+  statusFilters: FilterGroup<"published" | "ready" | "needs_review">
+) => {
+  return revisions.some((revision) => {
+    return (
+      (!routeFilters.anyActive ||
+        (revision.adjustments || []).some(
+          (adj) =>
+            adj.routeId &&
+            (routeFilters.state[adj.routeId as Routes] ||
+              (routeFilters.state.Commuter && adj.routeId.includes("CR-")))
+        )) &&
+      (!statusFilters.anyActive ||
+        (revision.status === DisruptionView.Published &&
+          statusFilters.state.published) ||
+        (revision.status === DisruptionView.Ready &&
+          statusFilters.state.ready) ||
+        (revision.status === DisruptionView.Draft &&
+          statusFilters.state.needs_review)) &&
+      (revision.adjustments || []).some(
+        (adj) =>
+          adj.sourceLabel && adj.sourceLabel.toLowerCase().includes(query)
+      ) &&
+      (revision.isActive || revision.status !== DisruptionView.Published)
+    )
+  })
+}
+
+const useFilterGroup = <G extends string>(group: G[]): FilterGroup<G> => {
   const [filtersState, updateFiltersState] = React.useState<
     { [filter in G]?: boolean }
   >(
-    group.reduce((acc: { [filter in G]?: boolean }, curr: G) => {
+    group.reduce((acc: FilterGroupState<G>, curr: G) => {
       return { ...acc, [curr]: false }
     }, {})
   )
@@ -196,7 +231,7 @@ interface DisruptionIndexProps {
 }
 
 const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
-  const routeFilters = useFilterGroup([
+  const routeFilters = useFilterGroup<Routes>([
     "Red",
     "Blue",
     "Orange",
@@ -233,47 +268,17 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
         Disruption.revisionFromDisruptionForView(curr, DisruptionView.Draft),
       ].filter((x, i, self) => {
         return !!x && self.findIndex((y) => y?.id === x.id) === i
-      })
+      }) as DisruptionRevision[]
 
-      const anyMatches = uniqueRevisions.some((revision) => {
-        return (
-          !!revision &&
-          (!routeFilters.anyActive ||
-            (revision.adjustments || []).some(
-              (adj) =>
-                adj.routeId &&
-                (routeFilters.state[adj.routeId as Routes] ||
-                  (routeFilters.state.Commuter && adj.routeId.includes("CR-")))
-            )) &&
-          (!statusFilters.anyActive ||
-            (revision.status === DisruptionView.Published &&
-              statusFilters.state.published) ||
-            (revision.status === DisruptionView.Ready &&
-              statusFilters.state.ready) ||
-            (revision.status === DisruptionView.Draft &&
-              statusFilters.state.needs_review)) &&
-          (revision.adjustments || []).some(
-            (adj) =>
-              adj.sourceLabel && adj.sourceLabel.toLowerCase().includes(query)
-          ) &&
-          (revision.isActive || revision.status !== DisruptionView.Published)
-        )
-      })
-
-      if (anyMatches) {
-        return [...acc, ...(uniqueRevisions as DisruptionRevision[])]
+      if (
+        anyMatchesFilter(uniqueRevisions, query, routeFilters, statusFilters)
+      ) {
+        return [...acc, ...uniqueRevisions]
       } else {
         return acc
       }
     }, [] as DisruptionRevision[])
-  }, [
-    disruptions,
-    searchQuery,
-    routeFilters.anyActive,
-    routeFilters.state,
-    statusFilters.anyActive,
-    statusFilters.state,
-  ])
+  }, [disruptions, searchQuery, routeFilters, statusFilters])
 
   return (
     <Page includeHomeLink={false}>
@@ -421,4 +426,6 @@ export {
   Routes,
   getRouteIcon,
   getRouteColor,
+  anyMatchesFilter,
+  FilterGroup,
 }

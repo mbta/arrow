@@ -11,6 +11,9 @@ import {
   DisruptionIndexView,
   DisruptionIndex,
   getRouteColor,
+  anyMatchesFilter,
+  FilterGroup,
+  Routes,
 } from "../../src/disruptions/disruptionIndex"
 import Disruption from "../../src/models/disruption"
 import DisruptionRevision from "../../src/models/disruptionRevision"
@@ -803,4 +806,114 @@ describe("getRouteColor", () => {
       expect(getRouteColor(route)).toEqual(color)
     })
   })
+})
+
+describe("anyMatchesFilter", () => {
+  const published = new DisruptionRevision({
+    id: "1",
+    isActive: true,
+    adjustments: [
+      new Adjustment({ id: "1", routeId: "Red", sourceLabel: "Adj 1" }),
+    ],
+    daysOfWeek: [],
+    exceptions: [],
+    tripShortNames: [],
+    status: DisruptionView.Published,
+  })
+  const ready = new DisruptionRevision({
+    id: "2",
+    isActive: true,
+    adjustments: [
+      new Adjustment({ id: "1", routeId: "Blue", sourceLabel: "Adj 2" }),
+    ],
+    daysOfWeek: [],
+    exceptions: [],
+    tripShortNames: [],
+    status: DisruptionView.Ready,
+  })
+  const draft = new DisruptionRevision({
+    id: "3",
+    isActive: true,
+    adjustments: [
+      new Adjustment({ id: "1", routeId: "Orange", sourceLabel: "Adj 3" }),
+    ],
+    daysOfWeek: [],
+    exceptions: [],
+    tripShortNames: [],
+    status: DisruptionView.Draft,
+  })
+  const routeFilters = { state: {}, anyActive: false }
+  const statusFilters = { state: {}, anyActive: false }
+  test.each([
+    [[published, ready, draft], "", routeFilters, statusFilters, true],
+    [
+      [published, ready, draft],
+      "",
+      routeFilters,
+      { state: { ...statusFilters.state, published: true }, anyActive: true },
+      true,
+    ],
+    [
+      [published, ready, draft],
+      "",
+      routeFilters,
+      { state: { ...statusFilters.state, ready: true }, anyActive: true },
+      true,
+    ],
+    [
+      [published, ready, draft],
+      "",
+      routeFilters,
+      {
+        state: { ...statusFilters.state, needs_review: true },
+        anyActive: true,
+      },
+      true,
+    ],
+    [
+      [published, ready, draft],
+      "",
+      { ...routeFilters, state: { ...routeFilters.state, Red: true } },
+      statusFilters,
+      true,
+    ],
+    [
+      [
+        new DisruptionRevision({ ...published, status: DisruptionView.Ready }),
+        ready,
+        draft,
+      ],
+      "",
+      routeFilters,
+      {
+        state: { ...statusFilters.state, published: true },
+        anyActive: true,
+      },
+      false,
+    ],
+    [
+      [published, ready, draft],
+      "",
+      {
+        ...routeFilters,
+        anyActive: true,
+      },
+      statusFilters,
+      false,
+    ],
+  ])(
+    "returns true if any DisruptionRevision matches a set of filters",
+    (revisions, query, routeFiltersArg, statusFiltersArg, expected) => {
+      expect(
+        anyMatchesFilter(
+          revisions,
+          query,
+          routeFiltersArg as FilterGroup<Routes>,
+          statusFiltersArg as FilterGroup<
+            "published" | "ready" | "needs_review"
+          >
+        )
+      ).toEqual(expected)
+    }
+  )
 })
