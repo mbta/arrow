@@ -88,6 +88,20 @@ const convertSortable = (
   }
 }
 
+const getStatusText = (status: DisruptionView) => {
+  switch (status) {
+    case DisruptionView.Draft: {
+      return "needs review"
+    }
+    case DisruptionView.Ready: {
+      return "ready"
+    }
+    case DisruptionView.Published: {
+      return "published"
+    }
+  }
+}
+
 interface DisruptionTableProps {
   disruptionRevisions: DisruptionRevision[]
 }
@@ -144,20 +158,6 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
     },
     [sortState]
   )
-
-  const getStatusText = React.useCallback((status: DisruptionView) => {
-    switch (status) {
-      case DisruptionView.Draft: {
-        return "needs review"
-      }
-      case DisruptionView.Ready: {
-        return "ready"
-      }
-      case DisruptionView.Published: {
-        return "published"
-      }
-    }
-  }, [])
 
   return (
     <Table className="m-disruption-table border-top-dark">
