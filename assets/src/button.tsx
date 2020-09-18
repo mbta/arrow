@@ -2,11 +2,11 @@ import * as React from "react"
 import BootstrapButton from "react-bootstrap/Button"
 import { ButtonProps } from "react-bootstrap/Button"
 
-export const Button = (props: ButtonProps) => {
+const Button = (props: ButtonProps) => {
   return <BootstrapButton {...props} />
 }
 
-export const PrimaryButton = ({
+const PrimaryButton = ({
   filled = false,
   ...rest
 }: ButtonProps & { filled?: boolean }) => {
@@ -15,7 +15,7 @@ export const PrimaryButton = ({
   )
 }
 
-export const SecondaryButton = ({
+const SecondaryButton = ({
   filled = false,
   ...rest
 }: ButtonProps & { filled?: boolean }) => {
@@ -27,6 +27,8 @@ export const SecondaryButton = ({
   )
 }
 
-export const LinkButton = (props: ButtonProps) => {
+const LinkButton = (props: ButtonProps) => {
   return <BootstrapButton {...props} variant="link" />
 }
+
+export { Button, PrimaryButton, SecondaryButton, LinkButton }

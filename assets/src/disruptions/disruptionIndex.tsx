@@ -19,7 +19,7 @@ import {
   revisionFromDisruptionForView,
 } from "./viewToggle"
 
-export type Routes =
+type Routes =
   | "Red"
   | "Blue"
   | "Mattapan"
@@ -34,7 +34,7 @@ type RouteFilterState = {
   [route in Routes]?: boolean
 }
 
-export const getRouteIcon = (route?: string): Icon => {
+const getRouteIcon = (route?: string): Icon => {
   switch (route) {
     case "Red": {
       return "red-line-small"
@@ -66,7 +66,7 @@ export const getRouteIcon = (route?: string): Icon => {
   }
 }
 
-export const getRouteColor = (route?: string): string => {
+const getRouteColor = (route?: string): string => {
   switch (route) {
     case "Red": {
       return "#da291c"
@@ -419,4 +419,11 @@ const DisruptionIndex = () => {
   }
 }
 
-export { DisruptionIndex, RouteFilterToggle, DisruptionIndexView }
+export {
+  DisruptionIndex,
+  RouteFilterToggle,
+  DisruptionIndexView,
+  Routes,
+  getRouteIcon,
+  getRouteColor,
+}
