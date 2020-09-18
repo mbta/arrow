@@ -155,10 +155,10 @@ describe("DisruptionTable", () => {
     const { container } = render(<DisruptionTableWithRouter />)
     const tableRows = container.querySelectorAll("tbody tr")
     expect(
-      tableRows.item(2).querySelectorAll("td").item(1).textContent
+      tableRows.item(2).querySelectorAll("td").item(0).textContent
     ).toEqual("NorthQuincyQuincyCenter")
     expect(
-      tableRows.item(3).querySelectorAll("td").item(1).textContent
+      tableRows.item(3).querySelectorAll("td").item(0).textContent
     ).toEqual("↘")
   })
 
@@ -168,16 +168,16 @@ describe("DisruptionTable", () => {
     expect(tableRows.length).toEqual(4)
     let firstRow = tableRows.item(0)
     let firstRowData = firstRow.querySelectorAll("td")
-    expect(firstRowData.item(1).textContent).toEqual("Kenmore-Newton Highlands")
-    expect(firstRowData.item(2).textContent).toContain("10/23/2019")
-    expect(firstRowData.item(2).textContent).toContain("10/24/2019")
-    expect(firstRowData.item(3).textContent).toEqual("0")
-    expect(firstRowData.item(4).textContent).toEqual(
+    expect(firstRowData.item(0).textContent).toEqual("Kenmore-Newton Highlands")
+    expect(firstRowData.item(1).textContent).toContain("10/23/2019")
+    expect(firstRowData.item(1).textContent).toContain("10/24/2019")
+    expect(firstRowData.item(2).textContent).toEqual("0")
+    expect(firstRowData.item(3).textContent).toEqual(
       "Friday 8:45PM - Sunday End of service"
     )
-    expect(firstRowData.item(5).textContent).toEqual("published")
+    expect(firstRowData.item(4).textContent).toEqual("published")
     expect(
-      firstRowData.item(6).querySelectorAll("a[href='/disruptions/2?v=']")
+      firstRowData.item(5).querySelectorAll("a[href='/disruptions/2?v=']")
         .length
     ).toEqual(1)
     let activeSortToggle = container.querySelector(
@@ -200,7 +200,7 @@ describe("DisruptionTable", () => {
       throw new Error("active sort toggle not found")
     }
     expect(activeSortToggle.textContent).toEqual("adjustments↓")
-    expect(firstRowData.item(1).textContent).toEqual("NorthQuincyQuincyCenter")
+    expect(firstRowData.item(0).textContent).toEqual("NorthQuincyQuincyCenter")
 
     const dateSort = screen.getByText("date range")
     fireEvent.click(dateSort)
@@ -214,9 +214,9 @@ describe("DisruptionTable", () => {
     firstRow = tableRows.item(0)
     firstRowData = firstRow.querySelectorAll("td")
     expect(activeSortToggle.textContent).toEqual("date range↑")
-    expect(firstRowData.item(1).textContent).toEqual("Kenmore-Newton Highlands")
-    expect(firstRowData.item(2).textContent).toContain("9/22/2019")
-    expect(firstRowData.item(2).textContent).toContain("10/22/2019")
+    expect(firstRowData.item(0).textContent).toEqual("Kenmore-Newton Highlands")
+    expect(firstRowData.item(1).textContent).toContain("9/22/2019")
+    expect(firstRowData.item(1).textContent).toContain("10/22/2019")
 
     const timePeriodSort = screen.getByText("time period")
     fireEvent.click(timePeriodSort)
@@ -230,9 +230,9 @@ describe("DisruptionTable", () => {
     firstRow = tableRows.item(0)
     firstRowData = firstRow.querySelectorAll("td")
     expect(activeSortToggle.textContent).toEqual("time period↑")
-    expect(firstRowData.item(1).textContent).toEqual("NorthQuincyQuincyCenter")
-    expect(firstRowData.item(2).textContent).toContain("10/31/2019")
-    expect(firstRowData.item(2).textContent).toContain("11/15/2019")
+    expect(firstRowData.item(0).textContent).toEqual("NorthQuincyQuincyCenter")
+    expect(firstRowData.item(1).textContent).toContain("10/31/2019")
+    expect(firstRowData.item(1).textContent).toContain("11/15/2019")
 
     fireEvent.click(timePeriodSort)
     activeSortToggle = container.querySelector(
@@ -245,9 +245,9 @@ describe("DisruptionTable", () => {
     firstRow = tableRows.item(0)
     firstRowData = firstRow.querySelectorAll("td")
     expect(activeSortToggle.textContent).toEqual("time period↓")
-    expect(firstRowData.item(1).textContent).toEqual("Kenmore-Newton Highlands")
-    expect(firstRowData.item(2).textContent).toContain("9/22/2019")
-    expect(firstRowData.item(2).textContent).toContain("10/22/2019")
+    expect(firstRowData.item(0).textContent).toEqual("Kenmore-Newton Highlands")
+    expect(firstRowData.item(1).textContent).toContain("9/22/2019")
+    expect(firstRowData.item(1).textContent).toContain("10/22/2019")
 
     const disruptionIdSort = screen.getByText("ID")
     fireEvent.click(disruptionIdSort)
@@ -261,9 +261,9 @@ describe("DisruptionTable", () => {
     firstRow = tableRows.item(0)
     firstRowData = firstRow.querySelectorAll("td")
     expect(activeSortToggle.textContent).toEqual("ID↑")
-    expect(firstRowData.item(1).textContent).toEqual("NorthQuincyQuincyCenter")
-    expect(firstRowData.item(2).textContent).toContain("10/31/2019")
-    expect(firstRowData.item(2).textContent).toContain("11/15/2019")
+    expect(firstRowData.item(0).textContent).toEqual("NorthQuincyQuincyCenter")
+    expect(firstRowData.item(1).textContent).toContain("10/31/2019")
+    expect(firstRowData.item(1).textContent).toContain("11/15/2019")
 
     fireEvent.click(disruptionIdSort)
     activeSortToggle = container.querySelector(
@@ -276,40 +276,9 @@ describe("DisruptionTable", () => {
     firstRow = tableRows.item(0)
     firstRowData = firstRow.querySelectorAll("td")
     expect(activeSortToggle.textContent).toEqual("ID↓")
-    expect(firstRowData.item(1).textContent).toEqual("Kenmore-Newton Highlands")
-    expect(firstRowData.item(2).textContent).toContain("9/22/2019")
-    expect(firstRowData.item(2).textContent).toContain("10/22/2019")
-
-    const routesSort = screen.getByText("route")
-    fireEvent.click(routesSort)
-    activeSortToggle = container.querySelector(
-      ".m-disruption-table__sortable.active"
-    )
-    if (!activeSortToggle) {
-      throw new Error("active sort toggle not found")
-    }
-    tableRows = container.querySelectorAll("tbody tr")
-    firstRow = tableRows.item(0)
-    firstRowData = firstRow.querySelectorAll("td")
-    expect(activeSortToggle.textContent).toEqual("route↑")
-    expect(firstRowData.item(1).textContent).toEqual("Kenmore-Newton Highlands")
-    expect(firstRowData.item(2).textContent).toContain("9/22/2019")
-    expect(firstRowData.item(2).textContent).toContain("10/22/2019")
-
-    fireEvent.click(routesSort)
-    activeSortToggle = container.querySelector(
-      ".m-disruption-table__sortable.active"
-    )
-    if (!activeSortToggle) {
-      throw new Error("active sort toggle not found")
-    }
-    tableRows = container.querySelectorAll("tbody tr")
-    firstRow = tableRows.item(0)
-    firstRowData = firstRow.querySelectorAll("td")
-    expect(activeSortToggle.textContent).toEqual("route↓")
-    expect(firstRowData.item(1).textContent).toEqual("NorthQuincyQuincyCenter")
-    expect(firstRowData.item(2).textContent).toContain("10/31/2019")
-    expect(firstRowData.item(2).textContent).toContain("11/15/2019")
+    expect(firstRowData.item(0).textContent).toEqual("Kenmore-Newton Highlands")
+    expect(firstRowData.item(1).textContent).toContain("9/22/2019")
+    expect(firstRowData.item(1).textContent).toContain("10/22/2019")
 
     const statusSort = screen.getByText("status")
     fireEvent.click(statusSort)
@@ -323,9 +292,9 @@ describe("DisruptionTable", () => {
     firstRow = tableRows.item(0)
     firstRowData = firstRow.querySelectorAll("td")
     expect(activeSortToggle.textContent).toEqual("status↑")
-    expect(firstRowData.item(1).textContent).toEqual("NorthQuincyQuincyCenter")
-    expect(firstRowData.item(2).textContent).toContain("10/31/2019")
-    expect(firstRowData.item(2).textContent).toContain("11/15/2019")
+    expect(firstRowData.item(0).textContent).toEqual("NorthQuincyQuincyCenter")
+    expect(firstRowData.item(1).textContent).toContain("10/31/2019")
+    expect(firstRowData.item(1).textContent).toContain("11/15/2019")
 
     fireEvent.click(statusSort)
     activeSortToggle = container.querySelector(
@@ -338,11 +307,11 @@ describe("DisruptionTable", () => {
     firstRow = tableRows.item(0)
     firstRowData = firstRow.querySelectorAll("td")
     expect(activeSortToggle.textContent).toEqual("status↓")
-    expect(firstRowData.item(1).textContent).toEqual("Kenmore-Newton Highlands")
-    expect(firstRowData.item(2).textContent).toContain("10/23/2019")
-    expect(firstRowData.item(2).textContent).toContain("10/24/2019")
+    expect(firstRowData.item(0).textContent).toEqual("Kenmore-Newton Highlands")
+    expect(firstRowData.item(1).textContent).toContain("10/23/2019")
+    expect(firstRowData.item(1).textContent).toContain("10/24/2019")
 
-    const exceptionsSort = screen.getByText("exceptions")
+    const exceptionsSort = screen.getByText("except")
     fireEvent.click(exceptionsSort)
     activeSortToggle = container.querySelector(
       ".m-disruption-table__sortable.active"
@@ -353,10 +322,10 @@ describe("DisruptionTable", () => {
     tableRows = container.querySelectorAll("tbody tr")
     firstRow = tableRows.item(0)
     firstRowData = firstRow.querySelectorAll("td")
-    expect(activeSortToggle.textContent).toEqual("exceptions↑")
-    expect(firstRowData.item(1).textContent).toEqual("Kenmore-Newton Highlands")
-    expect(firstRowData.item(2).textContent).toContain("10/23/2019")
-    expect(firstRowData.item(2).textContent).toContain("10/24/2019")
+    expect(activeSortToggle.textContent).toEqual("except↑")
+    expect(firstRowData.item(0).textContent).toEqual("Kenmore-Newton Highlands")
+    expect(firstRowData.item(1).textContent).toContain("10/23/2019")
+    expect(firstRowData.item(1).textContent).toContain("10/24/2019")
 
     fireEvent.click(exceptionsSort)
     activeSortToggle = container.querySelector(
@@ -368,9 +337,9 @@ describe("DisruptionTable", () => {
     tableRows = container.querySelectorAll("tbody tr")
     firstRow = tableRows.item(0)
     firstRowData = firstRow.querySelectorAll("td")
-    expect(activeSortToggle.textContent).toEqual("exceptions↓")
-    expect(firstRowData.item(1).textContent).toEqual("Kenmore-Newton Highlands")
-    expect(firstRowData.item(2).textContent).toContain("10/23/2019")
-    expect(firstRowData.item(2).textContent).toContain("10/24/2019")
+    expect(activeSortToggle.textContent).toEqual("except↓")
+    expect(firstRowData.item(0).textContent).toEqual("Kenmore-Newton Highlands")
+    expect(firstRowData.item(1).textContent).toContain("10/23/2019")
+    expect(firstRowData.item(1).textContent).toContain("10/24/2019")
   })
 })

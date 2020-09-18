@@ -529,7 +529,7 @@ describe("DisruptionIndexConnected", () => {
       ],
       [
         [
-          "NewtonHighlandsKenmore, HarvardAlewife, Fairmount--Newmarket",
+          "NewtonHighlandsKenmoreHarvardAlewifeFairmount--Newmarket",
           "1/15/20201/30/2020",
           "Saturday 8:45PM - Sunday 8:45PM",
         ],
@@ -610,8 +610,8 @@ describe("DisruptionIndexConnected", () => {
     )
     rows.forEach((row, index) => {
       const dataColumns = row.querySelectorAll("td")
-      expect(dataColumns[1].textContent).toEqual(expected[index][0])
-      expect(dataColumns[2].textContent).toEqual(expected[index][1])
+      expect(dataColumns[0].textContent).toEqual(expected[index][0])
+      expect(dataColumns[1].textContent).toEqual(expected[index][1])
     })
   })
 

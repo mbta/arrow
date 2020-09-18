@@ -11,6 +11,7 @@ import { getRouteIcon } from "./disruptionIndex"
 import { Button } from "../button"
 import DayOfWeek from "../models/dayOfWeek"
 import { dayNameToInt } from "./disruptionCalendar"
+import Adjustment from "../models/adjustment"
 
 interface DisruptionTableHeaderProps {
   active?: boolean
@@ -50,7 +51,6 @@ interface SortState {
   by:
     | "label"
     | "startDate"
-    | "routes"
     | "exceptions"
     | "daysAndTimes"
     | "status"
@@ -65,7 +65,7 @@ interface DisruptionTableRow {
   startDate?: Date
   endDate?: Date
   exceptions: number
-  routes: string[]
+  adjustments: Adjustment[]
   label: string
   daysOfWeek: DayOfWeek[]
   daysAndTimes: string
@@ -76,9 +76,6 @@ const convertSortable = (
   item: DisruptionTableRow
 ): string | number | Date | undefined => {
   switch (key) {
-    case "routes": {
-      return item.routes.join("")
-    }
     case "daysAndTimes": {
       return dayNameToInt(item.daysOfWeek[0].dayName)
     }
@@ -110,7 +107,7 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
           startDate: x.startDate,
           endDate: x.endDate,
           exceptions: x.exceptions.length,
-          routes: x.adjustments.map((adj) => adj.routeId),
+          adjustments: x.adjustments,
           label: x.adjustments.map((adj) => adj.sourceLabel).join(", "),
           daysOfWeek: x.daysOfWeek,
           daysAndTimes:
@@ -167,13 +164,6 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
       <thead>
         <tr>
           <DisruptionTableHeader
-            sortable
-            sortOrder={sortState.order}
-            active={sortState.by === "routes"}
-            onClick={() => handleChangeSort("routes")}
-            label="route"
-          />
-          <DisruptionTableHeader
             label="adjustments"
             sortable
             sortOrder={sortState.order}
@@ -188,7 +178,7 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
             onClick={() => handleChangeSort("startDate")}
           />
           <DisruptionTableHeader
-            label="exceptions"
+            label="except"
             sortable
             sortOrder={sortState.order}
             active={sortState.by === "exceptions"}
@@ -225,21 +215,24 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
           >
             {x.disruptionId !== self[i - 1]?.disruptionId ||
             x.label !== self[i - 1]?.label ? (
-              <>
-                <td>
-                  {x.routes.map((route) => (
+              <td>
+                {x.adjustments.map((adj) => (
+                  <div
+                    key={x.id + adj.id}
+                    className="d-flex align-items-center"
+                  >
                     <Icon
-                      key={route}
-                      type={getRouteIcon(route)}
-                      className="mr-1"
+                      size="sm"
+                      key={adj.routeId}
+                      type={getRouteIcon(adj.routeId)}
+                      className="mr-3"
                     />
-                  ))}
-                </td>
-                <td>{x.label}</td>
-              </>
+                    {adj.sourceLabel}
+                  </div>
+                ))}
+              </td>
             ) : (
               <>
-                <td className="border-0" />
                 <td className="border-0 text-right">{"\u2198"}</td>
               </>
             )}

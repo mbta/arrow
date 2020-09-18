@@ -114,7 +114,7 @@ const RouteFilterToggle = React.memo(
         id={"route-filter-toggle-" + route}
         onClick={() => onClick(route)}
       >
-        <Icon type={getRouteIcon(route)} />
+        <Icon size="lg" type={getRouteIcon(route)} />
       </a>
     )
   }
