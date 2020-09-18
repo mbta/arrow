@@ -24,8 +24,13 @@
   &:hover,
   &:active,
   &:focus,
+  &:active {
+    background-color: $white;
+    color: $body-color;
+  }
+
   &:not(:disabled):not(.disabled).active {
-    border-color: $dark;
+    border-color: $blue-grey;
     background-color: #e2e5ec;
     color: $dark;
   }
