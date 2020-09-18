@@ -251,6 +251,7 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
             <td>
               {
                 <Button
+                  className="m-disruption-table__status-indicator"
                   variant={`outline-${
                     x.status === DisruptionView.Draft ? "primary" : "dark"
                   }`}
