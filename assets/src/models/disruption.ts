@@ -6,8 +6,13 @@ import {
   loadSingleRelationship,
 } from "../jsonApi"
 
+enum DisruptionView {
+  Draft,
+  Ready,
+  Published,
+}
+
 import DisruptionRevision from "./disruptionRevision"
-import { DisruptionView } from "../disruptions/viewToggle"
 
 class Disruption extends JsonApiResourceObject {
   id?: string
@@ -96,6 +101,28 @@ class Disruption extends JsonApiResourceObject {
   static isOfType(obj: ModelObject): obj is Disruption {
     return obj instanceof Disruption
   }
+
+  static revisionFromDisruptionForView = (
+    disruption: Disruption,
+    view: DisruptionView
+  ): DisruptionRevision | undefined => {
+    switch (view) {
+      case DisruptionView.Draft: {
+        const sortedRevisions = disruption.revisions.sort((r1, r2) => {
+          return parseInt(r1.id || "", 10) - parseInt(r2.id || "", 10)
+        })
+
+        return sortedRevisions[sortedRevisions.length - 1]
+      }
+      case DisruptionView.Ready: {
+        return disruption.readyRevision
+      }
+      case DisruptionView.Published: {
+        return disruption.publishedRevision
+      }
+    }
+  }
 }
 
+export { DisruptionView }
 export default Disruption

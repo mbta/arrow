@@ -21,7 +21,7 @@ import * as api from "../../src/api"
 
 import ReactDOM from "react-dom"
 import { act } from "react-dom/test-utils"
-import { DisruptionView } from "../../src/disruptions/viewToggle"
+import { DisruptionView } from "../../src/models/disruption"
 
 const DisruptionIndexWithRouter = ({
   connected = false,

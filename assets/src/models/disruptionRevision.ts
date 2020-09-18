@@ -6,7 +6,7 @@ import Adjustment from "./adjustment"
 import DayOfWeek from "./dayOfWeek"
 import Exception from "./exception"
 import TripShortName from "./tripShortName"
-import { DisruptionView } from "../disruptions/viewToggle"
+import { DisruptionView } from "./disruption"
 
 class DisruptionRevision extends JsonApiResourceObject {
   id?: string

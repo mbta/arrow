@@ -9,15 +9,10 @@ import Loading from "../loading"
 import { DisruptionPreview } from "./disruptionPreview"
 import { fromDaysOfWeek } from "./time"
 
-import Disruption from "../models/disruption"
 import { JsonApiResponse, toModelObject, parseErrors } from "../jsonApi"
 import { Page } from "../page"
-import {
-  DisruptionViewToggle,
-  useDisruptionViewParam,
-  DisruptionView,
-  revisionFromDisruptionForView,
-} from "./viewToggle"
+import Disruption, { DisruptionView } from "../models/disruption"
+import { DisruptionViewToggle, useDisruptionViewParam } from "./viewToggle"
 import Row from "react-bootstrap/Row"
 import Col from "react-bootstrap/Col"
 import DisruptionRevision from "../models/disruptionRevision"
@@ -111,7 +106,7 @@ const ViewDisruptionForm = ({
     }).then((result: JsonApiResponse) => {
       if (result instanceof Disruption) {
         setDisruptionRevision(
-          revisionFromDisruptionForView(result, view) || null
+          Disruption.revisionFromDisruptionForView(result, view) || null
         )
       } else {
         setDisruptionRevision("error")

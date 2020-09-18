@@ -8,16 +8,12 @@ import { PrimaryButton, SecondaryButton, LinkButton } from "../button"
 import Icon from "../icons"
 import { DisruptionTable } from "./disruptionTable"
 import { DisruptionCalendar } from "./disruptionCalendar"
-import Disruption from "../models/disruption"
 import DisruptionRevision from "../models/disruptionRevision"
 import { apiGet } from "../api"
 import { JsonApiResponse, toModelObject } from "../jsonApi"
 import { Page } from "../page"
-import {
-  useDisruptionViewParam,
-  DisruptionView,
-  revisionFromDisruptionForView,
-} from "./viewToggle"
+import Disruption, { DisruptionView } from "../models/disruption"
+import { useDisruptionViewParam } from "./viewToggle"
 
 type Routes =
   | "Red"
@@ -230,9 +226,12 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
     const query = searchQuery.toLowerCase()
     return disruptions.reduce((acc, curr) => {
       const uniqueRevisions = [
-        revisionFromDisruptionForView(curr, DisruptionView.Published),
-        revisionFromDisruptionForView(curr, DisruptionView.Ready),
-        revisionFromDisruptionForView(curr, DisruptionView.Draft),
+        Disruption.revisionFromDisruptionForView(
+          curr,
+          DisruptionView.Published
+        ),
+        Disruption.revisionFromDisruptionForView(curr, DisruptionView.Ready),
+        Disruption.revisionFromDisruptionForView(curr, DisruptionView.Draft),
       ].filter(
         (x, i, self) =>
           !!x && self.indexOf(self.find((y) => y?.id === x.id)) === i

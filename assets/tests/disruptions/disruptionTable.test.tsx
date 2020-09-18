@@ -5,7 +5,7 @@ import { DisruptionTable } from "../../src/disruptions/disruptionTable"
 import Adjustment from "../../src/models/adjustment"
 import DayOfWeek from "../../src/models/dayOfWeek"
 import DisruptionRevision from "../../src/models/disruptionRevision"
-import { DisruptionView } from "../../src/disruptions/viewToggle"
+import { DisruptionView } from "../../src/models/disruption"
 
 const DisruptionTableWithRouter = ({
   initialEntries,

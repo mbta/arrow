@@ -19,10 +19,9 @@ import {
   ixToDayName,
 } from "./time"
 import { DisruptionTimePicker } from "./disruptionTimePicker"
-import { DisruptionView, revisionFromDisruptionForView } from "./viewToggle"
 
 import Adjustment from "../models/adjustment"
-import Disruption from "../models/disruption"
+import Disruption, { DisruptionView } from "../models/disruption"
 import DisruptionRevision from "../models/disruptionRevision"
 import Exception from "../models/exception"
 import { JsonApiResponse, toModelObject, parseErrors } from "../jsonApi"
@@ -92,7 +91,7 @@ const EditDisruption = ({
       defaultResult: "error",
     }).then((result: JsonApiResponse) => {
       if (result instanceof Disruption) {
-        const revisionFromResponse = revisionFromDisruptionForView(
+        const revisionFromResponse = Disruption.revisionFromDisruptionForView(
           result,
           DisruptionView.Draft
         )

@@ -4,8 +4,9 @@ import dayGridPlugin from "@fullcalendar/daygrid"
 import { RRule, RRuleSet } from "rrule"
 import { getRouteColor } from "./disruptionIndex"
 import DisruptionRevision from "../models/disruptionRevision"
+import { DisruptionView } from "../models/disruption"
 import DayOfWeek from "../models/dayOfWeek"
-import { useDisruptionViewParam, DisruptionView } from "./viewToggle"
+import { useDisruptionViewParam } from "./viewToggle"
 
 interface DisruptionCalendarProps {
   disruptionRevisions: DisruptionRevision[]
