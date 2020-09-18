@@ -233,7 +233,6 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
         revisionFromDisruptionForView(curr, DisruptionView.Published),
         revisionFromDisruptionForView(curr, DisruptionView.Ready),
         revisionFromDisruptionForView(curr, DisruptionView.Draft),
-        ,
       ].filter(
         (x, i, self) =>
           !!x && self.indexOf(self.find((y) => y?.id === x.id)) === i
