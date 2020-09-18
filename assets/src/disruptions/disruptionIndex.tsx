@@ -345,13 +345,18 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
                 needs review
               </SecondaryButton>
             </div>
-            {(routeFilters.anyActive || statusFilters.anyActive) && (
+            {(routeFilters.anyActive ||
+              (statusFilters.anyActive && view !== "calendar")) && (
               <LinkButton
                 id="clear-filter"
                 onClick={(e) => {
                   e.preventDefault()
                   routeFilters.clearFilters()
-                  statusFilters.clearFilters()
+                  statusFilters.updateFiltersState({
+                    needs_review: false,
+                    ready: false,
+                    published: view === "calendar",
+                  })
                 }}
               >
                 clear filter
