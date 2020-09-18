@@ -1,4 +1,4 @@
-import Disruption from "../../src/models/disruption"
+import Disruption, { DisruptionView } from "../../src/models/disruption"
 import DisruptionRevision from "../../src/models/disruptionRevision"
 import Adjustment from "../../src/models/adjustment"
 import DayOfWeek from "../../src/models/dayOfWeek"
@@ -156,6 +156,7 @@ describe("Disruption", () => {
             }),
           ],
           tripShortNames: [],
+          status: 2,
         }),
         publishedRevision: new DisruptionRevision({
           id: "1",
@@ -192,6 +193,7 @@ describe("Disruption", () => {
             }),
           ],
           tripShortNames: [],
+          status: 2,
         }),
         revisions: [
           new DisruptionRevision({
@@ -229,6 +231,7 @@ describe("Disruption", () => {
               }),
             ],
             tripShortNames: [],
+            status: 2,
           }),
         ],
       })
@@ -255,5 +258,91 @@ describe("Disruption", () => {
     expect(
       Disruption.isOfType(new Exception({ excludedDate: new Date() }))
     ).toBe(false)
+  })
+})
+
+describe("revisionFromDisruptionForView", () => {
+  const testDisruption = new Disruption({
+    id: "1",
+    readyRevision: new DisruptionRevision({
+      id: "2",
+      startDate: new Date(2020, 0, 1),
+      endDate: new Date(2020, 1, 1),
+      isActive: true,
+      adjustments: [],
+      daysOfWeek: [],
+      exceptions: [],
+      tripShortNames: [],
+    }),
+    revisions: [
+      new DisruptionRevision({
+        id: "3",
+        startDate: new Date(2020, 1, 1),
+        endDate: new Date(2020, 2, 1),
+        isActive: true,
+        adjustments: [],
+        daysOfWeek: [],
+        exceptions: [],
+        tripShortNames: [],
+      }),
+      new DisruptionRevision({
+        id: "2",
+        startDate: new Date(2020, 0, 1),
+        endDate: new Date(2020, 1, 1),
+        isActive: true,
+        adjustments: [],
+        daysOfWeek: [],
+        exceptions: [],
+        tripShortNames: [],
+      }),
+    ],
+  })
+  test("gets draft revision", () => {
+    expect(
+      Disruption.revisionFromDisruptionForView(
+        testDisruption,
+        DisruptionView.Draft
+      )
+    ).toEqual(
+      new DisruptionRevision({
+        id: "3",
+        startDate: new Date(2020, 1, 1),
+        endDate: new Date(2020, 2, 1),
+        isActive: true,
+        adjustments: [],
+        daysOfWeek: [],
+        exceptions: [],
+        tripShortNames: [],
+      })
+    )
+  })
+
+  test("returnes undefined for latest draft when no revisions present", () => {
+    expect(
+      Disruption.revisionFromDisruptionForView(
+        new Disruption({ id: "1", revisions: [] }),
+        DisruptionView.Draft
+      )
+    ).toBeUndefined()
+  })
+
+  test("gets ready revision", () => {
+    expect(
+      Disruption.revisionFromDisruptionForView(
+        testDisruption,
+        DisruptionView.Ready
+      )
+    ).toEqual(
+      new DisruptionRevision({
+        id: "2",
+        startDate: new Date(2020, 0, 1),
+        endDate: new Date(2020, 1, 1),
+        isActive: true,
+        adjustments: [],
+        daysOfWeek: [],
+        exceptions: [],
+        tripShortNames: [],
+      })
+    )
   })
 })

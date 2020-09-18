@@ -1,5 +1,5 @@
 import * as React from "react"
-import { BrowserRouter, MemoryRouter, Switch, Route } from "react-router-dom"
+import { BrowserRouter } from "react-router-dom"
 import {
   render,
   fireEvent,
@@ -11,6 +11,9 @@ import {
   DisruptionIndexView,
   DisruptionIndex,
   getRouteColor,
+  anyMatchesFilter,
+  FilterGroup,
+  Routes,
 } from "../../src/disruptions/disruptionIndex"
 import Disruption from "../../src/models/disruption"
 import DisruptionRevision from "../../src/models/disruptionRevision"
@@ -21,7 +24,7 @@ import * as api from "../../src/api"
 
 import ReactDOM from "react-dom"
 import { act } from "react-dom/test-utils"
-import { toModelObject } from "../../src/jsonApi"
+import { DisruptionView } from "../../src/models/disruption"
 
 const DisruptionIndexWithRouter = ({
   connected = false,
@@ -34,68 +37,142 @@ const DisruptionIndexWithRouter = ({
         <DisruptionIndex />
       ) : (
         <DisruptionIndexView
-          disruptionRevisions={[
-            new DisruptionRevision({
-              id: "1",
-              disruptionId: "1",
-              startDate: new Date("2019-10-31"),
-              endDate: new Date("2019-11-15"),
-              isActive: true,
-              adjustments: [
-                new Adjustment({
+          disruptions={[
+            new Disruption({
+              publishedRevision: new DisruptionRevision({
+                id: "1",
+                disruptionId: "1",
+                startDate: new Date("2019-10-31"),
+                endDate: new Date("2019-11-15"),
+                isActive: true,
+                adjustments: [
+                  new Adjustment({
+                    id: "1",
+                    routeId: "Red",
+                    sourceLabel: "AlewifeHarvard",
+                  }),
+                ],
+                daysOfWeek: [
+                  new DayOfWeek({
+                    id: "1",
+                    startTime: "20:45:00",
+                    dayName: "friday",
+                  }),
+                  new DayOfWeek({
+                    id: "2",
+                    dayName: "saturday",
+                  }),
+                  new DayOfWeek({
+                    id: "3",
+                    dayName: "sunday",
+                  }),
+                ],
+                exceptions: [],
+                tripShortNames: [],
+                status: DisruptionView.Published,
+              }),
+
+              revisions: [
+                new DisruptionRevision({
                   id: "1",
-                  routeId: "Red",
-                  sourceLabel: "AlewifeHarvard",
+                  disruptionId: "1",
+                  startDate: new Date("2019-10-31"),
+                  endDate: new Date("2019-11-15"),
+                  isActive: true,
+                  adjustments: [
+                    new Adjustment({
+                      id: "1",
+                      routeId: "Red",
+                      sourceLabel: "AlewifeHarvard",
+                    }),
+                  ],
+                  daysOfWeek: [
+                    new DayOfWeek({
+                      id: "1",
+                      startTime: "20:45:00",
+                      dayName: "friday",
+                    }),
+                    new DayOfWeek({
+                      id: "2",
+                      dayName: "saturday",
+                    }),
+                    new DayOfWeek({
+                      id: "3",
+                      dayName: "sunday",
+                    }),
+                  ],
+                  exceptions: [],
+                  tripShortNames: [],
+                  status: DisruptionView.Published,
                 }),
               ],
-              daysOfWeek: [
-                new DayOfWeek({
-                  id: "1",
-                  startTime: "20:45:00",
-                  dayName: "friday",
-                }),
-                new DayOfWeek({
-                  id: "2",
-                  dayName: "saturday",
-                }),
-                new DayOfWeek({
-                  id: "3",
-                  dayName: "sunday",
-                }),
-              ],
-              exceptions: [],
-              tripShortNames: [],
             }),
-            new DisruptionRevision({
+            new Disruption({
               id: "3",
-              disruptionId: "3",
-              startDate: new Date("2019-09-22"),
-              endDate: new Date("2019-10-22"),
-              isActive: true,
-              adjustments: [
-                new Adjustment({
-                  id: "2",
-                  routeId: "Green-D",
-                  sourceLabel: "Kenmore-Newton Highlands",
-                }),
-              ],
-              daysOfWeek: [
-                new DayOfWeek({
-                  id: "1",
-                  startTime: "20:45:00",
-                  dayName: "friday",
-                }),
-                new DayOfWeek({
-                  id: "2",
-                  dayName: "saturday",
-                }),
-                new DayOfWeek({
+              readyRevision: new DisruptionRevision({
+                id: "3",
+                disruptionId: "3",
+                startDate: new Date("2019-09-22"),
+                endDate: new Date("2019-10-22"),
+                isActive: true,
+                adjustments: [
+                  new Adjustment({
+                    id: "2",
+                    routeId: "Green-D",
+                    sourceLabel: "Kenmore-Newton Highlands",
+                  }),
+                ],
+                daysOfWeek: [
+                  new DayOfWeek({
+                    id: "1",
+                    startTime: "20:45:00",
+                    dayName: "friday",
+                  }),
+                  new DayOfWeek({
+                    id: "2",
+                    dayName: "saturday",
+                  }),
+                  new DayOfWeek({
+                    id: "3",
+                    dayName: "sunday",
+                  }),
+                ],
+                exceptions: [],
+                tripShortNames: [],
+              }),
+              revisions: [
+                new DisruptionRevision({
                   id: "3",
-                  dayName: "sunday",
+                  disruptionId: "3",
+                  startDate: new Date("2019-09-22"),
+                  endDate: new Date("2019-10-22"),
+                  isActive: true,
+                  adjustments: [
+                    new Adjustment({
+                      id: "2",
+                      routeId: "Green-D",
+                      sourceLabel: "Kenmore-Newton Highlands",
+                    }),
+                  ],
+                  daysOfWeek: [
+                    new DayOfWeek({
+                      id: "1",
+                      startTime: "20:45:00",
+                      dayName: "friday",
+                    }),
+                    new DayOfWeek({
+                      id: "2",
+                      dayName: "saturday",
+                    }),
+                    new DayOfWeek({
+                      id: "3",
+                      dayName: "sunday",
+                    }),
+                  ],
+                  exceptions: [],
+                  tripShortNames: [],
                 }),
               ],
-              exceptions: [],
-              tripShortNames: [],
             }),
           ]}
         />
@@ -214,26 +291,66 @@ describe("DisruptionIndexView", () => {
     ).toEqual(9)
   })
 
+  test("disruptions can be filtered by status", () => {
+    const { container } = render(<DisruptionIndexWithRouter />)
+
+    expect(container.querySelectorAll("tbody tr").length).toEqual(2)
+
+    const publishedReadyStatusToggle = container.querySelector(
+      "#status-filter-toggle-published-ready"
+    )
+
+    if (!publishedReadyStatusToggle) {
+      throw new Error("search input not found")
+    }
+
+    fireEvent.click(publishedReadyStatusToggle)
+
+    expect(container.querySelectorAll("tbody tr").length).toEqual(1)
+    expect(container.querySelectorAll("tbody tr").item(0).innerHTML).toMatch(
+      "AlewifeHarvard"
+    )
+
+    fireEvent.click(publishedReadyStatusToggle)
+
+    expect(container.querySelectorAll("tbody tr").length).toEqual(2)
+
+    const draftStatusToggle = container.querySelector(
+      "#status-filter-toggle-needs-review"
+    )
+
+    if (!draftStatusToggle) {
+      throw new Error("search input not found")
+    }
+
+    fireEvent.click(draftStatusToggle)
+
+    expect(container.querySelectorAll("tbody tr").length).toEqual(1)
+    expect(container.querySelectorAll("tbody tr").item(0).innerHTML).toMatch(
+      "Kenmore-Newton Highlands"
+    )
+  })
+
   test("can toggle between table and calendar view", () => {
     const { container } = render(<DisruptionIndexWithRouter />)
-    expect(screen.queryByText("days + times")).not.toBeNull()
+    expect(screen.queryByText("time period")).not.toBeNull()
     expect(queryByAttribute("id", container, "calendar")).toBeNull()
 
     const toggleButton = container.querySelector("#view-toggle")
     if (!toggleButton) {
       throw new Error("toggle button not found")
     }
-    expect(toggleButton.textContent).toEqual("calendar view")
+    expect(toggleButton.textContent).toEqual("⬒ calendar view")
 
     fireEvent.click(toggleButton)
-    expect(screen.queryByText("days + times")).toBeNull()
+    expect(screen.queryByText("time period")).toBeNull()
     expect(queryByAttribute("id", container, "calendar")).not.toBeNull()
-    expect(toggleButton.textContent).toEqual("list view")
+    expect(toggleButton.textContent).toEqual("⬒ list view")
 
     fireEvent.click(toggleButton)
-    expect(screen.queryByText("days + times")).not.toBeNull()
+    expect(screen.queryByText("time period")).not.toBeNull()
     expect(queryByAttribute("id", container, "calendar")).toBeNull()
-    expect(toggleButton.textContent).toEqual("calendar view")
+    expect(toggleButton.textContent).toEqual("⬒ calendar view")
   })
 })
 
@@ -308,7 +425,7 @@ describe("DisruptionIndexConnected", () => {
       [
         [
           "NewtonHighlandsKenmore",
-          "1/15/2020 - 1/30/2020",
+          "01/15/202001/30/2020",
           "Friday, 8:45PM - End of service",
         ],
       ],
@@ -415,8 +532,8 @@ describe("DisruptionIndexConnected", () => {
       ],
       [
         [
-          "NewtonHighlandsKenmore, HarvardAlewife, Fairmount--Newmarket",
-          "1/15/2020 - 1/30/2020",
+          "NewtonHighlandsKenmoreHarvardAlewifeFairmount--Newmarket",
+          "01/15/202001/30/2020",
           "Saturday 8:45PM - Sunday 8:45PM",
         ],
       ],
@@ -475,7 +592,7 @@ describe("DisruptionIndexConnected", () => {
           ],
         }),
       ],
-      [["NewtonHighlandsKenmore", "1/15/2020 - 1/30/2020", ""]],
+      [["NewtonHighlandsKenmore", "01/15/202001/30/2020", ""]],
     ],
   ])(`Renders the table correctly`, async (disruptions, expected) => {
     jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
@@ -489,21 +606,82 @@ describe("DisruptionIndexConnected", () => {
       ReactDOM.render(<DisruptionIndexWithRouter connected />, container)
     })
     const rows = container.querySelectorAll("tbody tr")
-    expect(rows.length).toEqual(disruptions.length)
+    expect(rows.length).toEqual(
+      disruptions.reduce((acc, curr) => {
+        return acc + curr.revisions.length
+      }, 0)
+    )
     rows.forEach((row, index) => {
       const dataColumns = row.querySelectorAll("td")
       expect(dataColumns[0].textContent).toEqual(expected[index][0])
       expect(dataColumns[1].textContent).toEqual(expected[index][1])
-      expect(dataColumns[2].textContent).toEqual(expected[index][2])
     })
   })
 
-  test("doesn't render deleted disruption", async () => {
+  test("doesn't render deleted published disruption", async () => {
     jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
       return Promise.resolve([
         new Disruption({
           id: "1",
-          readyRevision: new DisruptionRevision({
+          publishedRevision: new DisruptionRevision({
+            id: "2",
+            disruptionId: "1",
+            startDate: new Date("2020-01-15"),
+            endDate: new Date("2020-01-30"),
+            isActive: false,
+            adjustments: [
+              new Adjustment({
+                id: "1",
+                routeId: "Green-D",
+                source: "gtfs_creator",
+                sourceLabel: "NewtonHighlandsKenmore",
+              }),
+            ],
+            daysOfWeek: [],
+            exceptions: [],
+            tripShortNames: [],
+            status: DisruptionView.Published,
+          }),
+          revisions: [
+            new DisruptionRevision({
+              id: "2",
+              disruptionId: "1",
+              startDate: new Date("2020-01-15"),
+              endDate: new Date("2020-01-30"),
+              isActive: false,
+              adjustments: [
+                new Adjustment({
+                  id: "1",
+                  routeId: "Green-D",
+                  source: "gtfs_creator",
+                  sourceLabel: "NewtonHighlandsKenmore",
+                }),
+              ],
+              daysOfWeek: [],
+              exceptions: [],
+              tripShortNames: [],
+            }),
+          ],
+        }),
+      ])
+    })
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    await act(async () => {
+      ReactDOM.render(<DisruptionIndexWithRouter connected />, container)
+    })
+    const rows = container.querySelectorAll("tbody tr")
+    expect(rows.length).toEqual(0)
+  })
+
+  test("renders deleted ready disruption", async () => {
+    jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
+      return Promise.resolve([
+        new Disruption({
+          id: "1",
+          publishedRevision: new DisruptionRevision({
             id: "2",
             disruptionId: "1",
             startDate: new Date("2020-01-15"),
@@ -522,24 +700,6 @@ describe("DisruptionIndexConnected", () => {
             tripShortNames: [],
           }),
           revisions: [
-            new DisruptionRevision({
-              id: "1",
-              disruptionId: "1",
-              startDate: new Date("2020-01-15"),
-              endDate: new Date("2020-01-30"),
-              isActive: true,
-              adjustments: [
-                new Adjustment({
-                  id: "1",
-                  routeId: "Green-D",
-                  source: "gtfs_creator",
-                  sourceLabel: "NewtonHighlandsKenmore",
-                }),
-              ],
-              daysOfWeek: [],
-              exceptions: [],
-              tripShortNames: [],
-            }),
             new DisruptionRevision({
               id: "2",
               disruptionId: "1",
@@ -571,7 +731,47 @@ describe("DisruptionIndexConnected", () => {
       ReactDOM.render(<DisruptionIndexWithRouter connected />, container)
     })
     const rows = container.querySelectorAll("tbody tr")
-    expect(rows.length).toEqual(0)
+    expect(rows.length).toEqual(1)
+  })
+
+  test("renders deleted draft disruption", async () => {
+    jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
+      return Promise.resolve([
+        new Disruption({
+          id: "1",
+          revisions: [
+            new DisruptionRevision({
+              id: "2",
+              disruptionId: "1",
+              startDate: new Date("2020-01-15"),
+              endDate: new Date("2020-01-30"),
+              isActive: false,
+              adjustments: [
+                new Adjustment({
+                  id: "1",
+                  routeId: "Green-D",
+                  source: "gtfs_creator",
+                  sourceLabel: "NewtonHighlandsKenmore",
+                }),
+              ],
+              daysOfWeek: [],
+              exceptions: [],
+              tripShortNames: [],
+            }),
+          ],
+        }),
+      ])
+    })
+
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    await act(async () => {
+      ReactDOM.render(<DisruptionIndexWithRouter connected />, container)
+    })
+    const rows = container.querySelectorAll("tbody tr")
+    expect(rows.length).toEqual(1)
   })
 
   test("renders error", async () => {
@@ -587,49 +787,6 @@ describe("DisruptionIndexConnected", () => {
     })
 
     expect(container.textContent).toMatch("Something went wrong")
-  })
-
-  test("can toggle between ready and draft view", async () => {
-    const spy = jest.spyOn(api, "apiGet").mockImplementation(() => {
-      return Promise.resolve([])
-    })
-    const { container } = render(
-      <MemoryRouter initialEntries={["/"]}>
-        <Switch>
-          <Route exact={true} path="/" component={DisruptionIndex} />
-        </Switch>
-      </MemoryRouter>
-    )
-
-    expect(spy).toHaveBeenCalledWith({
-      url: "/api/disruptions",
-      parser: toModelObject,
-      defaultResult: "error",
-    })
-
-    const readyButton = container.querySelector("#ready")
-    expect(readyButton?.classList).toContain("active")
-    const draftButton = container.querySelector("#draft")
-    expect(draftButton?.classList).not.toContain("active")
-    expect(container.querySelector("#new-disruption-link")).toBeNull()
-
-    if (draftButton) {
-      // eslint-disable-next-line @typescript-eslint/require-await
-      await act(async () => {
-        fireEvent.click(draftButton)
-      })
-    } else {
-      throw new Error("draft button not found")
-    }
-
-    expect(spy).toHaveBeenCalledWith({
-      url: "/api/disruptions",
-      parser: toModelObject,
-      defaultResult: "error",
-    })
-    expect(readyButton?.classList).not.toContain("active")
-    expect(draftButton?.classList).toContain("active")
-    expect(container.querySelector("#new-disruption-link")).not.toBeNull()
   })
 })
 
@@ -649,4 +806,114 @@ describe("getRouteColor", () => {
       expect(getRouteColor(route)).toEqual(color)
     })
   })
+})
+
+describe("anyMatchesFilter", () => {
+  const published = new DisruptionRevision({
+    id: "1",
+    isActive: true,
+    adjustments: [
+      new Adjustment({ id: "1", routeId: "Red", sourceLabel: "Adj 1" }),
+    ],
+    daysOfWeek: [],
+    exceptions: [],
+    tripShortNames: [],
+    status: DisruptionView.Published,
+  })
+  const ready = new DisruptionRevision({
+    id: "2",
+    isActive: true,
+    adjustments: [
+      new Adjustment({ id: "1", routeId: "Blue", sourceLabel: "Adj 2" }),
+    ],
+    daysOfWeek: [],
+    exceptions: [],
+    tripShortNames: [],
+    status: DisruptionView.Ready,
+  })
+  const draft = new DisruptionRevision({
+    id: "3",
+    isActive: true,
+    adjustments: [
+      new Adjustment({ id: "1", routeId: "Orange", sourceLabel: "Adj 3" }),
+    ],
+    daysOfWeek: [],
+    exceptions: [],
+    tripShortNames: [],
+    status: DisruptionView.Draft,
+  })
+  const routeFilters = { state: {}, anyActive: false }
+  const statusFilters = { state: {}, anyActive: false }
+  test.each([
+    [[published, ready, draft], "", routeFilters, statusFilters, true],
+    [
+      [published, ready, draft],
+      "",
+      routeFilters,
+      { state: { ...statusFilters.state, published: true }, anyActive: true },
+      true,
+    ],
+    [
+      [published, ready, draft],
+      "",
+      routeFilters,
+      { state: { ...statusFilters.state, ready: true }, anyActive: true },
+      true,
+    ],
+    [
+      [published, ready, draft],
+      "",
+      routeFilters,
+      {
+        state: { ...statusFilters.state, needs_review: true },
+        anyActive: true,
+      },
+      true,
+    ],
+    [
+      [published, ready, draft],
+      "",
+      { ...routeFilters, state: { ...routeFilters.state, Red: true } },
+      statusFilters,
+      true,
+    ],
+    [
+      [
+        new DisruptionRevision({ ...published, status: DisruptionView.Ready }),
+        ready,
+        draft,
+      ],
+      "",
+      routeFilters,
+      {
+        state: { ...statusFilters.state, published: true },
+        anyActive: true,
+      },
+      false,
+    ],
+    [
+      [published, ready, draft],
+      "",
+      {
+        ...routeFilters,
+        anyActive: true,
+      },
+      statusFilters,
+      false,
+    ],
+  ])(
+    "returns true if any DisruptionRevision matches a set of filters",
+    (revisions, query, routeFiltersArg, statusFiltersArg, expected) => {
+      expect(
+        anyMatchesFilter(
+          revisions,
+          query,
+          routeFiltersArg as FilterGroup<Routes>,
+          statusFiltersArg as FilterGroup<
+            "published" | "ready" | "needs_review"
+          >
+        )
+      ).toEqual(expected)
+    }
+  )
 })

@@ -1,0 +1,37 @@
+@import "node_modules/bootstrap/scss/mixins/buttons";
+
+.btn-primary,
+.btn-outline-primary {
+  &:hover,
+  &:active,
+  &:not(:disabled):not(.disabled).active,
+  &:focus {
+    background-color: $light-pink;
+    color: $primary;
+  }
+}
+
+.btn-secondary {
+  @include button-variant($dark, $dark);
+}
+
+.btn-outline-secondary,
+.btn-outline-secondary:not(:disabled):not(.disabled).active {
+  @include button-outline-variant($dark);
+
+  border-color: $blue-grey;
+
+  &:hover,
+  &:active,
+  &:focus,
+  &:active {
+    background-color: $white;
+    color: $body-color;
+  }
+
+  &:not(:disabled):not(.disabled).active {
+    border-color: $blue-grey;
+    background-color: #e2e5ec;
+    color: $dark;
+  }
+}

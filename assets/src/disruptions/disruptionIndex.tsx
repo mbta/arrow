@@ -1,29 +1,20 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faTimes } from "@fortawesome/free-solid-svg-icons"
 import classnames from "classnames"
 import Row from "react-bootstrap/Row"
 import Col from "react-bootstrap/Col"
 import Form from "react-bootstrap/Form"
-import Button from "react-bootstrap/Button"
+import { PrimaryButton, SecondaryButton, LinkButton } from "../button"
 import Icon from "../icons"
 import { DisruptionTable } from "./disruptionTable"
 import { DisruptionCalendar } from "./disruptionCalendar"
-import Disruption from "../models/disruption"
 import DisruptionRevision from "../models/disruptionRevision"
 import { apiGet } from "../api"
 import { JsonApiResponse, toModelObject } from "../jsonApi"
 import { Page } from "../page"
-import { DisruptionListContainer } from "./disruptionListContainer"
-import {
-  DisruptionViewToggle,
-  useDisruptionViewParam,
-  DisruptionView,
-  revisionFromDisruptionForView,
-} from "./viewToggle"
+import Disruption, { DisruptionView } from "../models/disruption"
 
-export type Routes =
+type Routes =
   | "Red"
   | "Blue"
   | "Mattapan"
@@ -70,7 +61,7 @@ const getRouteIcon = (route?: string): Icon => {
   }
 }
 
-export const getRouteColor = (route?: string): string => {
+const getRouteColor = (route?: string): string => {
   switch (route) {
     case "Red": {
       return "#da291c"
@@ -118,7 +109,7 @@ const RouteFilterToggle = React.memo(
         id={"route-filter-toggle-" + route}
         onClick={() => onClick(route)}
       >
-        <Icon type={getRouteIcon(route)} />
+        <Icon size="lg" type={getRouteIcon(route)} />
       </a>
     )
   }
@@ -151,146 +142,259 @@ const RouteFilterToggleGroup = ({
   )
 }
 
-interface DisruptionIndexProps {
-  disruptionRevisions: DisruptionRevision[]
+type FilterGroupState<G extends string> = {
+  [K in G]?: boolean
 }
 
-const DisruptionIndexView = ({ disruptionRevisions }: DisruptionIndexProps) => {
+type FilterGroup<G extends string> = {
+  state: FilterGroupState<G>
+  anyActive: boolean
+  isFilterActive: (filter: G) => boolean
+  toggleFilter: (filter: G) => void
+  clearFilters: () => void
+  updateFiltersState: React.Dispatch<FilterGroupState<G>>
+}
+
+const anyMatchesFilter = (
+  revisions: DisruptionRevision[],
+  query: string,
+  routeFilters: FilterGroup<Routes>,
+  statusFilters: FilterGroup<"published" | "ready" | "needs_review">
+) => {
+  return revisions.some((revision) => {
+    return (
+      (!routeFilters.anyActive ||
+        (revision.adjustments || []).some(
+          (adj) =>
+            adj.routeId &&
+            (routeFilters.state[adj.routeId as Routes] ||
+              (routeFilters.state.Commuter && adj.routeId.includes("CR-")))
+        )) &&
+      (!statusFilters.anyActive ||
+        (revision.status === DisruptionView.Published &&
+          statusFilters.state.published) ||
+        (revision.status === DisruptionView.Ready &&
+          statusFilters.state.ready) ||
+        (revision.status === DisruptionView.Draft &&
+          statusFilters.state.needs_review)) &&
+      (revision.adjustments || []).some(
+        (adj) =>
+          adj.sourceLabel && adj.sourceLabel.toLowerCase().includes(query)
+      ) &&
+      (revision.isActive || revision.status !== DisruptionView.Published)
+    )
+  })
+}
+
+const useFilterGroup = <G extends string>(group: G[]): FilterGroup<G> => {
+  const [filtersState, updateFiltersState] = React.useState<
+    { [filter in G]?: boolean }
+  >(
+    group.reduce((acc: FilterGroupState<G>, curr: G) => {
+      return { ...acc, [curr]: false }
+    }, {})
+  )
+
+  const toggleFilter = React.useCallback(
+    (filter: G) => {
+      updateFiltersState({ ...filtersState, [filter]: !filtersState[filter] })
+    },
+    [filtersState, updateFiltersState]
+  )
+  const clearFilters = React.useCallback(() => {
+    updateFiltersState({})
+  }, [updateFiltersState])
+
+  const anyActive: boolean = React.useMemo(() => {
+    return Object.values(filtersState).some(Boolean)
+  }, [filtersState])
+
+  const isFilterActive = React.useCallback(
+    (route: keyof { [filter in G]?: boolean }) => {
+      return !anyActive || !!filtersState[route]
+    },
+    [anyActive, filtersState]
+  )
+
+  return {
+    state: filtersState,
+    anyActive,
+    isFilterActive,
+    toggleFilter,
+    clearFilters,
+    updateFiltersState,
+  }
+}
+
+interface DisruptionIndexProps {
+  disruptions: Disruption[]
+}
+
+const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
+  const routeFilters = useFilterGroup<Routes>([
+    "Red",
+    "Blue",
+    "Orange",
+    "Green-B",
+    "Green-C",
+    "Green-D",
+    "Green-E",
+    "Mattapan",
+    "Commuter",
+  ])
+
+  const statusFilters = useFilterGroup(["published", "ready", "needs_review"])
   const [view, setView] = React.useState<"table" | "calendar">("table")
-  const disruptionStatusView = useDisruptionViewParam()
   const toggleView = React.useCallback(() => {
     if (view === "table") {
       setView("calendar")
+      statusFilters.updateFiltersState({ published: true })
     } else {
+      statusFilters.clearFilters()
       setView("table")
     }
-  }, [view, setView])
+  }, [view, setView, statusFilters])
 
   const [searchQuery, setSearchQuery] = React.useState<string>("")
-  const [routeFilters, updateRouteFilters] = React.useState<RouteFilterState>(
-    {}
-  )
-  const toggleRouteFilterState = React.useCallback(
-    (route: keyof RouteFilterState) => {
-      updateRouteFilters({ ...routeFilters, [route]: !routeFilters[route] })
-    },
-    [routeFilters, updateRouteFilters]
-  )
-  const clearRouteFilters = React.useCallback(() => {
-    updateRouteFilters({})
-  }, [updateRouteFilters])
-
-  const anyRouteFiltersActive: boolean = React.useMemo(() => {
-    return Object.values(routeFilters).some(Boolean)
-  }, [routeFilters])
-
-  const isRouteActive = React.useCallback(
-    (route: keyof RouteFilterState) => {
-      return !anyRouteFiltersActive || !!routeFilters[route]
-    },
-    [anyRouteFiltersActive, routeFilters]
-  )
-
   const filteredDisruptionRevisions = React.useMemo(() => {
     const query = searchQuery.toLowerCase()
-    return disruptionRevisions.filter((x) => {
-      return (
-        (!anyRouteFiltersActive ||
-          (x.adjustments || []).some(
-            (adj) =>
-              adj.routeId &&
-              (routeFilters[adj.routeId as Routes] ||
-                (routeFilters.Commuter && adj.routeId.includes("CR-")))
-          )) &&
-        (x.adjustments || []).some(
-          (adj) =>
-            adj.sourceLabel && adj.sourceLabel.toLowerCase().includes(query)
-        )
-      )
-    })
-  }, [disruptionRevisions, searchQuery, routeFilters, anyRouteFiltersActive])
+    return disruptions.reduce((acc, curr) => {
+      const uniqueRevisions = [
+        Disruption.revisionFromDisruptionForView(
+          curr,
+          DisruptionView.Published
+        ),
+        Disruption.revisionFromDisruptionForView(curr, DisruptionView.Ready),
+        Disruption.revisionFromDisruptionForView(curr, DisruptionView.Draft),
+      ].filter((x, i, self) => {
+        return !!x && self.findIndex((y) => y?.id === x.id) === i
+      }) as DisruptionRevision[]
+
+      if (
+        anyMatchesFilter(uniqueRevisions, query, routeFilters, statusFilters)
+      ) {
+        return [...acc, ...uniqueRevisions]
+      } else {
+        return acc
+      }
+    }, [] as DisruptionRevision[])
+  }, [disruptions, searchQuery, routeFilters, statusFilters])
 
   return (
     <Page includeHomeLink={false}>
-      <DisruptionListContainer>
-        <Row>
-          <Col xs={9}>
-            {view === "table" ? (
-              <DisruptionTable
-                disruptionRevisions={filteredDisruptionRevisions}
-              />
-            ) : (
-              <DisruptionCalendar
-                disruptionRevisions={filteredDisruptionRevisions}
-              />
+      <Row className="my-3">
+        <Col>
+          <Link id="new-disruption-link" to="/disruptions/new">
+            <PrimaryButton filled>+ create new</PrimaryButton>
+          </Link>
+        </Col>
+        <Col xs={3}>
+          <Form.Control
+            type="text"
+            value={searchQuery}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSearchQuery(e.target.value)
+            }
+            placeholder="search"
+          />
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <div className="d-flex align-items-center">
+            <RouteFilterToggleGroup
+              routes={[
+                "Red",
+                "Blue",
+                "Orange",
+                "Green-B",
+                "Green-C",
+                "Green-D",
+                "Green-E",
+                "Mattapan",
+                "Commuter",
+              ]}
+              toggleRouteFilterState={routeFilters.toggleFilter}
+              isRouteActive={routeFilters.isFilterActive}
+            />
+            <div>
+              <SecondaryButton
+                id="status-filter-toggle-published-ready"
+                disabled={view === "calendar"}
+                className={classnames("mx-2", {
+                  active:
+                    statusFilters.state.published && statusFilters.state.ready,
+                })}
+                onClick={() =>
+                  statusFilters.updateFiltersState({
+                    ...statusFilters.state,
+                    published: !statusFilters.state.published,
+                    ready: !statusFilters.state.ready,
+                  })
+                }
+              >
+                published/ready
+              </SecondaryButton>
+              <SecondaryButton
+                disabled={view === "calendar"}
+                id="status-filter-toggle-needs-review"
+                className={classnames("mx-2", {
+                  active: statusFilters.state.needs_review,
+                })}
+                onClick={() => statusFilters.toggleFilter("needs_review")}
+              >
+                needs review
+              </SecondaryButton>
+            </div>
+            {(routeFilters.anyActive ||
+              (statusFilters.anyActive && view !== "calendar")) && (
+              <LinkButton
+                id="clear-filter"
+                onClick={(e) => {
+                  e.preventDefault()
+                  routeFilters.clearFilters()
+                  statusFilters.updateFiltersState({
+                    needs_review: false,
+                    ready: false,
+                    published: view === "calendar",
+                  })
+                }}
+              >
+                clear filter
+              </LinkButton>
             )}
-          </Col>
-          <Col>
-            <DisruptionViewToggle />
-            <Button
+            <SecondaryButton
               id="view-toggle"
-              className="my-3 border"
-              variant="light"
+              className="my-3 ml-auto"
               onClick={toggleView}
             >
-              {view === "calendar" ? "list view" : "calendar view"}
-            </Button>
-            <Form.Control
-              className="mb-3"
-              type="text"
-              value={searchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSearchQuery(e.target.value)
-              }
-              placeholder="Search Disruptions"
+              {"\u2b12 " +
+                (view === "calendar" ? "list view" : "calendar view")}
+            </SecondaryButton>
+          </div>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          {view === "table" ? (
+            <DisruptionTable
+              disruptionRevisions={filteredDisruptionRevisions}
             />
-            <h6>Filter by route</h6>
-            <RouteFilterToggleGroup
-              routes={["Blue", "Mattapan", "Orange", "Red"]}
-              toggleRouteFilterState={toggleRouteFilterState}
-              isRouteActive={isRouteActive}
+          ) : (
+            <DisruptionCalendar
+              disruptionRevisions={filteredDisruptionRevisions}
             />
-            <RouteFilterToggleGroup
-              routes={["Green-B", "Green-C", "Green-D", "Green-E"]}
-              toggleRouteFilterState={toggleRouteFilterState}
-              isRouteActive={isRouteActive}
-            />
-            <RouteFilterToggleGroup
-              routes={["Commuter"]}
-              toggleRouteFilterState={toggleRouteFilterState}
-              isRouteActive={isRouteActive}
-            />
-            {anyRouteFiltersActive && (
-              <a
-                className="m-disruption-index__clear_filter_button"
-                id="clear-filter"
-                onClick={clearRouteFilters}
-              >
-                <FontAwesomeIcon icon={faTimes} className="mr-1" />
-                clear filter
-              </a>
-            )}
-          </Col>
-        </Row>
-      </DisruptionListContainer>
-      {disruptionStatusView === DisruptionView.Draft && (
-        <Row>
-          <Col>
-            <Link id="new-disruption-link" to="/disruptions/new">
-              <Button>create new disruption</Button>
-            </Link>
-          </Col>
-        </Row>
-      )}
+          )}
+        </Col>
+      </Row>
     </Page>
   )
 }
 
 const DisruptionIndex = () => {
-  const view = useDisruptionViewParam()
-  const [disruptionRevisions, setDisruptionRevisions] = React.useState<
-    DisruptionRevision[] | "error"
-  >([])
+  const [disruptions, setDisruptions] = React.useState<Disruption[] | "error">(
+    []
+  )
   React.useEffect(() => {
     apiGet<JsonApiResponse>({
       url: "/api/disruptions",
@@ -301,26 +405,27 @@ const DisruptionIndex = () => {
         Array.isArray(result) &&
         result.every((res) => res instanceof Disruption)
       ) {
-        setDisruptionRevisions(
-          (result as Disruption[])
-            .map((d) => {
-              return revisionFromDisruptionForView(d, view)
-            })
-            .filter((dr) => {
-              return typeof dr !== "undefined" && dr.isActive
-            }) as DisruptionRevision[]
-        )
+        setDisruptions(result as Disruption[])
       } else {
-        setDisruptionRevisions("error")
+        setDisruptions("error")
       }
     })
-  }, [view])
+  }, [])
 
-  if (disruptionRevisions === "error") {
+  if (disruptions === "error") {
     return <div>Something went wrong</div>
   } else {
-    return <DisruptionIndexView disruptionRevisions={disruptionRevisions} />
+    return <DisruptionIndexView disruptions={disruptions} />
   }
 }
 
-export { DisruptionIndex, RouteFilterToggle, DisruptionIndexView }
+export {
+  DisruptionIndex,
+  RouteFilterToggle,
+  DisruptionIndexView,
+  Routes,
+  getRouteIcon,
+  getRouteColor,
+  anyMatchesFilter,
+  FilterGroup,
+}

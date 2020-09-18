@@ -6,6 +6,7 @@ import Adjustment from "./adjustment"
 import DayOfWeek from "./dayOfWeek"
 import Exception from "./exception"
 import TripShortName from "./tripShortName"
+import { DisruptionView } from "./disruption"
 
 class DisruptionRevision extends JsonApiResourceObject {
   id?: string
@@ -13,6 +14,7 @@ class DisruptionRevision extends JsonApiResourceObject {
   startDate?: Date
   endDate?: Date
   isActive: boolean
+  status?: DisruptionView
 
   adjustments: Adjustment[]
   daysOfWeek: DayOfWeek[]
@@ -29,6 +31,7 @@ class DisruptionRevision extends JsonApiResourceObject {
     daysOfWeek,
     exceptions,
     tripShortNames,
+    status = DisruptionView.Draft,
   }: {
     id?: string
     disruptionId?: string
@@ -39,6 +42,7 @@ class DisruptionRevision extends JsonApiResourceObject {
     daysOfWeek: DayOfWeek[]
     exceptions: Exception[]
     tripShortNames: TripShortName[]
+    status?: DisruptionView
   }) {
     super()
     this.id = id
@@ -49,6 +53,7 @@ class DisruptionRevision extends JsonApiResourceObject {
     this.adjustments = adjustments
     this.daysOfWeek = daysOfWeek
     this.exceptions = exceptions
+    this.status = status
     this.tripShortNames = tripShortNames
   }
 
@@ -121,6 +126,7 @@ class DisruptionRevision extends JsonApiResourceObject {
           raw.relationships.trip_short_names,
           included
         ) as TripShortName[],
+        status: raw.attributes.status,
       })
     }
 

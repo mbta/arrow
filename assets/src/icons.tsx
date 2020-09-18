@@ -12,13 +12,18 @@ type Icon =
   | "orange-line-small"
   | "mode-commuter-rail-small"
 
-const Icon = ({ type, className }: { type: Icon; className?: string }) => (
+const Icon = ({
+  type,
+  size,
+  className,
+}: {
+  type: Icon
+  size: "sm" | "lg"
+  className?: string
+}) => (
   <span
-    className={classnames("d-inline-block", className)}
+    className={classnames(`m-icon m-icon-${size}`, className)}
     style={{
-      display: "inline-block",
-      height: 34,
-      width: 34,
       backgroundImage: `url(/images/icon-${type}.svg)`,
     }}
   />

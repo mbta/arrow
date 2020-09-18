@@ -6,11 +6,16 @@ import {
   loadSingleRelationship,
 } from "../jsonApi"
 
+enum DisruptionView {
+  Draft,
+  Ready,
+  Published,
+}
+
 import DisruptionRevision from "./disruptionRevision"
 
 class Disruption extends JsonApiResourceObject {
   id?: string
-
   readyRevision?: DisruptionRevision
   publishedRevision?: DisruptionRevision
   revisions: DisruptionRevision[]
@@ -55,6 +60,10 @@ class Disruption extends JsonApiResourceObject {
       typeof raw.attributes === "object" &&
       typeof raw.relationships === "object"
     ) {
+      const revisions = loadRelationship(
+        raw.relationships.revisions,
+        included
+      ) as DisruptionRevision[]
       const disruption = new Disruption({
         id: raw.id,
         readyRevision: loadSingleRelationship(
@@ -65,18 +74,17 @@ class Disruption extends JsonApiResourceObject {
           raw.relationships.published_revision,
           included
         ) as DisruptionRevision,
-        revisions: loadRelationship(
-          raw.relationships.revisions,
-          included
-        ) as DisruptionRevision[],
+        revisions,
       })
 
       if (disruption.readyRevision) {
         disruption.readyRevision.disruptionId = raw.id
+        disruption.readyRevision.status = DisruptionView.Ready
       }
 
       if (disruption.publishedRevision) {
         disruption.publishedRevision.disruptionId = raw.id
+        disruption.publishedRevision.status = DisruptionView.Published
       }
 
       disruption.revisions = disruption.revisions.map((dr) => {
@@ -93,6 +101,28 @@ class Disruption extends JsonApiResourceObject {
   static isOfType(obj: ModelObject): obj is Disruption {
     return obj instanceof Disruption
   }
+
+  static revisionFromDisruptionForView = (
+    disruption: Disruption,
+    view: DisruptionView
+  ): DisruptionRevision | undefined => {
+    switch (view) {
+      case DisruptionView.Draft: {
+        const sortedRevisions = disruption.revisions.sort((r1, r2) => {
+          return parseInt(r1.id || "", 10) - parseInt(r2.id || "", 10)
+        })
+
+        return sortedRevisions[sortedRevisions.length - 1]
+      }
+      case DisruptionView.Ready: {
+        return disruption.readyRevision
+      }
+      case DisruptionView.Published: {
+        return disruption.publishedRevision
+      }
+    }
+  }
 }
 
+export { DisruptionView }
 export default Disruption

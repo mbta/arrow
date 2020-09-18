@@ -1,7 +1,7 @@
 import * as React from "react"
 
 import Alert from "react-bootstrap/Alert"
-import Button from "react-bootstrap/Button"
+import { PrimaryButton } from "../button"
 import ButtonGroup from "react-bootstrap/ButtonGroup"
 
 import { Redirect } from "react-router-dom"
@@ -19,10 +19,9 @@ import {
   ixToDayName,
 } from "./time"
 import { DisruptionTimePicker } from "./disruptionTimePicker"
-import { DisruptionView, revisionFromDisruptionForView } from "./viewToggle"
 
 import Adjustment from "../models/adjustment"
-import Disruption from "../models/disruption"
+import Disruption, { DisruptionView } from "../models/disruption"
 import DisruptionRevision from "../models/disruptionRevision"
 import Exception from "../models/exception"
 import { JsonApiResponse, toModelObject, parseErrors } from "../jsonApi"
@@ -44,9 +43,9 @@ const SaveCancelButton = ({
 }: SaveCancelButtonProps): JSX.Element => {
   return (
     <ButtonGroup vertical>
-      <Button variant="primary" onClick={saveFn} id="save-changes-button">
+      <PrimaryButton onClick={saveFn} id="save-changes-button">
         save changes
-      </Button>
+      </PrimaryButton>
       <Link
         to={"/disruptions/" + encodeURIComponent(disruptionId)}
         id="cancel-button"
@@ -92,7 +91,7 @@ const EditDisruption = ({
       defaultResult: "error",
     }).then((result: JsonApiResponse) => {
       if (result instanceof Disruption) {
-        const revisionFromResponse = revisionFromDisruptionForView(
+        const revisionFromResponse = Disruption.revisionFromDisruptionForView(
           result,
           DisruptionView.Draft
         )

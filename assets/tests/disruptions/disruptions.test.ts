@@ -9,7 +9,7 @@ describe("formatDisruptionDate", () => {
   test("formats a date", () => {
     const date = new Date(2020, 0, 23)
 
-    expect(formatDisruptionDate(date)).toBe("1/23/2020")
+    expect(formatDisruptionDate(date)).toBe("01/23/2020")
   })
 
   test("formats a null date to the empty string", () => {

@@ -100,14 +100,14 @@ describe("parseDaysAndTimes", () => {
   test.each([
     [
       [new DayOfWeek({ dayName: "monday" })],
-      "Monday, Start of service - End of service",
+      "Mon, Start of service - End of service",
     ],
     [
       [
         new DayOfWeek({ startTime: "09:30:00", dayName: "tuesday" }),
         new DayOfWeek({ startTime: "09:30:00", dayName: "thursday" }),
       ],
-      "Tuesday, 9:30AM - End of service, Thursday, 9:30AM - End of service",
+      "Tue, 9:30AM - End of service, Thu, 9:30AM - End of service",
     ],
     [
       [
@@ -127,7 +127,7 @@ describe("parseDaysAndTimes", () => {
           dayName: "friday",
         }),
       ],
-      "Wednesday - Friday, 11:30AM - 8:45PM",
+      "Wed - Fri, 11:30AM - 8:45PM",
     ],
 
     [
@@ -135,21 +135,21 @@ describe("parseDaysAndTimes", () => {
         new DayOfWeek({ startTime: "20:45:00", dayName: "saturday" }),
         new DayOfWeek({ dayName: "sunday" }),
       ],
-      "Saturday 8:45PM - Sunday End of service",
+      "Sat 8:45PM - Sun End of service",
     ],
     [
       [
         new DayOfWeek({ startTime: "20:45:00", dayName: "saturday" }),
         new DayOfWeek({ endTime: "20:45:00", dayName: "sunday" }),
       ],
-      "Saturday 8:45PM - Sunday 8:45PM",
+      "Sat 8:45PM - Sun 8:45PM",
     ],
     [
       [
         new DayOfWeek({ dayName: "saturday" }),
         new DayOfWeek({ dayName: "sunday" }),
       ],
-      "Saturday - Sunday, Start of service - End of service",
+      "Sat - Sun, Start of service - End of service",
     ],
     [
       [
@@ -161,7 +161,7 @@ describe("parseDaysAndTimes", () => {
         }),
         new DayOfWeek({ dayName: "sunday" }),
       ],
-      "Friday, Start of service - End of service, Saturday, 11:30AM - 8:45PM, Sunday, Start of service - End of service",
+      "Fri, Start of service - End of service, Sat, 11:30AM - 8:45PM, Sun, Start of service - End of service",
     ],
     [
       [
@@ -172,7 +172,7 @@ describe("parseDaysAndTimes", () => {
         }),
         new DayOfWeek({ dayName: "sunday" }),
       ],
-      "Friday, Start of service - End of service, Saturday, 12:30AM - End of service, Sunday, Start of service - End of service",
+      "Fri, Start of service - End of service, Sat, 12:30AM - End of service, Sun, Start of service - End of service",
     ],
     [
       [
@@ -184,7 +184,17 @@ describe("parseDaysAndTimes", () => {
         }),
         new DayOfWeek({ endTime: "20:45:00", dayName: "wednesday" }),
       ],
-      "Monday, 9:00AM - End of service, Tuesday, 11:30AM - 6:30PM, Wednesday, Start of service - 8:45PM",
+      "Mon, 9:00AM - End of service, Tue, 11:30AM - 6:30PM, Wed, Start of service - 8:45PM",
+    ],
+    [
+      [
+        new DayOfWeek({
+          dayName: "sunday",
+        }),
+        new DayOfWeek({ startTime: "20:45:00", dayName: "friday" }),
+        new DayOfWeek({ dayName: "saturday" }),
+      ],
+      "Fri 8:45PM - Sun End of service",
     ],
   ])("parses days and times correctly", (daysOfWeek, expected) => {
     expect(parseDaysAndTimes(daysOfWeek)).toEqual(expected)

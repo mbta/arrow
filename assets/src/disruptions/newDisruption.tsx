@@ -3,7 +3,7 @@ import * as React from "react"
 import { Redirect } from "react-router-dom"
 import Select, { ValueType } from "react-select"
 
-import Button from "react-bootstrap/Button"
+import { PrimaryButton } from "../button"
 import Form from "react-bootstrap/Form"
 import Alert from "react-bootstrap/Alert"
 
@@ -334,13 +334,12 @@ const NewDisruption = ({}): JSX.Element => {
               setExceptionDates={setExceptionDates}
             />
           </fieldset>
-          <Button
-            variant="primary"
+          <PrimaryButton
             onClick={() => setIsPreview(true)}
             id="preview-disruption-button"
           >
             preview disruption
-          </Button>
+          </PrimaryButton>
         </>
       )}
     </Page>

@@ -11,7 +11,7 @@ import DayOfWeek from "../../src/models/dayOfWeek"
 import Exception from "../../src/models/exception"
 import { toUTCDate } from "../../src/jsonApi"
 import { BrowserRouter } from "react-router-dom"
-import { DisruptionView } from "../../src/disruptions/viewToggle"
+import { DisruptionView } from "../../src/models/disruption"
 
 const SAMPLE_DISRUPTIONS = [
   new DisruptionRevision({
