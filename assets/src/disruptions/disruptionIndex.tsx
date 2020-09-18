@@ -13,7 +13,6 @@ import { apiGet } from "../api"
 import { JsonApiResponse, toModelObject } from "../jsonApi"
 import { Page } from "../page"
 import Disruption, { DisruptionView } from "../models/disruption"
-import { useDisruptionViewParam } from "./viewToggle"
 
 type Routes =
   | "Red"
@@ -232,10 +231,9 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
         ),
         Disruption.revisionFromDisruptionForView(curr, DisruptionView.Ready),
         Disruption.revisionFromDisruptionForView(curr, DisruptionView.Draft),
-      ].filter(
-        (x, i, self) =>
-          !!x && self.indexOf(self.find((y) => y?.id === x.id)) === i
-      )
+      ].filter((x, i, self) => {
+        return !!x && self.findIndex((y) => y?.id === x.id) === i
+      })
 
       const anyMatches = uniqueRevisions.some((revision) => {
         return (
@@ -258,7 +256,7 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
             (adj) =>
               adj.sourceLabel && adj.sourceLabel.toLowerCase().includes(query)
           ) &&
-          revision.isActive
+          (revision.isActive || revision.status !== DisruptionView.Published)
         )
       })
 
@@ -389,7 +387,6 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
 }
 
 const DisruptionIndex = () => {
-  const view = useDisruptionViewParam()
   const [disruptions, setDisruptions] = React.useState<Disruption[] | "error">(
     []
   )
@@ -408,7 +405,7 @@ const DisruptionIndex = () => {
         setDisruptions("error")
       }
     })
-  }, [view])
+  }, [])
 
   if (disruptions === "error") {
     return <div>Something went wrong</div>

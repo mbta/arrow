@@ -615,12 +615,70 @@ describe("DisruptionIndexConnected", () => {
     })
   })
 
-  test("doesn't render deleted disruption", async () => {
+  test("doesn't render deleted published disruption", async () => {
     jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
       return Promise.resolve([
         new Disruption({
           id: "1",
-          readyRevision: new DisruptionRevision({
+          publishedRevision: new DisruptionRevision({
+            id: "2",
+            disruptionId: "1",
+            startDate: new Date("2020-01-15"),
+            endDate: new Date("2020-01-30"),
+            isActive: false,
+            adjustments: [
+              new Adjustment({
+                id: "1",
+                routeId: "Green-D",
+                source: "gtfs_creator",
+                sourceLabel: "NewtonHighlandsKenmore",
+              }),
+            ],
+            daysOfWeek: [],
+            exceptions: [],
+            tripShortNames: [],
+            status: DisruptionView.Published,
+          }),
+          revisions: [
+            new DisruptionRevision({
+              id: "2",
+              disruptionId: "1",
+              startDate: new Date("2020-01-15"),
+              endDate: new Date("2020-01-30"),
+              isActive: false,
+              adjustments: [
+                new Adjustment({
+                  id: "1",
+                  routeId: "Green-D",
+                  source: "gtfs_creator",
+                  sourceLabel: "NewtonHighlandsKenmore",
+                }),
+              ],
+              daysOfWeek: [],
+              exceptions: [],
+              tripShortNames: [],
+            }),
+          ],
+        }),
+      ])
+    })
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    await act(async () => {
+      ReactDOM.render(<DisruptionIndexWithRouter connected />, container)
+    })
+    const rows = container.querySelectorAll("tbody tr")
+    expect(rows.length).toEqual(0)
+  })
+
+  test("renders deleted ready disruption", async () => {
+    jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
+      return Promise.resolve([
+        new Disruption({
+          id: "1",
+          publishedRevision: new DisruptionRevision({
             id: "2",
             disruptionId: "1",
             startDate: new Date("2020-01-15"),
@@ -639,24 +697,6 @@ describe("DisruptionIndexConnected", () => {
             tripShortNames: [],
           }),
           revisions: [
-            new DisruptionRevision({
-              id: "1",
-              disruptionId: "1",
-              startDate: new Date("2020-01-15"),
-              endDate: new Date("2020-01-30"),
-              isActive: true,
-              adjustments: [
-                new Adjustment({
-                  id: "1",
-                  routeId: "Green-D",
-                  source: "gtfs_creator",
-                  sourceLabel: "NewtonHighlandsKenmore",
-                }),
-              ],
-              daysOfWeek: [],
-              exceptions: [],
-              tripShortNames: [],
-            }),
             new DisruptionRevision({
               id: "2",
               disruptionId: "1",
@@ -688,7 +728,47 @@ describe("DisruptionIndexConnected", () => {
       ReactDOM.render(<DisruptionIndexWithRouter connected />, container)
     })
     const rows = container.querySelectorAll("tbody tr")
-    expect(rows.length).toEqual(0)
+    expect(rows.length).toEqual(1)
+  })
+
+  test("renders deleted draft disruption", async () => {
+    jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
+      return Promise.resolve([
+        new Disruption({
+          id: "1",
+          revisions: [
+            new DisruptionRevision({
+              id: "2",
+              disruptionId: "1",
+              startDate: new Date("2020-01-15"),
+              endDate: new Date("2020-01-30"),
+              isActive: false,
+              adjustments: [
+                new Adjustment({
+                  id: "1",
+                  routeId: "Green-D",
+                  source: "gtfs_creator",
+                  sourceLabel: "NewtonHighlandsKenmore",
+                }),
+              ],
+              daysOfWeek: [],
+              exceptions: [],
+              tripShortNames: [],
+            }),
+          ],
+        }),
+      ])
+    })
+
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    await act(async () => {
+      ReactDOM.render(<DisruptionIndexWithRouter connected />, container)
+    })
+    const rows = container.querySelectorAll("tbody tr")
+    expect(rows.length).toEqual(1)
   })
 
   test("renders error", async () => {
