@@ -326,6 +326,7 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
                 })}
                 onClick={() =>
                   statusFilters.updateFiltersState({
+                    ...statusFilters.state,
                     published: !statusFilters.state.published,
                     ready: !statusFilters.state.ready,
                   })
