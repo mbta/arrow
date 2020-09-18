@@ -129,7 +129,7 @@ module.exports = {
         rules: {
           "jsdoc-format": true,
           "no-reference-import": true,
-          "object-literal-sort-keys": [true, "match-declaration-order-only"],
+          "object-literal-sort-keys": false,
         },
       },
     ],
