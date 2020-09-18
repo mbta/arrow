@@ -201,6 +201,25 @@ const dayToIx = (day: DayName): number => {
   }
 }
 
+const dayToAbbr = (day: DayName): string => {
+  switch (day) {
+    case "monday":
+      return "Mon"
+    case "tuesday":
+      return "Tue"
+    case "wednesday":
+      return "Wed"
+    case "thursday":
+      return "Thu"
+    case "friday":
+      return "Fri"
+    case "saturday":
+      return "Sat"
+    default:
+      return "Sun"
+  }
+}
+
 const dayOfWeekTimeRangesToDayOfWeeks = (
   timeRanges: DayOfWeekTimeRanges
 ): DayOfWeek[] => {
@@ -272,16 +291,12 @@ const getDaysType = (days: DayName[]): DaysType => {
   return consecutive ? "consecutive" : "other"
 }
 
-const capitalizeFirstLetter = (str?: string) => {
-  return str ? str.charAt(0).toUpperCase() + str.slice(1) : ""
-}
-
 const describeSingleDay = ({
   dayName,
   startTime,
   endTime,
 }: DayOfWeek): string =>
-  `${capitalizeFirstLetter(dayName)}, ${timeOrEndOfService(
+  `${dayToAbbr(dayName)}, ${timeOrEndOfService(
     startTime
   )} - ${timeOrEndOfService(endTime, "end")}`
 
@@ -315,19 +330,16 @@ const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
   if (daysType === "other" || timeType === "other") {
     return fallBackStringList.join(", ")
   } else if (timeType === "daily") {
-    return `${capitalizeFirstLetter(first.dayName)} - ${capitalizeFirstLetter(
+    return `${dayToAbbr(first.dayName)} - ${dayToAbbr(
       last.dayName
     )}, ${timeOrEndOfService(first.startTime)} - ${timeOrEndOfService(
       first.endTime,
       "end"
     )}`
   } else {
-    return `${capitalizeFirstLetter(first.dayName)} ${timeOrEndOfService(
+    return `${dayToAbbr(first.dayName)} ${timeOrEndOfService(
       first.startTime
-    )} - ${capitalizeFirstLetter(last.dayName)} ${timeOrEndOfService(
-      last.endTime,
-      "end"
-    )}`
+    )} - ${dayToAbbr(last.dayName)} ${timeOrEndOfService(last.endTime, "end")}`
   }
 }
 

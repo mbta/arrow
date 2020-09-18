@@ -173,7 +173,7 @@ describe("DisruptionTable", () => {
     expect(firstRowData.item(1).textContent).toContain("10/24/2019")
     expect(firstRowData.item(2).textContent).toEqual("0")
     expect(firstRowData.item(3).textContent).toEqual(
-      "Friday 8:45PM - Sunday End of service"
+      "Fri 8:45PM - Sun End of service"
     )
     expect(firstRowData.item(4).textContent).toEqual("published")
     expect(
