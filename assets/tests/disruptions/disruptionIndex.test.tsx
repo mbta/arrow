@@ -106,6 +106,37 @@ const DisruptionIndexWithRouter = ({
             }),
             new Disruption({
               id: "3",
+              readyRevision: new DisruptionRevision({
+                id: "3",
+                disruptionId: "3",
+                startDate: new Date("2019-09-22"),
+                endDate: new Date("2019-10-22"),
+                isActive: true,
+                adjustments: [
+                  new Adjustment({
+                    id: "2",
+                    routeId: "Green-D",
+                    sourceLabel: "Kenmore-Newton Highlands",
+                  }),
+                ],
+                daysOfWeek: [
+                  new DayOfWeek({
+                    id: "1",
+                    startTime: "20:45:00",
+                    dayName: "friday",
+                  }),
+                  new DayOfWeek({
+                    id: "2",
+                    dayName: "saturday",
+                  }),
+                  new DayOfWeek({
+                    id: "3",
+                    dayName: "sunday",
+                  }),
+                ],
+                exceptions: [],
+                tripShortNames: [],
+              }),
               revisions: [
                 new DisruptionRevision({
                   id: "3",
