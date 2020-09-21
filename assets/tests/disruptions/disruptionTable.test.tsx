@@ -24,6 +24,11 @@ const DisruptionTableWithRouter = ({
             isActive: false,
             adjustments: [
               new Adjustment({
+                id: "2",
+                routeId: "Green-D",
+                sourceLabel: "Kenmore-Newton Highlands",
+              }),
+              new Adjustment({
                 id: "1",
                 routeId: "Red",
                 sourceLabel: "NorthQuincyQuincyCenter",
@@ -59,6 +64,11 @@ const DisruptionTableWithRouter = ({
                 id: "1",
                 routeId: "Red",
                 sourceLabel: "NorthQuincyQuincyCenter",
+              }),
+              new Adjustment({
+                id: "2",
+                routeId: "Green-D",
+                sourceLabel: "Kenmore-Newton Highlands",
               }),
             ],
             daysOfWeek: [
@@ -156,7 +166,7 @@ describe("DisruptionTable", () => {
     const tableRows = container.querySelectorAll("tbody tr")
     expect(
       tableRows.item(2).querySelectorAll("td").item(0).textContent
-    ).toEqual("NorthQuincyQuincyCenter")
+    ).toEqual("NorthQuincyQuincyCenterKenmore-Newton Highlands")
     expect(
       tableRows.item(3).querySelectorAll("td").item(0).textContent
     ).toEqual("↘")
@@ -200,7 +210,9 @@ describe("DisruptionTable", () => {
       throw new Error("active sort toggle not found")
     }
     expect(activeSortToggle.textContent).toEqual("adjustments↓")
-    expect(firstRowData.item(0).textContent).toEqual("NorthQuincyQuincyCenter")
+    expect(firstRowData.item(0).textContent).toEqual(
+      "NorthQuincyQuincyCenterKenmore-Newton Highlands"
+    )
 
     const dateSort = screen.getByText("date range")
     fireEvent.click(dateSort)
@@ -230,7 +242,9 @@ describe("DisruptionTable", () => {
     firstRow = tableRows.item(0)
     firstRowData = firstRow.querySelectorAll("td")
     expect(activeSortToggle.textContent).toEqual("time period↑")
-    expect(firstRowData.item(0).textContent).toEqual("NorthQuincyQuincyCenter")
+    expect(firstRowData.item(0).textContent).toEqual(
+      "NorthQuincyQuincyCenterKenmore-Newton Highlands"
+    )
     expect(firstRowData.item(1).textContent).toContain("10/31/2019")
     expect(firstRowData.item(1).textContent).toContain("11/15/2019")
 
@@ -261,7 +275,9 @@ describe("DisruptionTable", () => {
     firstRow = tableRows.item(0)
     firstRowData = firstRow.querySelectorAll("td")
     expect(activeSortToggle.textContent).toEqual("ID↑")
-    expect(firstRowData.item(0).textContent).toEqual("NorthQuincyQuincyCenter")
+    expect(firstRowData.item(0).textContent).toEqual(
+      "NorthQuincyQuincyCenterKenmore-Newton Highlands"
+    )
     expect(firstRowData.item(1).textContent).toContain("10/31/2019")
     expect(firstRowData.item(1).textContent).toContain("11/15/2019")
 
@@ -292,7 +308,9 @@ describe("DisruptionTable", () => {
     firstRow = tableRows.item(0)
     firstRowData = firstRow.querySelectorAll("td")
     expect(activeSortToggle.textContent).toEqual("status↑")
-    expect(firstRowData.item(0).textContent).toEqual("NorthQuincyQuincyCenter")
+    expect(firstRowData.item(0).textContent).toEqual(
+      "NorthQuincyQuincyCenterKenmore-Newton Highlands"
+    )
     expect(firstRowData.item(1).textContent).toContain("10/31/2019")
     expect(firstRowData.item(1).textContent).toContain("11/15/2019")
 
