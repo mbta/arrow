@@ -11,7 +11,7 @@ import {
   DisruptionIndexView,
   DisruptionIndex,
   getRouteColor,
-  anyMatchesFilter,
+  matchesFilter,
   FilterGroup,
   Routes,
 } from "../../src/disruptions/disruptionIndex"
@@ -845,23 +845,23 @@ describe("anyMatchesFilter", () => {
   const routeFilters = { state: {}, anyActive: false }
   const statusFilters = { state: {}, anyActive: false }
   test.each([
-    [[published, ready, draft], "", routeFilters, statusFilters, true],
+    [published, "", routeFilters, statusFilters, true],
     [
-      [published, ready, draft],
+      published,
       "",
       routeFilters,
       { state: { ...statusFilters.state, published: true }, anyActive: true },
       true,
     ],
     [
-      [published, ready, draft],
+      ready,
       "",
       routeFilters,
       { state: { ...statusFilters.state, ready: true }, anyActive: true },
       true,
     ],
     [
-      [published, ready, draft],
+      draft,
       "",
       routeFilters,
       {
@@ -871,18 +871,14 @@ describe("anyMatchesFilter", () => {
       true,
     ],
     [
-      [published, ready, draft],
+      published,
       "",
       { ...routeFilters, state: { ...routeFilters.state, Red: true } },
       statusFilters,
       true,
     ],
     [
-      [
-        new DisruptionRevision({ ...published, status: DisruptionView.Ready }),
-        ready,
-        draft,
-      ],
+      ready,
       "",
       routeFilters,
       {
@@ -892,7 +888,7 @@ describe("anyMatchesFilter", () => {
       false,
     ],
     [
-      [published, ready, draft],
+      published,
       "",
       {
         ...routeFilters,
@@ -903,10 +899,10 @@ describe("anyMatchesFilter", () => {
     ],
   ])(
     "returns true if any DisruptionRevision matches a set of filters",
-    (revisions, query, routeFiltersArg, statusFiltersArg, expected) => {
+    (revision, query, routeFiltersArg, statusFiltersArg, expected) => {
       expect(
-        anyMatchesFilter(
-          revisions,
+        matchesFilter(
+          revision,
           query,
           routeFiltersArg as FilterGroup<Routes>,
           statusFiltersArg as FilterGroup<

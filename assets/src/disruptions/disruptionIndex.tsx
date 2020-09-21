@@ -155,35 +155,31 @@ type FilterGroup<G extends string> = {
   updateFiltersState: React.Dispatch<FilterGroupState<G>>
 }
 
-const anyMatchesFilter = (
-  revisions: DisruptionRevision[],
+const matchesFilter = (
+  revision: DisruptionRevision,
   query: string,
   routeFilters: FilterGroup<Routes>,
   statusFilters: FilterGroup<"published" | "ready" | "needs_review">
 ) => {
-  return revisions.some((revision) => {
-    return (
-      (!routeFilters.anyActive ||
-        (revision.adjustments || []).some(
-          (adj) =>
-            adj.routeId &&
-            (routeFilters.state[adj.routeId as Routes] ||
-              (routeFilters.state.Commuter && adj.routeId.includes("CR-")))
-        )) &&
-      (!statusFilters.anyActive ||
-        (revision.status === DisruptionView.Published &&
-          statusFilters.state.published) ||
-        (revision.status === DisruptionView.Ready &&
-          statusFilters.state.ready) ||
-        (revision.status === DisruptionView.Draft &&
-          statusFilters.state.needs_review)) &&
+  return (
+    (!routeFilters.anyActive ||
       (revision.adjustments || []).some(
         (adj) =>
-          adj.sourceLabel && adj.sourceLabel.toLowerCase().includes(query)
-      ) &&
-      (revision.isActive || revision.status !== DisruptionView.Published)
-    )
-  })
+          adj.routeId &&
+          (routeFilters.state[adj.routeId as Routes] ||
+            (routeFilters.state.Commuter && adj.routeId.includes("CR-")))
+      )) &&
+    (!statusFilters.anyActive ||
+      (revision.status === DisruptionView.Published &&
+        statusFilters.state.published) ||
+      (revision.status === DisruptionView.Ready && statusFilters.state.ready) ||
+      (revision.status === DisruptionView.Draft &&
+        statusFilters.state.needs_review)) &&
+    (revision.adjustments || []).some(
+      (adj) => adj.sourceLabel && adj.sourceLabel.toLowerCase().includes(query)
+    ) &&
+    (revision.isActive || revision.status !== DisruptionView.Published)
+  )
 }
 
 const useFilterGroup = <G extends string>(group: G[]): FilterGroup<G> => {
@@ -267,16 +263,13 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
         Disruption.revisionFromDisruptionForView(curr, DisruptionView.Ready),
         Disruption.revisionFromDisruptionForView(curr, DisruptionView.Draft),
       ].filter((x, i, self) => {
-        return !!x && self.findIndex((y) => y?.id === x.id) === i
+        return (
+          !!x &&
+          self.findIndex((y) => y?.id === x.id) === i &&
+          matchesFilter(x, query, routeFilters, statusFilters)
+        )
       }) as DisruptionRevision[]
-
-      if (
-        anyMatchesFilter(uniqueRevisions, query, routeFilters, statusFilters)
-      ) {
-        return [...acc, ...uniqueRevisions]
-      } else {
-        return acc
-      }
+      return [...acc, ...uniqueRevisions]
     }, [] as DisruptionRevision[])
   }, [disruptions, searchQuery, routeFilters, statusFilters])
 
@@ -426,6 +419,6 @@ export {
   Routes,
   getRouteIcon,
   getRouteColor,
-  anyMatchesFilter,
+  matchesFilter,
   FilterGroup,
 }
