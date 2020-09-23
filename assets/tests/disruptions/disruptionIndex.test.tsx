@@ -296,25 +296,6 @@ describe("DisruptionIndexView", () => {
 
     expect(container.querySelectorAll("tbody tr").length).toEqual(2)
 
-    const publishedReadyStatusToggle = container.querySelector(
-      "#status-filter-toggle-published-ready"
-    )
-
-    if (!publishedReadyStatusToggle) {
-      throw new Error("search input not found")
-    }
-
-    fireEvent.click(publishedReadyStatusToggle)
-
-    expect(container.querySelectorAll("tbody tr").length).toEqual(1)
-    expect(container.querySelectorAll("tbody tr").item(0).innerHTML).toMatch(
-      "AlewifeHarvard"
-    )
-
-    fireEvent.click(publishedReadyStatusToggle)
-
-    expect(container.querySelectorAll("tbody tr").length).toEqual(2)
-
     const draftStatusToggle = container.querySelector(
       "#status-filter-toggle-needs-review"
     )
