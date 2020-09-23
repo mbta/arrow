@@ -6,6 +6,7 @@ import Adjustment from "../../src/models/adjustment"
 import DayOfWeek from "../../src/models/dayOfWeek"
 import DisruptionRevision from "../../src/models/disruptionRevision"
 import { DisruptionView } from "../../src/models/disruption"
+import Exception from "../../src/models/exception"
 
 const DisruptionTableWithRouter = ({
   initialEntries,
@@ -49,7 +50,9 @@ const DisruptionTableWithRouter = ({
                 dayName: "saturday",
               }),
             ],
-            exceptions: [],
+            exceptions: [
+              new Exception({ excludedDate: new Date("2019-10-30") }),
+            ],
             tripShortNames: [],
             status: DisruptionView.Draft,
           }),
@@ -86,7 +89,9 @@ const DisruptionTableWithRouter = ({
                 dayName: "saturday",
               }),
             ],
-            exceptions: [],
+            exceptions: [
+              new Exception({ excludedDate: new Date("2019-10-31") }),
+            ],
             tripShortNames: [],
             status: DisruptionView.Draft,
           }),
@@ -170,6 +175,48 @@ describe("DisruptionTable", () => {
     expect(
       tableRows.item(3).querySelectorAll("td").item(0).textContent
     ).toEqual("↘")
+  })
+
+  test("displays difference between rows", () => {
+    const { container } = render(<DisruptionTableWithRouter />)
+    const tableRows = container.querySelectorAll("tbody tr")
+    expect(tableRows.length).toEqual(4)
+    const firstRow = tableRows.item(2)
+    const firstRowData = firstRow.querySelectorAll("td")
+    firstRowData.forEach((td) => {
+      expect(td.classList.contains("text-muted")).toEqual(false)
+    })
+    expect(firstRowData.item(0).textContent).toEqual(
+      "NorthQuincyQuincyCenterKenmore-Newton Highlands"
+    )
+    expect(firstRowData.item(1).textContent).toEqual("10/31/201911/15/2019")
+    expect(firstRowData.item(2).textContent).toEqual("1")
+
+    const nextRow = tableRows.item(3)
+    const nextRowData = nextRow.querySelectorAll("td")
+    expect(nextRowData.item(0).textContent).toEqual("↘")
+    expect(
+      nextRowData.item(1).querySelectorAll("div").item(0).textContent
+    ).toEqual("10/31/2019")
+    expect(
+      nextRowData
+        .item(1)
+        .querySelectorAll("div")
+        .item(0)
+        .classList.contains("text-muted")
+    ).toEqual(true)
+    expect(
+      nextRowData.item(1).querySelectorAll("div").item(1).textContent
+    ).toEqual("11/16/2019")
+    expect(
+      nextRowData
+        .item(1)
+        .querySelectorAll("div")
+        .item(1)
+        .classList.contains("text-muted")
+    ).toEqual(false)
+    expect(nextRowData.item(2).textContent).toEqual("1")
+    expect(nextRowData.item(2).classList.contains("text-muted")).toEqual(false)
   })
 
   test("can sort table by columns", () => {
@@ -356,8 +403,10 @@ describe("DisruptionTable", () => {
     firstRow = tableRows.item(0)
     firstRowData = firstRow.querySelectorAll("td")
     expect(activeSortToggle.textContent).toEqual("except↓")
-    expect(firstRowData.item(0).textContent).toEqual("Kenmore-Newton Highlands")
-    expect(firstRowData.item(1).textContent).toContain("10/23/2019")
-    expect(firstRowData.item(1).textContent).toContain("10/24/2019")
+    expect(firstRowData.item(0).textContent).toEqual(
+      "NorthQuincyQuincyCenterKenmore-Newton Highlands"
+    )
+    expect(firstRowData.item(1).textContent).toContain("10/31/2019")
+    expect(firstRowData.item(1).textContent).toContain("11/15/2019")
   })
 })

@@ -12,6 +12,8 @@ import { Button } from "../button"
 import DayOfWeek from "../models/dayOfWeek"
 import { dayNameToInt } from "./disruptionCalendar"
 import Adjustment from "../models/adjustment"
+import Exception from "../models/exception"
+import { DiffCell } from "../diffCell"
 
 interface DisruptionTableHeaderProps {
   active?: boolean
@@ -58,19 +60,6 @@ interface SortState {
   order: "asc" | "desc"
 }
 
-interface DisruptionTableRow {
-  id?: string
-  status?: DisruptionView
-  disruptionId?: string
-  startDate?: Date
-  endDate?: Date
-  exceptions: number
-  adjustments: Adjustment[]
-  label: string
-  daysOfWeek: DayOfWeek[]
-  daysAndTimes: string
-}
-
 const convertSortable = (
   key: SortState["by"],
   item: DisruptionTableRow
@@ -81,6 +70,9 @@ const convertSortable = (
     }
     case "disruptionId": {
       return item.disruptionId && parseInt(item.disruptionId, 10)
+    }
+    case "exceptions": {
+      return item.exceptions.length
     }
     default: {
       return item[key]
@@ -100,6 +92,112 @@ const getStatusText = (status: DisruptionView) => {
       return "published"
     }
   }
+}
+
+interface DisruptionTableRow {
+  id?: string
+  status?: DisruptionView
+  disruptionId?: string
+  startDate?: Date
+  endDate?: Date
+  exceptions: Exception[]
+  adjustments: Adjustment[]
+  label: string
+  daysOfWeek: DayOfWeek[]
+  daysAndTimes: string
+}
+
+const DisruptionTableRow = ({
+  base,
+  current,
+}: {
+  base: DisruptionTableRow | null
+  current: DisruptionTableRow
+}) => {
+  return (
+    <tr
+      className={current.status === DisruptionView.Draft ? "bg-light-pink" : ""}
+    >
+      {current.disruptionId !== base?.disruptionId ||
+      current.label !== base?.label ? (
+        <DiffCell currentValue={current.label} baseValue={base?.label}>
+          {current.adjustments.map((adj) => (
+            <div
+              key={current.id + adj.id}
+              className="d-flex align-items-center"
+            >
+              <Icon
+                size="sm"
+                key={adj.routeId}
+                type={getRouteIcon(adj.routeId)}
+                className="mr-3"
+              />
+              {adj.sourceLabel}
+            </div>
+          ))}
+        </DiffCell>
+      ) : (
+        <>
+          <td className="border-0 text-right">{"\u2198"}</td>
+        </>
+      )}
+      {!!current.startDate && !!current.endDate && (
+        <td>
+          <DiffCell
+            element="div"
+            baseValue={base?.startDate?.getTime()}
+            currentValue={current.startDate.getTime()}
+          >
+            {formatDisruptionDate(current.startDate)}
+          </DiffCell>
+          <DiffCell
+            element="div"
+            baseValue={base?.endDate?.getTime()}
+            currentValue={current.endDate.getTime()}
+          >
+            {formatDisruptionDate(current.endDate)}
+          </DiffCell>
+        </td>
+      )}
+      <DiffCell
+        baseValue={base?.exceptions.map((exc) => exc.excludedDate.getTime())}
+        currentValue={current.exceptions.map((exc) =>
+          exc.excludedDate.getTime()
+        )}
+      >
+        {current.exceptions.length}
+      </DiffCell>
+      <DiffCell
+        baseValue={base?.daysAndTimes}
+        currentValue={current.daysAndTimes}
+      >
+        {current.daysAndTimes.split(", ").map((line, ix) => (
+          <div key={ix}>{line}</div>
+        ))}
+      </DiffCell>
+      <td>
+        {
+          <Button
+            className="m-disruption-table__status-indicator"
+            variant={`outline-${
+              current.status === DisruptionView.Draft ? "primary" : "dark"
+            }`}
+          >
+            {getStatusText(current.status || DisruptionView.Draft)}
+          </Button>
+        }
+      </td>
+      <td>
+        <Link
+          to={`/disruptions/${current.disruptionId}?v=${
+            current.status === DisruptionView.Draft ? "draft" : ""
+          }`}
+        >
+          {current.disruptionId}
+        </Link>
+      </td>
+    </tr>
+  )
 }
 
 interface DisruptionTableProps {
@@ -123,7 +221,7 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
           disruptionId: x.disruptionId,
           startDate: x.startDate,
           endDate: x.endDate,
-          exceptions: x.exceptions.length,
+          exceptions: x.exceptions,
           daysOfWeek: x.daysOfWeek,
           daysAndTimes:
             x.daysOfWeek.length > 0 ? parseDaysAndTimes(x.daysOfWeek) : "",
@@ -213,69 +311,15 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
         </tr>
       </thead>
       <tbody>
-        {sortedDisruptions.map((x, i, self) => (
-          <tr
-            key={`${x.id}-${i}`}
-            className={x.status === DisruptionView.Draft ? "bg-light-pink" : ""}
-          >
-            {x.disruptionId !== self[i - 1]?.disruptionId ||
-            x.label !== self[i - 1]?.label ? (
-              <td>
-                {x.adjustments.map((adj) => (
-                  <div
-                    key={x.id + adj.id}
-                    className="d-flex align-items-center"
-                  >
-                    <Icon
-                      size="sm"
-                      key={adj.routeId}
-                      type={getRouteIcon(adj.routeId)}
-                      className="mr-3"
-                    />
-                    {adj.sourceLabel}
-                  </div>
-                ))}
-              </td>
-            ) : (
-              <>
-                <td className="border-0 text-right">{"\u2198"}</td>
-              </>
-            )}
-            {!!x.startDate && !!x.endDate && (
-              <td>
-                <div>{formatDisruptionDate(x.startDate)}</div>
-                <div>{formatDisruptionDate(x.endDate)}</div>
-              </td>
-            )}
-            <td>{x.exceptions}</td>
-            <td>
-              {x.daysAndTimes.split(", ").map((line, ix) => (
-                <div key={ix}>{line}</div>
-              ))}
-            </td>
-            <td>
-              {
-                <Button
-                  className="m-disruption-table__status-indicator"
-                  variant={`outline-${
-                    x.status === DisruptionView.Draft ? "primary" : "dark"
-                  }`}
-                >
-                  {getStatusText(x.status || DisruptionView.Draft)}
-                </Button>
-              }
-            </td>
-            <td>
-              <Link
-                to={`/disruptions/${x.disruptionId}?v=${
-                  x.status === DisruptionView.Draft ? "draft" : ""
-                }`}
-              >
-                {x.disruptionId}
-              </Link>
-            </td>
-          </tr>
-        ))}
+        {sortedDisruptions.map((x, i, self) => {
+          const base =
+            self[i - 1] && self[i - 1].disruptionId === x.disruptionId
+              ? self[i - 1]
+              : null
+          return (
+            <DisruptionTableRow key={`${x.id}-${i}`} base={base} current={x} />
+          )
+        })}
       </tbody>
     </Table>
   )
