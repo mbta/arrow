@@ -319,23 +319,6 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
             />
             <div>
               <SecondaryButton
-                id="status-filter-toggle-published-ready"
-                disabled={view === "calendar"}
-                className={classnames("mx-2", {
-                  active:
-                    statusFilters.state.published && statusFilters.state.ready,
-                })}
-                onClick={() =>
-                  statusFilters.updateFiltersState({
-                    ...statusFilters.state,
-                    published: !statusFilters.state.published,
-                    ready: !statusFilters.state.ready,
-                  })
-                }
-              >
-                published/ready
-              </SecondaryButton>
-              <SecondaryButton
                 disabled={view === "calendar"}
                 id="status-filter-toggle-needs-review"
                 className={classnames("mx-2", {
