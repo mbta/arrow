@@ -25,14 +25,14 @@ const DisruptionTableWithRouter = ({
             isActive: false,
             adjustments: [
               new Adjustment({
-                id: "2",
-                routeId: "Green-D",
-                sourceLabel: "Kenmore-Newton Highlands",
-              }),
-              new Adjustment({
                 id: "1",
                 routeId: "Red",
                 sourceLabel: "NorthQuincyQuincyCenter",
+              }),
+              new Adjustment({
+                id: "2",
+                routeId: "Green-D",
+                sourceLabel: "Kenmore-Newton Highlands",
               }),
             ],
             daysOfWeek: [

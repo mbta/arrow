@@ -83,7 +83,18 @@ describe("DisruptionRevision", () => {
             inserted_at: "2020-01-01T12:00:00Z",
           },
           relationships: {
-            days_of_week: { data: [{ id: "1", type: "day_of_week" }] },
+            adjustments: {
+              data: [
+                { id: "2", type: "adjustment" },
+                { id: "1", type: "adjustment" },
+              ],
+            },
+            days_of_week: {
+              data: [
+                { id: "1", type: "day_of_week" },
+                { id: "2", type: "day_of_week" },
+              ],
+            },
             exceptions: {
               data: [
                 { id: "2", type: "exception" },
@@ -93,8 +104,23 @@ describe("DisruptionRevision", () => {
           },
         },
         {
+          "adjustment-1": new Adjustment({
+            id: "1",
+            sourceLabel: "Kenmore",
+            routeId: "Green-D",
+          }),
+          "adjustment-2": new Adjustment({
+            id: "2",
+            sourceLabel: "Alewife",
+            routeId: "Red",
+          }),
           "day_of_week-1": new DayOfWeek({
             id: "1",
+            startTime: "20:45:00",
+            dayName: "saturday",
+          }),
+          "day_of_week-2": new DayOfWeek({
+            id: "2",
             startTime: "20:45:00",
             dayName: "friday",
           }),
@@ -115,12 +141,28 @@ describe("DisruptionRevision", () => {
         endDate: new Date("2020-01-12T00:00:00Z"),
         isActive: true,
         insertedAt: new Date("2020-01-01T12:00:00Z"),
-        adjustments: [],
+        adjustments: [
+          new Adjustment({
+            id: "1",
+            sourceLabel: "Kenmore",
+            routeId: "Green-D",
+          }),
+          new Adjustment({
+            id: "2",
+            sourceLabel: "Alewife",
+            routeId: "Red",
+          }),
+        ],
         daysOfWeek: [
+          new DayOfWeek({
+            id: "2",
+            startTime: "20:45:00",
+            dayName: "friday",
+          }),
           new DayOfWeek({
             id: "1",
             startTime: "20:45:00",
-            dayName: "friday",
+            dayName: "saturday",
           }),
         ],
         exceptions: [

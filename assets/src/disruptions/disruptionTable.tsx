@@ -212,9 +212,6 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
   const disruptionRows = React.useMemo(() => {
     return disruptionRevisions.map(
       (x): DisruptionTableRow => {
-        const adjustments = x.adjustments.sort(
-          (a, b) => parseInt(a.id, 10) - parseInt(b.id, 10)
-        )
         return {
           id: x.id,
           status: x.status,
@@ -225,10 +222,10 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
           daysOfWeek: x.daysOfWeek,
           daysAndTimes:
             x.daysOfWeek.length > 0 ? parseDaysAndTimes(x.daysOfWeek) : "",
-          label: adjustments.reduce((acc, curr) => {
+          label: x.adjustments.reduce((acc, curr) => {
             return acc + curr.sourceLabel
           }, ""),
-          adjustments,
+          adjustments: x.adjustments,
         }
       }
     )
