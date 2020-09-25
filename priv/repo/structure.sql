@@ -251,7 +251,8 @@ CREATE TABLE public.disruptions (
     published_revision_id bigint,
     inserted_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    ready_revision_id bigint
+    ready_revision_id bigint,
+    last_published_at timestamp with time zone
 );
 
 
@@ -573,3 +574,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20200326133115);
 INSERT INTO public."schema_migrations" (version) VALUES (20200713155611);
 INSERT INTO public."schema_migrations" (version) VALUES (20200812222513);
 INSERT INTO public."schema_migrations" (version) VALUES (20200909124316);
+INSERT INTO public."schema_migrations" (version) VALUES (20200925153736);
