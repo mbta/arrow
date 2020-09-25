@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 11.6
--- Dumped by pg_dump version 11.6
+-- Dumped from database version 11.9
+-- Dumped by pg_dump version 11.9
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -104,7 +104,7 @@ ALTER SEQUENCE public.auth_tokens_id_seq OWNED BY public.auth_tokens.id;
 
 CREATE TABLE public.disruption_adjustments (
     id bigint NOT NULL,
-    disruption_id bigint,
+    disruption_revision_id bigint,
     adjustment_id bigint
 );
 
@@ -137,7 +137,7 @@ CREATE TABLE public.disruption_day_of_weeks (
     day_name public.day_name NOT NULL,
     start_time time(0) without time zone,
     end_time time(0) without time zone,
-    disruption_id bigint NOT NULL,
+    disruption_revision_id bigint NOT NULL,
     inserted_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL
 );
@@ -169,7 +169,7 @@ ALTER SEQUENCE public.disruption_day_of_weeks_id_seq OWNED BY public.disruption_
 CREATE TABLE public.disruption_exceptions (
     id bigint NOT NULL,
     excluded_date date NOT NULL,
-    disruption_id bigint,
+    disruption_revision_id bigint,
     inserted_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL
 );
@@ -195,13 +195,29 @@ ALTER SEQUENCE public.disruption_exceptions_id_seq OWNED BY public.disruption_ex
 
 
 --
+-- Name: disruption_revisions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.disruption_revisions (
+    id bigint NOT NULL,
+    start_date date,
+    end_date date,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    disruption_id bigint NOT NULL,
+    author character varying(255),
+    is_active boolean DEFAULT true
+);
+
+
+--
 -- Name: disruption_trip_short_names; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.disruption_trip_short_names (
     id bigint NOT NULL,
     trip_short_name character varying(255) NOT NULL,
-    disruption_id bigint,
+    disruption_revision_id bigint,
     inserted_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL
 );
@@ -232,10 +248,10 @@ ALTER SEQUENCE public.disruption_trip_short_names_id_seq OWNED BY public.disrupt
 
 CREATE TABLE public.disruptions (
     id bigint NOT NULL,
-    start_date date,
-    end_date date,
+    published_revision_id bigint,
     inserted_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    ready_revision_id bigint
 );
 
 
@@ -255,7 +271,26 @@ CREATE SEQUENCE public.disruptions_id_seq
 -- Name: disruptions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE public.disruptions_id_seq OWNED BY public.disruptions.id;
+ALTER SEQUENCE public.disruptions_id_seq OWNED BY public.disruption_revisions.id;
+
+
+--
+-- Name: disruptions_id_seq1; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.disruptions_id_seq1
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: disruptions_id_seq1; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.disruptions_id_seq1 OWNED BY public.disruptions.id;
 
 
 --
@@ -304,6 +339,13 @@ ALTER TABLE ONLY public.disruption_exceptions ALTER COLUMN id SET DEFAULT nextva
 
 
 --
+-- Name: disruption_revisions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.disruption_revisions ALTER COLUMN id SET DEFAULT nextval('public.disruptions_id_seq'::regclass);
+
+
+--
 -- Name: disruption_trip_short_names id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -314,7 +356,7 @@ ALTER TABLE ONLY public.disruption_trip_short_names ALTER COLUMN id SET DEFAULT 
 -- Name: disruptions id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.disruptions ALTER COLUMN id SET DEFAULT nextval('public.disruptions_id_seq'::regclass);
+ALTER TABLE ONLY public.disruptions ALTER COLUMN id SET DEFAULT nextval('public.disruptions_id_seq1'::regclass);
 
 
 --
@@ -366,11 +408,19 @@ ALTER TABLE ONLY public.disruption_trip_short_names
 
 
 --
--- Name: disruptions disruptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: disruption_revisions disruptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.disruption_revisions
+    ADD CONSTRAINT disruptions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: disruptions disruptions_pkey1; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.disruptions
-    ADD CONSTRAINT disruptions_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT disruptions_pkey1 PRIMARY KEY (id);
 
 
 --
@@ -413,35 +463,35 @@ CREATE INDEX disruption_adjustments_adjustment_id_index ON public.disruption_adj
 -- Name: disruption_adjustments_disruption_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX disruption_adjustments_disruption_id_index ON public.disruption_adjustments USING btree (disruption_id);
+CREATE INDEX disruption_adjustments_disruption_id_index ON public.disruption_adjustments USING btree (disruption_revision_id);
 
 
 --
 -- Name: disruption_day_of_weeks_disruption_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX disruption_day_of_weeks_disruption_id_index ON public.disruption_day_of_weeks USING btree (disruption_id);
+CREATE INDEX disruption_day_of_weeks_disruption_id_index ON public.disruption_day_of_weeks USING btree (disruption_revision_id);
 
 
 --
 -- Name: disruption_exceptions_disruption_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX disruption_exceptions_disruption_id_index ON public.disruption_exceptions USING btree (disruption_id);
+CREATE INDEX disruption_exceptions_disruption_id_index ON public.disruption_exceptions USING btree (disruption_revision_id);
 
 
 --
 -- Name: disruption_trip_short_names_disruption_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX disruption_trip_short_names_disruption_id_index ON public.disruption_trip_short_names USING btree (disruption_id);
+CREATE INDEX disruption_trip_short_names_disruption_id_index ON public.disruption_trip_short_names USING btree (disruption_revision_id);
 
 
 --
 -- Name: unique_disruption_weekday; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX unique_disruption_weekday ON public.disruption_day_of_weeks USING btree (disruption_id, day_name);
+CREATE UNIQUE INDEX unique_disruption_weekday ON public.disruption_day_of_weeks USING btree (disruption_revision_id, day_name);
 
 
 --
@@ -457,7 +507,7 @@ ALTER TABLE ONLY public.disruption_adjustments
 --
 
 ALTER TABLE ONLY public.disruption_adjustments
-    ADD CONSTRAINT disruption_adjustments_disruption_id_fkey FOREIGN KEY (disruption_id) REFERENCES public.disruptions(id) ON DELETE CASCADE;
+    ADD CONSTRAINT disruption_adjustments_disruption_id_fkey FOREIGN KEY (disruption_revision_id) REFERENCES public.disruption_revisions(id) ON DELETE CASCADE;
 
 
 --
@@ -465,7 +515,7 @@ ALTER TABLE ONLY public.disruption_adjustments
 --
 
 ALTER TABLE ONLY public.disruption_day_of_weeks
-    ADD CONSTRAINT disruption_day_of_weeks_disruption_id_fkey FOREIGN KEY (disruption_id) REFERENCES public.disruptions(id) ON DELETE CASCADE;
+    ADD CONSTRAINT disruption_day_of_weeks_disruption_id_fkey FOREIGN KEY (disruption_revision_id) REFERENCES public.disruption_revisions(id) ON DELETE CASCADE;
 
 
 --
@@ -473,7 +523,15 @@ ALTER TABLE ONLY public.disruption_day_of_weeks
 --
 
 ALTER TABLE ONLY public.disruption_exceptions
-    ADD CONSTRAINT disruption_exceptions_disruption_id_fkey FOREIGN KEY (disruption_id) REFERENCES public.disruptions(id) ON DELETE CASCADE;
+    ADD CONSTRAINT disruption_exceptions_disruption_id_fkey FOREIGN KEY (disruption_revision_id) REFERENCES public.disruption_revisions(id) ON DELETE CASCADE;
+
+
+--
+-- Name: disruption_revisions disruption_revisions_disruption_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.disruption_revisions
+    ADD CONSTRAINT disruption_revisions_disruption_id_fkey FOREIGN KEY (disruption_id) REFERENCES public.disruptions(id) ON DELETE RESTRICT;
 
 
 --
@@ -481,7 +539,23 @@ ALTER TABLE ONLY public.disruption_exceptions
 --
 
 ALTER TABLE ONLY public.disruption_trip_short_names
-    ADD CONSTRAINT disruption_trip_short_names_disruption_id_fkey FOREIGN KEY (disruption_id) REFERENCES public.disruptions(id) ON DELETE CASCADE;
+    ADD CONSTRAINT disruption_trip_short_names_disruption_id_fkey FOREIGN KEY (disruption_revision_id) REFERENCES public.disruption_revisions(id) ON DELETE CASCADE;
+
+
+--
+-- Name: disruptions disruptions_published_revision_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.disruptions
+    ADD CONSTRAINT disruptions_published_revision_id_fkey FOREIGN KEY (published_revision_id) REFERENCES public.disruption_revisions(id);
+
+
+--
+-- Name: disruptions disruptions_ready_revision_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.disruptions
+    ADD CONSTRAINT disruptions_ready_revision_id_fkey FOREIGN KEY (ready_revision_id) REFERENCES public.disruption_revisions(id);
 
 
 --
@@ -497,3 +571,5 @@ INSERT INTO public."schema_migrations" (version) VALUES (20191223182231);
 INSERT INTO public."schema_migrations" (version) VALUES (20200129212636);
 INSERT INTO public."schema_migrations" (version) VALUES (20200326133115);
 INSERT INTO public."schema_migrations" (version) VALUES (20200713155611);
+INSERT INTO public."schema_migrations" (version) VALUES (20200812222513);
+INSERT INTO public."schema_migrations" (version) VALUES (20200909124316);
