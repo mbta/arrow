@@ -32,7 +32,7 @@
     "rrule": "^2.6.4"
   },
   "devDependencies": {
-    "@testing-library/dom": "^7.21.7",
+    "@testing-library/dom": "^7.24.3",
     "@testing-library/react": "^10.4.7",
     "@types/classnames": "^2.2.10",
     "@types/jest": "^26.0.4",
