@@ -16,6 +16,8 @@ const DisruptionTableWithRouter = ({
   return (
     <MemoryRouter initialEntries={initialEntries}>
       <DisruptionTable
+        selectEnabled={false}
+        toggleRevisionSelection={() => true}
         disruptionRevisions={[
           new DisruptionRevision({
             id: "1",
@@ -129,9 +131,9 @@ const DisruptionTableWithRouter = ({
           }),
           new DisruptionRevision({
             id: "3",
-            disruptionId: "2",
+            disruptionId: "3",
             startDate: new Date("2019-09-22"),
-            endDate: new Date("2019-10-24"),
+            endDate: new Date("2019-10-22"),
             isActive: true,
             adjustments: [
               new Adjustment({
@@ -159,7 +161,14 @@ const DisruptionTableWithRouter = ({
             tripShortNames: [],
             status: DisruptionView.Ready,
           }),
-        ]}
+        ].map((revision) => {
+          return {
+            selected: false,
+            selectable: false,
+            selectEnabled: false,
+            revision,
+          }
+        })}
       />
     </MemoryRouter>
   )
@@ -181,44 +190,8 @@ describe("DisruptionTable", () => {
     const { container } = render(<DisruptionTableWithRouter />)
     const tableRows = container.querySelectorAll("tbody tr")
     expect(tableRows.length).toEqual(4)
-
-    let firstRow = tableRows.item(0)
-    let firstRowData = firstRow.querySelectorAll("td")
-    firstRowData.forEach((td) => {
-      expect(td.classList.contains("text-muted")).toEqual(false)
-    })
-    expect(firstRowData.item(0).textContent).toEqual("Kenmore-Newton Highlands")
-    expect(firstRowData.item(1).textContent).toEqual("10/23/201910/24/2019")
-    expect(firstRowData.item(2).textContent).toEqual("0")
-
-    let nextRow = tableRows.item(1)
-    let nextRowData = nextRow.querySelectorAll("td")
-    expect(nextRowData.item(0).textContent).toEqual("↘")
-    expect(
-      nextRowData.item(1).querySelectorAll("div").item(0).textContent
-    ).toEqual("09/22/2019")
-    expect(
-      nextRowData
-        .item(1)
-        .querySelectorAll("div")
-        .item(0)
-        .classList.contains("text-muted")
-    ).toEqual(false)
-    expect(
-      nextRowData.item(1).querySelectorAll("div").item(1).textContent
-    ).toEqual("10/24/2019")
-    expect(
-      nextRowData
-        .item(1)
-        .querySelectorAll("div")
-        .item(1)
-        .classList.contains("text-muted")
-    ).toEqual(true)
-    expect(nextRowData.item(2).textContent).toEqual("0")
-    expect(nextRowData.item(2).classList.contains("text-muted")).toEqual(true)
-
-    firstRow = tableRows.item(2)
-    firstRowData = firstRow.querySelectorAll("td")
+    const firstRow = tableRows.item(2)
+    const firstRowData = firstRow.querySelectorAll("td")
     firstRowData.forEach((td) => {
       expect(td.classList.contains("text-muted")).toEqual(false)
     })
@@ -228,8 +201,8 @@ describe("DisruptionTable", () => {
     expect(firstRowData.item(1).textContent).toEqual("10/31/201911/15/2019")
     expect(firstRowData.item(2).textContent).toEqual("1")
 
-    nextRow = tableRows.item(3)
-    nextRowData = nextRow.querySelectorAll("td")
+    const nextRow = tableRows.item(3)
+    const nextRowData = nextRow.querySelectorAll("td")
     expect(nextRowData.item(0).textContent).toEqual("↘")
     expect(
       nextRowData.item(1).querySelectorAll("div").item(0).textContent
@@ -311,7 +284,7 @@ describe("DisruptionTable", () => {
     expect(activeSortToggle.textContent).toEqual("date range↑")
     expect(firstRowData.item(0).textContent).toEqual("Kenmore-Newton Highlands")
     expect(firstRowData.item(1).textContent).toContain("9/22/2019")
-    expect(firstRowData.item(1).textContent).toContain("10/24/2019")
+    expect(firstRowData.item(1).textContent).toContain("10/22/2019")
 
     const timePeriodSort = screen.getByText("time period")
     fireEvent.click(timePeriodSort)
@@ -344,7 +317,7 @@ describe("DisruptionTable", () => {
     expect(activeSortToggle.textContent).toEqual("time period↓")
     expect(firstRowData.item(0).textContent).toEqual("Kenmore-Newton Highlands")
     expect(firstRowData.item(1).textContent).toContain("9/22/2019")
-    expect(firstRowData.item(1).textContent).toContain("10/24/2019")
+    expect(firstRowData.item(1).textContent).toContain("10/22/2019")
 
     const disruptionIdSort = screen.getByText("ID")
     fireEvent.click(disruptionIdSort)
@@ -377,7 +350,7 @@ describe("DisruptionTable", () => {
     expect(activeSortToggle.textContent).toEqual("ID↓")
     expect(firstRowData.item(0).textContent).toEqual("Kenmore-Newton Highlands")
     expect(firstRowData.item(1).textContent).toContain("9/22/2019")
-    expect(firstRowData.item(1).textContent).toContain("10/24/2019")
+    expect(firstRowData.item(1).textContent).toContain("10/22/2019")
 
     const statusSort = screen.getByText("status")
     fireEvent.click(statusSort)

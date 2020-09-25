@@ -1,0 +1,25 @@
+@import "node_modules/bootstrap/scss/mixins/screen-reader";
+
+.m-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  input {
+    @include sr-only;
+  }
+
+  label {
+    background-image: url("/images/checkbox-empty.png");
+    background-size: 100%;
+    cursor: pointer;
+    display: inline-block;
+    height: 1rem;
+    margin-bottom: 0;
+    width: 1rem;
+  }
+
+  input:checked + label {
+    background-image: url("/images/checkbox-filled.png");
+  }
+}

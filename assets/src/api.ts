@@ -44,7 +44,6 @@ const apiSend = async <T, E>({
   if (response.status === 204) {
     return { ok: successParser(null) }
   }
-
   const responseData = await response.json()
   if (response.status === 200 || response.status === 201) {
     return { ok: successParser(responseData) }

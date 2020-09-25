@@ -13,11 +13,7 @@ import DayOfWeek from "../models/dayOfWeek"
 import { dayNameToInt } from "./disruptionCalendar"
 import Adjustment from "../models/adjustment"
 import Exception from "../models/exception"
-<<<<<<< HEAD
-=======
-import { DiffCell } from "../diffCell"
 import Checkbox from "../checkbox"
->>>>>>> 4154abc... initial commit
 
 interface DisruptionTableHeaderProps {
   active?: boolean
@@ -119,21 +115,46 @@ interface DisruptionTableRow {
   label: string
   daysOfWeek: DayOfWeek[]
   daysAndTimes: string
+  selectable: boolean
+  selected: boolean
 }
 
 const DisruptionTableRow = ({
   base,
   current,
+  selectEnabled,
+  selected,
+  selectable,
+  toggleSelection,
 }: {
   base: DisruptionTableRow | null
   current: DisruptionTableRow
+  selected: boolean
+  selectable: boolean
+  selectEnabled: boolean
+  toggleSelection: (id: string) => void
 }) => {
+  const adjustmentsEqual =
+    current.disruptionId === base?.disruptionId && current.label === base?.label
   return (
     <tr
+      data-revision-id={current.id}
       className={current.status === DisruptionView.Draft ? "bg-light-pink" : ""}
     >
-      {current.disruptionId !== base?.disruptionId ||
-      current.label !== base?.label ? (
+      {selectEnabled && (
+        <td className={adjustmentsEqual ? "border-0" : ""}>
+          {selectable && (
+            <Checkbox
+              id={`revision-${current.id}-toggle`}
+              checked={selected}
+              onChange={() => current.id && toggleSelection(current.id)}
+            />
+          )}
+        </td>
+      )}
+      {adjustmentsEqual ? (
+        <td className="border-0 text-right">{"\u2198"}</td>
+      ) : (
         <td className={isDiff(base?.label, current.label) ? "" : "text-muted"}>
           {current.adjustments.map((adj) => (
             <div
@@ -150,10 +171,6 @@ const DisruptionTableRow = ({
             </div>
           ))}
         </td>
-      ) : (
-        <>
-          <td className="border-0 text-right">{"\u2198"}</td>
-        </>
       )}
       {!!current.startDate && !!current.endDate && (
         <td>
@@ -224,9 +241,19 @@ const DisruptionTableRow = ({
 }
 
 interface DisruptionTableProps {
-  disruptionRevisions: DisruptionRevision[]
+  disruptionRevisions: {
+    revision: DisruptionRevision
+    selectable: boolean
+    selected: boolean
+  }[]
+  selectEnabled: boolean
+  toggleRevisionSelection: (id: string) => void
 }
-const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
+const DisruptionTable = ({
+  disruptionRevisions,
+  selectEnabled,
+  toggleRevisionSelection,
+}: DisruptionTableProps) => {
   const [sortState, setSortState] = React.useState<SortState>({
     by: "label",
     order: "asc",
@@ -234,21 +261,25 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
 
   const disruptionRows = React.useMemo(() => {
     return disruptionRevisions.map(
-      (x): DisruptionTableRow => {
+      ({ revision, selected, selectable }): DisruptionTableRow => {
         return {
-          id: x.id,
-          status: x.status,
-          disruptionId: x.disruptionId,
-          startDate: x.startDate,
-          endDate: x.endDate,
-          exceptions: x.exceptions,
-          daysOfWeek: x.daysOfWeek,
+          id: revision.id,
+          status: revision.status,
+          disruptionId: revision.disruptionId,
+          startDate: revision.startDate,
+          endDate: revision.endDate,
+          exceptions: revision.exceptions,
+          daysOfWeek: revision.daysOfWeek,
           daysAndTimes:
-            x.daysOfWeek.length > 0 ? parseDaysAndTimes(x.daysOfWeek) : "",
-          label: x.adjustments.reduce((acc, curr) => {
+            revision.daysOfWeek.length > 0
+              ? parseDaysAndTimes(revision.daysOfWeek)
+              : "",
+          label: revision.adjustments.reduce((acc, curr) => {
             return acc + curr.sourceLabel
           }, ""),
-          adjustments: x.adjustments,
+          adjustments: revision.adjustments,
+          selected,
+          selectable,
         }
       }
     )
@@ -286,6 +317,7 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
     <Table className="m-disruption-table border-top-dark">
       <thead>
         <tr>
+          {selectEnabled && <td />}
           <DisruptionTableHeader
             label="adjustments"
             sortable
@@ -337,7 +369,15 @@ const DisruptionTable = ({ disruptionRevisions }: DisruptionTableProps) => {
               ? self[i - 1]
               : null
           return (
-            <DisruptionTableRow key={`${x.id}-${i}`} base={base} current={x} />
+            <DisruptionTableRow
+              key={`${x.id}-${i}`}
+              base={base}
+              current={x}
+              selectEnabled={selectEnabled}
+              selectable={x.selectable}
+              selected={x.selected}
+              toggleSelection={toggleRevisionSelection}
+            />
           )
         })}
       </tbody>

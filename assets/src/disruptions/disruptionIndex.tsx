@@ -9,10 +9,11 @@ import Icon from "../icons"
 import { DisruptionTable } from "./disruptionTable"
 import { DisruptionCalendar } from "./disruptionCalendar"
 import DisruptionRevision from "../models/disruptionRevision"
-import { apiGet } from "../api"
+import { apiGet, apiSend } from "../api"
 import { JsonApiResponse, toModelObject } from "../jsonApi"
 import { Page } from "../page"
 import Disruption, { DisruptionView } from "../models/disruption"
+import Checkbox from "../checkbox"
 
 type Routes =
   | "Red"
@@ -228,9 +229,15 @@ const useFilterGroup = <G extends string>(group: G[]): FilterGroup<G> => {
 
 interface DisruptionIndexProps {
   disruptions: Disruption[]
+  fetchDisruptions: () => void
 }
 
-const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
+type RevisionActions = "mark_ready"
+
+const DisruptionIndexView = ({
+  disruptions,
+  fetchDisruptions,
+}: DisruptionIndexProps) => {
   const routeFilters = useFilterGroup<Routes>([
     "Red",
     "Blue",
@@ -256,6 +263,7 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
   }, [view, setView, statusFilters])
 
   const [searchQuery, setSearchQuery] = React.useState<string>("")
+
   const filteredDisruptionRevisions = React.useMemo(() => {
     const query = searchQuery.toLowerCase()
     return disruptions.reduce((acc, curr) => {
@@ -279,6 +287,92 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
       }
     }, [] as DisruptionRevision[])
   }, [disruptions, searchQuery, routeFilters, statusFilters])
+
+  const [selectedRevisionsState, setSelectedRevisionsState] = React.useState<{
+    [key: string]: boolean | undefined
+  }>({})
+
+  const selectableFilteredRevisions = React.useMemo(() => {
+    return filteredDisruptionRevisions.filter(
+      (x) => x.status === DisruptionView.Draft
+    )
+  }, [filteredDisruptionRevisions])
+
+  const selectedFilteredRevisions = React.useMemo(() => {
+    return selectableFilteredRevisions.filter(
+      (x) => x.id && selectedRevisionsState[x.id]
+    )
+  }, [selectableFilteredRevisions, selectedRevisionsState])
+
+  const availableActions: RevisionActions[] = React.useMemo(() => {
+    if (
+      selectedFilteredRevisions.length &&
+      selectedFilteredRevisions.every((x) => x.status === DisruptionView.Draft)
+    ) {
+      return ["mark_ready"]
+    } else {
+      return []
+    }
+  }, [selectedFilteredRevisions])
+
+  const markReady = React.useCallback(() => {
+    if (
+      window.confirm("Are you sure you want to mark these revisions as ready?")
+    ) {
+      apiSend({
+        method: "POST",
+        json: JSON.stringify({
+          revision_ids: selectedFilteredRevisions.map((x) => x.id).join(),
+        }),
+        successParser: () => true,
+        errorParser: () => true,
+        url: "/api/ready_notice/",
+      })
+        .then(() => {
+          fetchDisruptions()
+        })
+        .catch(() => {
+          // eslint-disable-next-line no-console
+          console.log("error")
+        })
+    }
+  }, [selectedFilteredRevisions, fetchDisruptions])
+
+  const toggleRevisionSelection = React.useCallback(
+    (id: string) => {
+      setSelectedRevisionsState({
+        ...selectedRevisionsState,
+        [id]: !selectedRevisionsState[id],
+      })
+    },
+    [selectedRevisionsState, setSelectedRevisionsState]
+  )
+
+  const [actionsMenuOpen, toggleActionsMenuOpen] = React.useState<boolean>(
+    false
+  )
+
+  const toggleSelectAll = React.useCallback(() => {
+    if (
+      Object.keys(selectedRevisionsState).some((x) => selectedRevisionsState[x])
+    ) {
+      setSelectedRevisionsState({})
+    } else {
+      setSelectedRevisionsState(
+        filteredDisruptionRevisions.reduce((acc, curr) => {
+          return {
+            ...acc,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            [curr.id!]: true,
+          }
+        }, {} as { [key: string]: boolean | undefined })
+      )
+    }
+  }, [
+    selectedRevisionsState,
+    setSelectedRevisionsState,
+    filteredDisruptionRevisions,
+  ])
 
   return (
     <Page includeHomeLink={false}>
@@ -346,22 +440,79 @@ const DisruptionIndexView = ({ disruptions }: DisruptionIndexProps) => {
                 clear filter
               </LinkButton>
             )}
-            <SecondaryButton
-              id="view-toggle"
-              className="my-3 ml-auto"
-              onClick={toggleView}
-            >
-              {"\u2b12 " +
-                (view === "calendar" ? "list view" : "calendar view")}
-            </SecondaryButton>
+            <div className="my-3 ml-auto">
+              {(selectableFilteredRevisions.length > 0 || actionsMenuOpen) && (
+                <SecondaryButton
+                  disabled={
+                    !actionsMenuOpen && !selectableFilteredRevisions.length
+                  }
+                  id="actions"
+                  onClick={() => {
+                    if (actionsMenuOpen) {
+                      toggleActionsMenuOpen(false)
+                      setSelectedRevisionsState({})
+                    } else {
+                      toggleActionsMenuOpen(!actionsMenuOpen)
+                    }
+                  }}
+                >
+                  actions
+                </SecondaryButton>
+              )}
+              <SecondaryButton
+                id="view-toggle"
+                className="ml-2"
+                onClick={toggleView}
+              >
+                {"\u2b12 " +
+                  (view === "calendar" ? "list view" : "calendar view")}
+              </SecondaryButton>
+            </div>
           </div>
         </Col>
       </Row>
+      {actionsMenuOpen && (
+        <Row>
+          <Col>
+            <div className="d-flex p-2 mb-3 border-secondary border rounded">
+              <div className="d-flex align-items-center border-right border-secondary mr-3">
+                <Checkbox
+                  id="toggle-all"
+                  checked={selectedFilteredRevisions.length > 0}
+                  containerClassName="my-2"
+                  onChange={toggleSelectAll}
+                />
+                <strong className="mx-3">select</strong>
+              </div>
+              <div className="d-flex">
+                <SecondaryButton
+                  id="mark-ready"
+                  onClick={markReady}
+                  disabled={!availableActions.includes("mark_ready")}
+                >
+                  mark as ready
+                </SecondaryButton>
+              </div>
+            </div>
+          </Col>
+        </Row>
+      )}
       <Row>
         <Col>
           {view === "table" ? (
             <DisruptionTable
-              disruptionRevisions={filteredDisruptionRevisions}
+              selectEnabled={actionsMenuOpen}
+              toggleRevisionSelection={toggleRevisionSelection}
+              disruptionRevisions={filteredDisruptionRevisions.map(
+                (revision) => {
+                  return {
+                    revision,
+                    selected:
+                      !!revision.id && !!selectedRevisionsState[revision.id],
+                    selectable: revision.status === DisruptionView.Draft,
+                  }
+                }
+              )}
             />
           ) : (
             <DisruptionCalendar
@@ -378,7 +529,8 @@ const DisruptionIndex = () => {
   const [disruptions, setDisruptions] = React.useState<Disruption[] | "error">(
     []
   )
-  React.useEffect(() => {
+
+  const fetchDisruptions = React.useCallback(() => {
     apiGet<JsonApiResponse>({
       url: "/api/disruptions",
       parser: toModelObject,
@@ -393,12 +545,21 @@ const DisruptionIndex = () => {
         setDisruptions("error")
       }
     })
-  }, [])
+  }, [setDisruptions])
+
+  React.useEffect(() => {
+    fetchDisruptions()
+  }, [fetchDisruptions])
 
   if (disruptions === "error") {
     return <div>Something went wrong</div>
   } else {
-    return <DisruptionIndexView disruptions={disruptions} />
+    return (
+      <DisruptionIndexView
+        disruptions={disruptions}
+        fetchDisruptions={fetchDisruptions}
+      />
+    )
   }
 }
 
