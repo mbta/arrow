@@ -16,23 +16,27 @@ import DisruptionRevision from "./disruptionRevision"
 
 class Disruption extends JsonApiResourceObject {
   id?: string
+  lastPublishedAt?: Date
   readyRevision?: DisruptionRevision
   publishedRevision?: DisruptionRevision
   revisions: DisruptionRevision[]
 
   constructor({
     id,
+    lastPublishedAt,
     readyRevision,
     publishedRevision,
     revisions,
   }: {
     id?: string
+    lastPublishedAt?: Date
     readyRevision?: DisruptionRevision
     publishedRevision?: DisruptionRevision
     revisions: DisruptionRevision[]
   }) {
     super()
     this.id = id
+    this.lastPublishedAt = lastPublishedAt
     this.readyRevision = readyRevision
     this.publishedRevision = publishedRevision
     this.revisions = revisions
@@ -66,6 +70,9 @@ class Disruption extends JsonApiResourceObject {
       ) as DisruptionRevision[]
       const disruption = new Disruption({
         id: raw.id,
+        lastPublishedAt:
+          raw.attributes.last_published_at &&
+          new Date(raw.attributes.last_published_at),
         readyRevision: loadSingleRelationship(
           raw.relationships.ready_revision,
           included

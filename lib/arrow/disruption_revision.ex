@@ -125,7 +125,7 @@ defmodule Arrow.DisruptionRevision do
           join: dr in __MODULE__,
           on: dr.disruption_id == d.id,
           where: dr.id in ^ids and dr.id <= d.ready_revision_id,
-          update: [set: [published_revision_id: dr.id]]
+          update: [set: [published_revision_id: dr.id, last_published_at: fragment("now()")]]
         )
         |> Arrow.Repo.update_all([])
 

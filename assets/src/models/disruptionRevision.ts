@@ -15,6 +15,7 @@ class DisruptionRevision extends JsonApiResourceObject {
   endDate?: Date
   isActive: boolean
   status?: DisruptionView
+  insertedAt?: Date
 
   adjustments: Adjustment[]
   daysOfWeek: DayOfWeek[]
@@ -27,6 +28,7 @@ class DisruptionRevision extends JsonApiResourceObject {
     startDate,
     endDate,
     isActive,
+    insertedAt,
     adjustments,
     daysOfWeek,
     exceptions,
@@ -38,6 +40,7 @@ class DisruptionRevision extends JsonApiResourceObject {
     startDate?: Date
     endDate?: Date
     isActive: boolean
+    insertedAt?: Date
     adjustments: Adjustment[]
     daysOfWeek: DayOfWeek[]
     exceptions: Exception[]
@@ -50,6 +53,7 @@ class DisruptionRevision extends JsonApiResourceObject {
     this.startDate = startDate
     this.endDate = endDate
     this.isActive = isActive
+    this.insertedAt = insertedAt
     this.adjustments = adjustments
     this.daysOfWeek = daysOfWeek
     this.exceptions = exceptions
@@ -108,6 +112,8 @@ class DisruptionRevision extends JsonApiResourceObject {
           endDate: toUTCDate(raw.attributes.end_date),
         }),
         isActive: raw.attributes.is_active,
+        insertedAt:
+          raw.attributes.inserted_at && new Date(raw.attributes.inserted_at),
         adjustments: loadRelationship(
           raw.relationships.adjustments,
           included

@@ -80,6 +80,7 @@ describe("DisruptionRevision", () => {
             start_date: "2019-12-20",
             end_date: "2020-01-12",
             is_active: true,
+            inserted_at: "2020-01-01T12:00:00Z",
           },
           relationships: {
             days_of_week: { data: [{ id: "1", type: "day_of_week" }] },
@@ -113,6 +114,7 @@ describe("DisruptionRevision", () => {
         startDate: new Date("2019-12-20T00:00:00Z"),
         endDate: new Date("2020-01-12T00:00:00Z"),
         isActive: true,
+        insertedAt: new Date("2020-01-01T12:00:00Z"),
         adjustments: [],
         daysOfWeek: [
           new DayOfWeek({
