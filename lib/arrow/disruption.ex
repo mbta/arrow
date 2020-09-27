@@ -16,14 +16,17 @@ defmodule Arrow.Disruption do
   @type t :: %__MODULE__{
           ready_revision: DisruptionRevision.t() | Ecto.Association.NotLoaded.t(),
           published_revision: DisruptionRevision.t() | Ecto.Association.NotLoaded.t(),
-          inserted_at: DateTime.t() | nil,
-          updated_at: DateTime.t() | nil
+          last_published_at: DateTime.t() | nil,
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
         }
 
   schema "disruptions" do
     belongs_to :ready_revision, DisruptionRevision
     belongs_to :published_revision, DisruptionRevision
     has_many :revisions, DisruptionRevision
+
+    field(:last_published_at, :utc_datetime)
 
     timestamps(type: :utc_datetime)
   end

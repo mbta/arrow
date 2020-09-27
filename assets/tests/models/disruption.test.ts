@@ -43,7 +43,9 @@ describe("Disruption", () => {
     expect(
       Disruption.fromJsonObject(
         {
-          attributes: {},
+          attributes: {
+            last_published_at: "2020-09-30:12:00:00Z",
+          },
           id: "1",
           type: "disruption",
           relationships: {
@@ -121,6 +123,7 @@ describe("Disruption", () => {
     ).toEqual(
       new Disruption({
         id: "1",
+        lastPublishedAt: new Date("2020-09-30T12:00:00Z"),
         readyRevision: new DisruptionRevision({
           id: "1",
           disruptionId: "1",

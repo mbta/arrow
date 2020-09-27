@@ -67,6 +67,8 @@ defmodule Arrow.DisruptionRevisionTest do
       d = insert(:disruption)
       dr = insert(:disruption_revision, %{disruption: d})
 
+      refute d.last_published_at
+
       :ok = DisruptionRevision.ready_all!()
 
       assert :ok = DisruptionRevision.publish!([dr.id])
@@ -74,6 +76,7 @@ defmodule Arrow.DisruptionRevisionTest do
       new_d = Arrow.Repo.get(Arrow.Disruption, d.id)
 
       assert new_d.published_revision_id == dr.id
+      assert_in_delta(DateTime.to_unix(new_d.last_published_at), :os.system_time(:second), 60)
     end
 
     test "raises exception when trying to publish revision more recent than ready revision" do

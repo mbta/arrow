@@ -2,6 +2,8 @@ defmodule ArrowWeb.API.DisruptionView do
   use ArrowWeb, :view
   use JaSerializer.PhoenixView
 
+  attributes([:last_published_at])
+
   has_many :revisions,
     serializer: ArrowWeb.API.DisruptionRevisionView,
     include: true
