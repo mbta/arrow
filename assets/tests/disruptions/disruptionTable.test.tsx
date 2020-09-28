@@ -263,8 +263,9 @@ describe("DisruptionTable", () => {
     )
     expect(firstRowData.item(4).textContent).toEqual("published")
     expect(
-      firstRowData.item(5).querySelectorAll("a[href='/disruptions/2?v=']")
-        .length
+      firstRowData
+        .item(5)
+        .querySelectorAll("a[href='/disruptions/2?v=published']").length
     ).toEqual(1)
     let activeSortToggle = container.querySelector(
       ".m-disruption-table__sortable.active"

@@ -291,14 +291,22 @@ const getDaysType = (days: DayName[]): DaysType => {
   return consecutive ? "consecutive" : "other"
 }
 
+const timePeriodDescription = (
+  startTime: string | undefined,
+  endTime: string | undefined
+) => {
+  return `${timeOrEndOfService(startTime)} - ${timeOrEndOfService(
+    endTime,
+    "end"
+  )}`
+}
+
 const describeSingleDay = ({
   dayName,
   startTime,
   endTime,
 }: DayOfWeek): string =>
-  `${dayToAbbr(dayName)}, ${timeOrEndOfService(
-    startTime
-  )} - ${timeOrEndOfService(endTime, "end")}`
+  `${dayToAbbr(dayName)}, ${timePeriodDescription(startTime, endTime)}`
 
 const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
   if (daysAndTimes.length === 1) {
@@ -357,4 +365,6 @@ export {
   dayOfWeekTimeRangesToDayOfWeeks,
   parseDaysAndTimes,
   dayToIx,
+  timeOrEndOfService,
+  timePeriodDescription,
 }

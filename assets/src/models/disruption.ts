@@ -19,6 +19,7 @@ class Disruption extends JsonApiResourceObject {
   lastPublishedAt?: Date
   readyRevision?: DisruptionRevision
   publishedRevision?: DisruptionRevision
+  draftRevision?: DisruptionRevision
   revisions: DisruptionRevision[]
 
   constructor({
@@ -26,12 +27,14 @@ class Disruption extends JsonApiResourceObject {
     lastPublishedAt,
     readyRevision,
     publishedRevision,
+    draftRevision,
     revisions,
   }: {
     id?: string
     lastPublishedAt?: Date
     readyRevision?: DisruptionRevision
     publishedRevision?: DisruptionRevision
+    draftRevision?: DisruptionRevision
     revisions: DisruptionRevision[]
   }) {
     super()
@@ -39,6 +42,7 @@ class Disruption extends JsonApiResourceObject {
     this.lastPublishedAt = lastPublishedAt
     this.readyRevision = readyRevision
     this.publishedRevision = publishedRevision
+    this.draftRevision = draftRevision
     this.revisions = revisions
   }
 
@@ -64,10 +68,12 @@ class Disruption extends JsonApiResourceObject {
       typeof raw.attributes === "object" &&
       typeof raw.relationships === "object"
     ) {
-      const revisions = loadRelationship(
+      const revisions = (loadRelationship(
         raw.relationships.revisions,
         included
-      ) as DisruptionRevision[]
+      ) as DisruptionRevision[]).sort((r1, r2) => {
+        return parseInt(r1.id || "", 10) - parseInt(r2.id || "", 10)
+      })
       const disruption = new Disruption({
         id: raw.id,
         lastPublishedAt:
@@ -81,8 +87,14 @@ class Disruption extends JsonApiResourceObject {
           raw.relationships.published_revision,
           included
         ) as DisruptionRevision,
+        draftRevision: revisions[revisions.length - 1],
         revisions,
       })
+
+      if (disruption.draftRevision) {
+        disruption.draftRevision.disruptionId = raw.id
+        disruption.draftRevision.status = DisruptionView.Draft
+      }
 
       if (disruption.readyRevision) {
         disruption.readyRevision.disruptionId = raw.id
@@ -105,8 +117,44 @@ class Disruption extends JsonApiResourceObject {
     return "error"
   }
 
+  getUniqueRevisions(): {
+    published: DisruptionRevision | null
+    ready: DisruptionRevision | null
+    draft: DisruptionRevision | null
+  } {
+    return {
+      published: this.publishedRevision || null,
+      ready:
+        this.readyRevision &&
+        this.readyRevision.id !== this.publishedRevision?.id
+          ? this.readyRevision
+          : null,
+      draft:
+        this.draftRevision &&
+        this.draftRevision.id !== this.readyRevision?.id &&
+        this.draftRevision.id !== this.publishedRevision?.id
+          ? this.draftRevision
+          : null,
+    }
+  }
+
   static isOfType(obj: ModelObject): obj is Disruption {
     return obj instanceof Disruption
+  }
+
+  static uniqueRevisionFromDisruptionForView = (
+    disruption: Disruption,
+    view: DisruptionView
+  ): DisruptionRevision | null => {
+    const { published, ready, draft } = disruption.getUniqueRevisions()
+    switch (view) {
+      case DisruptionView.Draft:
+        return draft
+      case DisruptionView.Ready:
+        return ready
+      default:
+        return published
+    }
   }
 
   static revisionFromDisruptionForView = (

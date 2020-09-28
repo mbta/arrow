@@ -230,7 +230,11 @@ const DisruptionTableRow = ({
       <td>
         <Link
           to={`/disruptions/${current.disruptionId}?v=${
-            current.status === DisruptionView.Draft ? "draft" : ""
+            current.status === DisruptionView.Draft
+              ? "draft"
+              : current.status === DisruptionView.Ready
+              ? "ready"
+              : "published"
           }`}
         >
           {current.disruptionId}
