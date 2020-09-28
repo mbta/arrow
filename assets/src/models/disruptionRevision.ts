@@ -115,7 +115,7 @@ class DisruptionRevision extends JsonApiResourceObject {
         isActive: raw.attributes.is_active,
         insertedAt:
           raw.attributes.inserted_at && new Date(raw.attributes.inserted_at),
-        adjustments: loadRelationship(
+        adjustments: (loadRelationship(
           raw.relationships.adjustments,
           included
         ) as Adjustment[]).sort(
