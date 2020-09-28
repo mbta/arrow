@@ -13,7 +13,6 @@ import DayOfWeek from "../models/dayOfWeek"
 import { dayNameToInt } from "./disruptionCalendar"
 import Adjustment from "../models/adjustment"
 import Exception from "../models/exception"
-import { DiffCell } from "../diffCell"
 
 interface DisruptionTableHeaderProps {
   active?: boolean
@@ -94,6 +93,16 @@ const getStatusText = (status: DisruptionView) => {
   }
 }
 
+const isDiff = (
+  baseValue: undefined | string | number | (string | number)[],
+  currentValue: string | number | (string | number)[]
+) => {
+  return Array.isArray(baseValue) && Array.isArray(currentValue)
+    ? baseValue.length !== currentValue.length ||
+        baseValue.some((x, i) => x !== currentValue[i])
+    : baseValue == null || baseValue !== currentValue
+}
+
 interface DisruptionTableRow {
   id?: string
   status?: DisruptionView
@@ -120,7 +129,7 @@ const DisruptionTableRow = ({
     >
       {current.disruptionId !== base?.disruptionId ||
       current.label !== base?.label ? (
-        <DiffCell currentValue={current.label} baseValue={base?.label}>
+        <td className={isDiff(base?.label, current.label) ? "" : "text-muted"}>
           {current.adjustments.map((adj) => (
             <div
               key={current.id + adj.id}
@@ -135,7 +144,7 @@ const DisruptionTableRow = ({
               {adj.sourceLabel}
             </div>
           ))}
-        </DiffCell>
+        </td>
       ) : (
         <>
           <td className="border-0 text-right">{"\u2198"}</td>
@@ -143,38 +152,47 @@ const DisruptionTableRow = ({
       )}
       {!!current.startDate && !!current.endDate && (
         <td>
-          <DiffCell
-            element="div"
-            baseValue={base?.startDate?.getTime()}
-            currentValue={current.startDate.getTime()}
+          <div
+            className={
+              isDiff(base?.startDate?.getTime(), current.startDate.getTime())
+                ? ""
+                : "text-muted"
+            }
           >
             {formatDisruptionDate(current.startDate)}
-          </DiffCell>
-          <DiffCell
-            element="div"
-            baseValue={base?.endDate?.getTime()}
-            currentValue={current.endDate.getTime()}
+          </div>
+          <div
+            className={
+              isDiff(base?.endDate?.getTime(), current.endDate.getTime())
+                ? ""
+                : "text-muted"
+            }
           >
             {formatDisruptionDate(current.endDate)}
-          </DiffCell>
+          </div>
         </td>
       )}
-      <DiffCell
-        baseValue={base?.exceptions.map((exc) => exc.excludedDate.getTime())}
-        currentValue={current.exceptions.map((exc) =>
-          exc.excludedDate.getTime()
-        )}
+      <td
+        className={
+          isDiff(
+            base?.exceptions.map((exc) => exc.excludedDate.getTime()),
+            current.exceptions.map((exc) => exc.excludedDate.getTime())
+          )
+            ? ""
+            : "text-muted"
+        }
       >
         {current.exceptions.length}
-      </DiffCell>
-      <DiffCell
-        baseValue={base?.daysAndTimes}
-        currentValue={current.daysAndTimes}
+      </td>
+      <td
+        className={
+          isDiff(base?.daysAndTimes, current.daysAndTimes) ? "" : "text-muted"
+        }
       >
         {current.daysAndTimes.split(", ").map((line, ix) => (
           <div key={ix}>{line}</div>
         ))}
-      </DiffCell>
+      </td>
       <td>
         {
           <Button
