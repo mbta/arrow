@@ -13,6 +13,11 @@ import DayOfWeek from "../models/dayOfWeek"
 import { dayNameToInt } from "./disruptionCalendar"
 import Adjustment from "../models/adjustment"
 import Exception from "../models/exception"
+<<<<<<< HEAD
+=======
+import { DiffCell } from "../diffCell"
+import Checkbox from "../checkbox"
+>>>>>>> 4154abc... initial commit
 
 interface DisruptionTableHeaderProps {
   active?: boolean

@@ -90,7 +90,7 @@ defmodule Arrow.DisruptionRevisionTest do
 
       dr2_2 = insert(:disruption_revision, %{disruption: d2})
 
-      assert_raise Arrow.Disruption.PublishedAfterReadyError, fn ->
+      assert_raise Arrow.Disruption.Error.PublishedAfterReady, fn ->
         DisruptionRevision.publish!([dr1.id, dr2_2.id])
       end
 
@@ -112,7 +112,7 @@ defmodule Arrow.DisruptionRevisionTest do
       d2 = insert(:disruption)
       dr2 = insert(:disruption_revision, %{disruption: d2})
 
-      assert_raise Arrow.Disruption.PublishedAfterReadyError, fn ->
+      assert_raise Arrow.Disruption.Error.PublishedAfterReady, fn ->
         DisruptionRevision.publish!([dr1.id, dr2.id])
       end
 
@@ -123,6 +123,33 @@ defmodule Arrow.DisruptionRevisionTest do
       new_d2 = Arrow.Repo.get(Arrow.Disruption, d2.id)
 
       assert is_nil(new_d2.published_revision_id)
+    end
+  end
+
+  describe "ready!/1" do
+    test "updates ready revision ID" do
+      d = insert(:disruption)
+      dr = insert(:disruption_revision, %{disruption: d})
+
+      assert :ok = DisruptionRevision.ready!([dr.id])
+
+      new_d = Arrow.Repo.get(Arrow.Disruption, d.id)
+
+      assert new_d.ready_revision_id == dr.id
+    end
+
+    test "raises exception when trying to ready a revision more recent that is not latest revision" do
+      d1 = insert(:disruption)
+      dr1 = insert(:disruption_revision, %{disruption: d1})
+      _dr2 = insert(:disruption_revision, %{disruption: d1})
+
+      assert_raise Arrow.Disruption.Error.ReadyNotLatest, fn ->
+        DisruptionRevision.ready!([dr1.id])
+      end
+
+      new_d1 = Arrow.Repo.get(Arrow.Disruption, d1.id)
+
+      assert is_nil(new_d1.ready_revision_id)
     end
   end
 

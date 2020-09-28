@@ -117,6 +117,35 @@ defmodule Arrow.DisruptionRevision do
     :ok
   end
 
+  @spec ready!([integer()]) :: :ok
+  def ready!(ids) do
+    Arrow.Repo.transaction(fn ->
+      draft_map =
+        from(dr in Arrow.DisruptionRevision,
+          select: %{disruption_id: dr.disruption_id, draft_id: max(dr.id)},
+          group_by: dr.disruption_id
+        )
+
+      {updated, _} =
+        from(d in Arrow.Disruption,
+          join: dm in subquery(draft_map),
+          on: dm.disruption_id == d.id,
+          where:
+            dm.draft_id in type(^ids, {:array, :integer}) and
+              (is_nil(d.ready_revision_id) or
+                 dm.draft_id != d.ready_revision_id),
+          update: [set: [ready_revision_id: dm.draft_id]]
+        )
+        |> Arrow.Repo.update_all([])
+
+      if updated != Enum.count(ids) do
+        raise Disruption.Error.ReadyNotLatest
+      end
+    end)
+
+    :ok
+  end
+
   @spec publish!([integer()]) :: :ok
   def publish!(ids) do
     Arrow.Repo.transaction(fn ->
@@ -130,7 +159,7 @@ defmodule Arrow.DisruptionRevision do
         |> Arrow.Repo.update_all([])
 
       if updated != Enum.count(ids) do
-        raise Disruption.PublishedAfterReadyError
+        raise Disruption.Error.PublishedAfterReady
       end
     end)
 
