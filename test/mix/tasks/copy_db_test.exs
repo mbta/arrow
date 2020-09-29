@@ -48,111 +48,60 @@ defmodule Mix.Tasks.CopyDbTest do
 
       assert [
                %Arrow.Disruption{
-                 id: 1,
+                 id: 10,
                  ready_revision: %Arrow.DisruptionRevision{
-                   adjustments: [],
+                   id: 9,
+                   start_date: ~D[2020-10-05],
+                   end_date: ~D[2020-10-08],
+                   is_active: true,
+                   adjustments: [
+                     %Arrow.Adjustment{
+                       id: 7935,
+                       route_id: "CR-Fitchburg",
+                       source: "gtfs_creator",
+                       source_label: "FitchburgStopAtPorter"
+                     }
+                   ],
                    days_of_week: [
                      %Arrow.Disruption.DayOfWeek{
-                       day_name: "friday",
-                       end_time: ~T[23:45:00],
-                       start_time: ~T[20:45:00]
+                       id: 21,
+                       day_name: "monday",
+                       end_time: ~T[15:00:00],
+                       start_time: ~T[08:00:00]
                      },
                      %Arrow.Disruption.DayOfWeek{
-                       day_name: "saturday",
+                       id: 22,
+                       day_name: "tuesday",
                        end_time: nil,
                        start_time: nil
                      },
                      %Arrow.Disruption.DayOfWeek{
-                       day_name: "sunday",
+                       id: 23,
+                       day_name: "wednesday",
+                       end_time: nil,
+                       start_time: nil
+                     },
+                     %Arrow.Disruption.DayOfWeek{
+                       id: 24,
+                       day_name: "thursday",
                        end_time: nil,
                        start_time: nil
                      }
                    ],
-                   end_date: ~D[2020-01-12],
                    exceptions: [
                      %Arrow.Disruption.Exception{
-                       excluded_date: ~D[2019-12-29]
+                       id: 10,
+                       excluded_date: ~D[2020-10-07]
                      }
                    ],
-                   start_date: ~D[2019-12-20],
                    trip_short_names: [
                      %Arrow.Disruption.TripShortName{
-                       trip_short_name: "1702"
+                       id: 33,
+                       trip_short_name: "412"
                      }
                    ]
                  },
-                 published_revision: %Arrow.DisruptionRevision{
-                   adjustments: [],
-                   days_of_week: [
-                     %Arrow.Disruption.DayOfWeek{
-                       day_name: "friday",
-                       end_time: ~T[23:45:00],
-                       start_time: ~T[20:45:00]
-                     },
-                     %Arrow.Disruption.DayOfWeek{
-                       day_name: "saturday",
-                       end_time: nil,
-                       start_time: nil
-                     },
-                     %Arrow.Disruption.DayOfWeek{
-                       day_name: "sunday",
-                       end_time: nil,
-                       start_time: nil
-                     }
-                   ],
-                   end_date: ~D[2020-01-12],
-                   exceptions: [
-                     %Arrow.Disruption.Exception{
-                       excluded_date: ~D[2019-12-29]
-                     }
-                   ],
-                   start_date: ~D[2019-12-20],
-                   trip_short_names: [
-                     %Arrow.Disruption.TripShortName{
-                       trip_short_name: "1702"
-                     }
-                   ]
-                 }
-               },
-               %Arrow.Disruption{
-                 ready_revision: %Arrow.DisruptionRevision{
-                   adjustments: [],
-                   days_of_week: [
-                     %Arrow.Disruption.DayOfWeek{
-                       day_name: "thursday",
-                       end_time: nil,
-                       start_time: ~T[20:45:00]
-                     },
-                     %Arrow.Disruption.DayOfWeek{
-                       day_name: "sunday",
-                       end_time: nil,
-                       start_time: ~T[20:45:00]
-                     }
-                   ],
-                   end_date: ~D[2020-01-20],
-                   exceptions: [],
-                   start_date: ~D[2019-12-31],
-                   trip_short_names: []
-                 },
-                 published_revision: %Arrow.DisruptionRevision{
-                   adjustments: [],
-                   days_of_week: [
-                     %Arrow.Disruption.DayOfWeek{
-                       day_name: "thursday",
-                       end_time: nil,
-                       start_time: ~T[20:45:00]
-                     },
-                     %Arrow.Disruption.DayOfWeek{
-                       day_name: "sunday",
-                       end_time: nil,
-                       start_time: ~T[20:45:00]
-                     }
-                   ],
-                   end_date: ~D[2020-01-20],
-                   exceptions: [],
-                   start_date: ~D[2019-12-31],
-                   trip_short_names: []
-                 }
+                 published_revision: nil
                }
              ] =
                Arrow.Repo.all(from d in Arrow.Disruption, order_by: d.id)
@@ -163,19 +112,9 @@ defmodule Mix.Tasks.CopyDbTest do
 
       assert [
                %Arrow.Adjustment{
-                 route_id: "Green-D",
+                 route_id: "CR-Fitchburg",
                  source: "gtfs_creator",
-                 source_label: "KenmoreReservoir"
-               },
-               %Arrow.Adjustment{
-                 route_id: "Orange",
-                 source: "gtfs_creator",
-                 source_label: "ForestHillsJacksonSquare"
-               },
-               %Arrow.Adjustment{
-                 route_id: "Blue",
-                 source: "gtfs_creator",
-                 source_label: "OrientHeightsWonderland"
+                 source_label: "FitchburgStopAtPorter"
                }
              ] = Arrow.Repo.all(Arrow.Adjustment)
     end
@@ -201,31 +140,6 @@ defmodule Mix.Tasks.CopyDbTest do
 
       assert log =~ "issue with request: 401"
     end
-
-    test "does not alter database if transaction fails" do
-      Application.put_env(:arrow, :http_client, Fake.HTTPoison.Sad.InvalidData)
-      pre_populate_db()
-
-      initial_adjustments = Arrow.Repo.all(Arrow.Adjustment)
-
-      initial_disruptions =
-        Arrow.Repo.all(Arrow.Disruption)
-        |> Arrow.Repo.preload(published_revision: Arrow.DisruptionRevision.associations())
-
-      log =
-        capture_log(fn ->
-          Mix.Tasks.CopyDb.run([])
-        end)
-
-      assert log =~
-               "[error] Error inserting data: null value in column \"day_name\" violates not-null constraint"
-
-      assert initial_adjustments == Arrow.Repo.all(Arrow.Adjustment)
-
-      assert initial_disruptions ==
-               Arrow.Repo.all(Arrow.Disruption)
-               |> Arrow.Repo.preload(published_revision: Arrow.DisruptionRevision.associations())
-    end
   end
 end
 
@@ -235,234 +149,98 @@ defmodule Fake.HTTPoison do
       {:ok, nil}
     end
 
-    def get!(path, _) do
-      entities = path |> String.split("/") |> Enum.at(-1)
-      get_entities(entities)
-    end
-
-    defp get_entities("disruptions") do
+    def get!(_, _) do
       %{
         status_code: 200,
         body:
           Jason.encode!(%{
-            data: [
+            "adjustments" => [
               %{
-                attributes: %{end_date: "2020-01-12", start_date: "2019-12-20"},
-                id: "1",
-                relationships: %{
-                  adjustments: %{
-                    data: [
-                      %{id: "12", type: "adjustment"},
-                      %{id: "13", type: "adjustment"}
-                    ]
-                  },
-                  days_of_week: %{
-                    data: [
-                      %{id: "1", type: "day_of_week"},
-                      %{id: "2", type: "day_of_week"},
-                      %{id: "3", type: "day_of_week"}
-                    ]
-                  },
-                  exceptions: %{data: [%{id: "1", type: "exception"}]},
-                  trip_short_names: %{data: [%{id: "1", type: "trip_short_name"}]}
-                },
-                type: "disruption"
-              },
-              %{
-                attributes: %{end_date: "2020-01-20", start_date: "2019-12-31"},
-                id: "2",
-                relationships: %{
-                  adjustments: %{data: [%{id: "13", type: "adjustment"}]},
-                  days_of_week: %{
-                    data: [
-                      %{id: "4", type: "day_of_week"},
-                      %{id: "6", type: "day_of_week"}
-                    ]
-                  },
-                  exceptions: %{data: []},
-                  trip_short_names: %{data: []}
-                },
-                type: "disruption"
+                "id" => 7935,
+                "inserted_at" => "2020-09-29T18:51:04.000000Z",
+                "route_id" => "CR-Fitchburg",
+                "source" => "gtfs_creator",
+                "source_label" => "FitchburgStopAtPorter",
+                "updated_at" => "2020-09-29T18:51:04.000000Z"
               }
             ],
-            included: [
-              %{attributes: %{trip_short_name: "1702"}, id: "1", type: "trip_short_name"},
+            "disruption_adjustments" => [
+              %{"adjustment_id" => 7935, "disruption_revision_id" => 9, "id" => 18}
+            ],
+            "disruption_day_of_weeks" => [
               %{
-                attributes: %{day_name: "friday", end_time: "23:45:00", start_time: "20:45:00"},
-                id: "1",
-                type: "day_of_week"
+                "day_name" => "monday",
+                "disruption_revision_id" => 9,
+                "end_time" => "15:00:00.000000",
+                "id" => 21,
+                "inserted_at" => "2020-09-29T18:54:00.000000Z",
+                "start_time" => "08:00:00.000000",
+                "updated_at" => "2020-09-29T18:54:00.000000Z"
               },
               %{
-                attributes: %{day_name: "saturday", end_time: nil, start_time: nil},
-                id: "2",
-                type: "day_of_week"
+                "day_name" => "tuesday",
+                "disruption_revision_id" => 9,
+                "end_time" => nil,
+                "id" => 22,
+                "inserted_at" => "2020-09-29T18:54:00.000000Z",
+                "start_time" => nil,
+                "updated_at" => "2020-09-29T18:54:00.000000Z"
               },
               %{
-                attributes: %{day_name: "sunday", end_time: nil, start_time: nil},
-                id: "3",
-                type: "day_of_week"
+                "day_name" => "wednesday",
+                "disruption_revision_id" => 9,
+                "end_time" => nil,
+                "id" => 23,
+                "inserted_at" => "2020-09-29T18:54:00.000000Z",
+                "start_time" => nil,
+                "updated_at" => "2020-09-29T18:54:00.000000Z"
               },
               %{
-                attributes: %{day_name: "thursday", end_time: nil, start_time: "20:45:00"},
-                id: "4",
-                type: "day_of_week"
-              },
-              %{
-                attributes: %{day_name: "sunday", end_time: nil, start_time: "20:45:00"},
-                id: "6",
-                type: "day_of_week"
-              },
-              %{attributes: %{trip_short_name: "1702"}, id: "1", type: "trip_short_name"},
-              %{attributes: %{excluded_date: "2019-12-29"}, id: "1", type: "exception"},
-              %{
-                attributes: %{
-                  route_id: "Green-D",
-                  source: "gtfs_creator",
-                  source_label: "KenmoreReservoir"
-                },
-                id: "12",
-                type: "adjustment"
-              },
-              %{
-                attributes: %{
-                  route_id: "Orange",
-                  source: "gtfs_creator",
-                  source_label: "ForestHillsJacksonSquare"
-                },
-                id: "13",
-                type: "adjustment"
-              }
-            ]
-          })
-      }
-    end
-
-    defp get_entities("adjustments") do
-      %{
-        status_code: 200,
-        body:
-          Jason.encode!(%{
-            data: [
-              %{
-                attributes: %{
-                  route_id: "Green-D",
-                  source: "gtfs_creator",
-                  source_label: "KenmoreReservoir"
-                },
-                id: "12",
-                type: "adjustment"
-              },
-              %{
-                attributes: %{
-                  route_id: "Orange",
-                  source: "gtfs_creator",
-                  source_label: "ForestHillsJacksonSquare"
-                },
-                id: "13",
-                type: "adjustment"
-              },
-              %{
-                attributes: %{
-                  route_id: "Blue",
-                  source: "gtfs_creator",
-                  source_label: "OrientHeightsWonderland"
-                },
-                id: "15",
-                type: "adjustment"
-              }
-            ]
-          })
-      }
-    end
-
-    defp get_entities(_) do
-      []
-    end
-  end
-
-  defmodule Sad.InvalidData do
-    def start() do
-      {:ok, nil}
-    end
-
-    def get!(path, _) do
-      entities = path |> String.split("/") |> Enum.at(-1)
-      get_entities(entities)
-    end
-
-    defp get_entities("disruptions") do
-      %{
-        status_code: 200,
-        body:
-          Jason.encode!(%{
-            data: [
-              %{
-                attributes: %{end_date: "2020-01-12", start_date: "2019-12-20"},
-                id: "1",
-                relationships: %{
-                  adjustments: %{
-                    data: [
-                      %{id: "12", type: "adjustment"}
-                    ]
-                  },
-                  days_of_week: %{
-                    data: [
-                      %{id: "1", type: "day_of_week"},
-                      %{id: "2", type: "day_of_week"},
-                      %{id: "3", type: "day_of_week"}
-                    ]
-                  },
-                  exceptions: %{data: []},
-                  trip_short_names: %{data: []}
-                },
-                type: "disruption"
+                "day_name" => "thursday",
+                "disruption_revision_id" => 9,
+                "end_time" => nil,
+                "id" => 24,
+                "inserted_at" => "2020-09-29T18:54:00.000000Z",
+                "start_time" => nil,
+                "updated_at" => "2020-09-29T18:54:00.000000Z"
               }
             ],
-            included: [
-              %{attributes: %{trip_short_name: "1702"}, id: "1", type: "trip_short_name"},
+            "disruption_exceptions" => [
               %{
-                attributes: %{end_time: nil, start_time: "20:45:00"},
-                id: "1",
-                type: "day_of_week"
-              },
-              %{
-                attributes: %{day_name: "saturday", end_time: nil, start_time: nil},
-                id: "2",
-                type: "day_of_week"
-              },
-              %{
-                attributes: %{day_name: "sunday", end_time: nil, start_time: nil},
-                id: "3",
-                type: "day_of_week"
-              },
-              %{
-                attributes: %{
-                  route_id: "Green-D",
-                  source: "gtfs_creator",
-                  source_label: "KenmoreReservoir"
-                },
-                id: "12",
-                type: "adjustment"
+                "disruption_revision_id" => 9,
+                "excluded_date" => "2020-10-07",
+                "id" => 10,
+                "inserted_at" => "2020-09-29T18:54:00.000000Z",
+                "updated_at" => "2020-09-29T18:54:00.000000Z"
               }
-            ]
-          })
-      }
-    end
-
-    defp get_entities("adjustments") do
-      %{
-        status_code: 200,
-        body:
-          Jason.encode!(%{
-            data: [
+            ],
+            "disruption_revisions" => [
               %{
-                attributes: %{
-                  route_id: "Green-D",
-                  source: "gtfs_creator",
-                  source_label: "KenmoreReservoir"
-                },
-                id: "12",
-                type: "adjustment"
+                "disruption_id" => 10,
+                "end_date" => "2020-10-08",
+                "id" => 9,
+                "inserted_at" => "2020-09-29T18:54:00.000000Z",
+                "is_active" => true,
+                "start_date" => "2020-10-05",
+                "updated_at" => "2020-09-29T18:54:00.000000Z"
+              }
+            ],
+            "disruption_trip_short_names" => [
+              %{
+                "disruption_revision_id" => 9,
+                "id" => 33,
+                "inserted_at" => "2020-09-29T18:54:00.000000Z",
+                "trip_short_name" => "412",
+                "updated_at" => "2020-09-29T18:54:00.000000Z"
+              }
+            ],
+            "disruptions" => [
+              %{
+                "id" => 10,
+                "inserted_at" => "2020-09-29T18:54:00.000000Z",
+                "published_revision_id" => nil,
+                "ready_revision_id" => 9,
+                "updated_at" => "2020-09-29T18:54:00.000000Z"
               }
             ]
           })
