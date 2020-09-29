@@ -100,6 +100,7 @@ defmodule ArrowWeb.Router do
 
     post "/publish_notice", NoticeController, :publish
     post "/ready_notice", NoticeController, :ready
+    get "/db_dump", DBDumpController, :show
   end
 
   # Other scopes may use custom stacks.
