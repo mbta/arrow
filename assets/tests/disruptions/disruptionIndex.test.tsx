@@ -3,8 +3,8 @@ import { BrowserRouter } from "react-router-dom"
 import {
   render,
   fireEvent,
-  screen,
   queryByAttribute,
+  queryByText,
 } from "@testing-library/react"
 
 import {
@@ -313,9 +313,57 @@ describe("DisruptionIndexView", () => {
     )
   })
 
-  test("can toggle between table and calendar view", () => {
-    const { container } = render(<DisruptionIndexWithRouter />)
-    expect(screen.queryByText("time period")).not.toBeNull()
+  test("can toggle between table and calendar view", async () => {
+    jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
+      return Promise.resolve([
+        new Disruption({
+          id: "1",
+          revisions: [
+            new DisruptionRevision({
+              id: "1",
+              disruptionId: "1",
+              startDate: new Date("2019-10-31"),
+              endDate: new Date("2019-11-15"),
+              isActive: true,
+              adjustments: [
+                new Adjustment({
+                  id: "1",
+                  routeId: "Red",
+                  sourceLabel: "AlewifeHarvard",
+                }),
+              ],
+              daysOfWeek: [
+                new DayOfWeek({
+                  id: "1",
+                  startTime: "20:45:00",
+                  dayName: "friday",
+                }),
+                new DayOfWeek({
+                  id: "2",
+                  dayName: "saturday",
+                }),
+                new DayOfWeek({
+                  id: "3",
+                  dayName: "sunday",
+                }),
+              ],
+              exceptions: [],
+              tripShortNames: [],
+              status: DisruptionView.Draft,
+            }),
+          ],
+        }),
+      ])
+    })
+    // eslint-disable-next-line @typescript-eslint/require-await
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    await act(async () => {
+      ReactDOM.render(<DisruptionIndexWithRouter connected />, container)
+    })
+    expect(queryByText(container, "time period")).not.toBeNull()
     expect(queryByAttribute("id", container, "calendar")).toBeNull()
 
     const toggleButton = container.querySelector("#view-toggle")
@@ -325,14 +373,20 @@ describe("DisruptionIndexView", () => {
     expect(toggleButton.textContent).toEqual("⬒ calendar view")
 
     fireEvent.click(toggleButton)
-    expect(screen.queryByText("time period")).toBeNull()
+    expect(queryByText(container, "time period")).toBeNull()
     expect(queryByAttribute("id", container, "calendar")).not.toBeNull()
     expect(toggleButton.textContent).toEqual("⬒ list view")
+    expect(
+      container.querySelector("#actions")?.hasAttribute("disabled")
+    ).toEqual(true)
 
     fireEvent.click(toggleButton)
-    expect(screen.queryByText("time period")).not.toBeNull()
+    expect(queryByText(container, "time period")).not.toBeNull()
     expect(queryByAttribute("id", container, "calendar")).toBeNull()
     expect(toggleButton.textContent).toEqual("⬒ calendar view")
+    expect(
+      container.querySelector("#actions")?.hasAttribute("disabled")
+    ).toEqual(false)
   })
 })
 

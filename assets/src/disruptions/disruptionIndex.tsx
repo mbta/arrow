@@ -436,24 +436,23 @@ const DisruptionIndexView = ({
               </LinkButton>
             )}
             <div className="my-3 ml-auto">
-              {(selectableFilteredRevisions.length > 0 || actionsMenuOpen) && (
-                <SecondaryButton
-                  disabled={
-                    !actionsMenuOpen && !selectableFilteredRevisions.length
+              <SecondaryButton
+                disabled={
+                  view === "calendar" ||
+                  (!actionsMenuOpen && !selectableFilteredRevisions.length)
+                }
+                id="actions"
+                onClick={() => {
+                  if (actionsMenuOpen) {
+                    toggleActionsMenuOpen(false)
+                    setSelectedRevisions({})
+                  } else {
+                    toggleActionsMenuOpen(!actionsMenuOpen)
                   }
-                  id="actions"
-                  onClick={() => {
-                    if (actionsMenuOpen) {
-                      toggleActionsMenuOpen(false)
-                      setSelectedRevisions({})
-                    } else {
-                      toggleActionsMenuOpen(!actionsMenuOpen)
-                    }
-                  }}
-                >
-                  actions
-                </SecondaryButton>
-              )}
+                }}
+              >
+                actions
+              </SecondaryButton>
               <SecondaryButton
                 id="view-toggle"
                 className="ml-2"
