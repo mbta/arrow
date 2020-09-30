@@ -319,10 +319,11 @@ const DisruptionIndexView = ({
     if (
       window.confirm("Are you sure you want to mark these revisions as ready?")
     ) {
+      const revisionIds = selectedFilteredRevisions.map((x) => x.id).join()
       apiSend({
         method: "POST",
         json: JSON.stringify({
-          revision_ids: selectedFilteredRevisions.map((x) => x.id).join(),
+          revision_ids: revisionIds,
         }),
         successParser: () => true,
         errorParser: () => true,
@@ -333,7 +334,7 @@ const DisruptionIndexView = ({
         })
         .catch(() => {
           // eslint-disable-next-line no-console
-          console.log("error")
+          console.log(`failed to mark revisions as ready: ${revisionIds}`)
         })
     }
   }, [selectedFilteredRevisions, fetchDisruptions])
