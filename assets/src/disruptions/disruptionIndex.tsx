@@ -288,7 +288,7 @@ const DisruptionIndexView = ({
     }, [] as DisruptionRevision[])
   }, [disruptions, searchQuery, routeFilters, statusFilters])
 
-  const [selectedRevisionsState, setSelectedRevisionsState] = React.useState<{
+  const [selectedRevisions, setSelectedRevisions] = React.useState<{
     [key: string]: boolean | undefined
   }>({})
 
@@ -300,9 +300,9 @@ const DisruptionIndexView = ({
 
   const selectedFilteredRevisions = React.useMemo(() => {
     return selectableFilteredRevisions.filter(
-      (x) => x.id && selectedRevisionsState[x.id]
+      (x) => x.id && selectedRevisions[x.id]
     )
-  }, [selectableFilteredRevisions, selectedRevisionsState])
+  }, [selectableFilteredRevisions, selectedRevisions])
 
   const availableActions: RevisionActions[] = React.useMemo(() => {
     if (
@@ -341,12 +341,12 @@ const DisruptionIndexView = ({
 
   const toggleRevisionSelection = React.useCallback(
     (id: string) => {
-      setSelectedRevisionsState({
-        ...selectedRevisionsState,
-        [id]: !selectedRevisionsState[id],
+      setSelectedRevisions({
+        ...selectedRevisions,
+        [id]: !selectedRevisions[id],
       })
     },
-    [selectedRevisionsState, setSelectedRevisionsState]
+    [selectedRevisions, setSelectedRevisions]
   )
 
   const [actionsMenuOpen, toggleActionsMenuOpen] = React.useState<boolean>(
@@ -354,12 +354,10 @@ const DisruptionIndexView = ({
   )
 
   const toggleSelectAll = React.useCallback(() => {
-    if (
-      Object.keys(selectedRevisionsState).some((x) => selectedRevisionsState[x])
-    ) {
-      setSelectedRevisionsState({})
+    if (Object.keys(selectedRevisions).some((x) => selectedRevisions[x])) {
+      setSelectedRevisions({})
     } else {
-      setSelectedRevisionsState(
+      setSelectedRevisions(
         filteredDisruptionRevisions.reduce((acc, curr) => {
           return {
             ...acc,
@@ -369,11 +367,7 @@ const DisruptionIndexView = ({
         }, {} as { [key: string]: boolean | undefined })
       )
     }
-  }, [
-    selectedRevisionsState,
-    setSelectedRevisionsState,
-    filteredDisruptionRevisions,
-  ])
+  }, [selectedRevisions, setSelectedRevisions, filteredDisruptionRevisions])
 
   return (
     <Page includeHomeLink={false}>
@@ -451,7 +445,7 @@ const DisruptionIndexView = ({
                   onClick={() => {
                     if (actionsMenuOpen) {
                       toggleActionsMenuOpen(false)
-                      setSelectedRevisionsState({})
+                      setSelectedRevisions({})
                     } else {
                       toggleActionsMenuOpen(!actionsMenuOpen)
                     }
@@ -508,8 +502,7 @@ const DisruptionIndexView = ({
                 (revision) => {
                   return {
                     revision,
-                    selected:
-                      !!revision.id && !!selectedRevisionsState[revision.id],
+                    selected: !!revision.id && !!selectedRevisions[revision.id],
                     selectable: revision.status === DisruptionView.Draft,
                   }
                 }
