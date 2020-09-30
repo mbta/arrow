@@ -62,7 +62,7 @@ Object {
           </div>
           <div
             class="fc-view-harness fc-view-harness-active"
-            style="padding-bottom: 74.07407407407408%;"
+            style="padding-bottom: 74.07407407407408%; height: 0px;"
           >
             <div
               class="fc-daygrid fc-dayGridMonth-view fc-view"
@@ -70,9 +70,9 @@ Object {
               <table
                 class="fc-scrollgrid  fc-scrollgrid-liquid"
               >
-                <thead>
+                <tbody>
                   <tr
-                    class="fc-scrollgrid-section "
+                    class="fc-scrollgrid-section fc-scrollgrid-section-header "
                   >
                     <td>
                       <div
@@ -187,10 +187,8 @@ Object {
                       </div>
                     </td>
                   </tr>
-                </thead>
-                <tbody>
                   <tr
-                    class="fc-scrollgrid-section  fc-scrollgrid-section-liquid"
+                    class="fc-scrollgrid-section fc-scrollgrid-section-body  fc-scrollgrid-section-liquid"
                   >
                     <td>
                       <div
@@ -1602,7 +1600,7 @@ Object {
         </div>
         <div
           class="fc-view-harness fc-view-harness-active"
-          style="padding-bottom: 74.07407407407408%;"
+          style="padding-bottom: 74.07407407407408%; height: 0px;"
         >
           <div
             class="fc-daygrid fc-dayGridMonth-view fc-view"
@@ -1610,9 +1608,9 @@ Object {
             <table
               class="fc-scrollgrid  fc-scrollgrid-liquid"
             >
-              <thead>
+              <tbody>
                 <tr
-                  class="fc-scrollgrid-section "
+                  class="fc-scrollgrid-section fc-scrollgrid-section-header "
                 >
                   <td>
                     <div
@@ -1727,10 +1725,8 @@ Object {
                     </div>
                   </td>
                 </tr>
-              </thead>
-              <tbody>
                 <tr
-                  class="fc-scrollgrid-section  fc-scrollgrid-section-liquid"
+                  class="fc-scrollgrid-section fc-scrollgrid-section-body  fc-scrollgrid-section-liquid"
                 >
                   <td>
                     <div
