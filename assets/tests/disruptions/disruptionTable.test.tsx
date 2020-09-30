@@ -200,6 +200,26 @@ describe("DisruptionTable", () => {
     )
     expect(firstRowData.item(1).textContent).toEqual("10/31/201911/15/2019")
     expect(firstRowData.item(2).textContent).toEqual("1")
+    expect(
+      firstRowData.item(1).querySelectorAll("div").item(0).textContent
+    ).toEqual("10/31/2019")
+    expect(
+      firstRowData
+        .item(1)
+        .querySelectorAll("div")
+        .item(0)
+        .classList.contains("text-muted")
+    ).toEqual(false)
+    expect(
+      firstRowData.item(1).querySelectorAll("div").item(1).textContent
+    ).toEqual("11/15/2019")
+    expect(
+      firstRowData
+        .item(1)
+        .querySelectorAll("div")
+        .item(1)
+        .classList.contains("text-muted")
+    ).toEqual(false)
 
     const nextRow = tableRows.item(3)
     const nextRowData = nextRow.querySelectorAll("td")

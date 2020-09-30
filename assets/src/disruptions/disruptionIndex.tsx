@@ -325,8 +325,6 @@ const DisruptionIndexView = ({
         json: JSON.stringify({
           revision_ids: revisionIds,
         }),
-        successParser: () => true,
-        errorParser: () => true,
         url: "/api/ready_notice/",
       })
         .then(() => {
@@ -441,6 +439,9 @@ const DisruptionIndexView = ({
                   view === "calendar" ||
                   (!actionsMenuOpen && !selectableFilteredRevisions.length)
                 }
+                className={classnames({
+                  active: actionsMenuOpen,
+                })}
                 id="actions"
                 onClick={() => {
                   if (actionsMenuOpen) {

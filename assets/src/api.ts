@@ -24,14 +24,14 @@ const apiSend = async <T, E>({
   url,
   method,
   json,
-  successParser,
-  errorParser,
+  successParser = (x) => x,
+  errorParser = (x) => x,
 }: {
   url: string
   method: "POST" | "PATCH" | "DELETE"
   json: any
-  successParser: (json: any) => T
-  errorParser: (json: any) => E
+  successParser?: (json: any) => T
+  errorParser?: (json: any) => E
 }): Promise<Result<T, E>> => {
   const response = await fetch(url, {
     method,
