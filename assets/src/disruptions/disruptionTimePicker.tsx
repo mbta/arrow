@@ -35,13 +35,21 @@ const DisruptionDateRange = ({
       <DatePicker
         id="disruption-date-range-start"
         selected={fromDate}
-        onChange={(date) => setFromDate(date)}
+        onChange={(date) => {
+          if (!Array.isArray(date)) {
+            setFromDate(date)
+          }
+        }}
       />
       <span className="px-3">until</span>
       <DatePicker
         id="disruption-date-range-end"
         selected={toDate}
-        onChange={(date) => setToDate(date)}
+        onChange={(date) => {
+          if (!Array.isArray(date)) {
+            setToDate(date)
+          }
+        }}
       />
     </Form.Group>
   )
@@ -325,7 +333,7 @@ const DisruptionExceptionDateList = ({
               <DatePicker
                 selected={date}
                 onChange={(newDate) => {
-                  if (newDate !== null) {
+                  if (newDate !== null && !Array.isArray(newDate)) {
                     setExceptionDates(
                       exceptionDates
                         .slice(0, index)
@@ -367,7 +375,7 @@ const DisruptionExceptionDateList = ({
               <DatePicker
                 selected={null}
                 onChange={(newDate) => {
-                  if (newDate !== null) {
+                  if (newDate !== null && !Array.isArray(newDate)) {
                     setExceptionDates(exceptionDates.concat([newDate]))
                     setIsAddingDate(false)
                   }
