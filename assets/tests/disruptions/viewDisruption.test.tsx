@@ -529,7 +529,8 @@ describe("ViewDisruption", () => {
       .spyOn(api, "apiSend")
       .mockImplementationOnce(({ successParser }) => {
         return Promise.resolve({
-          ok: successParser(null),
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          ok: successParser!(null),
         })
       })
 

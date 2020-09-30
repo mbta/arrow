@@ -98,7 +98,8 @@ defmodule ArrowWeb.Router do
       :ensure_arrow_group
     ])
 
-    post "/publish_notice", PublishNoticeController, :create
+    post "/publish_notice", NoticeController, :publish
+    post "/ready_notice", NoticeController, :ready
   end
 
   # Other scopes may use custom stacks.

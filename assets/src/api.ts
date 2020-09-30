@@ -24,14 +24,14 @@ const apiSend = async <T, E>({
   url,
   method,
   json,
-  successParser,
-  errorParser,
+  successParser = (x) => x,
+  errorParser = (x) => x,
 }: {
   url: string
   method: "POST" | "PATCH" | "DELETE"
   json: any
-  successParser: (json: any) => T
-  errorParser: (json: any) => E
+  successParser?: (json: any) => T
+  errorParser?: (json: any) => E
 }): Promise<Result<T, E>> => {
   const response = await fetch(url, {
     method,
@@ -44,7 +44,6 @@ const apiSend = async <T, E>({
   if (response.status === 204) {
     return { ok: successParser(null) }
   }
-
   const responseData = await response.json()
   if (response.status === 200 || response.status === 201) {
     return { ok: successParser(responseData) }
