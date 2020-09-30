@@ -54,7 +54,7 @@ defmodule Arrow.MixProject do
       {:ex_aws_secretsmanager, "~> 2.0"},
       {:ex_machina, "~> 2.3", only: :test},
       {:excoveralls, "~> 0.10", only: :test},
-      {:mox, "~> 0.5.2", only: :test},
+      {:mox, "~> 1.0.0", only: :test},
       {:phoenix, "~> 1.4.11"},
       {:phoenix_pubsub, "~> 1.1"},
       {:phoenix_ecto, "~> 4.0"},
