@@ -124,6 +124,8 @@ const ViewDisruptionForm = ({
       disruptionRevision?.daysOfWeek || []
     )
 
+    const anyDeleted = [published, ready, draft].some((x) => !!x && !x.isActive)
+
     if (disruptionDaysOfWeek !== "error") {
       return (
         <Page>
@@ -148,22 +150,19 @@ const ViewDisruptionForm = ({
                     </span>
                   </h5>
                 </div>
-                {disruptionRevision?.disruptionId &&
-                  disruptionRevision.startDate &&
-                  disruptionRevision.startDate >=
-                    new Date(new Date().toDateString()) &&
-                  (view === DisruptionView.Draft ||
-                    (view === DisruptionView.Ready && !draft) ||
-                    (view === DisruptionView.Published && !draft && !ready)) &&
-                  (disruptionRevision.isActive ? (
+                {disruptionRevision &&
+                  (anyDeleted ? (
+                    <div>Marked for deletion</div>
+                  ) : disruptionRevision &&
+                    disruptionRevision.startDate &&
+                    disruptionRevision.startDate >=
+                      new Date(new Date().toDateString()) ? (
                     <DeleteDisruptionButton
                       disruptionId={disruption.id}
                       setDeletionErrors={setDeletionErrors}
                       setDoRedirect={setDoRedirect}
                     />
-                  ) : (
-                    <div>Marked for deletion</div>
-                  ))}
+                  ) : null)}
               </div>
               {disruptionRevision && (
                 <div className="m-disruption-details__adjustments">
@@ -235,21 +234,21 @@ const ViewDisruptionForm = ({
                         Created {formatDisruptionDate(draft.insertedAt || null)}
                       </span>
                     </NavLink>
-                  ) : (
+                  ) : !anyDeleted ? (
                     <Link
                       className="m-disruption-details__view-toggle text-primary"
                       to={`/disruptions/${disruption.id}/edit`}
                     >
                       <strong>create new draft</strong>
                     </Link>
-                  )}
+                  ) : null}
                 </div>
               </div>
               <hr className="my-3" />
               {disruptionRevision ? (
                 <div>
                   <Row>
-                    {!disruptionRevision.isActive && (
+                    {anyDeleted && (
                       <Col xs={12}>
                         <div className="m-disruption-details__deletion-indicator">
                           <span className="text-blue-grey mr-3">
@@ -261,11 +260,7 @@ const ViewDisruptionForm = ({
                       </Col>
                     )}
                     <Col md={10}>
-                      <div
-                        className={
-                          disruptionRevision.isActive ? "" : "text-muted"
-                        }
-                      >
+                      <div className={anyDeleted ? "text-muted" : ""}>
                         <div className="mb-3">
                           <h4>date range</h4>
                           <div className="pl-3">
