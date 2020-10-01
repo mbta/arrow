@@ -1353,4 +1353,73 @@ describe("ViewDisruption", () => {
     })
     expect(spy).toBeCalledTimes(1)
   })
+
+  test("does not display 'create new disruption' button if any revision is deleted", async () => {
+    jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
+      return Promise.resolve(
+        new Disruption({
+          id: "1",
+          readyRevision: new DisruptionRevision({
+            id: "1",
+            disruptionId: "1",
+            startDate: new Date("2020-01-15"),
+            endDate: new Date("2020-01-30"),
+            isActive: false,
+            adjustments: [],
+            daysOfWeek: [],
+            exceptions: [],
+            tripShortNames: [],
+          }),
+          revisions: [
+            new DisruptionRevision({
+              id: "1",
+              disruptionId: "1",
+              startDate: new Date("2020-01-15"),
+              endDate: new Date("2020-01-30"),
+              isActive: true,
+              adjustments: [],
+              daysOfWeek: [],
+              exceptions: [],
+              tripShortNames: [],
+            }),
+          ],
+        })
+      )
+    })
+
+    const history = createBrowserHistory()
+    history.push("/disruptions/1?v=ready")
+
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    await act(async () => {
+      ReactDOM.render(
+        <BrowserRouter>
+          <ViewDisruption
+            match={{
+              params: { id: "1" },
+              isExact: true,
+              path: "/disruptions/1?v=ready",
+              url: "https://localhost/disruptions/1?v=ready",
+            }}
+            history={history}
+            location={{
+              pathname: "/disruptions/1?v=ready",
+              search: "?v=ready",
+              state: {},
+              hash: "",
+            }}
+          />
+        </BrowserRouter>,
+        container
+      )
+    })
+
+    const editButton = container.querySelector(
+      "a[href='/disruptions/1/edit']"
+    ) as Element
+    expect(editButton).toBeNull()
+  })
 })
