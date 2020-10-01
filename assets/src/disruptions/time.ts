@@ -241,7 +241,7 @@ const dayOfWeekTimeRangesToDayOfWeeks = (
   return daysOfWeek
 }
 
-const timeOrEndOfService = (
+const timeOrStartOrEndOfService = (
   timeString?: string,
   end: "start" | "end" = "start"
 ): string => {
@@ -295,7 +295,7 @@ const timePeriodDescription = (
   startTime: string | undefined,
   endTime: string | undefined
 ) => {
-  return `${timeOrEndOfService(startTime)} - ${timeOrEndOfService(
+  return `${timeOrStartOrEndOfService(startTime)} - ${timeOrStartOrEndOfService(
     endTime,
     "end"
   )}`
@@ -340,14 +340,16 @@ const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
   } else if (timeType === "daily") {
     return `${dayToAbbr(first.dayName)} - ${dayToAbbr(
       last.dayName
-    )}, ${timeOrEndOfService(first.startTime)} - ${timeOrEndOfService(
-      first.endTime,
+    )}, ${timeOrStartOrEndOfService(
+      first.startTime
+    )} - ${timeOrStartOrEndOfService(first.endTime, "end")}`
+  } else {
+    return `${dayToAbbr(first.dayName)} ${timeOrStartOrEndOfService(
+      first.startTime
+    )} - ${dayToAbbr(last.dayName)} ${timeOrStartOrEndOfService(
+      last.endTime,
       "end"
     )}`
-  } else {
-    return `${dayToAbbr(first.dayName)} ${timeOrEndOfService(
-      first.startTime
-    )} - ${dayToAbbr(last.dayName)} ${timeOrEndOfService(last.endTime, "end")}`
   }
 }
 
@@ -365,6 +367,6 @@ export {
   dayOfWeekTimeRangesToDayOfWeeks,
   parseDaysAndTimes,
   dayToIx,
-  timeOrEndOfService,
+  timeOrStartOrEndOfService,
   timePeriodDescription,
 }
