@@ -130,7 +130,7 @@ const ViewDisruptionForm = ({
       return (
         <Page>
           <Row>
-            <Col>
+            <Col lg={7}>
               {deletionErrors.length > 0 && (
                 <Alert variant="danger">
                   <ul>
