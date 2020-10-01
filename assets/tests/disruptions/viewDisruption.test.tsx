@@ -1058,7 +1058,7 @@ describe("ViewDisruption", () => {
         fireEvent.click(publishedButton)
       })
     } else {
-      throw new Error("draft button not found")
+      throw new Error("published button not found")
     }
 
     expect(publishedButton?.classList).toContain("active")
