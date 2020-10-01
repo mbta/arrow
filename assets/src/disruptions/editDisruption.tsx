@@ -108,7 +108,7 @@ const EditDisruption = ({
   if (doRedirect) {
     return (
       <Redirect
-        to={"/disruptions/" + +encodeURIComponent(match.params.id) + "?v=draft"}
+        to={"/disruptions/" + encodeURIComponent(match.params.id) + "?v=draft"}
       />
     )
   }
