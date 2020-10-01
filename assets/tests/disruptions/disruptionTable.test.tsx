@@ -24,7 +24,7 @@ const DisruptionTableWithRouter = ({
             disruptionId: "1",
             startDate: new Date("2019-10-31"),
             endDate: new Date("2019-11-15"),
-            isActive: false,
+            isActive: true,
             adjustments: [
               new Adjustment({
                 id: "1",
@@ -63,7 +63,7 @@ const DisruptionTableWithRouter = ({
             disruptionId: "1",
             startDate: new Date("2019-10-31"),
             endDate: new Date("2019-11-16"),
-            isActive: false,
+            isActive: true,
             adjustments: [
               new Adjustment({
                 id: "1",

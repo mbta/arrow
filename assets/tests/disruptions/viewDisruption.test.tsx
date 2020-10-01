@@ -1033,7 +1033,7 @@ describe("ViewDisruption", () => {
     const draftButton = container.querySelector("#draft")
     expect(draftButton?.classList).not.toContain("active")
     expect(container.querySelector("#edit-disruption-link")).toBeNull()
-    expect(container.querySelector("#delete-disruption-button")).toBeNull()
+    expect(container.querySelector("#delete-disruption-button")).not.toBeNull()
     expect(container.textContent).toContain("8:45PM")
 
     if (draftButton) {
@@ -1065,7 +1065,7 @@ describe("ViewDisruption", () => {
     expect(readyButton?.classList).not.toContain("active")
     expect(draftButton?.classList).not.toContain("active")
     expect(container.querySelector("#edit-disruption-link")).toBeNull()
-    expect(container.querySelector("#delete-disruption-button")).toBeNull()
+    expect(container.querySelector("#delete-disruption-button")).not.toBeNull()
     expect(container.textContent).toContain("9:45PM")
   })
 
