@@ -14,6 +14,7 @@ import { JsonApiResponse, toModelObject } from "../jsonApi"
 import { Page } from "../page"
 import Disruption, { DisruptionView } from "../models/disruption"
 import Checkbox from "../checkbox"
+import { ConfirmationModal } from "../confirmationModal"
 
 type Routes =
   | "Red"
@@ -316,25 +317,21 @@ const DisruptionIndexView = ({
   }, [selectedFilteredRevisions])
 
   const markReady = React.useCallback(() => {
-    if (
-      window.confirm("Are you sure you want to mark these revisions as ready?")
-    ) {
-      const revisionIds = selectedFilteredRevisions.map((x) => x.id).join()
-      apiSend({
-        method: "POST",
-        json: JSON.stringify({
-          revision_ids: revisionIds,
-        }),
-        url: "/api/ready_notice/",
+    const revisionIds = selectedFilteredRevisions.map((x) => x.id).join()
+    apiSend({
+      method: "POST",
+      json: JSON.stringify({
+        revision_ids: revisionIds,
+      }),
+      url: "/api/ready_notice/",
+    })
+      .then(() => {
+        fetchDisruptions()
       })
-        .then(() => {
-          fetchDisruptions()
-        })
-        .catch(() => {
-          // eslint-disable-next-line no-console
-          console.log(`failed to mark revisions as ready: ${revisionIds}`)
-        })
-    }
+      .catch(() => {
+        // eslint-disable-next-line no-console
+        console.log(`failed to mark revisions as ready: ${revisionIds}`)
+      })
   }, [selectedFilteredRevisions, fetchDisruptions])
 
   const toggleRevisionSelection = React.useCallback(
@@ -480,13 +477,19 @@ const DisruptionIndexView = ({
                 <strong className="mx-3">select</strong>
               </div>
               <div className="d-flex">
-                <SecondaryButton
-                  id="mark-ready"
-                  onClick={markReady}
-                  disabled={!availableActions.includes("mark_ready")}
-                >
-                  mark as ready
-                </SecondaryButton>
+                <ConfirmationModal
+                  confirmationButtonText="yes, mark as ready"
+                  confirmationText="Are you sure you want to mark these revisions as ready?"
+                  onClickConfirm={markReady}
+                  Component={
+                    <SecondaryButton
+                      id="mark-ready"
+                      disabled={!availableActions.includes("mark_ready")}
+                    >
+                      mark as ready
+                    </SecondaryButton>
+                  }
+                />
               </div>
             </div>
           </Col>

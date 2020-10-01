@@ -705,7 +705,7 @@ describe("ViewDisruption", () => {
       )
     })
 
-    const { container } = render(
+    const { container, findByText } = render(
       <MemoryRouter initialEntries={["/disruptions/1?v=ready"]}>
         <Switch>
           <Route
@@ -735,10 +735,6 @@ describe("ViewDisruption", () => {
         })
       })
 
-    jest.spyOn(window, "confirm").mockImplementationOnce(() => {
-      return true
-    })
-
     if (deleteButton) {
       // eslint-disable-next-line @typescript-eslint/require-await
       await act(async () => {
@@ -746,6 +742,16 @@ describe("ViewDisruption", () => {
       })
     } else {
       throw new Error("delete button not found")
+    }
+
+    const confirmButton = await findByText("mark for deletion")
+    if (confirmButton) {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      await act(async () => {
+        fireEvent.click(confirmButton)
+      })
+    } else {
+      throw new Error("confirm button not found")
     }
 
     expect(apiSendSpy).toBeCalled()
@@ -820,7 +826,7 @@ describe("ViewDisruption", () => {
       )
     })
 
-    const { container } = render(
+    const { container, findByText } = render(
       <MemoryRouter initialEntries={["/disruptions/1?v=ready"]}>
         <Switch>
           <Route
@@ -846,10 +852,6 @@ describe("ViewDisruption", () => {
       })
     })
 
-    jest.spyOn(window, "confirm").mockImplementationOnce(() => {
-      return true
-    })
-
     if (deleteButton) {
       // eslint-disable-next-line @typescript-eslint/require-await
       await act(async () => {
@@ -857,6 +859,16 @@ describe("ViewDisruption", () => {
       })
     } else {
       throw new Error("delete button not found")
+    }
+
+    const confirmButton = await findByText("mark for deletion")
+    if (confirmButton) {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      await act(async () => {
+        fireEvent.click(confirmButton)
+      })
+    } else {
+      throw new Error("confirm button not found")
     }
 
     expect(apiSendSpy).toBeCalled()
@@ -1118,7 +1130,7 @@ describe("ViewDisruption", () => {
       )
     })
 
-    const { container } = render(
+    const { container, findByText } = render(
       <MemoryRouter initialEntries={["/disruptions/1?v=draft"]}>
         <Switch>
           <Route
@@ -1147,10 +1159,6 @@ describe("ViewDisruption", () => {
       })
     })
 
-    jest.spyOn(window, "confirm").mockImplementationOnce(() => {
-      return true
-    })
-
     const readyButton = container.querySelector("#mark-ready")
     if (!readyButton) {
       throw new Error("mark as ready button not found")
@@ -1161,6 +1169,15 @@ describe("ViewDisruption", () => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       fireEvent.click(readyButton)
     })
+    const confirmButton = await findByText("yes, mark as ready")
+    if (confirmButton) {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      await act(async () => {
+        fireEvent.click(confirmButton)
+      })
+    } else {
+      throw new Error("confirm button not found")
+    }
     expect(apiSendSpy).toBeCalledWith({
       url: "/api/ready_notice/",
       method: "POST",
@@ -1211,7 +1228,7 @@ describe("ViewDisruption", () => {
       )
     })
 
-    const { container } = render(
+    const { container, findByText } = render(
       <MemoryRouter initialEntries={["/disruptions/1?v=draft"]}>
         <Switch>
           <Route
@@ -1240,9 +1257,101 @@ describe("ViewDisruption", () => {
       })
     })
 
-    jest.spyOn(window, "confirm").mockImplementationOnce(() => {
-      return true
+    const readyButton = container.querySelector("#mark-ready")
+    if (!readyButton) {
+      throw new Error("mark as ready button not found")
+    }
+    expect(readyButton.textContent).toEqual("mark as ready for deletion")
+    // eslint-disable-next-line @typescript-eslint/require-await
+    await act(async () => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      fireEvent.click(readyButton)
     })
+    const confirmButton = await findByText("yes, mark as ready")
+    if (confirmButton) {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      await act(async () => {
+        fireEvent.click(confirmButton)
+      })
+    } else {
+      throw new Error("confirm button not found")
+    }
+
+    expect(apiSendSpy).toBeCalledWith({
+      url: "/api/ready_notice/",
+      method: "POST",
+      json: JSON.stringify({ revision_ids: "3" }),
+    })
+
+    expect(spy).toBeCalledTimes(2)
+  })
+
+  test("can cancel marking ready", async () => {
+    let startDate = new Date()
+    startDate.setTime(startDate.getTime() + 24 * 60 * 60 * 1000)
+    startDate = new Date(startDate.toDateString())
+
+    let endDate = new Date()
+    startDate.setTime(startDate.getTime() + 2 * 24 * 60 * 60 * 1000)
+    endDate = new Date(endDate.toDateString())
+
+    const spy = jest.spyOn(api, "apiGet").mockImplementation(() => {
+      return Promise.resolve(
+        new Disruption({
+          id: "1",
+          draftRevision: new DisruptionRevision({
+            id: "3",
+            disruptionId: "1",
+            startDate,
+            endDate,
+            isActive: false,
+            adjustments: [
+              new Adjustment({
+                id: "1",
+                routeId: "Green-D",
+                source: "gtfs_creator",
+                sourceLabel: "NewtonHighlandsKenmore",
+              }),
+            ],
+            daysOfWeek: [
+              new DayOfWeek({
+                id: "1",
+                startTime: "19:45:00",
+                dayName: "friday",
+              }),
+            ],
+            exceptions: [],
+            tripShortNames: [],
+          }),
+          revisions: [],
+        })
+      )
+    })
+
+    const { container, findByText } = render(
+      <MemoryRouter initialEntries={["/disruptions/1?v=draft"]}>
+        <Switch>
+          <Route
+            exact={true}
+            path="/disruptions/:id/"
+            component={ViewDisruption}
+          />
+          <Route exact={true} path="/" render={() => <div>Success!!!</div>} />
+        </Switch>
+      </MemoryRouter>
+    )
+
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
+
+    expect(spy).toHaveBeenCalledWith({
+      url: "/api/disruptions/1",
+      parser: toModelObject,
+      defaultResult: "error",
+    })
+
+    const apiSendSpy = jest.spyOn(api, "apiSend")
 
     const readyButton = container.querySelector("#mark-ready")
     if (!readyButton) {
@@ -1254,13 +1363,18 @@ describe("ViewDisruption", () => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       fireEvent.click(readyButton)
     })
-    expect(apiSendSpy).toBeCalledWith({
-      url: "/api/ready_notice/",
-      method: "POST",
-      json: JSON.stringify({ revision_ids: "3" }),
-    })
-
-    expect(spy).toBeCalledTimes(2)
+    const cancel = await findByText("cancel")
+    if (cancel) {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      await act(async () => {
+        fireEvent.click(cancel)
+      })
+    } else {
+      throw new Error("cancel button not found")
+    }
+    expect(apiSendSpy).not.toHaveBeenCalled()
+    expect(spy).toBeCalledTimes(1)
+    apiSendSpy.mockClear()
   })
 
   test("handles error marking draft revision as ready", async () => {
@@ -1305,7 +1419,7 @@ describe("ViewDisruption", () => {
       )
     })
 
-    const { container } = render(
+    const { container, findByText } = render(
       <MemoryRouter initialEntries={["/disruptions/1?v=draft"]}>
         <Switch>
           <Route
@@ -1332,10 +1446,6 @@ describe("ViewDisruption", () => {
       return Promise.reject()
     })
 
-    jest.spyOn(window, "confirm").mockImplementationOnce(() => {
-      return true
-    })
-
     const readyButton = container.querySelector("#mark-ready")
     if (!readyButton) {
       throw new Error("mark as ready button not found")
@@ -1346,6 +1456,15 @@ describe("ViewDisruption", () => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       fireEvent.click(readyButton)
     })
+    const confirmButton = await findByText("yes, mark as ready")
+    if (confirmButton) {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      await act(async () => {
+        fireEvent.click(confirmButton)
+      })
+    } else {
+      throw new Error("confirm button not found")
+    }
     expect(apiSendSpy).toBeCalledWith({
       url: "/api/ready_notice/",
       method: "POST",

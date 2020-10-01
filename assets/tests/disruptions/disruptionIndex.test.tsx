@@ -3,8 +3,8 @@ import { BrowserRouter } from "react-router-dom"
 import {
   render,
   fireEvent,
+  screen,
   queryByAttribute,
-  queryByText,
 } from "@testing-library/react"
 
 import {
@@ -28,8 +28,10 @@ import { DisruptionView } from "../../src/models/disruption"
 
 const DisruptionIndexWithRouter = ({
   connected = false,
+  fetchDisruptions = jest.fn(),
 }: {
   connected?: boolean
+  fetchDisruptions?: () => void
 }) => {
   return (
     <BrowserRouter>
@@ -37,7 +39,7 @@ const DisruptionIndexWithRouter = ({
         <DisruptionIndex />
       ) : (
         <DisruptionIndexView
-          fetchDisruptions={() => true}
+          fetchDisruptions={fetchDisruptions}
           disruptions={[
             new Disruption({
               publishedRevision: new DisruptionRevision({
@@ -313,57 +315,9 @@ describe("DisruptionIndexView", () => {
     )
   })
 
-  test("can toggle between table and calendar view", async () => {
-    jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
-      return Promise.resolve([
-        new Disruption({
-          id: "1",
-          revisions: [
-            new DisruptionRevision({
-              id: "1",
-              disruptionId: "1",
-              startDate: new Date("2019-10-31"),
-              endDate: new Date("2019-11-15"),
-              isActive: true,
-              adjustments: [
-                new Adjustment({
-                  id: "1",
-                  routeId: "Red",
-                  sourceLabel: "AlewifeHarvard",
-                }),
-              ],
-              daysOfWeek: [
-                new DayOfWeek({
-                  id: "1",
-                  startTime: "20:45:00",
-                  dayName: "friday",
-                }),
-                new DayOfWeek({
-                  id: "2",
-                  dayName: "saturday",
-                }),
-                new DayOfWeek({
-                  id: "3",
-                  dayName: "sunday",
-                }),
-              ],
-              exceptions: [],
-              tripShortNames: [],
-              status: DisruptionView.Draft,
-            }),
-          ],
-        }),
-      ])
-    })
-    // eslint-disable-next-line @typescript-eslint/require-await
-    const container = document.createElement("div")
-    document.body.appendChild(container)
-
-    // eslint-disable-next-line @typescript-eslint/require-await
-    await act(async () => {
-      ReactDOM.render(<DisruptionIndexWithRouter connected />, container)
-    })
-    expect(queryByText(container, "time period")).not.toBeNull()
+  test("can toggle between table and calendar view", () => {
+    const { container } = render(<DisruptionIndexWithRouter />)
+    expect(screen.queryByText("time period")).not.toBeNull()
     expect(queryByAttribute("id", container, "calendar")).toBeNull()
 
     const toggleButton = container.querySelector("#view-toggle")
@@ -373,20 +327,14 @@ describe("DisruptionIndexView", () => {
     expect(toggleButton.textContent).toEqual("⬒ calendar view")
 
     fireEvent.click(toggleButton)
-    expect(queryByText(container, "time period")).toBeNull()
+    expect(screen.queryByText("time period")).toBeNull()
     expect(queryByAttribute("id", container, "calendar")).not.toBeNull()
     expect(toggleButton.textContent).toEqual("⬒ list view")
-    expect(
-      container.querySelector("#actions")?.hasAttribute("disabled")
-    ).toEqual(true)
 
     fireEvent.click(toggleButton)
-    expect(queryByText(container, "time period")).not.toBeNull()
+    expect(screen.queryByText("time period")).not.toBeNull()
     expect(queryByAttribute("id", container, "calendar")).toBeNull()
     expect(toggleButton.textContent).toEqual("⬒ calendar view")
-    expect(
-      container.querySelector("#actions")?.hasAttribute("disabled")
-    ).toEqual(false)
   })
 })
 
@@ -652,226 +600,6 @@ describe("DisruptionIndexConnected", () => {
       expect(dataColumns[0].textContent).toEqual(expected[index][0])
       expect(dataColumns[1].textContent).toEqual(expected[index][1])
     })
-  })
-
-  test("can mark multiple revisions as ready", async () => {
-    window.confirm = jest.fn(() => true)
-    const disruptions = [
-      new Disruption({
-        id: "1",
-        publishedRevision: new DisruptionRevision({
-          id: "1",
-          disruptionId: "1",
-          startDate: new Date("2020-01-15"),
-          endDate: new Date("2020-01-30"),
-          isActive: false,
-          adjustments: [
-            new Adjustment({
-              id: "1",
-              routeId: "Green-D",
-              source: "gtfs_creator",
-              sourceLabel: "NewtonHighlandsKenmore",
-            }),
-          ],
-          daysOfWeek: [],
-          exceptions: [],
-          tripShortNames: [],
-          status: DisruptionView.Published,
-        }),
-        revisions: [
-          new DisruptionRevision({
-            id: "1",
-            disruptionId: "1",
-            startDate: new Date("2020-01-15"),
-            endDate: new Date("2020-01-30"),
-            isActive: false,
-            adjustments: [
-              new Adjustment({
-                id: "1",
-                routeId: "Green-D",
-                source: "gtfs_creator",
-                sourceLabel: "NewtonHighlandsKenmore",
-              }),
-            ],
-            daysOfWeek: [],
-            exceptions: [],
-            tripShortNames: [],
-          }),
-        ],
-      }),
-      new Disruption({
-        id: "2",
-        readyRevision: new DisruptionRevision({
-          id: "2",
-          disruptionId: "2",
-          startDate: new Date("2020-01-20"),
-          endDate: new Date("2020-01-25"),
-          isActive: false,
-          adjustments: [
-            new Adjustment({
-              id: "1",
-              routeId: "Red",
-              source: "gtfs_creator",
-              sourceLabel: "AlewifeHarvard",
-            }),
-          ],
-          daysOfWeek: [],
-          exceptions: [],
-          tripShortNames: [],
-          status: DisruptionView.Published,
-        }),
-        revisions: [
-          new DisruptionRevision({
-            id: "3",
-            disruptionId: "2",
-            startDate: new Date("2020-01-20"),
-            endDate: new Date("2020-01-28"),
-            isActive: false,
-            adjustments: [
-              new Adjustment({
-                id: "1",
-                routeId: "Red",
-                source: "gtfs_creator",
-                sourceLabel: "AlewifeHarvard",
-              }),
-            ],
-            daysOfWeek: [],
-            exceptions: [],
-            tripShortNames: [],
-          }),
-        ],
-      }),
-      new Disruption({
-        id: "3",
-        readyRevision: new DisruptionRevision({
-          id: "4",
-          disruptionId: "3",
-          startDate: new Date("2020-02-20"),
-          endDate: new Date("2020-02-25"),
-          isActive: false,
-          adjustments: [
-            new Adjustment({
-              id: "1",
-              routeId: "Orange",
-              source: "gtfs_creator",
-              sourceLabel: "Wellington",
-            }),
-          ],
-          daysOfWeek: [],
-          exceptions: [],
-          tripShortNames: [],
-          status: DisruptionView.Ready,
-        }),
-        revisions: [
-          new DisruptionRevision({
-            id: "5",
-            disruptionId: "3",
-            startDate: new Date("2020-02-21"),
-            endDate: new Date("2020-02-225"),
-            isActive: false,
-            adjustments: [
-              new Adjustment({
-                id: "1",
-                routeId: "Orange",
-                source: "gtfs_creator",
-                sourceLabel: "Wellington",
-              }),
-            ],
-            daysOfWeek: [],
-            exceptions: [],
-            tripShortNames: [],
-          }),
-        ],
-      }),
-    ]
-    const getSpy = jest.spyOn(api, "apiGet").mockImplementation(() => {
-      return Promise.resolve(disruptions)
-    })
-    const sendSpy = jest.spyOn(api, "apiSend").mockImplementation(() => {
-      return Promise.resolve({
-        ok: {},
-      })
-    })
-    const container = document.createElement("div")
-    document.body.appendChild(container)
-
-    // eslint-disable-next-line @typescript-eslint/require-await
-    await act(async () => {
-      ReactDOM.render(<DisruptionIndexWithRouter connected />, container)
-    })
-    expect(getSpy).toHaveBeenCalledTimes(1)
-    const actionsButton = container.querySelector("#actions")
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    fireEvent.click(actionsButton!)
-    let checkboxes: NodeListOf<HTMLInputElement> = container.querySelectorAll(
-      "tr input[type=checkbox]"
-    )
-    expect(checkboxes.length).toEqual(2)
-    checkboxes.forEach((x: HTMLInputElement) => {
-      expect(x.checked).toEqual(false)
-    })
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    fireEvent.click(container.querySelector('tr[data-revision-id="5"] input')!)
-    expect(
-      (container.querySelector(
-        'tr[data-revision-id="5"] input[type=checkbox]'
-      ) as HTMLInputElement).checked
-    ).toEqual(true)
-
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    fireEvent.click(container.querySelector("#toggle-all")!)
-    checkboxes.forEach((x: HTMLInputElement) => {
-      expect(x.checked).toEqual(false)
-    })
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    fireEvent.click(container.querySelector("#toggle-all")!)
-    expect(container.querySelectorAll("tr input:checked").length).toEqual(2)
-    checkboxes.forEach((x: HTMLInputElement) => {
-      expect(x.checked).toEqual(true)
-    })
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    fireEvent.click(container.querySelector("#actions")!)
-    expect(container.querySelectorAll("tr input").length).toEqual(0)
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    fireEvent.click(container.querySelector("#actions")!)
-    checkboxes = container.querySelectorAll("tr input")
-    expect(checkboxes.length).toEqual(2)
-    checkboxes.forEach((x: HTMLInputElement) => {
-      expect(x.checked).toEqual(false)
-    })
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    fireEvent.click(container.querySelector("#toggle-all")!)
-    expect(container.querySelectorAll("tr input:checked").length).toEqual(2)
-    checkboxes.forEach((x: HTMLInputElement) => {
-      expect(x.checked).toEqual(true)
-    })
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    fireEvent.click(container.querySelector("#route-filter-toggle-Orange")!)
-    expect(container.querySelectorAll("tr input:checked").length).toEqual(1)
-    // eslint-disable-next-line @typescript-eslint/require-await
-    await act(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      fireEvent.click(container.querySelector("#mark-ready")!)
-    })
-    expect(sendSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        url: "/api/ready_notice/",
-        json: JSON.stringify({ revision_ids: "5" }),
-        method: "POST",
-      })
-    )
-    expect(getSpy).toHaveBeenCalledTimes(2)
-    sendSpy.mockClear()
-    const sendSpyFail = jest.spyOn(api, "apiSend").mockImplementation(() => {
-      return Promise.reject()
-    })
-    // eslint-disable-next-line @typescript-eslint/require-await
-    await act(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      fireEvent.click(container.querySelector("#mark-ready")!)
-    })
-    expect(sendSpyFail).toBeCalledTimes(1)
-    expect(getSpy).toHaveBeenCalledTimes(2)
   })
 
   test("doesn't render deleted published disruption", async () => {
