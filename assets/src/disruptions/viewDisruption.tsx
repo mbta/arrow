@@ -309,45 +309,6 @@ const ViewDisruptionForm = ({
                           </div>
                         </div>
                       )}
-                      {view === DisruptionView.Draft && (
-                        <SecondaryButton
-                          id="mark-ready"
-                          onClick={() => {
-                            if (
-                              window.confirm(
-                                "Are you sure you want to mark these revisions as ready?"
-                              )
-                            ) {
-                              apiSend({
-                                method: "POST",
-                                json: JSON.stringify({
-                                  revision_ids: disruptionRevision.id,
-                                }),
-                                url: "/api/ready_notice/",
-                              })
-                                .then(async () => {
-                                  await fetchDisruption()
-                                  history.replace(
-                                    "/disruptions/" +
-                                      encodeURIComponent(disruptionId) +
-                                      "?v=ready"
-                                  )
-                                })
-                                .catch(() => {
-                                  // eslint-disable-next-line no-console
-                                  console.log(
-                                    `failed to mark revision as ready: ${disruptionRevision.id}`
-                                  )
-                                })
-                            }
-                          }}
-                        >
-                          {"mark as ready" +
-                            (disruptionRevision.isActive
-                              ? ""
-                              : " for deletion")}
-                        </SecondaryButton>
-                      )}
                     </Col>
                     <Col md={2}>
                       {view === DisruptionView.Draft &&
@@ -362,6 +323,54 @@ const ViewDisruptionForm = ({
                             </PrimaryButton>
                           </Link>
                         )}
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col>
+                      {view === DisruptionView.Draft && (
+                        <div>
+                          <hr className="my-3" />
+                          <div className="d-flex justify-content-center">
+                            <SecondaryButton
+                              id="mark-ready"
+                              onClick={() => {
+                                if (
+                                  window.confirm(
+                                    "Are you sure you want to mark these revisions as ready?"
+                                  )
+                                ) {
+                                  apiSend({
+                                    method: "POST",
+                                    json: JSON.stringify({
+                                      revision_ids: disruptionRevision.id,
+                                    }),
+                                    url: "/api/ready_notice/",
+                                  })
+                                    .then(async () => {
+                                      await fetchDisruption()
+                                      history.replace(
+                                        "/disruptions/" +
+                                          encodeURIComponent(disruptionId) +
+                                          "?v=ready"
+                                      )
+                                    })
+                                    .catch(() => {
+                                      // eslint-disable-next-line no-console
+                                      console.log(
+                                        `failed to mark revision as ready: ${disruptionRevision.id}`
+                                      )
+                                    })
+                                }
+                              }}
+                            >
+                              {"mark as ready" +
+                                (disruptionRevision.isActive
+                                  ? ""
+                                  : " for deletion")}
+                            </SecondaryButton>
+                          </div>
+                        </div>
+                      )}
                     </Col>
                   </Row>
                 </div>
