@@ -162,7 +162,7 @@ const ViewDisruptionForm = ({
                       setDoRedirect={setDoRedirect}
                     />
                   ) : (
-                    <div className="text-primary">marked for deletion</div>
+                    <div>marked for deletion</div>
                   ))}
               </div>
               {disruptionRevision && (
