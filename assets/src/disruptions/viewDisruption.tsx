@@ -162,7 +162,7 @@ const ViewDisruptionForm = ({
                       setDoRedirect={setDoRedirect}
                     />
                   ) : (
-                    <div>marked for deletion</div>
+                    <div>Marked for deletion</div>
                   ))}
               </div>
               {disruptionRevision && (
@@ -249,66 +249,83 @@ const ViewDisruptionForm = ({
               {disruptionRevision ? (
                 <div>
                   <Row>
+                    {!disruptionRevision.isActive && (
+                      <Col xs={12}>
+                        <div className="m-disruption-details__deletion-indicator">
+                          <span className="text-blue-grey mr-3">
+                            {"\uE14E"}
+                          </span>
+                          <strong>Note</strong> This disruption is marked for
+                          deletion
+                        </div>
+                      </Col>
+                    )}
                     <Col md={10}>
-                      <div className="mb-3">
-                        <h4>date range</h4>
-                        <div className="pl-3">
-                          {formatDisruptionDate(
-                            disruptionRevision.startDate || null
-                          )}{" "}
-                          &ndash;{" "}
-                          {formatDisruptionDate(
-                            disruptionRevision.endDate || null
-                          )}
-                        </div>
-                      </div>
-                      <div className="mb-3">
-                        <h4>time period</h4>
-                        <div className="pl-3">
-                          {disruptionRevision.daysOfWeek.map((d) => {
-                            return (
-                              <div key={d.id}>
-                                <div>
-                                  <strong>
-                                    {d.dayName.charAt(0).toUpperCase() +
-                                      d.dayName.slice(1)}
-                                  </strong>
-                                </div>
-                                <div>
-                                  {timePeriodDescription(
-                                    d.startTime,
-                                    d.endTime
-                                  )}
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                      {disruptionRevision.tripShortNames.length > 0 && (
+                      <div
+                        className={
+                          disruptionRevision.isActive ? "" : "text-muted"
+                        }
+                      >
                         <div className="mb-3">
-                          <h4>trips</h4>
+                          <h4>date range</h4>
                           <div className="pl-3">
-                            {disruptionRevision.tripShortNames
-                              .map((x) => x.tripShortName)
-                              .join(", ")}
+                            {formatDisruptionDate(
+                              disruptionRevision.startDate || null
+                            )}{" "}
+                            &ndash;{" "}
+                            {formatDisruptionDate(
+                              disruptionRevision.endDate || null
+                            )}
                           </div>
                         </div>
-                      )}
-                      {exceptionDates.length > 0 && (
                         <div className="mb-3">
-                          <h4>exceptions</h4>
+                          <h4>time period</h4>
                           <div className="pl-3">
-                            {exceptionDates.map((exc) => {
+                            {disruptionRevision.daysOfWeek.map((d) => {
                               return (
-                                <div key={exc.toISOString()}>
-                                  {formatDisruptionDate(exc)}
+                                <div key={d.id}>
+                                  <div>
+                                    <strong>
+                                      {d.dayName.charAt(0).toUpperCase() +
+                                        d.dayName.slice(1)}
+                                    </strong>
+                                  </div>
+                                  <div>
+                                    {timePeriodDescription(
+                                      d.startTime,
+                                      d.endTime
+                                    )}
+                                  </div>
                                 </div>
                               )
                             })}
                           </div>
                         </div>
-                      )}
+                        {disruptionRevision.tripShortNames.length > 0 && (
+                          <div className="mb-3">
+                            <h4>trips</h4>
+                            <div className="pl-3">
+                              {disruptionRevision.tripShortNames
+                                .map((x) => x.tripShortName)
+                                .join(", ")}
+                            </div>
+                          </div>
+                        )}
+                        {exceptionDates.length > 0 && (
+                          <div className="mb-3">
+                            <h4>exceptions</h4>
+                            <div className="pl-3">
+                              {exceptionDates.map((exc) => {
+                                return (
+                                  <div key={exc.toISOString()}>
+                                    {formatDisruptionDate(exc)}
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </Col>
                     <Col md={2}>
                       {view === DisruptionView.Draft &&

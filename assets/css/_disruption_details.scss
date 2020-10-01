@@ -59,3 +59,11 @@
     border-bottom-right-radius: 0.25rem;
   }
 }
+
+.m-disruption-details__deletion-indicator {
+  background-color: $light-grey;
+  border: 1px solid $blue-grey;
+  border-radius: 0.25rem;
+  padding: 1rem;
+  margin: 1rem 0;
+}
