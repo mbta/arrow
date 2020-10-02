@@ -56,7 +56,10 @@ describe("Disruption", () => {
               data: { id: "1", type: "disruption_revision" },
             },
             revisions: {
-              data: [{ id: "1", type: "disruption_revision" }],
+              data: [
+                { id: "2", type: "disruption_revision" },
+                { id: "1", type: "disruption_revision" },
+              ],
             },
           },
         },
@@ -114,6 +117,41 @@ describe("Disruption", () => {
             ],
             tripShortNames: [],
           }),
+          "disruption_revision-2": new DisruptionRevision({
+            id: "2",
+            startDate: new Date(2019, 11, 20),
+            endDate: new Date(2020, 0, 12),
+            isActive: true,
+            adjustments: [
+              new Adjustment({
+                id: "15",
+                routeId: "Green-D",
+                sourceLabel: "KenmoreReservoir",
+              }),
+            ],
+            daysOfWeek: [
+              new DayOfWeek({
+                id: "1",
+                startTime: "19:45:00",
+                dayName: "friday",
+              }),
+              new DayOfWeek({
+                id: "2",
+                dayName: "saturday",
+              }),
+              new DayOfWeek({
+                id: "3",
+                dayName: "sunday",
+              }),
+            ],
+            exceptions: [
+              new Exception({
+                id: "1",
+                excludedDate: new Date(2019, 11, 29),
+              }),
+            ],
+            tripShortNames: [],
+          }),
           "exception-1": new Exception({
             id: "1",
             excludedDate: new Date(2019, 11, 29),
@@ -124,6 +162,43 @@ describe("Disruption", () => {
       new Disruption({
         id: "1",
         lastPublishedAt: new Date("2020-09-30T12:00:00Z"),
+        draftRevision: new DisruptionRevision({
+          id: "2",
+          disruptionId: "1",
+          startDate: new Date(2019, 11, 20),
+          endDate: new Date(2020, 0, 12),
+          isActive: true,
+          adjustments: [
+            new Adjustment({
+              id: "15",
+              routeId: "Green-D",
+              sourceLabel: "KenmoreReservoir",
+            }),
+          ],
+          daysOfWeek: [
+            new DayOfWeek({
+              id: "1",
+              startTime: "19:45:00",
+              dayName: "friday",
+            }),
+            new DayOfWeek({
+              id: "2",
+              dayName: "saturday",
+            }),
+            new DayOfWeek({
+              id: "3",
+              dayName: "sunday",
+            }),
+          ],
+          exceptions: [
+            new Exception({
+              id: "1",
+              excludedDate: new Date(2019, 11, 29),
+            }),
+          ],
+          tripShortNames: [],
+          status: 0,
+        }),
         readyRevision: new DisruptionRevision({
           id: "1",
           disruptionId: "1",
@@ -236,6 +311,43 @@ describe("Disruption", () => {
             tripShortNames: [],
             status: 2,
           }),
+          new DisruptionRevision({
+            id: "2",
+            disruptionId: "1",
+            startDate: new Date(2019, 11, 20),
+            endDate: new Date(2020, 0, 12),
+            isActive: true,
+            adjustments: [
+              new Adjustment({
+                id: "15",
+                routeId: "Green-D",
+                sourceLabel: "KenmoreReservoir",
+              }),
+            ],
+            daysOfWeek: [
+              new DayOfWeek({
+                id: "1",
+                startTime: "19:45:00",
+                dayName: "friday",
+              }),
+              new DayOfWeek({
+                id: "2",
+                dayName: "saturday",
+              }),
+              new DayOfWeek({
+                id: "3",
+                dayName: "sunday",
+              }),
+            ],
+            exceptions: [
+              new Exception({
+                id: "1",
+                excludedDate: new Date(2019, 11, 29),
+              }),
+            ],
+            tripShortNames: [],
+            status: 0,
+          }),
         ],
       })
     )
@@ -267,6 +379,16 @@ describe("Disruption", () => {
 describe("revisionFromDisruptionForView", () => {
   const testDisruption = new Disruption({
     id: "1",
+    publishedRevision: new DisruptionRevision({
+      id: "1",
+      startDate: new Date(2020, 0, 1),
+      endDate: new Date(2020, 1, 2),
+      isActive: true,
+      adjustments: [],
+      daysOfWeek: [],
+      exceptions: [],
+      tripShortNames: [],
+    }),
     readyRevision: new DisruptionRevision({
       id: "2",
       startDate: new Date(2020, 0, 1),
@@ -348,4 +470,87 @@ describe("revisionFromDisruptionForView", () => {
       })
     )
   })
+
+  test("gets published revision", () => {
+    expect(
+      Disruption.revisionFromDisruptionForView(
+        testDisruption,
+        DisruptionView.Published
+      )
+    ).toEqual(
+      new DisruptionRevision({
+        id: "1",
+        startDate: new Date(2020, 0, 1),
+        endDate: new Date(2020, 1, 2),
+        isActive: true,
+        adjustments: [],
+        daysOfWeek: [],
+        exceptions: [],
+        tripShortNames: [],
+      })
+    )
+  })
+})
+
+describe("getUniqueRevisions", () => {
+  const revision = new DisruptionRevision({
+    id: "1",
+    isActive: true,
+    adjustments: [],
+    exceptions: [],
+    daysOfWeek: [],
+    tripShortNames: [],
+  })
+  const disruption = new Disruption({
+    draftRevision: revision,
+    readyRevision: revision,
+    publishedRevision: revision,
+    revisions: [revision],
+  })
+  test.each([
+    [disruption, "published", "1"],
+    [disruption, "ready", null],
+    [disruption, "draft", null],
+    [
+      new Disruption({
+        ...disruption,
+        publishedRevision: new DisruptionRevision({ ...revision, id: "2" }),
+      }),
+      "ready",
+      "1",
+    ],
+    [
+      new Disruption({
+        ...disruption,
+        readyRevision: new DisruptionRevision({ ...revision, id: "2" }),
+      }),
+      "draft",
+      null,
+    ],
+    [
+      new Disruption({
+        ...disruption,
+        publishedRevision: new DisruptionRevision({ ...revision, id: "2" }),
+      }),
+      "draft",
+      null,
+    ],
+    [
+      new Disruption({
+        ...disruption,
+        publishedRevision: new DisruptionRevision({ ...revision, id: "2" }),
+        readyRevision: new DisruptionRevision({ ...revision, id: "2" }),
+      }),
+      "draft",
+      "1",
+    ],
+  ])(
+    "returns unique revisions",
+    (dis: Disruption, view: string, expectedId: string | null) => {
+      const rev = dis.getUniqueRevisions()[
+        view as "published" | "ready" | "draft"
+      ]
+      expect(rev && rev.id).toEqual(expectedId)
+    }
+  )
 })

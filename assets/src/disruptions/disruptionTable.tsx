@@ -117,6 +117,7 @@ interface DisruptionTableRow {
   daysAndTimes: string
   selectable: boolean
   selected: boolean
+  isActive: boolean
 }
 
 const DisruptionTableRow = ({
@@ -172,7 +173,7 @@ const DisruptionTableRow = ({
           ))}
         </td>
       )}
-      {!!current.startDate && !!current.endDate && (
+      {!!current.startDate && !!current.endDate && current.isActive ? (
         <td>
           <div
             className={
@@ -193,6 +194,8 @@ const DisruptionTableRow = ({
             {formatDisruptionDate(current.endDate)}
           </div>
         </td>
+      ) : (
+        <td>Marked for deletion</td>
       )}
       <td
         className={
@@ -204,16 +207,17 @@ const DisruptionTableRow = ({
             : "text-muted"
         }
       >
-        {current.exceptions.length}
+        {current.isActive && current.exceptions.length}
       </td>
       <td
         className={
           isDiff(base?.daysAndTimes, current.daysAndTimes) ? "" : "text-muted"
         }
       >
-        {current.daysAndTimes.split(", ").map((line, ix) => (
-          <div key={ix}>{line}</div>
-        ))}
+        {current.isActive &&
+          current.daysAndTimes
+            .split(", ")
+            .map((line, ix) => <div key={ix}>{line}</div>)}
       </td>
       <td>
         {
@@ -230,7 +234,11 @@ const DisruptionTableRow = ({
       <td>
         <Link
           to={`/disruptions/${current.disruptionId}?v=${
-            current.status === DisruptionView.Draft ? "draft" : ""
+            current.status === DisruptionView.Draft
+              ? "draft"
+              : current.status === DisruptionView.Ready
+              ? "ready"
+              : "published"
           }`}
         >
           {current.disruptionId}
@@ -278,6 +286,7 @@ const DisruptionTable = ({
             return acc + curr.sourceLabel
           }, ""),
           adjustments: revision.adjustments,
+          isActive: revision.isActive,
           selected,
           selectable,
         }

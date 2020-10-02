@@ -24,7 +24,7 @@ const DisruptionTableWithRouter = ({
             disruptionId: "1",
             startDate: new Date("2019-10-31"),
             endDate: new Date("2019-11-15"),
-            isActive: false,
+            isActive: true,
             adjustments: [
               new Adjustment({
                 id: "1",
@@ -63,7 +63,7 @@ const DisruptionTableWithRouter = ({
             disruptionId: "1",
             startDate: new Date("2019-10-31"),
             endDate: new Date("2019-11-16"),
-            isActive: false,
+            isActive: true,
             adjustments: [
               new Adjustment({
                 id: "1",
@@ -263,8 +263,9 @@ describe("DisruptionTable", () => {
     )
     expect(firstRowData.item(4).textContent).toEqual("published")
     expect(
-      firstRowData.item(5).querySelectorAll("a[href='/disruptions/2?v=']")
-        .length
+      firstRowData
+        .item(5)
+        .querySelectorAll("a[href='/disruptions/2?v=published']").length
     ).toEqual(1)
     let activeSortToggle = container.querySelector(
       ".m-disruption-table__sortable.active"

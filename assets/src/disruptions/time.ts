@@ -241,7 +241,7 @@ const dayOfWeekTimeRangesToDayOfWeeks = (
   return daysOfWeek
 }
 
-const timeOrEndOfService = (
+const timeOrStartOrEndOfService = (
   timeString?: string,
   end: "start" | "end" = "start"
 ): string => {
@@ -291,14 +291,22 @@ const getDaysType = (days: DayName[]): DaysType => {
   return consecutive ? "consecutive" : "other"
 }
 
+const timePeriodDescription = (
+  startTime: string | undefined,
+  endTime: string | undefined
+) => {
+  return `${timeOrStartOrEndOfService(startTime)} - ${timeOrStartOrEndOfService(
+    endTime,
+    "end"
+  )}`
+}
+
 const describeSingleDay = ({
   dayName,
   startTime,
   endTime,
 }: DayOfWeek): string =>
-  `${dayToAbbr(dayName)}, ${timeOrEndOfService(
-    startTime
-  )} - ${timeOrEndOfService(endTime, "end")}`
+  `${dayToAbbr(dayName)}, ${timePeriodDescription(startTime, endTime)}`
 
 const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
   if (daysAndTimes.length === 1) {
@@ -332,14 +340,16 @@ const parseDaysAndTimes = (daysAndTimes: DayOfWeek[]): string => {
   } else if (timeType === "daily") {
     return `${dayToAbbr(first.dayName)} - ${dayToAbbr(
       last.dayName
-    )}, ${timeOrEndOfService(first.startTime)} - ${timeOrEndOfService(
-      first.endTime,
+    )}, ${timeOrStartOrEndOfService(
+      first.startTime
+    )} - ${timeOrStartOrEndOfService(first.endTime, "end")}`
+  } else {
+    return `${dayToAbbr(first.dayName)} ${timeOrStartOrEndOfService(
+      first.startTime
+    )} - ${dayToAbbr(last.dayName)} ${timeOrStartOrEndOfService(
+      last.endTime,
       "end"
     )}`
-  } else {
-    return `${dayToAbbr(first.dayName)} ${timeOrEndOfService(
-      first.startTime
-    )} - ${dayToAbbr(last.dayName)} ${timeOrEndOfService(last.endTime, "end")}`
   }
 }
 
@@ -357,4 +367,6 @@ export {
   dayOfWeekTimeRangesToDayOfWeeks,
   parseDaysAndTimes,
   dayToIx,
+  timeOrStartOrEndOfService,
+  timePeriodDescription,
 }
