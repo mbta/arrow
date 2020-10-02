@@ -17,10 +17,9 @@ import Disruption, { DisruptionView } from "../models/disruption"
 import { useDisruptionViewParam } from "./viewToggle"
 import Row from "react-bootstrap/Row"
 import Col from "react-bootstrap/Col"
-import Icon from "../icons"
-import { getRouteIcon } from "./disruptionIndex"
 import { formatDisruptionDate } from "./disruptions"
 import { ConfirmationModal } from "../confirmationModal"
+import { AdjustmentSummary } from "./adjustmentSummary"
 
 interface TParams {
   id: string
@@ -158,23 +157,9 @@ const ViewDisruptionForm = ({
                   ) : null)}
               </div>
               {disruptionRevision && (
-                <div className="m-disruption-details__adjustments">
-                  <ul className="m-disruption-details__adjustment-list">
-                    {disruptionRevision.adjustments.map((adj) => (
-                      <li
-                        key={adj.id}
-                        className="m-disruption-details__adjustment-item"
-                      >
-                        <Icon
-                          className="mr-3"
-                          type={getRouteIcon(adj.routeId)}
-                          size="sm"
-                        />
-                        {adj.sourceLabel}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <AdjustmentSummary
+                  adjustments={disruptionRevision.adjustments}
+                />
               )}
               <div>
                 <div className="mb-2">

@@ -36,7 +36,15 @@ hr {
   border-top: 1px solid $black;
 }
 
+.light-hr {
+  border-top: 1px solid #9fa9c3;
+}
+
 .btn-link:hover,
 a:hover {
   text-decoration: none;
+}
+
+h4 {
+  font-weight: 700;
 }

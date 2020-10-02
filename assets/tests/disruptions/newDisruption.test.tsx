@@ -215,50 +215,6 @@ describe("NewDisruption", () => {
     expect(valueElements[0].textContent).toEqual("Broadway--Kendall/MIT")
   })
 
-  test("preview disruption", async () => {
-    const { container } = render(<NewDisruption />)
-
-    await waitForElementToBeRemoved(
-      document.querySelector("#loading-indicator")
-    )
-
-    const previewButton = container.querySelector("#preview-disruption-button")
-
-    if (previewButton) {
-      fireEvent.click(previewButton)
-    } else {
-      throw new Error("preview button not found")
-    }
-
-    expect(screen.getByText("When")).not.toBeNull()
-  })
-
-  test("can go back to edit from preview", async () => {
-    const { container } = render(<NewDisruption />)
-
-    await waitForElementToBeRemoved(
-      document.querySelector("#loading-indicator")
-    )
-
-    const previewButton = container.querySelector("#preview-disruption-button")
-
-    if (previewButton) {
-      fireEvent.click(previewButton)
-    } else {
-      throw new Error("preview button not found")
-    }
-
-    const backToEditLink = container.querySelector("#back-to-edit-link")
-
-    if (backToEditLink) {
-      fireEvent.click(backToEditLink)
-    } else {
-      throw new Error("back to edit link not found")
-    }
-
-    expect(screen.queryByText("When")).toBeNull()
-  })
-
   test("handles error fetching / parsing adjustments", async () => {
     apiCallSpy = jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
       return Promise.resolve("error")
@@ -333,14 +289,9 @@ describe("NewDisruption", () => {
       ["Fairmount--Newmarket"]
     )
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     await act(async () => {
-      withElement(container, "#preview-disruption-button", (el) => {
-        fireEvent.click(el)
-      })
-
-      await screen.findByText("create disruption")
-
-      withElement(container, "#disruption-preview-create", (el) => {
+      withElement(container, "#save-disruption-button", (el) => {
         fireEvent.click(el)
       })
     })
@@ -381,15 +332,38 @@ describe("NewDisruption", () => {
         document.querySelector("#loading-indicator")
       )
 
-      withElement(container, "#preview-disruption-button", (el) => {
-        fireEvent.click(el)
-      })
-
-      withElement(container, "#disruption-preview-create", (el) => {
+      withElement(container, "#save-disruption-button", (el) => {
         fireEvent.click(el)
       })
     })
 
     await screen.findByText("Data is all wrong")
+  })
+
+  test("canceling sends back to the home page", async () => {
+    render(
+      <MemoryRouter initialEntries={["/disruptions/new", "/previouspage"]}>
+        <Switch>
+          <Route
+            exact={true}
+            path="/"
+            render={() => <div>This is the homepage</div>}
+          />
+          <Route
+            exact={true}
+            path="/disruptions/new"
+            component={NewDisruption}
+          />
+        </Switch>
+      </MemoryRouter>
+    )
+
+    await waitForElementToBeRemoved(
+      document.querySelector("#loading-indicator")
+    )
+
+    fireEvent.click(screen.getByText("cancel"))
+    fireEvent.click(screen.getByText("discard changes"))
+    expect(screen.queryByText("This is the homepage")).not.toBeNull()
   })
 })

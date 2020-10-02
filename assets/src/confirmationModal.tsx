@@ -6,6 +6,7 @@ interface ConfirmationModalProps {
   onClickConfirm: () => void
   confirmationText: string
   confirmationButtonText: string
+  cancelButtonText?: string
   buttonIdentifier?: string
   Component: JSX.Element
 }
@@ -13,6 +14,7 @@ interface ConfirmationModalProps {
 const ConfirmationModal = ({
   confirmationText,
   confirmationButtonText,
+  cancelButtonText,
   buttonIdentifier,
   onClickConfirm,
   Component,
@@ -33,7 +35,7 @@ const ConfirmationModal = ({
                 className="w-100"
                 onClick={() => setModalOpen(false)}
               >
-                cancel
+                {cancelButtonText || "cancel"}
               </SecondaryButton>
             </div>
             <div className="w-50 ml-3">

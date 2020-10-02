@@ -3,23 +3,27 @@
 .m-checkbox {
   display: flex;
   align-items: center;
-  justify-content: center;
 
   input {
     @include sr-only;
   }
 
   label {
-    background-image: url("/images/checkbox-empty.png");
-    background-size: 100%;
-    cursor: pointer;
-    display: inline-block;
-    height: 1rem;
-    margin-bottom: 0;
-    width: 1rem;
+    .m-checkbox__image {
+      background-image: url("/images/checkbox-empty.png");
+      background-size: 100%;
+      cursor: pointer;
+      display: inline-block;
+      height: 1rem;
+      margin-bottom: 0;
+      margin-right: 0.5rem;
+      width: 1rem;
+    }
   }
 
   input:checked + label {
-    background-image: url("/images/checkbox-filled.png");
+    .m-checkbox__image {
+      background-image: url("/images/checkbox-filled.png");
+    }
   }
 }
