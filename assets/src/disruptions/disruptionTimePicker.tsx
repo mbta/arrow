@@ -2,8 +2,7 @@ import * as React from "react"
 import Col from "react-bootstrap/Col"
 import Form from "react-bootstrap/Form"
 import Row from "react-bootstrap/Row"
-
-import DatePicker from "../datePicker"
+import Checkbox from "../checkbox"
 
 import {
   Time,
@@ -12,48 +11,8 @@ import {
   PeriodOptions,
   TimeRange,
   DayOfWeekTimeRanges,
-  isEmpty,
 } from "./time"
 import { indexToDayOfWeekString } from "./disruptions"
-
-interface DisruptionDateRangeProps {
-  fromDate: Date | null
-  setFromDate: React.Dispatch<Date | null>
-  toDate: Date | null
-  setToDate: React.Dispatch<Date | null>
-}
-
-const DisruptionDateRange = ({
-  fromDate,
-  setFromDate,
-  toDate,
-  setToDate,
-}: DisruptionDateRangeProps): JSX.Element => {
-  return (
-    <Form.Group>
-      <div className="m-forms__sublegend">Select date range</div>
-      <DatePicker
-        id="disruption-date-range-start"
-        selected={fromDate}
-        onChange={(date) => {
-          if (!Array.isArray(date)) {
-            setFromDate(date)
-          }
-        }}
-      />
-      <span className="px-3">until</span>
-      <DatePicker
-        id="disruption-date-range-end"
-        selected={toDate}
-        onChange={(date) => {
-          if (!Array.isArray(date)) {
-            setToDate(date)
-          }
-        }}
-      />
-    </Form.Group>
-  )
-}
 
 interface DisruptionDaysOfWeekProps {
   disruptionDaysOfWeek: DayOfWeekTimeRanges
@@ -78,8 +37,8 @@ const DisruptionDaysOfWeek = ({
 
   return (
     <Form.Group>
-      <div className="m-forms__sublegend">Select days of the week</div>
-      {["M", "T", "W", "Th", "F", "Sa", "Su"].map((day, i) => {
+      <div className="m-forms__sublegend">Choose day(s) of week</div>
+      {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, i) => {
         return (
           <span key={day} className="m-forms__day-of-week-bubble">
             <Form.Check
@@ -130,9 +89,6 @@ const DisruptionTimeRanges = ({
 
   return (
     <div>
-      {isEmpty(disruptionDaysOfWeek) ? null : (
-        <div className="m-forms__sublegend">Choose time of day</div>
-      )}
       {disruptionDaysOfWeek.map((timeRange, index) => {
         return (
           <DisruptionTimeRange
@@ -161,28 +117,30 @@ const DisruptionTimeRange = ({
   if (timeRange !== null) {
     return (
       <Form.Group>
-        <div className="form-inline align-items-start">
-          <span className="m-disruption-times__dow_label pt-2">
-            {indexToDayOfWeekString(dayOfWeekIndex)}
-          </span>
-          <div className="m-disruption-times__time_of_day_start">
-            <TimeOfDaySelector
-              dayOfWeekIndex={dayOfWeekIndex}
-              timeIndex={0}
-              setTimeRange={setTimeRange}
-              time={timeRange[0]}
-            />
-          </div>
-          <span className="pt-2">until</span>
-          <div className="m-disruption-times__time_of_day_end">
-            <TimeOfDaySelector
-              dayOfWeekIndex={dayOfWeekIndex}
-              timeIndex={1}
-              setTimeRange={setTimeRange}
-              time={timeRange[1]}
-            />
-          </div>
-        </div>
+        <strong>{indexToDayOfWeekString(dayOfWeekIndex)}</strong>
+        <Row>
+          <Col xs={5}>
+            <div className="m-disruption-times__time_of_day_start">
+              <TimeOfDaySelector
+                dayOfWeekIndex={dayOfWeekIndex}
+                timeIndex={0}
+                setTimeRange={setTimeRange}
+                time={timeRange[0]}
+              />
+            </div>
+          </Col>
+          until
+          <Col xs={5}>
+            <div className="m-disruption-times__time_of_day_end">
+              <TimeOfDaySelector
+                dayOfWeekIndex={dayOfWeekIndex}
+                timeIndex={1}
+                setTimeRange={setTimeRange}
+                time={timeRange[1]}
+              />
+            </div>
+          </Col>
+        </Row>
       </Form.Group>
     )
   } else {
@@ -211,7 +169,7 @@ const TimeOfDaySelector = ({
 
   return (
     <div>
-      <div>
+      <div className="form-inline align-items-start">
         <Form.Control
           as="select"
           id={`time-of-day-${startOrEnd}-hour-${dayOfWeekIndex}`}
@@ -224,7 +182,7 @@ const TimeOfDaySelector = ({
           }}
         >
           <option value="" disabled>
-            --
+            &mdash;
           </option>
           {["12", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"].map(
             (hour) => {
@@ -240,6 +198,7 @@ const TimeOfDaySelector = ({
           )}
         </Form.Control>
         <Form.Control
+          className="ml-2"
           as="select"
           id={`time-of-day-${startOrEnd}-minute-${dayOfWeekIndex}`}
           value={time?.minute || ""}
@@ -251,7 +210,7 @@ const TimeOfDaySelector = ({
           }
         >
           <option value="" disabled>
-            --
+            &mdash;
           </option>
           {["00", "15", "30", "45"].map((minute) => {
             return (
@@ -265,6 +224,7 @@ const TimeOfDaySelector = ({
           })}
         </Form.Control>
         <Form.Control
+          className="ml-2"
           as="select"
           id={`time-of-day-${startOrEnd}-period-${dayOfWeekIndex}`}
           key={`period-${dayOfWeekIndex}-${timeIndex}`}
@@ -277,7 +237,7 @@ const TimeOfDaySelector = ({
           }
         >
           <option value="" disabled>
-            --
+            &mdash;
           </option>
           {["AM", "PM"].map((period) => {
             return (
@@ -291,10 +251,9 @@ const TimeOfDaySelector = ({
           })}
         </Form.Control>
       </div>
-      <Form.Check
+      <Checkbox
         id={`time-of-day-${startOrEnd}-type-${dayOfWeekIndex}`}
-        className="justify-content-start"
-        label={timeIndex === 0 ? "start of service" : "end of service"}
+        labelText={timeIndex === 0 ? "Start of service" : "End of service"}
         checked={!time}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
           if (e.target.checked) {
@@ -308,184 +267,17 @@ const TimeOfDaySelector = ({
   )
 }
 
-interface DisruptionExceptionDateListProps {
-  exceptionDates: Date[]
-  setExceptionDates: React.Dispatch<Date[]>
-  isAddingDate: boolean
-  setIsAddingDate: React.Dispatch<boolean>
-}
-
-const DisruptionExceptionDateList = ({
-  exceptionDates,
-  setExceptionDates,
-  isAddingDate,
-  setIsAddingDate,
-}: DisruptionExceptionDateListProps): JSX.Element => {
-  return (
-    <Form.Group>
-      {exceptionDates.map((date, index) => (
-        <div
-          id={"date-exception-row-" + index}
-          key={"date-exception-row-" + index}
-        >
-          <Row>
-            <Col md="auto">
-              <DatePicker
-                selected={date}
-                onChange={(newDate) => {
-                  if (newDate !== null && !Array.isArray(newDate)) {
-                    setExceptionDates(
-                      exceptionDates
-                        .slice(0, index)
-                        .concat([newDate])
-                        .concat(exceptionDates.slice(index + 1))
-                    )
-                  } else {
-                    setExceptionDates(
-                      exceptionDates
-                        .slice(0, index)
-                        .concat(exceptionDates.slice(index + 1))
-                    )
-                  }
-                }}
-              />
-            </Col>
-            <Col md="auto">
-              <button
-                className="btn btn-link"
-                onClick={() => {
-                  const newExceptionDates = exceptionDates
-                    .slice(0, index)
-                    .concat(exceptionDates.slice(index + 1))
-
-                  setExceptionDates(newExceptionDates)
-                }}
-              >
-                delete exception
-              </button>
-            </Col>
-          </Row>
-        </div>
-      ))}
-
-      {isAddingDate ? (
-        <div id="date-exception-new" key="date-exception-new">
-          <Row>
-            <Col md="auto">
-              <DatePicker
-                selected={null}
-                onChange={(newDate) => {
-                  if (newDate !== null && !Array.isArray(newDate)) {
-                    setExceptionDates(exceptionDates.concat([newDate]))
-                    setIsAddingDate(false)
-                  }
-                }}
-              />
-            </Col>
-            <Col md="auto">
-              <button
-                className="btn btn-link"
-                onClick={() => setIsAddingDate(false)}
-              >
-                delete exception
-              </button>
-            </Col>
-          </Row>
-        </div>
-      ) : (
-        <Row key="date-exception-add-link">
-          <button
-            className="btn btn-link"
-            id="date-exception-add-link"
-            onClick={() => setIsAddingDate(true)}
-          >
-            + add another exception
-          </button>
-        </Row>
-      )}
-    </Form.Group>
-  )
-}
-
-interface DisruptionExceptionDatesProps {
-  exceptionDates: Date[]
-  setExceptionDates: React.Dispatch<Date[]>
-}
-
-const DisruptionExceptionDates = ({
-  exceptionDates,
-  setExceptionDates,
-}: DisruptionExceptionDatesProps): JSX.Element => {
-  const [isAddingDate, setIsAddingDate] = React.useState<boolean>(false)
-
-  return (
-    <div>
-      <Form.Group>
-        <div className="m-forms__sublegend">Any date exceptions?</div>
-        <Form.Check
-          type="radio"
-          id="date-exceptions-yes"
-          label="Yes"
-          name="date-exceptions-radio"
-          checked={exceptionDates.length !== 0 || isAddingDate}
-          onChange={() => {
-            setExceptionDates([])
-            setIsAddingDate(true)
-          }}
-        />
-        <Form.Check
-          type="radio"
-          id="date-exceptions-no"
-          label="No"
-          name="date-exceptions-radio"
-          checked={exceptionDates.length === 0 && !isAddingDate}
-          onChange={() => {
-            setExceptionDates([])
-            setIsAddingDate(false)
-          }}
-        />
-      </Form.Group>
-      {exceptionDates.length !== 0 || isAddingDate ? (
-        <DisruptionExceptionDateList
-          exceptionDates={exceptionDates}
-          setExceptionDates={setExceptionDates}
-          isAddingDate={isAddingDate}
-          setIsAddingDate={setIsAddingDate}
-        />
-      ) : null}
-    </div>
-  )
-}
-
 interface DisruptionTimePickerProps {
-  fromDate: Date | null
-  setFromDate: React.Dispatch<Date | null>
-  toDate: Date | null
-  setToDate: React.Dispatch<Date | null>
   disruptionDaysOfWeek: DayOfWeekTimeRanges
   setDisruptionDaysOfWeek: React.Dispatch<DayOfWeekTimeRanges>
-  exceptionDates: Date[]
-  setExceptionDates: React.Dispatch<Date[]>
 }
 
 const DisruptionTimePicker = ({
-  fromDate,
-  setFromDate,
-  toDate,
-  setToDate,
   disruptionDaysOfWeek,
   setDisruptionDaysOfWeek,
-  exceptionDates,
-  setExceptionDates,
 }: DisruptionTimePickerProps): JSX.Element => {
   return (
     <div>
-      <DisruptionDateRange
-        fromDate={fromDate}
-        setFromDate={setFromDate}
-        toDate={toDate}
-        setToDate={setToDate}
-      />
       <DisruptionDaysOfWeek
         disruptionDaysOfWeek={disruptionDaysOfWeek}
         setDisruptionDaysOfWeek={setDisruptionDaysOfWeek}
@@ -493,10 +285,6 @@ const DisruptionTimePicker = ({
       <DisruptionTimeRanges
         disruptionDaysOfWeek={disruptionDaysOfWeek}
         setDisruptionDaysOfWeek={setDisruptionDaysOfWeek}
-      />
-      <DisruptionExceptionDates
-        exceptionDates={exceptionDates}
-        setExceptionDates={setExceptionDates}
       />
     </div>
   )

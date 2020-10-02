@@ -1,9 +1,6 @@
 import * as React from "react"
 import ReactDatePicker, { ReactDatePickerProps } from "react-datepicker"
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faCalendar } from "@fortawesome/free-solid-svg-icons"
-
 const DatePicker = ({
   selected,
   ...rest
@@ -23,9 +20,7 @@ const DatePicker = ({
         }
         {...rest}
       />
-      <div className="m-datepicker__icon">
-        <FontAwesomeIcon icon={faCalendar} />
-      </div>
+      <div className="m-datepicker__icon">&#x2b12;</div>
     </div>
   )
 }

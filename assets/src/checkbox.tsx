@@ -4,6 +4,7 @@ const Checkbox = ({
   containerClassName,
   inputClassName,
   labelClassName,
+  labelText,
   ...props
 }: Omit<
   React.DetailedHTMLProps<
@@ -16,11 +17,15 @@ const Checkbox = ({
   containerClassName?: string
   inputClassName?: string
   labelClassName?: string
+  labelText?: string
 }) => {
   return (
     <div className={"m-checkbox " + containerClassName}>
       <input type="checkbox" className={inputClassName} {...props} />
-      <label className={labelClassName} htmlFor={props.id} />
+      <label className={labelClassName} htmlFor={props.id}>
+        <div className="m-checkbox__image" />
+        {labelText}
+      </label>
     </div>
   )
 }

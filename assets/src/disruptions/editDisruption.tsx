@@ -2,15 +2,14 @@ import * as React from "react"
 
 import Alert from "react-bootstrap/Alert"
 import { PrimaryButton } from "../button"
-import ButtonGroup from "react-bootstrap/ButtonGroup"
+import Col from "react-bootstrap/Col"
 
-import { Redirect } from "react-router-dom"
-import { RouteComponentProps, Link } from "react-router-dom"
+import { Redirect, RouteComponentProps, useHistory } from "react-router-dom"
 
 import { apiGet, apiSend } from "../api"
 
 import Loading from "../loading"
-import { DisruptionSummary } from "./disruptionSummary"
+import { AdjustmentSummary } from "./adjustmentSummary"
 import {
   Time,
   DayOfWeekTimeRanges,
@@ -27,34 +26,12 @@ import Exception from "../models/exception"
 import { JsonApiResponse, toModelObject, parseErrors } from "../jsonApi"
 import DayOfWeek from "../models/dayOfWeek"
 import { Page } from "../page"
+import { ConfirmationModal } from "../confirmationModal"
+import { DisruptionExceptionDates } from "./disruptionExceptionDates"
+import { DisruptionDateRange } from "./disruptionDateRange"
 
 interface TParams {
   id: string
-}
-
-interface SaveCancelButtonProps {
-  disruptionId: string
-  saveFn: () => void
-}
-
-const SaveCancelButton = ({
-  disruptionId,
-  saveFn,
-}: SaveCancelButtonProps): JSX.Element => {
-  return (
-    <ButtonGroup vertical>
-      <PrimaryButton onClick={saveFn} id="save-changes-button">
-        save changes
-      </PrimaryButton>
-      <Link
-        to={"/disruptions/" + encodeURIComponent(disruptionId)}
-        id="cancel-button"
-        className="btn btn-light"
-      >
-        cancel
-      </Link>
-    </ButtonGroup>
-  )
 }
 
 const EditDisruption = ({
@@ -297,35 +274,92 @@ const EditDisruptionForm = ({
   saveDisruption,
   validationErrors,
 }: EditDisruptionFormProps): JSX.Element => {
+  const history = useHistory()
+
   return (
     <Page>
-      {validationErrors.length > 0 && (
-        <Alert variant="danger">
-          <ul>
-            {validationErrors.map((err) => (
-              <li key={err}>{err} </li>
-            ))}
-          </ul>
-        </Alert>
-      )}
-      <DisruptionSummary
-        disruptionId={disruptionId}
-        adjustments={adjustments}
-      />
-      <fieldset>
-        <legend>Edit disruption times</legend>
-        <DisruptionTimePicker
-          fromDate={fromDate}
-          setFromDate={setFromDate}
-          toDate={toDate}
-          setToDate={setToDate}
-          disruptionDaysOfWeek={disruptionDaysOfWeek}
-          setDisruptionDaysOfWeek={setDisruptionDaysOfWeek}
-          exceptionDates={exceptionDates}
-          setExceptionDates={setExceptionDates}
-        />
-      </fieldset>
-      <SaveCancelButton disruptionId={disruptionId} saveFn={saveDisruption} />
+      <Col lg={8}>
+        <hr />
+        <h1>
+          edit disruption{" "}
+          <span className="m-disruption-form__header-id">ID</span>{" "}
+          <span className="m-disruption-form__header-num">{disruptionId}</span>
+        </h1>
+
+        <AdjustmentSummary adjustments={adjustments} />
+        <hr />
+        {validationErrors.length > 0 && (
+          <Alert variant="danger">
+            <ul>
+              {validationErrors.map((err) => (
+                <li key={err}>{err} </li>
+              ))}
+            </ul>
+          </Alert>
+        )}
+
+        <div>
+          <h4>date range</h4>
+          <div className="pl-4">
+            <DisruptionDateRange
+              fromDate={fromDate}
+              setFromDate={setFromDate}
+              toDate={toDate}
+              setToDate={setToDate}
+            />
+          </div>
+        </div>
+        <div>
+          <fieldset>
+            <h4>time period</h4>
+            <div className="pl-4">
+              <DisruptionTimePicker
+                disruptionDaysOfWeek={disruptionDaysOfWeek}
+                setDisruptionDaysOfWeek={setDisruptionDaysOfWeek}
+              />
+            </div>
+          </fieldset>
+        </div>
+        <div>
+          <h4>exceptions</h4>
+          <div className="pl-4">
+            <DisruptionExceptionDates
+              exceptionDates={exceptionDates}
+              setExceptionDates={setExceptionDates}
+            />
+          </div>
+        </div>
+
+        <hr className="light-hr" />
+
+        <div className="d-flex justify-content-center">
+          <div className="w-25 mr-2">
+            <PrimaryButton
+              className="w-100"
+              filled={true}
+              onClick={saveDisruption}
+              id="save-disruption-button"
+            >
+              save
+            </PrimaryButton>
+          </div>
+          <div className="w-25 ml-2">
+            <ConfirmationModal
+              confirmationText="Any changes you've made to this disruption will not be saved as a draft."
+              confirmationButtonText="discard changes"
+              cancelButtonText="keep editing"
+              onClickConfirm={() => {
+                history.goBack()
+              }}
+              Component={
+                <PrimaryButton id="cancel-disruption-button" className="w-100">
+                  cancel
+                </PrimaryButton>
+              }
+            />
+          </div>
+        </div>
+      </Col>
     </Page>
   )
 }

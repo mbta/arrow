@@ -47,10 +47,6 @@ const dayNamesToIndices = {
   sunday: 6,
 }
 
-const isEmpty = (days: DayOfWeekTimeRanges): boolean => {
-  return days.filter((d) => d !== null).length === 0
-}
-
 const isHourOption = (hour: string): hour is HourOptions => {
   return [
     "12",
@@ -363,7 +359,6 @@ export {
   fromDaysOfWeek,
   timeToString,
   ixToDayName,
-  isEmpty,
   dayOfWeekTimeRangesToDayOfWeeks,
   parseDaysAndTimes,
   dayToIx,

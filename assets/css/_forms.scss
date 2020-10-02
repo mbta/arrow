@@ -8,15 +8,17 @@
   }
 
   & label {
-    border: 1px solid #aaa;
+    border: 1px solid #dd3159;
     border-radius: 1.25rem;
-    height: 2.5rem;
-    padding-top: 0.4rem;
+    color: #dd3159;
+    height: 2rem;
+    padding-top: 0.2rem;
     text-align: center;
-    width: 2.5rem;
+    width: 4rem;
   }
 
   & input:checked + label {
-    background-color: rgb(46, 139, 224);
+    background-color: #dd3159;
+    color: white;
   }
 }

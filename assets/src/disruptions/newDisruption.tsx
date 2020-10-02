@@ -1,11 +1,13 @@
 import * as React from "react"
 
-import { Redirect } from "react-router-dom"
+import { Redirect, useHistory } from "react-router-dom"
 import Select, { ValueType } from "react-select"
 
 import { PrimaryButton } from "../button"
 import Form from "react-bootstrap/Form"
 import Alert from "react-bootstrap/Alert"
+import Col from "react-bootstrap/Col"
+import Row from "react-bootstrap/Row"
 
 import { apiGet, apiSend } from "../api"
 import { toModelObject, JsonApiResponse, parseErrors } from "../jsonApi"
@@ -15,11 +17,13 @@ import Exception from "../models/exception"
 import { DayOfWeekTimeRanges, dayOfWeekTimeRangesToDayOfWeeks } from "./time"
 
 import Loading from "../loading"
+import { ConfirmationModal } from "../confirmationModal"
 import { DisruptionTimePicker } from "./disruptionTimePicker"
+import { DisruptionDateRange } from "./disruptionDateRange"
 import { TransitMode, modeForRoute } from "./disruptions"
-import { DisruptionPreview } from "./disruptionPreview"
 import TripShortName from "../models/tripShortName"
 import { Page } from "../page"
+import { DisruptionExceptionDates } from "./disruptionExceptionDates"
 
 interface AdjustmentModePickerProps {
   transitMode: TransitMode
@@ -34,7 +38,6 @@ const AdjustmentModePicker = ({
 }: AdjustmentModePickerProps): JSX.Element => {
   return (
     <fieldset>
-      <legend>For which mode?</legend>
       <Form.Group controlId="formTransitMode">
         <Form.Check
           type="radio"
@@ -105,23 +108,26 @@ const AdjustmentsPicker = ({
 
   return (
     <fieldset>
-      <legend>For which locations?</legend>
-      <Form.Group>
-        <Select<AdjustmentPickerOption>
-          inputId="adjustment-select"
-          classNamePrefix="adjustment-select"
-          onChange={(values: ValueType<AdjustmentPickerOption>) => {
-            if (Array.isArray(values)) {
-              setAdjustments(values.map((adj) => adj.data))
-            } else {
-              setAdjustments([])
-            }
-          }}
-          value={modeAdjustmentValues}
-          options={modeAdjustmentOptions}
-          isMulti={true}
-        />
-      </Form.Group>
+      <Row>
+        <Col lg={10}>
+          <Form.Group>
+            <Select<AdjustmentPickerOption>
+              inputId="adjustment-select"
+              classNamePrefix="adjustment-select"
+              onChange={(values: ValueType<AdjustmentPickerOption>) => {
+                if (Array.isArray(values)) {
+                  setAdjustments(values.map((adj) => adj.data))
+                } else {
+                  setAdjustments([])
+                }
+              }}
+              value={modeAdjustmentValues}
+              options={modeAdjustmentOptions}
+              isMulti={true}
+            />
+          </Form.Group>
+        </Col>
+      </Row>
     </fieldset>
   )
 }
@@ -210,6 +216,18 @@ const disruptionRevisionFromState = ({
   })
 }
 
+const createFn = async (args: ApiCreateDisruptionParams) => {
+  const disruptionRevision = disruptionRevisionFromState(args)
+
+  return await apiSend({
+    url: "/api/disruptions",
+    method: "POST",
+    json: JSON.stringify(disruptionRevision.toJsonApi()),
+    successParser: toModelObject,
+    errorParser: parseErrors,
+  })
+}
+
 const NewDisruption = ({}): JSX.Element => {
   const [adjustments, setAdjustments] = React.useState<Adjustment[]>([])
   const [fromDate, setFromDate] = React.useState<Date | null>(null)
@@ -219,7 +237,6 @@ const NewDisruption = ({}): JSX.Element => {
   >([null, null, null, null, null, null, null])
   const [exceptionDates, setExceptionDates] = React.useState<Date[]>([])
   const [tripShortNames, setTripShortNames] = React.useState<string>("")
-  const [isPreview, setIsPreview] = React.useState<boolean>(false)
   const [allAdjustments, setAllAdjustments] = React.useState<
     Adjustment[] | "error" | null
   >(null)
@@ -230,24 +247,31 @@ const NewDisruption = ({}): JSX.Element => {
   )
   const [whichTrips, setWhichTrips] = React.useState<"all" | "some">("all")
 
-  const createFn = async (args: ApiCreateDisruptionParams) => {
-    const disruptionRevision = disruptionRevisionFromState(args)
+  const history = useHistory()
 
-    const result = await apiSend({
-      url: "/api/disruptions",
-      method: "POST",
-      json: JSON.stringify(disruptionRevision.toJsonApi()),
-      successParser: toModelObject,
-      errorParser: parseErrors,
+  const createDisruption = React.useCallback(async () => {
+    const result = await createFn({
+      adjustments,
+      fromDate,
+      toDate,
+      disruptionDaysOfWeek,
+      exceptionDates,
+      tripShortNames,
     })
 
     if (result.ok) {
       setDoRedirect(true)
     } else if (result.error) {
-      setIsPreview(false)
       setValidationErrors(result.error)
     }
-  }
+  }, [
+    adjustments,
+    fromDate,
+    toDate,
+    disruptionDaysOfWeek,
+    exceptionDates,
+    tripShortNames,
+  ])
 
   React.useEffect(() => {
     apiGet<JsonApiResponse>({
@@ -277,71 +301,115 @@ const NewDisruption = ({}): JSX.Element => {
 
   return (
     <Page>
-      {isPreview ? (
-        <DisruptionPreview
-          adjustments={adjustments}
-          setIsPreview={setIsPreview}
-          fromDate={fromDate}
-          toDate={toDate}
-          disruptionDaysOfWeek={disruptionDaysOfWeek}
-          exceptionDates={exceptionDates}
-          tripShortNames={tripShortNames}
-          createFn={createFn}
-        />
-      ) : (
-        <>
-          {validationErrors.length > 0 && (
-            <Alert variant="danger">
-              <ul>
-                {validationErrors.map((err) => (
-                  <li key={err}>{err} </li>
-                ))}
-              </ul>
-            </Alert>
-          )}
-          <h1>Create new disruption</h1>
-          <div>
+      <Col lg={8}>
+        <hr />
+
+        {validationErrors.length > 0 && (
+          <Alert variant="danger">
+            <ul>
+              {validationErrors.map((err) => (
+                <li key={err}>{err} </li>
+              ))}
+            </ul>
+          </Alert>
+        )}
+        <h1>create new disruption</h1>
+        <div>
+          <h4>mode</h4>
+          <div className="pl-4">
             <AdjustmentModePicker
               transitMode={transitMode}
               setTransitMode={setTransitMode}
               setAdjustments={setAdjustments}
             />
+          </div>
+        </div>
+        <div>
+          <h4>adjustment location</h4>
+          <div className="pl-4">
             <AdjustmentsPicker
               adjustments={adjustments}
               setAdjustments={setAdjustments}
               allAdjustments={allAdjustments}
               transitMode={transitMode}
             />
-            {transitMode === TransitMode.CommuterRail && (
+          </div>
+        </div>
+        {transitMode === TransitMode.CommuterRail && (
+          <div>
+            <h4>trips</h4>
+            <div className="pl-4">
               <TripShortNamesForm
                 whichTrips={whichTrips}
                 setWhichTrips={setWhichTrips}
                 tripShortNames={tripShortNames}
                 setTripShortNames={setTripShortNames}
               />
-            )}
+            </div>
           </div>
-          <fieldset>
-            <legend>During what time?</legend>
-            <DisruptionTimePicker
+        )}
+        <div>
+          <h4>date range</h4>
+          <div className="pl-4">
+            <DisruptionDateRange
               fromDate={fromDate}
               setFromDate={setFromDate}
               toDate={toDate}
               setToDate={setToDate}
-              disruptionDaysOfWeek={disruptionDaysOfWeek}
-              setDisruptionDaysOfWeek={setDisruptionDaysOfWeek}
+            />
+          </div>
+        </div>
+        <div>
+          <fieldset>
+            <h4>time period</h4>
+            <div className="pl-4">
+              <DisruptionTimePicker
+                disruptionDaysOfWeek={disruptionDaysOfWeek}
+                setDisruptionDaysOfWeek={setDisruptionDaysOfWeek}
+              />
+            </div>
+          </fieldset>
+        </div>
+        <div>
+          <h4>exceptions</h4>
+          <div className="pl-4">
+            <DisruptionExceptionDates
               exceptionDates={exceptionDates}
               setExceptionDates={setExceptionDates}
             />
-          </fieldset>
-          <PrimaryButton
-            onClick={() => setIsPreview(true)}
-            id="preview-disruption-button"
-          >
-            preview disruption
-          </PrimaryButton>
-        </>
-      )}
+          </div>
+        </div>
+
+        <hr className="light-hr" />
+
+        <div className="d-flex justify-content-center">
+          <div className="w-25 mr-2">
+            <PrimaryButton
+              className="w-100"
+              filled={true}
+              onClick={createDisruption}
+              id="save-disruption-button"
+            >
+              save
+            </PrimaryButton>
+          </div>
+          <div className="w-25 ml-2">
+            <ConfirmationModal
+              confirmationText="Any changes you've made to this disruption will not be saved as a draft."
+              confirmationButtonText="discard changes"
+              cancelButtonText="keep editing"
+              onClickConfirm={() => {
+                history.push("/")
+              }}
+              Component={
+                <PrimaryButton id="cancel-disruption-button" className="w-100">
+                  cancel
+                </PrimaryButton>
+              }
+            />
+          </div>
+        </div>
+      </Col>
     </Page>
   )
 }

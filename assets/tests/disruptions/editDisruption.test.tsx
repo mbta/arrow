@@ -16,8 +16,13 @@ import Exception from "../../src/models/exception"
 describe("EditDisruption", () => {
   let apiCallSpy: jest.SpyInstance
   let apiSendSpy: jest.SpyInstance
+  let windowConfirmSpy: jest.SpyInstance
 
   beforeEach(() => {
+    windowConfirmSpy = jest
+      .spyOn(window, "confirm")
+      .mockImplementation(() => true)
+
     apiCallSpy = jest.spyOn(api, "apiGet").mockImplementation(() => {
       return Promise.resolve(
         new Disruption({
@@ -87,6 +92,7 @@ describe("EditDisruption", () => {
   afterAll(() => {
     apiCallSpy.mockRestore()
     apiSendSpy.mockRestore()
+    windowConfirmSpy.mockRestore()
   })
 
   test("header include link to homepage", async () => {
@@ -110,13 +116,16 @@ describe("EditDisruption", () => {
   })
 
   test("cancel link redirects back to view page", async () => {
-    const { container } = render(
-      <MemoryRouter initialEntries={["/disruptions/foo/edit"]}>
+    render(
+      <MemoryRouter
+        initialEntries={["/previouspage", "/disruptions/foo/edit"]}
+        initialIndex={1}
+      >
         <Switch>
           <Route
             exact={true}
-            path="/disruptions/:id"
-            render={() => <div>Success!!!</div>}
+            path="/previouspage"
+            render={() => <div>You went back</div>}
           />
           <Route
             exact={true}
@@ -131,15 +140,9 @@ describe("EditDisruption", () => {
       document.querySelector("#loading-indicator")
     )
 
-    const cancelButton = container.querySelector("#cancel-button")
-
-    if (cancelButton) {
-      fireEvent.click(cancelButton)
-    } else {
-      throw new Error("cancel button not found")
-    }
-
-    expect(screen.queryByText("Success!!!")).not.toBeNull()
+    fireEvent.click(screen.getByText("cancel"))
+    fireEvent.click(screen.getByText("discard changes"))
+    expect(screen.queryByText("You went back")).not.toBeNull()
   })
 
   test("handles error fetching disruption", async () => {
@@ -392,7 +395,7 @@ describe("EditDisruption", () => {
       document.querySelector("#loading-indicator")
     )
 
-    fireEvent.click(screen.getByText("delete exception"))
+    fireEvent.click(screen.getByTestId("remove-exception-date"))
 
     expect(screen.queryByDisplayValue("01/20/2020")).toBeNull()
   })
@@ -414,7 +417,7 @@ describe("EditDisruption", () => {
       document.querySelector("#loading-indicator")
     )
 
-    const dayOfWeekMCheck = container.querySelector("#day-of-week-M")
+    const dayOfWeekMCheck = container.querySelector("#day-of-week-Mon")
 
     if (dayOfWeekMCheck) {
       fireEvent.click(dayOfWeekMCheck)
@@ -491,7 +494,7 @@ describe("EditDisruption", () => {
       document.querySelector("#loading-indicator")
     )
 
-    const saveButton = container.querySelector("#save-changes-button")
+    const saveButton = container.querySelector("#save-disruption-button")
 
     if (saveButton) {
       // eslint-disable-next-line @typescript-eslint/require-await
@@ -533,7 +536,7 @@ describe("EditDisruption", () => {
       document.querySelector("#loading-indicator")
     )
 
-    const saveButton = container.querySelector("#save-changes-button")
+    const saveButton = container.querySelector("#save-disruption-button")
 
     if (saveButton) {
       // eslint-disable-next-line @typescript-eslint/require-await
