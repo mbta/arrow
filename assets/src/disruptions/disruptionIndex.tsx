@@ -183,7 +183,7 @@ const anyMatchesFilter = (
         (adj) =>
           adj.sourceLabel && adj.sourceLabel.toLowerCase().includes(query)
       ) &&
-      (revision.isActive || revision.status !== DisruptionView.Published)
+      revision.isActive
     )
   })
 }
@@ -268,16 +268,10 @@ const DisruptionIndexView = ({
   const filteredDisruptionRevisions = React.useMemo(() => {
     const query = searchQuery.toLowerCase()
     return disruptions.reduce((acc, curr) => {
-      const uniqueRevisions = [
-        Disruption.revisionFromDisruptionForView(
-          curr,
-          DisruptionView.Published
-        ),
-        Disruption.revisionFromDisruptionForView(curr, DisruptionView.Ready),
-        Disruption.revisionFromDisruptionForView(curr, DisruptionView.Draft),
-      ].filter((x, i, self) => {
-        return !!x && self.findIndex((y) => y?.id === x.id) === i
-      }) as DisruptionRevision[]
+      const { published, ready, draft } = curr.getUniqueRevisions()
+      const uniqueRevisions = [published, ready, draft].filter(
+        (x) => !!x
+      ) as DisruptionRevision[]
 
       if (
         anyMatchesFilter(uniqueRevisions, query, routeFilters, statusFilters)
