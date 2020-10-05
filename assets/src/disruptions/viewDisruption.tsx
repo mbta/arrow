@@ -20,48 +20,10 @@ import Col from "react-bootstrap/Col"
 import Icon from "../icons"
 import { getRouteIcon } from "./disruptionIndex"
 import { formatDisruptionDate } from "./disruptions"
+import { ConfirmationModal } from "../confirmationModal"
 
 interface TParams {
   id: string
-}
-
-interface DeleteDisruptionButtonProps {
-  disruptionId: string
-  setDoRedirect: React.Dispatch<React.SetStateAction<boolean>>
-  setDeletionErrors: React.Dispatch<React.SetStateAction<string[]>>
-}
-
-const DeleteDisruptionButton = ({
-  disruptionId,
-  setDoRedirect,
-  setDeletionErrors,
-}: DeleteDisruptionButtonProps): JSX.Element => {
-  return (
-    <LinkButton
-      onClick={async () => {
-        if (window.confirm("Really delete this disruption?")) {
-          const result = await apiSend({
-            url: "/api/disruptions/" + encodeURIComponent(disruptionId),
-            method: "DELETE",
-            json: "",
-            successParser: () => {
-              return true
-            },
-            errorParser: parseErrors,
-          })
-
-          if (result.ok) {
-            setDoRedirect(true)
-          } else if (result.error) {
-            setDeletionErrors(result.error)
-          }
-        }
-      }}
-      id="delete-disruption-button"
-    >
-      delete
-    </LinkButton>
-  )
 }
 
 const ViewDisruption = ({
@@ -80,6 +42,7 @@ const ViewDisruptionForm = ({
   const [disruption, setDisruption] = React.useState<
     Disruption | "error" | null
   >(null)
+  const history = useHistory()
   const [doRedirect, setDoRedirect] = React.useState<boolean>(false)
   const [deletionErrors, setDeletionErrors] = React.useState<string[]>([])
   const fetchDisruption = React.useCallback(() => {
@@ -100,7 +63,6 @@ const ViewDisruptionForm = ({
   }, [disruptionId, fetchDisruption])
 
   const view = useDisruptionViewParam()
-  const history = useHistory()
 
   if (doRedirect) {
     return <Redirect to={`/`} />
@@ -157,10 +119,41 @@ const ViewDisruptionForm = ({
                     disruptionRevision.startDate &&
                     disruptionRevision.startDate >=
                       new Date(new Date().toDateString()) ? (
-                    <DeleteDisruptionButton
-                      disruptionId={disruption.id}
-                      setDeletionErrors={setDeletionErrors}
-                      setDoRedirect={setDoRedirect}
+                    <ConfirmationModal
+                      confirmationText={
+                        !published && !ready
+                          ? "Since this draft is not published or ready, this will delete this disruption from Arrow permanently."
+                          : "Since this draft is published or ready, this change must be approved first before it is added to GTFS."
+                      }
+                      confirmationButtonText={
+                        !published && !ready
+                          ? "yes, delete"
+                          : "mark for deletion"
+                      }
+                      onClickConfirm={async () => {
+                        const result = await apiSend({
+                          url:
+                            "/api/disruptions/" +
+                            encodeURIComponent(disruptionId),
+                          method: "DELETE",
+                          json: "",
+                          successParser: () => {
+                            return true
+                          },
+                          errorParser: parseErrors,
+                        })
+
+                        if (result.ok) {
+                          setDoRedirect(true)
+                        } else if (result.error) {
+                          setDeletionErrors(result.error)
+                        }
+                      }}
+                      Component={
+                        <LinkButton id="delete-disruption-button">
+                          delete
+                        </LinkButton>
+                      }
                     />
                   ) : null)}
               </div>
@@ -343,43 +336,43 @@ const ViewDisruptionForm = ({
                         <div>
                           <hr className="my-3" />
                           <div className="d-flex justify-content-center">
-                            <SecondaryButton
-                              id="mark-ready"
-                              onClick={() => {
-                                if (
-                                  window.confirm(
-                                    "Are you sure you want to mark these revisions as ready?"
-                                  )
-                                ) {
-                                  apiSend({
-                                    method: "POST",
-                                    json: JSON.stringify({
-                                      revision_ids: disruptionRevision.id,
-                                    }),
-                                    url: "/api/ready_notice/",
+                            <ConfirmationModal
+                              onClickConfirm={() => {
+                                apiSend({
+                                  method: "POST",
+                                  json: JSON.stringify({
+                                    revision_ids: disruptionRevision.id,
+                                  }),
+                                  url: "/api/ready_notice/",
+                                })
+                                  .then(async () => {
+                                    await fetchDisruption()
+                                    history.replace(
+                                      "/disruptions/" +
+                                        encodeURIComponent(
+                                          disruptionRevision.disruptionId || ""
+                                        ) +
+                                        "?v=ready"
+                                    )
                                   })
-                                    .then(async () => {
-                                      await fetchDisruption()
-                                      history.replace(
-                                        "/disruptions/" +
-                                          encodeURIComponent(disruptionId) +
-                                          "?v=ready"
-                                      )
-                                    })
-                                    .catch(() => {
-                                      // eslint-disable-next-line no-console
-                                      console.log(
-                                        `failed to mark revision as ready: ${disruptionRevision.id}`
-                                      )
-                                    })
-                                }
+                                  .catch(() => {
+                                    // eslint-disable-next-line no-console
+                                    console.log(
+                                      `failed to mark revision as ready: ${disruptionRevision.id}`
+                                    )
+                                  })
                               }}
-                            >
-                              {"mark as ready" +
-                                (disruptionRevision.isActive
-                                  ? ""
-                                  : " for deletion")}
-                            </SecondaryButton>
+                              confirmationButtonText="yes, mark as ready"
+                              confirmationText="Are you sure you want to mark these revisions as ready?"
+                              Component={
+                                <SecondaryButton id="mark-ready">
+                                  {"mark as ready" +
+                                    (disruptionRevision.isActive
+                                      ? ""
+                                      : " for deletion")}
+                                </SecondaryButton>
+                              }
+                            />
                           </div>
                         </div>
                       )}
