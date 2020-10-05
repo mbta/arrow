@@ -2,7 +2,7 @@ import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
 import { ModelObject } from "../jsonApi"
 
-export type DayName =
+type DayName =
   | "monday"
   | "tuesday"
   | "wednesday"
@@ -85,3 +85,4 @@ class DayOfWeek extends JsonApiResourceObject {
 }
 
 export default DayOfWeek
+export { DayName }
