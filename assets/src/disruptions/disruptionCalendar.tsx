@@ -14,7 +14,7 @@ interface DisruptionCalendarProps {
   timeZone?: string
 }
 
-export const dayNameToInt = (day: DayOfWeek["dayName"]): number => {
+const dayNameToInt = (day: DayOfWeek["dayName"]): number => {
   switch (day) {
     case "monday": {
       return 0
@@ -44,7 +44,7 @@ const addDay = (date: Date): Date => {
   return new Date(date.setTime(date.getTime() + 60 * 60 * 24 * 1000))
 }
 
-export const disruptionsToCalendarEvents = (
+const disruptionsToCalendarEvents = (
   disruptionRevisions: DisruptionRevision[],
   view: DisruptionView
 ) => {
@@ -120,7 +120,7 @@ export const disruptionsToCalendarEvents = (
   )
 }
 
-export const DisruptionCalendar = ({
+const DisruptionCalendar = ({
   disruptionRevisions,
   initialDate,
 }: DisruptionCalendarProps) => {
@@ -140,3 +140,5 @@ export const DisruptionCalendar = ({
     </div>
   )
 }
+
+export { DisruptionCalendar, disruptionsToCalendarEvents, dayNameToInt }

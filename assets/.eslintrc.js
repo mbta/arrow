@@ -18,6 +18,7 @@ module.exports = {
     "@typescript-eslint/tslint",
     "prefer-arrow",
     "react-hooks",
+    "import",
   ],
   rules: {
     "@typescript-eslint/array-type": "error",
@@ -81,6 +82,8 @@ module.exports = {
       "undefined",
     ],
     "react-hooks/exhaustive-deps": "error",
+    "import/exports-last": "error",
+    "import/group-exports": "error",
     "id-match": "error",
     "linebreak-style": "off",
     "max-classes-per-file": ["error", 1],
