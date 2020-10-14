@@ -161,10 +161,14 @@ const anyMatchesFilter = (
   revisions: DisruptionRevision[],
   query: string,
   routeFilters: FilterGroup<Routes>,
-  statusFilters: FilterGroup<"published" | "ready" | "needs_review">
+  statusFilters: FilterGroup<"published" | "ready" | "needs_review">,
+  dateFilters: FilterGroup<"include_past">,
+  pastThreshold: Date
 ) => {
   return revisions.some((revision) => {
     return (
+      (dateFilters.anyActive ||
+        (revision.endDate && revision.endDate > pastThreshold)) &&
       (!routeFilters.anyActive ||
         (revision.adjustments || []).some(
           (adj) =>
@@ -231,6 +235,7 @@ const useFilterGroup = <G extends string>(group: G[]): FilterGroup<G> => {
 interface DisruptionIndexProps {
   disruptions: Disruption[]
   fetchDisruptions: () => void
+  now?: Date
 }
 
 type RevisionActions = "mark_ready"
@@ -238,6 +243,7 @@ type RevisionActions = "mark_ready"
 const DisruptionIndexView = ({
   disruptions,
   fetchDisruptions,
+  now,
 }: DisruptionIndexProps) => {
   const routeFilters = useFilterGroup<Routes>([
     "Red",
@@ -251,19 +257,28 @@ const DisruptionIndexView = ({
     "Commuter",
   ])
 
+  const dateFilters = useFilterGroup(["include_past"])
   const statusFilters = useFilterGroup(["published", "ready", "needs_review"])
   const [view, setView] = React.useState<"table" | "calendar">("table")
   const toggleView = React.useCallback(() => {
     if (view === "table") {
       setView("calendar")
+      dateFilters.updateFiltersState({ include_past: true })
       statusFilters.updateFiltersState({ published: true })
     } else {
+      dateFilters.clearFilters()
       statusFilters.clearFilters()
       setView("table")
     }
-  }, [view, setView, statusFilters])
+  }, [view, setView, statusFilters, dateFilters])
 
   const [searchQuery, setSearchQuery] = React.useState<string>("")
+
+  const pastThreshold = React.useMemo(() => {
+    const date = now ? new Date(now.valueOf()) : new Date()
+    date.setDate(date.getDate() - 7)
+    return date
+  }, [now])
 
   const filteredDisruptionRevisions = React.useMemo(() => {
     const query = searchQuery.toLowerCase()
@@ -274,14 +289,28 @@ const DisruptionIndexView = ({
       ) as DisruptionRevision[]
 
       if (
-        anyMatchesFilter(uniqueRevisions, query, routeFilters, statusFilters)
+        anyMatchesFilter(
+          uniqueRevisions,
+          query,
+          routeFilters,
+          statusFilters,
+          dateFilters,
+          pastThreshold
+        )
       ) {
         return [...acc, ...uniqueRevisions]
       } else {
         return acc
       }
     }, [] as DisruptionRevision[])
-  }, [disruptions, searchQuery, routeFilters, statusFilters])
+  }, [
+    disruptions,
+    searchQuery,
+    routeFilters,
+    statusFilters,
+    dateFilters,
+    pastThreshold,
+  ])
 
   const [selectedRevisions, setSelectedRevisions] = React.useState<{
     [key: string]: boolean | undefined
@@ -395,19 +424,31 @@ const DisruptionIndexView = ({
               toggleRouteFilterState={routeFilters.toggleFilter}
               isRouteActive={routeFilters.isFilterActive}
             />
-            <div>
-              <SecondaryButton
-                disabled={view === "calendar"}
-                id="status-filter-toggle-needs-review"
-                className={classnames("mx-2", {
-                  active: statusFilters.state.needs_review,
-                })}
-                onClick={() => statusFilters.toggleFilter("needs_review")}
-              >
-                needs review
-              </SecondaryButton>
-            </div>
+
+            <SecondaryButton
+              disabled={view === "calendar"}
+              id="status-filter-toggle-needs-review"
+              className={classnames("mx-2", {
+                active: statusFilters.state.needs_review,
+              })}
+              onClick={() => statusFilters.toggleFilter("needs_review")}
+            >
+              needs review
+            </SecondaryButton>
+
+            <SecondaryButton
+              disabled={view === "calendar"}
+              id="date-filter-toggle-include-past"
+              className={classnames("mx-2", {
+                active: dateFilters.state.include_past,
+              })}
+              onClick={() => dateFilters.toggleFilter("include_past")}
+            >
+              include past
+            </SecondaryButton>
+
             {(routeFilters.anyActive ||
+              (dateFilters.anyActive && view !== "calendar") ||
               (statusFilters.anyActive && view !== "calendar")) && (
               <LinkButton
                 id="clear-filter"
@@ -419,9 +460,12 @@ const DisruptionIndexView = ({
                     ready: false,
                     published: view === "calendar",
                   })
+                  dateFilters.updateFiltersState({
+                    include_past: view === "calendar",
+                  })
                 }}
               >
-                clear filter
+                reset filters
               </LinkButton>
             )}
             <div className="my-3 ml-auto">
@@ -516,7 +560,7 @@ const DisruptionIndexView = ({
   )
 }
 
-const DisruptionIndex = () => {
+const DisruptionIndex = ({ now }: { now?: Date }) => {
   const [disruptions, setDisruptions] = React.useState<Disruption[] | "error">(
     []
   )
@@ -549,6 +593,7 @@ const DisruptionIndex = () => {
       <DisruptionIndexView
         disruptions={disruptions}
         fetchDisruptions={fetchDisruptions}
+        now={now}
       />
     )
   }
