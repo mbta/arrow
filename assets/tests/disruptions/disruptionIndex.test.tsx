@@ -26,6 +26,8 @@ import ReactDOM from "react-dom"
 import { act } from "react-dom/test-utils"
 import { DisruptionView } from "../../src/models/disruption"
 
+const fakeNow = new Date("2019-10-01")
+
 const DisruptionIndexWithRouter = ({
   connected = false,
   fetchDisruption = jest.fn(),
@@ -38,9 +40,10 @@ const DisruptionIndexWithRouter = ({
   return (
     <BrowserRouter>
       {connected ? (
-        <DisruptionIndex />
+        <DisruptionIndex now={fakeNow} />
       ) : (
         <DisruptionIndexView
+          now={fakeNow}
           fetchDisruptions={fetchDisruption}
           disruptions={
             disruptions || [
@@ -77,7 +80,6 @@ const DisruptionIndexWithRouter = ({
                   tripShortNames: [],
                   status: DisruptionView.Published,
                 }),
-
                 revisions: [
                   new DisruptionRevision({
                     id: "1",
@@ -113,6 +115,7 @@ const DisruptionIndexWithRouter = ({
                   }),
                 ],
               }),
+
               new Disruption({
                 id: "3",
                 readyRevision: new DisruptionRevision({
@@ -177,6 +180,53 @@ const DisruptionIndexWithRouter = ({
                     ],
                     exceptions: [],
                     tripShortNames: [],
+                  }),
+                ],
+              }),
+
+              new Disruption({
+                publishedRevision: new DisruptionRevision({
+                  id: "4",
+                  disruptionId: "4",
+                  startDate: new Date("2019-09-01"),
+                  endDate: new Date("2019-09-15"),
+                  isActive: true,
+                  adjustments: [
+                    new Adjustment({
+                      id: "3",
+                      routeId: "Orange",
+                      sourceLabel: "ForestHillsRuggles",
+                    }),
+                  ],
+                  daysOfWeek: [
+                    new DayOfWeek({ id: "1", dayName: "saturday" }),
+                    new DayOfWeek({ id: "2", dayName: "sunday" }),
+                  ],
+                  exceptions: [],
+                  tripShortNames: [],
+                  status: DisruptionView.Published,
+                }),
+                revisions: [
+                  new DisruptionRevision({
+                    id: "4",
+                    disruptionId: "4",
+                    startDate: new Date("2019-09-01"),
+                    endDate: new Date("2019-09-15"),
+                    isActive: true,
+                    adjustments: [
+                      new Adjustment({
+                        id: "3",
+                        routeId: "Orange",
+                        sourceLabel: "ForestHillsRuggles",
+                      }),
+                    ],
+                    daysOfWeek: [
+                      new DayOfWeek({ id: "1", dayName: "saturday" }),
+                      new DayOfWeek({ id: "2", dayName: "sunday" }),
+                    ],
+                    exceptions: [],
+                    tripShortNames: [],
+                    status: DisruptionView.Published,
                   }),
                 ],
               }),
@@ -319,6 +369,25 @@ describe("DisruptionIndexView", () => {
     )
   })
 
+  test("can be filtered to include past disruptions", () => {
+    const { container } = render(<DisruptionIndexWithRouter />)
+    expect(container.querySelectorAll("tbody tr").length).toEqual(2)
+    expect(container.querySelector("tbody")?.innerHTML).not.toMatch(
+      "ForestHillsRuggles"
+    )
+
+    const pastFilterToggle = container.querySelector(
+      "#date-filter-toggle-include-past"
+    )
+    if (!pastFilterToggle) throw new Error("past filter toggle not found")
+    fireEvent.click(pastFilterToggle)
+
+    expect(container.querySelectorAll("tbody tr").length).toEqual(3)
+    expect(container.querySelector("tbody")?.innerHTML).toMatch(
+      "ForestHillsRuggles"
+    )
+  })
+
   test("can toggle between table and calendar view", async () => {
     jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
       return Promise.resolve([
@@ -393,7 +462,7 @@ describe("DisruptionIndexView", () => {
         }),
       ])
     })
-    // eslint-disable-next-line @typescript-eslint/require-await
+
     const container = document.createElement("div")
     document.body.appendChild(container)
 
@@ -403,6 +472,9 @@ describe("DisruptionIndexView", () => {
     })
     expect(queryByText(container, "time period")).not.toBeNull()
     expect(queryByAttribute("id", container, "calendar")).toBeNull()
+    expect(
+      container.querySelector("#actions")?.hasAttribute("disabled")
+    ).toEqual(false)
 
     const toggleButton = container.querySelector("#view-toggle")
     if (!toggleButton) {
@@ -802,7 +874,7 @@ describe("DisruptionIndexConnected", () => {
           id: "5",
           disruptionId: "3",
           startDate: new Date("2020-02-21"),
-          endDate: new Date("2020-02-225"),
+          endDate: new Date("2020-02-25"),
           isActive: true,
           adjustments: [
             new Adjustment({
@@ -1017,48 +1089,88 @@ describe("getRouteColor", () => {
 })
 
 describe("anyMatchesFilter", () => {
+  const today = new Date(2020, 6, 15)
+  const oneWeekAgo = new Date(2020, 6, 8)
+  const twoWeeksAgo = new Date(2020, 6, 1)
+  const oneWeekHence = new Date(2020, 6, 22)
+
   const published = new DisruptionRevision({
     id: "1",
     isActive: true,
     adjustments: [
       new Adjustment({ id: "1", routeId: "Red", sourceLabel: "Adj 1" }),
     ],
+    startDate: today,
+    endDate: oneWeekHence,
     daysOfWeek: [],
     exceptions: [],
     tripShortNames: [],
     status: DisruptionView.Published,
   })
+
   const ready = new DisruptionRevision({
     id: "2",
     isActive: true,
     adjustments: [
-      new Adjustment({ id: "1", routeId: "Blue", sourceLabel: "Adj 2" }),
+      new Adjustment({ id: "2", routeId: "Blue", sourceLabel: "Adj 2" }),
     ],
+    startDate: today,
+    endDate: oneWeekHence,
     daysOfWeek: [],
     exceptions: [],
     tripShortNames: [],
     status: DisruptionView.Ready,
   })
+
   const draft = new DisruptionRevision({
     id: "3",
     isActive: true,
     adjustments: [
-      new Adjustment({ id: "1", routeId: "Orange", sourceLabel: "Adj 3" }),
+      new Adjustment({ id: "3", routeId: "Orange", sourceLabel: "Adj 3" }),
     ],
+    startDate: today,
+    endDate: oneWeekHence,
     daysOfWeek: [],
     exceptions: [],
     tripShortNames: [],
     status: DisruptionView.Draft,
   })
+
+  const past = new DisruptionRevision({
+    id: "4",
+    isActive: true,
+    adjustments: [
+      new Adjustment({ id: "1", routeId: "Red", sourceLabel: "Adj 1" }),
+    ],
+    startDate: twoWeeksAgo,
+    endDate: oneWeekAgo,
+    daysOfWeek: [],
+    exceptions: [],
+    tripShortNames: [],
+    status: DisruptionView.Published,
+  })
+
   const routeFilters = { state: {}, anyActive: false }
   const statusFilters = { state: {}, anyActive: false }
+  const dateFilters = { state: {}, anyActive: false }
+
   test.each([
-    [[published, ready, draft], "", routeFilters, statusFilters, true],
+    [
+      [published, ready, draft],
+      "",
+      routeFilters,
+      statusFilters,
+      dateFilters,
+      oneWeekAgo,
+      true,
+    ],
     [
       [published, ready, draft],
       "",
       routeFilters,
       { state: { ...statusFilters.state, published: true }, anyActive: true },
+      dateFilters,
+      oneWeekAgo,
       true,
     ],
     [
@@ -1066,6 +1178,8 @@ describe("anyMatchesFilter", () => {
       "",
       routeFilters,
       { state: { ...statusFilters.state, ready: true }, anyActive: true },
+      dateFilters,
+      oneWeekAgo,
       true,
     ],
     [
@@ -1076,6 +1190,8 @@ describe("anyMatchesFilter", () => {
         state: { ...statusFilters.state, needs_review: true },
         anyActive: true,
       },
+      dateFilters,
+      oneWeekAgo,
       true,
     ],
     [
@@ -1083,6 +1199,8 @@ describe("anyMatchesFilter", () => {
       "",
       { ...routeFilters, state: { ...routeFilters.state, Red: true } },
       statusFilters,
+      dateFilters,
+      oneWeekAgo,
       true,
     ],
     [
@@ -1097,6 +1215,8 @@ describe("anyMatchesFilter", () => {
         state: { ...statusFilters.state, published: true },
         anyActive: true,
       },
+      dateFilters,
+      oneWeekAgo,
       false,
     ],
     [
@@ -1107,11 +1227,31 @@ describe("anyMatchesFilter", () => {
         anyActive: true,
       },
       statusFilters,
+      dateFilters,
+      oneWeekAgo,
       false,
+    ],
+    [[past], "", routeFilters, statusFilters, dateFilters, oneWeekAgo, false],
+    [
+      [past],
+      "",
+      routeFilters,
+      statusFilters,
+      { state: { ...dateFilters.state, include_past: true }, anyActive: true },
+      oneWeekAgo,
+      true,
     ],
   ])(
     "returns true if any DisruptionRevision matches a set of filters",
-    (revisions, query, routeFiltersArg, statusFiltersArg, expected) => {
+    (
+      revisions,
+      query,
+      routeFiltersArg,
+      statusFiltersArg,
+      dateFiltersArg,
+      pastThreshold,
+      expected
+    ) => {
       expect(
         anyMatchesFilter(
           revisions,
@@ -1119,7 +1259,9 @@ describe("anyMatchesFilter", () => {
           routeFiltersArg as FilterGroup<Routes>,
           statusFiltersArg as FilterGroup<
             "published" | "ready" | "needs_review"
-          >
+          >,
+          dateFiltersArg as FilterGroup<"include_past">,
+          pastThreshold
         )
       ).toEqual(expected)
     }
