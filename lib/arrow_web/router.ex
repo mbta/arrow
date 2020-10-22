@@ -84,7 +84,6 @@ defmodule ArrowWeb.Router do
       only: [:index, :show, :create, :update, :delete]
     )
 
-    resources("/disruption_diffs", DisruptionDiffController, only: [:index])
     resources("/adjustments", AdjustmentController, only: [:index])
   end
 
