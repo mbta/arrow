@@ -4,7 +4,6 @@ import Disruption from "./models/disruption"
 import DisruptionRevision from "./models/disruptionRevision"
 import Exception from "./models/exception"
 import TripShortName from "./models/tripShortName"
-import DisruptionDiff from "./models/disruptionDiff"
 
 type ModelObject =
   | Adjustment
@@ -13,7 +12,6 @@ type ModelObject =
   | DisruptionRevision
   | Exception
   | TripShortName
-  | DisruptionDiff
 
 type JsonApiResponse = ModelObject | ModelObject[] | "error"
 
@@ -105,8 +103,6 @@ const modelFromJsonApiResource = (
         return Exception.fromJsonObject(raw)
       case "trip_short_name":
         return TripShortName.fromJsonObject(raw)
-      case "disruption_diff":
-        return DisruptionDiff.fromJsonObject(raw, includedObjects)
       default:
         return "error"
     }

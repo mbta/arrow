@@ -1,8 +1,7 @@
-import { toModelObject, parseErrors, toUTCDate } from "../src/jsonApi"
+import { toModelObject, parseErrors } from "../src/jsonApi"
 import Adjustment from "../src/models/adjustment"
 import DayOfWeek from "../src/models/dayOfWeek"
 import Disruption from "../src/models/disruption"
-import DisruptionDiff from "../src/models/disruptionDiff"
 import DisruptionRevision from "../src/models/disruptionRevision"
 import Exception from "../src/models/exception"
 import TripShortName from "../src/models/tripShortName"
@@ -265,10 +264,64 @@ describe("toModelObject", () => {
     ])
   })
 
-  test("properly assigns included objects when there are multiple entities", () => {
+  test("properly assigns multiple levels of included objects", () => {
+    const expectedRevisions = [
+      new DisruptionRevision({
+        id: "1",
+        disruptionId: "99",
+        startDate: new Date("2019-12-20T00:00:00Z"),
+        endDate: new Date("2020-01-12T00:00:00Z"),
+        isActive: true,
+        adjustments: [
+          new Adjustment({
+            id: "12",
+            routeId: "Green-D",
+            source: "gtfs_creator",
+            sourceLabel: "KenmoreReservoir",
+          }),
+        ],
+        daysOfWeek: [],
+        exceptions: [],
+        tripShortNames: [],
+      }),
+      new DisruptionRevision({
+        id: "2",
+        disruptionId: "99",
+        startDate: new Date("2019-12-25T00:00:00Z"),
+        endDate: new Date("2020-01-15T00:00:00Z"),
+        isActive: true,
+        adjustments: [
+          new Adjustment({
+            id: "13",
+            routeId: "Green-D",
+            source: "gtfs_creator",
+            sourceLabel: "Kenmore-Newton",
+          }),
+        ],
+        daysOfWeek: [],
+        exceptions: [],
+        tripShortNames: [],
+      }),
+    ]
+
     expect(
       toModelObject({
         data: [
+          {
+            attributes: { last_published_at: "2020-02-01T00:00:00Z" },
+            id: "99",
+            relationships: {
+              revisions: {
+                data: [
+                  { id: "1", type: "disruption_revision" },
+                  { id: "2", type: "disruption_revision" },
+                ],
+              },
+            },
+            type: "disruption",
+          },
+        ],
+        included: [
           {
             attributes: {
               end_date: "2020-01-12",
@@ -303,8 +356,6 @@ describe("toModelObject", () => {
             },
             type: "disruption_revision",
           },
-        ],
-        included: [
           {
             attributes: {
               route_id: "Green-D",
@@ -327,162 +378,11 @@ describe("toModelObject", () => {
         jsonapi: { version: "1.0" },
       })
     ).toEqual([
-      new DisruptionRevision({
-        id: "1",
-        startDate: new Date("2019-12-20T00:00:00Z"),
-        endDate: new Date("2020-01-12T00:00:00Z"),
-        isActive: true,
-        adjustments: [
-          new Adjustment({
-            id: "12",
-            routeId: "Green-D",
-            source: "gtfs_creator",
-            sourceLabel: "KenmoreReservoir",
-          }),
-        ],
-        daysOfWeek: [],
-        exceptions: [],
-        tripShortNames: [],
-      }),
-      new DisruptionRevision({
-        id: "2",
-        startDate: new Date("2019-12-25T00:00:00Z"),
-        endDate: new Date("2020-01-15T00:00:00Z"),
-        isActive: true,
-        adjustments: [
-          new Adjustment({
-            id: "13",
-            routeId: "Green-D",
-            source: "gtfs_creator",
-            sourceLabel: "Kenmore-Newton",
-          }),
-        ],
-        daysOfWeek: [],
-        exceptions: [],
-        tripShortNames: [],
-      }),
-    ])
-  })
-
-  test("properly parses nested relationships like with DisruptionDiff", () => {
-    expect(
-      toModelObject({
-        data: [
-          {
-            attributes: {
-              "created?": true,
-              diffs: [],
-            },
-            id: "6",
-            relationships: {
-              latest_revision: {
-                data: {
-                  id: "6",
-                  type: "disruption_revision",
-                },
-              },
-            },
-            type: "disruption_diff",
-          },
-        ],
-        included: [
-          {
-            attributes: {
-              end_date: "2020-09-03",
-              start_date: "2020-08-02",
-              is_active: true,
-            },
-            id: "6",
-            relationships: {
-              adjustments: {
-                data: [
-                  {
-                    id: "42",
-                    type: "adjustment",
-                  },
-                ],
-              },
-              days_of_week: {
-                data: [
-                  {
-                    id: "19",
-                    type: "day_of_week",
-                  },
-                  {
-                    id: "20",
-                    type: "day_of_week",
-                  },
-                ],
-              },
-              exceptions: {
-                data: [],
-              },
-              trip_short_names: {
-                data: [],
-              },
-            },
-            type: "disruption_revision",
-          },
-          {
-            attributes: {
-              day_name: "wednesday",
-              end_time: null,
-              start_time: null,
-            },
-            id: "19",
-            type: "day_of_week",
-          },
-          {
-            attributes: {
-              day_name: "friday",
-              end_time: null,
-              start_time: null,
-            },
-            id: "20",
-            type: "day_of_week",
-          },
-          {
-            attributes: {
-              route_id: "Green-B",
-              source: "gtfs_creator",
-              source_label: "BostonCollegeWashingtonStreet",
-            },
-            id: "42",
-            type: "adjustment",
-          },
-        ],
-      })
-    ).toEqual([
-      new DisruptionDiff({
-        id: "6",
-        disruptionRevision: new DisruptionRevision({
-          id: "6",
-          startDate: toUTCDate("2020-08-02"),
-          endDate: toUTCDate("2020-09-03"),
-          isActive: true,
-          adjustments: [
-            new Adjustment({
-              id: "42",
-              routeId: "Green-B",
-              source: "gtfs_creator",
-              sourceLabel: "BostonCollegeWashingtonStreet",
-            }),
-          ],
-          daysOfWeek: [
-            new DayOfWeek({
-              id: "19",
-              dayName: "wednesday",
-            }),
-            new DayOfWeek({
-              id: "20",
-              dayName: "friday",
-            }),
-          ],
-          exceptions: [],
-          tripShortNames: [],
-        }),
-        isCreated: true,
-        diffs: [],
+      new Disruption({
+        id: "99",
+        lastPublishedAt: new Date("2020-02-01T00:00:00Z"),
+        revisions: expectedRevisions,
+        draftRevision: expectedRevisions[1],
       }),
     ])
   })
