@@ -10,7 +10,7 @@
 
   label {
     .m-checkbox__image {
-      background-image: url("/images/checkbox-empty.png");
+      background-image: url("../static/images/checkbox-empty.png");
       background-size: 100%;
       cursor: pointer;
       display: inline-block;
@@ -23,7 +23,7 @@
 
   input:checked + label {
     .m-checkbox__image {
-      background-image: url("/images/checkbox-filled.png");
+      background-image: url("../static/images/checkbox-filled.png");
     }
   }
 }
