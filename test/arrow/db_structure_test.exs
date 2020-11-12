@@ -110,7 +110,8 @@ defmodule Arrow.DBStructureTest do
             inserted_at: ~U[2020-09-29 15:17:42.000000Z],
             published_revision_id: nil,
             ready_revision_id: 11206,
-            updated_at: ~U[2020-09-29 15:17:42.000000Z]
+            updated_at: ~U[2020-09-29 15:17:42.000000Z],
+            last_published_at: nil
           }
         ]
       }

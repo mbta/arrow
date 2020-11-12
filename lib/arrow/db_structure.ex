@@ -14,7 +14,8 @@ defmodule Arrow.DBStructure do
          {:ready_revision_id, :optional_fkey},
          {:published_revision_id, :optional_fkey},
          :inserted_at,
-         :updated_at
+         :updated_at,
+         :last_published_at
        ]},
       {"disruption_revisions",
        [
