@@ -2,9 +2,10 @@ defmodule Arrow.DBStructure.Table do
   @type t :: %__MODULE__{
           name: String.t(),
           columns: [atom()],
-          optional_fkeys: [atom()]
+          optional_fkeys: [atom()],
+          sequences: [{atom(), String.t()}]
         }
-  defstruct [:name, columns: [], optional_fkeys: []]
+  defstruct [:name, columns: [], optional_fkeys: [], sequences: []]
 end
 
 defmodule Arrow.DBStructure do
@@ -14,12 +15,13 @@ defmodule Arrow.DBStructure do
   @temp_table "temp_join_table"
   @type db_structure :: [Table.t()]
 
-  @spec structure :: db_structure
+  @spec structure() :: db_structure()
   def structure do
     [
       %Table{
         name: "adjustments",
-        columns: [:id, :route_id, :source, :source_label, :inserted_at, :updated_at]
+        columns: [:id, :route_id, :source, :source_label, :inserted_at, :updated_at],
+        sequences: [{:id, "adjustments_id_seq"}]
       },
       %Table{
         name: "disruptions",
@@ -29,7 +31,8 @@ defmodule Arrow.DBStructure do
           :updated_at,
           :last_published_at
         ],
-        optional_fkeys: [:ready_revision_id, :published_revision_id]
+        optional_fkeys: [:ready_revision_id, :published_revision_id],
+        sequences: [{:id, "disruptions_id_seq1"}]
       },
       %Table{
         name: "disruption_revisions",
@@ -41,7 +44,8 @@ defmodule Arrow.DBStructure do
           :disruption_id,
           :inserted_at,
           :updated_at
-        ]
+        ],
+        sequences: [{:id, "disruptions_id_seq"}]
       },
       %Table{
         name: "disruption_adjustments",
@@ -49,7 +53,8 @@ defmodule Arrow.DBStructure do
           :id,
           :disruption_revision_id,
           :adjustment_id
-        ]
+        ],
+        sequences: [{:id, "disruption_adjustments_id_seq"}]
       },
       %Table{
         name: "disruption_day_of_weeks",
@@ -61,7 +66,8 @@ defmodule Arrow.DBStructure do
           :end_time,
           :inserted_at,
           :updated_at
-        ]
+        ],
+        sequences: [{:id, "disruption_day_of_weeks_id_seq"}]
       },
       %Table{
         name: "disruption_exceptions",
@@ -71,7 +77,8 @@ defmodule Arrow.DBStructure do
           :excluded_date,
           :inserted_at,
           :updated_at
-        ]
+        ],
+        sequences: [{:id, "disruption_exceptions_id_seq"}]
       },
       %Table{
         name: "disruption_trip_short_names",
@@ -81,7 +88,8 @@ defmodule Arrow.DBStructure do
           :trip_short_name,
           :inserted_at,
           :updated_at
-        ]
+        ],
+        sequences: [{:id, "disruption_trip_short_names_id_seq"}]
       }
     ]
   end
@@ -154,6 +162,22 @@ defmodule Arrow.DBStructure do
           |> repo.update_all([])
 
           @temp_table |> from() |> repo.delete_all()
+        end)
+      end)
+
+      # reset sequences to avoid ID collisions
+
+      Enum.each(structure, fn table ->
+        Enum.each(table.sequences, fn {seq_col, seq_name} ->
+          max_id = from(t in table.name, select: max(field(t, ^seq_col))) |> repo.one()
+
+          if max_id do
+            Ecto.Adapters.SQL.query!(
+              repo,
+              "ALTER SEQUENCE #{seq_name} RESTART WITH #{max_id + 1}",
+              []
+            )
+          end
         end)
       end)
     end)
