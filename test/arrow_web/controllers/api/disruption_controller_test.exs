@@ -533,6 +533,63 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
     end
 
     @tag :authenticated
+    test "can update a disruption that's never been 'ready'", %{conn: conn} do
+      adjustment =
+        insert(:adjustment, %{
+          source_label: "test_adjustment_1",
+          route_id: "test_route_1",
+          source: "arrow"
+        })
+
+      disruption = insert(:disruption)
+
+      disruption_revision =
+        insert(:disruption_revision,
+          disruption: disruption,
+          start_date: ~D[2019-10-10],
+          end_date: ~D[2019-11-01],
+          days_of_week: [
+            build(:day_of_week, day_name: DayOfWeek.date_to_day_name(~D[2019-10-10]))
+          ],
+          adjustments: [adjustment]
+        )
+
+      post_data = %{
+        "data" => %{
+          "type" => "disruption",
+          "id" => disruption.id,
+          "attributes" => %{
+            "end_date" => Date.to_iso8601(~D[2019-12-01])
+          }
+        }
+      }
+
+      conn = patch(conn, "/api/disruptions/" <> Integer.to_string(disruption.id), post_data)
+
+      assert %{
+               "data" => %{
+                 "relationships" => %{
+                   "revisions" => %{
+                     "data" => revisions
+                   }
+                 },
+                 "type" => "disruption"
+               },
+               "included" => included
+             } = json_response(conn, 200)
+
+      assert length(revisions) == 2
+
+      new_revision =
+        Enum.find(
+          included,
+          &(&1["type"] == "disruption_revision" and &1["id"] != "#{disruption_revision.id}")
+        )
+
+      assert new_revision["attributes"]["end_date"] == "2019-12-01"
+    end
+
+    @tag :authenticated
     test "fails to update disruption with invalid data", %{conn: conn} do
       adjustment =
         insert(:adjustment, %{

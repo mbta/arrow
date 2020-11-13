@@ -81,7 +81,7 @@ defmodule ArrowWeb.API.DisruptionController do
 
     disruption_revision =
       DisruptionRevision
-      |> DisruptionRevision.only_ready()
+      |> DisruptionRevision.latest_revision()
       |> Repo.get_by!(disruption_id: params["id"])
 
     case Disruption.update(disruption_revision.id, attrs) do
