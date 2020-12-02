@@ -27,6 +27,7 @@ const DisruptionDateRange = ({
           </div>
           <DatePicker
             id="disruption-date-range-start"
+            autoComplete="off"
             selected={fromDate}
             onChange={(date) => {
               if (!Array.isArray(date)) {
@@ -41,6 +42,7 @@ const DisruptionDateRange = ({
           </div>
           <DatePicker
             id="disruption-date-range-end"
+            autoComplete="off"
             selected={toDate}
             onChange={(date) => {
               if (!Array.isArray(date)) {

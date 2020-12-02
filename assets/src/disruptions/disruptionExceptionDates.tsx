@@ -18,15 +18,18 @@ const DisruptionExceptionDateList = ({
   isAddingDate,
   setIsAddingDate,
 }: DisruptionExceptionDateListProps): JSX.Element => {
+  const dates = isAddingDate ? [...exceptionDates, null] : exceptionDates
   return (
     <Form.Group>
-      {exceptionDates.map((date, index) => (
+      {dates.map((date, index) => (
         <div
           id={"date-exception-row-" + index}
           key={"date-exception-row-" + index}
+          data-date-exception-new={!date}
         >
           <Row className="mb-2 ml-0">
             <DatePicker
+              autoComplete="off"
               selected={date}
               onChange={(newDate) => {
                 if (newDate !== null && !Array.isArray(newDate)) {
@@ -43,17 +46,22 @@ const DisruptionExceptionDateList = ({
                       .concat(exceptionDates.slice(index + 1))
                   )
                 }
+                setIsAddingDate(false)
               }}
             />
             <button
               className="btn btn-link"
               data-testid="remove-exception-date"
               onClick={() => {
-                const newExceptionDates = exceptionDates
-                  .slice(0, index)
-                  .concat(exceptionDates.slice(index + 1))
+                if (date) {
+                  const newExceptionDates = exceptionDates
+                    .slice(0, index)
+                    .concat(exceptionDates.slice(index + 1))
 
-                setExceptionDates(newExceptionDates)
+                  setExceptionDates(newExceptionDates)
+                } else {
+                  setIsAddingDate(false)
+                }
               }}
             >
               &#xe161;
@@ -62,27 +70,7 @@ const DisruptionExceptionDateList = ({
         </div>
       ))}
 
-      {isAddingDate ? (
-        <div id="date-exception-new" key="date-exception-new">
-          <Row className="ml-0">
-            <DatePicker
-              selected={null}
-              onChange={(newDate) => {
-                if (newDate !== null && !Array.isArray(newDate)) {
-                  setExceptionDates(exceptionDates.concat([newDate]))
-                  setIsAddingDate(false)
-                }
-              }}
-            />
-            <button
-              className="btn btn-link"
-              onClick={() => setIsAddingDate(false)}
-            >
-              &#xe161;
-            </button>
-          </Row>
-        </div>
-      ) : (
+      {!isAddingDate && (
         <Row key="date-exception-add-link">
           <button
             className="btn btn-link"

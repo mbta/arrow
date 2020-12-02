@@ -24,7 +24,9 @@ describe("DisruptionExceptionDates", () => {
     }
     fireEvent.click(dateExceptionsCheck)
 
-    expect(container.querySelector("#date-exception-new")).not.toBeNull()
+    expect(
+      container.querySelector("[data-date-exception-new=true]")
+    ).not.toBeNull()
     expect(container.querySelector("#date-exception-add-link")).toBeNull()
   })
 
@@ -38,7 +40,7 @@ describe("DisruptionExceptionDates", () => {
     fireEvent.click(dateExceptionsCheck)
 
     const newDateExceptionInput = container.querySelector(
-      "#date-exception-new input"
+      "[data-date-exception-new=true] input"
     )
     if (!newDateExceptionInput) {
       throw new Error("new date exception input not found")
@@ -53,7 +55,9 @@ describe("DisruptionExceptionDates", () => {
     }
     fireEvent.click(addExceptionLink)
 
-    expect(container.querySelector("#date-exception-new")).not.toBeNull()
+    expect(
+      container.querySelector("[data-date-exception-new=true]")
+    ).not.toBeNull()
   })
 
   test("can delete a not-yet-added exception date field", () => {
@@ -66,14 +70,14 @@ describe("DisruptionExceptionDates", () => {
     fireEvent.click(dateExceptionsCheck)
 
     const deleteExceptionButton = container.querySelector(
-      "#date-exception-new button"
+      "[data-date-exception-new=true] button"
     )
     if (!deleteExceptionButton) {
       throw new Error("delete exception button not found")
     }
     fireEvent.click(deleteExceptionButton)
 
-    expect(container.querySelector("#date-exception-new")).toBeNull()
+    expect(container.querySelector("[data-date-exception-new=true]")).toBeNull()
     expect(
       (container.querySelector("#exception-add") as HTMLInputElement).checked
     ).toBe(false)
@@ -89,7 +93,7 @@ describe("DisruptionExceptionDates", () => {
     fireEvent.click(dateExceptionsCheck)
 
     const newDateExceptionInput = container.querySelector(
-      "#date-exception-new input"
+      "[data-date-exception-new=true] input"
     )
     if (!newDateExceptionInput) {
       throw new Error("new date exception input not found")
@@ -107,7 +111,7 @@ describe("DisruptionExceptionDates", () => {
     fireEvent.click(dateExceptionsCheck)
 
     const newDateExceptionInput = container.querySelector(
-      "#date-exception-new input"
+      "[data-date-exception-new=true] input"
     )
     if (!newDateExceptionInput) {
       throw new Error("new date exception input not found")
@@ -138,7 +142,7 @@ describe("DisruptionExceptionDates", () => {
     fireEvent.click(dateExceptionsCheck)
 
     let newDateExceptionInput = container.querySelector(
-      "#date-exception-new input"
+      "[data-date-exception-new=true] input"
     )
     if (!newDateExceptionInput) {
       throw new Error("new date exception input not found")
@@ -173,7 +177,9 @@ describe("DisruptionExceptionDates", () => {
     }
     fireEvent.click(addDateExceptionLink)
 
-    newDateExceptionInput = container.querySelector("#date-exception-new input")
+    newDateExceptionInput = container.querySelector(
+      "[data-date-exception-new=true] input"
+    )
     if (!newDateExceptionInput) {
       throw new Error("new date exception input not found")
     }
@@ -204,7 +210,7 @@ describe("DisruptionExceptionDates", () => {
     fireEvent.click(dateExceptionsCheck)
 
     const newDateExceptionInput = container.querySelector(
-      "#date-exception-new input"
+      "[data-date-exception-new=true] input"
     )
     if (!newDateExceptionInput) {
       throw new Error("new date exception input not found")
@@ -238,7 +244,7 @@ describe("DisruptionExceptionDates", () => {
     fireEvent.click(dateExceptionsYesCheck)
 
     const newDateExceptionInput = container.querySelector(
-      "#date-exception-new input"
+      "[data-date-exception-new=true] input"
     )
     if (!newDateExceptionInput) {
       throw new Error("new date exception input not found")
