@@ -366,7 +366,7 @@ describe("EditDisruption", () => {
     }
 
     const exceptionDateInput = container.querySelector(
-      "#date-exception-new input"
+      "[data-date-exception-new=true] input"
     )
 
     if (exceptionDateInput) {
