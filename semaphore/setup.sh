@@ -3,7 +3,7 @@ set -e
 
 ELIXIR_VERSION=1.9.4
 ERLANG_VERSION=22.2.1
-NODEJS_VERSION=13.1
+NODEJS_VERSION=14.8.0
 
 change-phantomjs-version 2.1.1
 nvm install $NODEJS_VERSION --latest-npm
