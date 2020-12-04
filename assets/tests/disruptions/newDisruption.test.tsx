@@ -12,7 +12,7 @@ import { NewDisruption } from "../../src/disruptions/newDisruption"
 import Adjustment from "../../src/models/adjustment"
 
 const withElement = (
-  container: HTMLElement,
+  container: Element,
   selector: string,
   fn: (arg0: Element) => any
 ) => {
