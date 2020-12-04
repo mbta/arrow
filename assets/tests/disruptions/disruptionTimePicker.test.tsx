@@ -5,9 +5,18 @@ import { DayOfWeekTimeRanges } from "../../src/disruptions/time"
 import { DisruptionTimePicker } from "../../src/disruptions/disruptionTimePicker"
 
 const DisruptionTimePickerWithProps = ({}): JSX.Element => {
-  const [disruptionDaysOfWeek, setDisruptionDaysOfWeek] = React.useState<
-    DayOfWeekTimeRanges
-  >([null, null, null, null, null, null, null])
+  const [
+    disruptionDaysOfWeek,
+    setDisruptionDaysOfWeek,
+  ] = React.useState<DayOfWeekTimeRanges>([
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+  ])
 
   return (
     <DisruptionTimePicker

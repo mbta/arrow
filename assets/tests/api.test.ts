@@ -21,7 +21,7 @@ const mockFetchFailure = () => {
 describe("apiSend", () => {
   test("parses successful create", (done) => {
     mockFetch(201, { data: "success" })
-    const successParse = jest.fn(() => "success")
+    const successParse = jest.fn<string, [{ data: string }]>(() => "success")
     apiSend({
       url: "/",
       method: "POST",
@@ -37,7 +37,7 @@ describe("apiSend", () => {
 
   test("parses successful update", (done) => {
     mockFetch(200, { data: "success" })
-    const successParse = jest.fn(() => "success")
+    const successParse = jest.fn<string, [{ data: string }]>(() => "success")
     apiSend({
       url: "/",
       method: "PATCH",
@@ -57,7 +57,7 @@ describe("apiSend", () => {
         status: 204,
       } as Response)
 
-    const successParse = jest.fn(() => "success")
+    const successParse = jest.fn<string, [null]>(() => "success")
     apiSend({
       url: "/",
       method: "DELETE",
@@ -73,7 +73,7 @@ describe("apiSend", () => {
 
   test("parses error response", (done) => {
     mockFetch(400, { data: "error" })
-    const errorParse = jest.fn(() => "error")
+    const errorParse = jest.fn<string, [{ data: string }]>(() => "error")
     apiSend({
       url: "/",
       method: "POST",
@@ -139,7 +139,7 @@ describe("apiGet", () => {
   test("returns parsed data", (done) => {
     mockFetch(200, { data: "raw" })
 
-    const parse = jest.fn(() => "parsed")
+    const parse = jest.fn<string, [{ data: string }]>(() => "parsed")
 
     apiGet({
       url: "/",
