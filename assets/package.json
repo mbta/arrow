@@ -34,7 +34,7 @@
     "@testing-library/dom": "^7.28.1",
     "@testing-library/react": "^11.2.2",
     "@types/classnames": "^2.2.11",
-    "@types/jest": "^26.0.16",
+    "@types/jest": "^26.0.19",
     "@types/react": "^17.0.0",
     "@types/react-datepicker": "^3.1.2",
     "@types/react-dom": "^17.0.0",
