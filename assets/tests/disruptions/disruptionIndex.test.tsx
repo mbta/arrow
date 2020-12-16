@@ -3,6 +3,8 @@ import { BrowserRouter } from "react-router-dom"
 import {
   render,
   fireEvent,
+  getByText,
+  getAllByText,
   queryByAttribute,
   queryByText,
 } from "@testing-library/react"
@@ -11,7 +13,7 @@ import {
   DisruptionIndexView,
   DisruptionIndex,
   getRouteColor,
-  anyMatchesFilter,
+  revisionMatchesFilters,
   FilterGroup,
   Routes,
 } from "../../src/disruptions/disruptionIndex"
@@ -1054,6 +1056,72 @@ describe("DisruptionIndexConnected", () => {
     expect(rows.length).toEqual(0)
   })
 
+  test("displays only published revisions on the calendar view", async () => {
+    const today = new Date()
+    today.setUTCHours(0, 0, 0, 0)
+    const nextWeek = new Date(
+      Date.UTC(
+        today.getUTCFullYear(),
+        today.getUTCMonth(),
+        today.getUTCDate() + 7
+      )
+    )
+
+    const published = new DisruptionRevision({
+      id: "1",
+      disruptionId: "1",
+      startDate: today,
+      endDate: nextWeek,
+      isActive: true,
+      adjustments: [
+        new Adjustment({
+          id: "1",
+          routeId: "Red",
+          sourceLabel: "AlewifeHarvard",
+        }),
+      ],
+      daysOfWeek: [new DayOfWeek({ dayName: "monday" })],
+      exceptions: [],
+      tripShortNames: [],
+      status: DisruptionView.Published,
+    })
+    const ready = new DisruptionRevision({
+      ...published,
+      id: "2",
+      status: DisruptionView.Ready,
+      daysOfWeek: [new DayOfWeek({ dayName: "tuesday" })],
+    })
+    const draft = new DisruptionRevision({
+      ...ready,
+      id: "3",
+      status: DisruptionView.Draft,
+      isActive: false,
+    })
+
+    jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
+      return Promise.resolve([
+        new Disruption({
+          id: "1",
+          publishedRevision: published,
+          readyRevision: ready,
+          draftRevision: draft,
+          revisions: [published, ready, draft],
+        }),
+      ])
+    })
+
+    const container = document.createElement("div")
+    document.body.appendChild(container)
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    await act(async () => {
+      ReactDOM.render(<DisruptionIndexWithRouter connected />, container)
+    })
+    fireEvent.click(getByText(container, /calendar view/i))
+
+    expect(getAllByText(container, /AlewifeHarvard/).length).toBe(1)
+  })
+
   test("renders error", async () => {
     jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
       return Promise.resolve("error")
@@ -1088,7 +1156,7 @@ describe("getRouteColor", () => {
   })
 })
 
-describe("anyMatchesFilter", () => {
+describe("revisionMatchesFilters", () => {
   const today = new Date(2020, 6, 15)
   const oneWeekAgo = new Date(2020, 6, 8)
   const twoWeeksAgo = new Date(2020, 6, 1)
@@ -1150,101 +1218,124 @@ describe("anyMatchesFilter", () => {
     status: DisruptionView.Published,
   })
 
-  const routeFilters = { state: {}, anyActive: false }
-  const statusFilters = { state: {}, anyActive: false }
-  const dateFilters = { state: {}, anyActive: false }
+  const noRouteFilters = { state: {}, anyActive: false }
+  const noStatusFilters = { state: {}, anyActive: false }
+  const noDateFilters = { state: {}, anyActive: false }
+
+  const onlyPublished = { state: { published: true }, anyActive: true }
+  const onlyReady = { state: { ready: true }, anyActive: true }
+  const onlyDraft = { state: { needs_review: true }, anyActive: true }
+  const onlyRed = { state: { Red: true }, anyActive: true }
+  const includePast = { state: { include_past: true }, anyActive: true }
 
   test.each([
+    // no filters
     [
-      [published, ready, draft],
+      published,
       "",
-      routeFilters,
-      statusFilters,
-      dateFilters,
+      noRouteFilters,
+      noStatusFilters,
+      noDateFilters,
       oneWeekAgo,
       true,
     ],
     [
-      [published, ready, draft],
+      ready,
       "",
-      routeFilters,
-      { state: { ...statusFilters.state, published: true }, anyActive: true },
-      dateFilters,
+      noRouteFilters,
+      noStatusFilters,
+      noDateFilters,
       oneWeekAgo,
       true,
     ],
     [
-      [published, ready, draft],
+      draft,
       "",
-      routeFilters,
-      { state: { ...statusFilters.state, ready: true }, anyActive: true },
-      dateFilters,
+      noRouteFilters,
+      noStatusFilters,
+      noDateFilters,
+      oneWeekAgo,
+      true,
+    ],
+    // published status filter
+    [
+      published,
+      "",
+      noRouteFilters,
+      onlyPublished,
+      noDateFilters,
       oneWeekAgo,
       true,
     ],
     [
-      [published, ready, draft],
+      ready,
       "",
-      routeFilters,
-      {
-        state: { ...statusFilters.state, needs_review: true },
-        anyActive: true,
-      },
-      dateFilters,
-      oneWeekAgo,
-      true,
-    ],
-    [
-      [published, ready, draft],
-      "",
-      { ...routeFilters, state: { ...routeFilters.state, Red: true } },
-      statusFilters,
-      dateFilters,
-      oneWeekAgo,
-      true,
-    ],
-    [
-      [
-        new DisruptionRevision({ ...published, status: DisruptionView.Ready }),
-        ready,
-        draft,
-      ],
-      "",
-      routeFilters,
-      {
-        state: { ...statusFilters.state, published: true },
-        anyActive: true,
-      },
-      dateFilters,
+      noRouteFilters,
+      onlyPublished,
+      noDateFilters,
       oneWeekAgo,
       false,
     ],
     [
-      [published, ready, draft],
+      draft,
       "",
-      {
-        ...routeFilters,
-        anyActive: true,
-      },
-      statusFilters,
-      dateFilters,
+      noRouteFilters,
+      onlyPublished,
+      noDateFilters,
       oneWeekAgo,
       false,
     ],
-    [[past], "", routeFilters, statusFilters, dateFilters, oneWeekAgo, false],
+    // ready status filter
     [
-      [past],
+      published,
       "",
-      routeFilters,
-      statusFilters,
-      { state: { ...dateFilters.state, include_past: true }, anyActive: true },
+      noRouteFilters,
+      onlyReady,
+      noDateFilters,
       oneWeekAgo,
-      true,
+      false,
     ],
+    [ready, "", noRouteFilters, onlyReady, noDateFilters, oneWeekAgo, true],
+    [
+      published,
+      "",
+      noRouteFilters,
+      onlyReady,
+      noDateFilters,
+      oneWeekAgo,
+      false,
+    ],
+    // needs review status filter
+    [
+      published,
+      "",
+      noRouteFilters,
+      onlyDraft,
+      noDateFilters,
+      oneWeekAgo,
+      false,
+    ],
+    [ready, "", noRouteFilters, onlyDraft, noDateFilters, oneWeekAgo, false],
+    [draft, "", noRouteFilters, onlyDraft, noDateFilters, oneWeekAgo, true],
+    // route filter
+    [published, "", onlyRed, noStatusFilters, noDateFilters, oneWeekAgo, true],
+    [ready, "", onlyRed, noStatusFilters, noDateFilters, oneWeekAgo, false],
+    [draft, "", onlyRed, noStatusFilters, noDateFilters, oneWeekAgo, false],
+    // include past filter
+    [
+      past,
+      "",
+      noRouteFilters,
+      noStatusFilters,
+      noDateFilters,
+      oneWeekAgo,
+      false,
+    ],
+    [past, "", noRouteFilters, noStatusFilters, includePast, oneWeekAgo, true],
   ])(
-    "returns true if any DisruptionRevision matches a set of filters",
+    "%o with filters (%p, %o, %o, %o, %p)",
     (
-      revisions,
+      revision,
       query,
       routeFiltersArg,
       statusFiltersArg,
@@ -1253,8 +1344,8 @@ describe("anyMatchesFilter", () => {
       expected
     ) => {
       expect(
-        anyMatchesFilter(
-          revisions,
+        revisionMatchesFilters(
+          revision,
           query,
           routeFiltersArg as FilterGroup<Routes>,
           statusFiltersArg as FilterGroup<
@@ -1263,7 +1354,7 @@ describe("anyMatchesFilter", () => {
           dateFiltersArg as FilterGroup<"include_past">,
           pastThreshold
         )
-      ).toEqual(expected)
+      ).toBe(expected)
     }
   )
 })
