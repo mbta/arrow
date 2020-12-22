@@ -7,6 +7,9 @@ set -e -u
 # * DOCKER_REPO
 awsenv=$1
 
+DOCKER_USERNAME=$(printenv DOCKER_USERNAME || echo "")
+DOCKER_PASSWORD=$(printenv DOCKER_PASSWORD || echo "")
+
 # log into docker hub if credentials are in the environment
 if [ -n "$DOCKER_USERNAME" ]; then
   echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
