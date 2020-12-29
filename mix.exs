@@ -72,7 +72,7 @@ defmodule Arrow.MixProject do
       {:guardian, "~> 2.0"},
       {:ueberauth, "~> 0.6"},
       {:ueberauth_cognito, "~> 0.1"},
-      {:tzdata, "~> 1.0.3"}
+      {:tzdata, "~> 1.1.0"}
     ]
   end
 
