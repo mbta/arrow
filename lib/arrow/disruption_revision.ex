@@ -2,10 +2,8 @@ defmodule Arrow.DisruptionRevision do
   use Ecto.Schema
   import Ecto.Query
 
-  alias Arrow.Disruption
-  alias Arrow.Disruption.DayOfWeek
-  alias Arrow.Disruption.Exception
-  alias Arrow.Disruption.TripShortName
+  alias Arrow.{Disruption, Repo}
+  alias Arrow.Disruption.{DayOfWeek, Exception, TripShortName}
 
   @type t :: %__MODULE__{
           end_date: Date.t() | nil,
@@ -148,19 +146,23 @@ defmodule Arrow.DisruptionRevision do
 
   @spec publish!([integer()]) :: :ok
   def publish!(ids) do
-    Arrow.Repo.transaction(fn ->
-      {updated, _} =
-        from(d in Arrow.Disruption,
-          join: dr in __MODULE__,
-          on: dr.disruption_id == d.id,
-          where: dr.id in ^ids and dr.id <= d.ready_revision_id,
-          update: [set: [published_revision_id: dr.id, last_published_at: fragment("now()")]]
-        )
-        |> Arrow.Repo.update_all([])
+    disruptions_with_revisions =
+      from(d in Disruption, join: dr in assoc(d, :revisions), where: dr.id in ^ids)
 
-      if updated != Enum.count(ids) do
-        raise Disruption.Error.PublishedAfterReady
-      end
+    Repo.transaction(fn ->
+      # Validate each to-be-published revision is older than, or is, the ready revision
+      valid_ids_count =
+        from([d, dr] in disruptions_with_revisions, where: dr.id <= d.ready_revision_id)
+        |> Repo.aggregate(:count)
+
+      if valid_ids_count != length(ids), do: raise(Disruption.Error.PublishedAfterReady)
+
+      # Update disruptions only where the published revision is changing
+      from([d, dr] in disruptions_with_revisions,
+        where: dr.id != d.published_revision_id or is_nil(d.published_revision_id),
+        update: [set: [published_revision_id: dr.id, last_published_at: fragment("now()")]]
+      )
+      |> Repo.update_all([])
     end)
 
     :ok

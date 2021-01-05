@@ -79,6 +79,26 @@ defmodule Arrow.DisruptionRevisionTest do
       assert_in_delta(DateTime.to_unix(new_d.last_published_at), :os.system_time(:second), 60)
     end
 
+    test "only updates last_published_at for disruptions whose published revision changed" do
+      timestamp = ~U[2020-01-01 00:00:00Z]
+      [changing, unchanging] = insert_list(2, :disruption, last_published_at: timestamp)
+      [changing_rev1, changing_rev2] = insert_list(2, :disruption_revision, disruption: changing)
+      unchanging_rev = insert(:disruption_revision, disruption: unchanging)
+
+      changing
+      |> change(ready_revision: changing_rev2, published_revision: changing_rev1)
+      |> Repo.update!()
+
+      unchanging
+      |> change(ready_revision: unchanging_rev, published_revision: unchanging_rev)
+      |> Repo.update!()
+
+      :ok = DisruptionRevision.publish!([changing_rev2.id, unchanging_rev.id])
+
+      assert Repo.reload!(changing).last_published_at != timestamp
+      assert Repo.reload!(unchanging).last_published_at == timestamp
+    end
+
     test "raises exception when trying to publish revision more recent than ready revision" do
       d1 = insert(:disruption)
       dr1 = insert(:disruption_revision, %{disruption: d1})
