@@ -1218,6 +1218,13 @@ describe("revisionMatchesFilters", () => {
     status: DisruptionView.Published,
   })
 
+  const publishedDeleted = new DisruptionRevision({
+    ...published,
+    isActive: false,
+  })
+  const readyDeleted = new DisruptionRevision({ ...ready, isActive: false })
+  const draftDeleted = new DisruptionRevision({ ...draft, isActive: false })
+
   const noRouteFilters = { state: {}, anyActive: false }
   const noStatusFilters = { state: {}, anyActive: false }
   const noDateFilters = { state: {}, anyActive: false }
@@ -1332,6 +1339,34 @@ describe("revisionMatchesFilters", () => {
       false,
     ],
     [past, "", noRouteFilters, noStatusFilters, includePast, oneWeekAgo, true],
+    // deleted revisions
+    [
+      publishedDeleted,
+      "",
+      noRouteFilters,
+      onlyPublished,
+      noDateFilters,
+      oneWeekAgo,
+      false,
+    ],
+    [
+      readyDeleted,
+      "",
+      noRouteFilters,
+      onlyReady,
+      noDateFilters,
+      oneWeekAgo,
+      true,
+    ],
+    [
+      draftDeleted,
+      "",
+      noRouteFilters,
+      onlyDraft,
+      noDateFilters,
+      oneWeekAgo,
+      true,
+    ],
   ])(
     "%o with filters (%p, %o, %o, %o, %p)",
     (

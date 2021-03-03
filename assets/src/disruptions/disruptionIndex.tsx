@@ -166,7 +166,7 @@ const revisionMatchesFilters = (
   pastThreshold: Date
 ) =>
   !!(
-    revision.isActive &&
+    (revision.isActive || revision.status !== DisruptionView.Published) &&
     (dateFilters.anyActive ||
       (revision.endDate && revision.endDate > pastThreshold)) &&
     (!routeFilters.anyActive ||
