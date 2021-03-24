@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Instructions from:
 # https://github.com/nodesource/distributions/blob/master/README.md
 RUN  curl -sL https://deb.nodesource.com/setup_14.x | bash - \
-  && apt-get install -y nodejs
+  && apt-get install -y nodejs npm \
+  && npm install -g npm@latest
 
 WORKDIR /root
 ADD . .
