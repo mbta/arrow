@@ -4,12 +4,12 @@ ENV LANG=C.UTF-8 \
   MIX_ENV=prod
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-  curl git
+  ca-certificates curl git 
 
 # Instructions from:
 # https://github.com/nodesource/distributions/blob/master/README.md
 RUN  curl -sL https://deb.nodesource.com/setup_14.x | bash - \
-  && apt-get install -y nodejs npm \
+  && apt-get install -y nodejs \
   && npm install -g npm@latest
 
 WORKDIR /root
