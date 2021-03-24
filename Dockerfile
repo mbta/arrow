@@ -3,6 +3,9 @@ FROM hexpm/elixir:1.9.4-erlang-22.2.1-debian-buster-20200224 as builder
 ENV LANG=C.UTF-8 \
   MIX_ENV=prod
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  curl git
+
 # Instructions from:
 # https://github.com/nodesource/distributions/blob/master/README.md
 RUN  curl -sL https://deb.nodesource.com/setup_14.x | bash - \
