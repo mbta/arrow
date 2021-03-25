@@ -1,6 +1,5 @@
 defmodule ArrowWeb.TryApiTokenAuthTest do
   use ArrowWeb.ConnCase
-  use Plug.Test
   import ExUnit.CaptureLog
   import Test.Support.Helpers
 

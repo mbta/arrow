@@ -299,7 +299,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
       assert %{
                "data" => %{
                  "attributes" => %{},
-                 "id" => disruption_id,
+                 "id" => _,
                  "relationships" => %{
                    "published_revision" => %{"data" => nil},
                    "ready_revision" => %{"data" => nil},
@@ -478,7 +478,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
       assert %{
                "data" => %{
                  "attributes" => %{},
-                 "id" => disruption_id,
+                 "id" => _,
                  "relationships" => %{
                    "published_revision" => %{"data" => nil},
                    "ready_revision" => %{
@@ -670,7 +670,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
 
       conn = patch(conn, "/api/disruptions/" <> Integer.to_string(disruption.id), post_data)
 
-      assert resp = json_response(conn, 400)
+      assert json_response(conn, 400)
     end
   end
 
