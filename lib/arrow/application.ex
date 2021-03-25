@@ -12,6 +12,8 @@ defmodule Arrow.Application do
     # List all child processes to be supervised
     children =
       [
+        # Start the PubSub system
+        {Phoenix.PubSub, name: Arrow.PubSub},
         # Start the Ecto repository
         Arrow.Repo,
         # Start the endpoint when the application starts

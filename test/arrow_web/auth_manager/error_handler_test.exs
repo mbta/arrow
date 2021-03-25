@@ -1,6 +1,5 @@
 defmodule ArrowWeb.AuthManager.ErrorHandlerTest do
   use ArrowWeb.ConnCase
-  use Plug.Test
 
   describe "auth_error/3" do
     test "redirects to Cognito login if there's no refresh key", %{conn: conn} do
