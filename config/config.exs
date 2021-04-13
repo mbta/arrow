@@ -25,7 +25,7 @@ config :arrow,
 config :arrow, ArrowWeb.Endpoint,
   url: [host: "localhost"],
   render_errors: [view: ArrowWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: Arrow.PubSub, adapter: Phoenix.PubSub.PG2]
+  pubsub_server: Arrow.PubSub
 
 config :arrow, ArrowWeb.AuthManager, issuer: "arrow"
 

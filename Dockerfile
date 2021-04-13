@@ -1,23 +1,27 @@
-FROM elixir:1.9.4 as builder
+FROM hexpm/elixir:1.11.4-erlang-23.3-debian-buster-20210208 as builder
 
 ENV LANG=C.UTF-8 \
   MIX_ENV=prod
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  ca-certificates curl git
+
 # Instructions from:
 # https://github.com/nodesource/distributions/blob/master/README.md
 RUN  curl -sL https://deb.nodesource.com/setup_14.x | bash - \
-  && apt-get install -y nodejs
+  && apt-get install -y nodejs \
+  && npm install -g npm@latest
 
 WORKDIR /root
 ADD . .
 
 RUN mix local.hex --force && \
-    mix local.rebar --force && \
-    mix do deps.get --only prod, compile --force && \
-    npm --prefix assets ci && \
-    npm --prefix assets run deploy && \
-    mix phx.digest && \
-    mix release
+  mix local.rebar --force && \
+  mix do deps.get --only prod, compile --force && \
+  npm --prefix assets ci && \
+  npm --prefix assets run deploy && \
+  mix phx.digest && \
+  mix release
 
 FROM debian:buster
 

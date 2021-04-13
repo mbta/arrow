@@ -157,40 +157,35 @@ type FilterGroup<G extends string> = {
   updateFiltersState: React.Dispatch<FilterGroupState<G>>
 }
 
-const anyMatchesFilter = (
-  revisions: DisruptionRevision[],
+const revisionMatchesFilters = (
+  revision: DisruptionRevision,
   query: string,
   routeFilters: FilterGroup<Routes>,
   statusFilters: FilterGroup<"published" | "ready" | "needs_review">,
   dateFilters: FilterGroup<"include_past">,
   pastThreshold: Date
-) => {
-  return revisions.some((revision) => {
-    return (
-      (dateFilters.anyActive ||
-        (revision.endDate && revision.endDate > pastThreshold)) &&
-      (!routeFilters.anyActive ||
-        (revision.adjustments || []).some(
-          (adj) =>
-            adj.routeId &&
-            (routeFilters.state[adj.routeId as Routes] ||
-              (routeFilters.state.Commuter && adj.routeId.includes("CR-")))
-        )) &&
-      (!statusFilters.anyActive ||
-        (revision.status === DisruptionView.Published &&
-          statusFilters.state.published) ||
-        (revision.status === DisruptionView.Ready &&
-          statusFilters.state.ready) ||
-        (revision.status === DisruptionView.Draft &&
-          statusFilters.state.needs_review)) &&
+) =>
+  !!(
+    (revision.isActive || revision.status !== DisruptionView.Published) &&
+    (dateFilters.anyActive ||
+      (revision.endDate && revision.endDate > pastThreshold)) &&
+    (!routeFilters.anyActive ||
       (revision.adjustments || []).some(
         (adj) =>
-          adj.sourceLabel && adj.sourceLabel.toLowerCase().includes(query)
-      ) &&
-      revision.isActive
+          adj.routeId &&
+          (routeFilters.state[adj.routeId as Routes] ||
+            (routeFilters.state.Commuter && adj.routeId.includes("CR-")))
+      )) &&
+    (!statusFilters.anyActive ||
+      (revision.status === DisruptionView.Published &&
+        statusFilters.state.published) ||
+      (revision.status === DisruptionView.Ready && statusFilters.state.ready) ||
+      (revision.status === DisruptionView.Draft &&
+        statusFilters.state.needs_review)) &&
+    (revision.adjustments || []).some(
+      (adj) => adj.sourceLabel && adj.sourceLabel.toLowerCase().includes(query)
     )
-  })
-}
+  )
 
 const useFilterGroup = <G extends string>(group: G[]): FilterGroup<G> => {
   const [filtersState, updateFiltersState] = React.useState<
@@ -287,18 +282,27 @@ const DisruptionIndexView = ({
       const uniqueRevisions = [published, ready, draft].filter(
         (x) => !!x
       ) as DisruptionRevision[]
-
-      if (
-        anyMatchesFilter(
-          uniqueRevisions,
+      const matchingRevisions = uniqueRevisions.filter((revision) =>
+        revisionMatchesFilters(
+          revision,
           query,
           routeFilters,
           statusFilters,
           dateFilters,
           pastThreshold
         )
-      ) {
-        return [...acc, ...uniqueRevisions]
+      )
+
+      // The table view displays *all* revisions of disruptions which have at
+      // least one revision that matches the filters. The calendar view only
+      // displays the matching revisions themselves, otherwise there would be
+      // duplicate entries.
+      if (matchingRevisions.length > 0) {
+        if (view === "table") {
+          return [...acc, ...uniqueRevisions]
+        } else {
+          return [...acc, ...matchingRevisions]
+        }
       } else {
         return acc
       }
@@ -310,6 +314,7 @@ const DisruptionIndexView = ({
     statusFilters,
     dateFilters,
     pastThreshold,
+    view,
   ])
 
   const [selectedRevisions, setSelectedRevisions] = React.useState<{
@@ -606,6 +611,6 @@ export {
   Routes,
   getRouteIcon,
   getRouteColor,
-  anyMatchesFilter,
+  revisionMatchesFilters,
   FilterGroup,
 }

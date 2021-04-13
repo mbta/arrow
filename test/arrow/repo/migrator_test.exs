@@ -27,7 +27,7 @@ defmodule Arrow.Repo.MigratorTest do
 
   describe "start_link/1" do
     test "can start the server" do
-      assert {:ok, pid} = Migrator.start_link(module: FakeMigrator)
+      assert {:ok, _pid} = Migrator.start_link(module: FakeMigrator)
     end
 
     test "runs migrations and ends when run synchronously" do
