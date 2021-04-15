@@ -57,7 +57,7 @@
     "jest": "^25.5.4",
     "mini-css-extract-plugin": "^1.4.1",
     "node-sass": "^5.0.0",
-    "npm-force-resolutions": "0.0.3",
+    "npm-force-resolutions": "0.0.10",
     "optimize-css-assets-webpack-plugin": "^5.0.4",
     "postcss": "^8.2.10",
     "postcss-loader": "^4.2.0",
