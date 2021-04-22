@@ -55,7 +55,7 @@
     "file-loader": "^6.2.0",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^25.5.4",
-    "mini-css-extract-plugin": "^1.4.1",
+    "mini-css-extract-plugin": "^1.5.0",
     "node-sass": "^5.0.0",
     "npm-force-resolutions": "0.0.3",
     "optimize-css-assets-webpack-plugin": "^5.0.4",
