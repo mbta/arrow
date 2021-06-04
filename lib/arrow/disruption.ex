@@ -146,18 +146,6 @@ defmodule Arrow.Disruption do
     {updated, new}
   end
 
-  @spec diff_revisions(t()) :: [[String.t()]]
-  def diff_revisions(disruption) do
-    do_diff_revisions(disruption.revisions, [])
-  end
-
-  def do_diff_revisions([], diffs), do: Enum.reverse(diffs)
-  def do_diff_revisions([_one], diffs), do: Enum.reverse(diffs)
-
-  def do_diff_revisions([older, newer | rest], diffs) do
-    do_diff_revisions([newer | rest], [DisruptionRevision.diff(older, newer) | diffs])
-  end
-
   @spec common_validations(Ecto.Changeset.t()) :: Ecto.Changeset.t(t())
   defp common_validations(changeset) do
     changeset
