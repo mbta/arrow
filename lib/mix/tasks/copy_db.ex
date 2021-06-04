@@ -1,4 +1,8 @@
 defmodule Mix.Tasks.CopyDb do
+  @moduledoc """
+  Mix task to clone the Arrow database (dev or prod) in AWS locally.
+  """
+
   use Mix.Task
   require Logger
 

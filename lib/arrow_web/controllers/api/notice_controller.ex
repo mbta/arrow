@@ -15,26 +15,24 @@ defmodule ArrowWeb.API.NoticeController do
   @spec handle(Plug.Conn.t(), map(), function(), String.t(), integer()) ::
           Plug.Conn.t()
   defp handle(conn, params, update_fn, notice_event, success_status \\ 200) do
-    try do
-      revision_ids =
-        params["revision_ids"]
-        |> String.split(",")
-        |> Enum.map(&String.to_integer/1)
+    revision_ids =
+      params["revision_ids"]
+      |> String.split(",")
+      |> Enum.map(&String.to_integer/1)
 
-      :ok = update_fn.(revision_ids)
+    :ok = update_fn.(revision_ids)
 
-      :ok = Logger.info("#{notice_event} revision_ids=#{params["revision_ids"]}")
+    :ok = Logger.info("#{notice_event} revision_ids=#{params["revision_ids"]}")
 
-      send_resp(conn, success_status, "")
-    rescue
-      ArgumentError ->
-        send_resp(conn, 400, "bad argument")
+    send_resp(conn, success_status, "")
+  rescue
+    ArgumentError ->
+      send_resp(conn, 400, "bad argument")
 
-      Arrow.Disruption.Error.PublishedAfterReady ->
-        send_resp(conn, 400, "can't publish revision more recent than ready revision")
+    Arrow.Disruption.PublishedAfterReadyError ->
+      send_resp(conn, 400, "can't publish revision more recent than ready revision")
 
-      Arrow.Disruption.Error.ReadyNotLatest ->
-        send_resp(conn, 400, "can't ready revision more recent than latest revision")
-    end
+    Arrow.Disruption.ReadyNotLatestError ->
+      send_resp(conn, 400, "can't ready revision more recent than latest revision")
   end
 end

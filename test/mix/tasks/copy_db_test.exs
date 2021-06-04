@@ -145,7 +145,7 @@ end
 
 defmodule Fake.HTTPoison do
   defmodule Happy do
-    def start() do
+    def start do
       {:ok, nil}
     end
 
@@ -249,7 +249,7 @@ defmodule Fake.HTTPoison do
   end
 
   defmodule Sad.InvalidJson do
-    def start() do
+    def start do
       {:ok, nil}
     end
 
@@ -259,7 +259,7 @@ defmodule Fake.HTTPoison do
   end
 
   defmodule Sad.Status401 do
-    def start() do
+    def start do
       {:ok, nil}
     end
 

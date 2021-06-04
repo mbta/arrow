@@ -1,4 +1,6 @@
 defmodule Arrow.Ueberauth.Strategy.Fake do
+  @moduledoc false
+
   use Ueberauth.Strategy
 
   @impl Ueberauth.Strategy

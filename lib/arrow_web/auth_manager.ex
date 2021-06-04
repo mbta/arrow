@@ -1,4 +1,6 @@
 defmodule ArrowWeb.AuthManager do
+  @moduledoc false
+
   use Guardian, otp_app: :arrow
 
   @impl true

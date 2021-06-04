@@ -110,7 +110,7 @@ defmodule Arrow.DisruptionRevisionTest do
 
       dr2_2 = insert(:disruption_revision, %{disruption: d2})
 
-      assert_raise Arrow.Disruption.Error.PublishedAfterReady, fn ->
+      assert_raise Arrow.Disruption.PublishedAfterReadyError, fn ->
         DisruptionRevision.publish!([dr1.id, dr2_2.id])
       end
 
@@ -132,7 +132,7 @@ defmodule Arrow.DisruptionRevisionTest do
       d2 = insert(:disruption)
       dr2 = insert(:disruption_revision, %{disruption: d2})
 
-      assert_raise Arrow.Disruption.Error.PublishedAfterReady, fn ->
+      assert_raise Arrow.Disruption.PublishedAfterReadyError, fn ->
         DisruptionRevision.publish!([dr1.id, dr2.id])
       end
 
@@ -163,7 +163,7 @@ defmodule Arrow.DisruptionRevisionTest do
       dr1 = insert(:disruption_revision, %{disruption: d1})
       _dr2 = insert(:disruption_revision, %{disruption: d1})
 
-      assert_raise Arrow.Disruption.Error.ReadyNotLatest, fn ->
+      assert_raise Arrow.Disruption.ReadyNotLatestError, fn ->
         DisruptionRevision.ready!([dr1.id])
       end
 

@@ -57,7 +57,7 @@ defmodule Arrow.Repo.MigratorTest do
     end
   end
 
-  defp log_level_info() do
+  defp log_level_info do
     old_level = Logger.level()
 
     on_exit(fn ->

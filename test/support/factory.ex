@@ -1,4 +1,6 @@
 defmodule Arrow.Factory do
+  @moduledoc false
+
   use ExMachina.Ecto, repo: Arrow.Repo
 
   def adjustment_factory do

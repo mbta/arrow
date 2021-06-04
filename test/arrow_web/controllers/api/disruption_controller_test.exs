@@ -1,6 +1,6 @@
 defmodule ArrowWeb.API.DisruptionControllerTest do
   use ArrowWeb.ConnCase
-  alias Arrow.{Repo, Adjustment}
+  alias Arrow.{Adjustment, Repo}
   alias Arrow.Disruption.DayOfWeek
   import Arrow.Factory
 

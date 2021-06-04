@@ -1,4 +1,8 @@
 defmodule Arrow.Disruption.Exception do
+  @moduledoc """
+  Dates within a disruption's time frame for which it does not apply.
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -10,8 +14,8 @@ defmodule Arrow.Disruption.Exception do
         }
 
   schema "disruption_exceptions" do
-    field :excluded_date, :date
-    belongs_to :disruption_revision, Arrow.DisruptionRevision
+    field(:excluded_date, :date)
+    belongs_to(:disruption_revision, Arrow.DisruptionRevision)
 
     timestamps(type: :utc_datetime)
   end

@@ -1,4 +1,8 @@
 defmodule ArrowWeb.TryApiTokenAuth do
+  @moduledoc """
+  Plug for authentication via API token, used by e.g. gtfs_creator
+  """
+
   import Plug.Conn
   require Logger
 

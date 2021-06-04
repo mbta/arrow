@@ -1,4 +1,8 @@
 defmodule Arrow.DisruptionRevision do
+  @moduledoc """
+  A particular version of a Disruption, in that Disruption's creation/edit/deletion life cycle.
+  """
+
   use Ecto.Schema
   import Ecto.Query
 
@@ -19,15 +23,15 @@ defmodule Arrow.DisruptionRevision do
         }
 
   schema "disruption_revisions" do
-    field :end_date, :date
-    field :start_date, :date
-    field :is_active, :boolean
+    field(:end_date, :date)
+    field(:start_date, :date)
+    field(:is_active, :boolean)
 
-    belongs_to :disruption, Disruption
-    has_many :days_of_week, DayOfWeek, on_replace: :delete
-    has_many :exceptions, Exception, on_replace: :delete
-    has_many :trip_short_names, TripShortName, on_replace: :delete
-    many_to_many :adjustments, Arrow.Adjustment, join_through: "disruption_adjustments"
+    belongs_to(:disruption, Disruption)
+    has_many(:days_of_week, DayOfWeek, on_replace: :delete)
+    has_many(:exceptions, Exception, on_replace: :delete)
+    has_many(:trip_short_names, TripShortName, on_replace: :delete)
+    many_to_many(:adjustments, Arrow.Adjustment, join_through: "disruption_adjustments")
 
     timestamps(type: :utc_datetime)
   end
@@ -97,7 +101,7 @@ defmodule Arrow.DisruptionRevision do
   end
 
   @spec ready_all!() :: :ok
-  def ready_all!() do
+  def ready_all! do
     draft_map =
       from(dr in Arrow.DisruptionRevision,
         select: %{disruption_id: dr.disruption_id, draft_id: max(dr.id)},
@@ -137,7 +141,7 @@ defmodule Arrow.DisruptionRevision do
         |> Arrow.Repo.update_all([])
 
       if updated != Enum.count(ids) do
-        raise Disruption.Error.ReadyNotLatest
+        raise Disruption.ReadyNotLatestError
       end
     end)
 
@@ -155,7 +159,7 @@ defmodule Arrow.DisruptionRevision do
         from([d, dr] in disruptions_with_revisions, where: dr.id <= d.ready_revision_id)
         |> Repo.aggregate(:count)
 
-      if valid_ids_count != length(ids), do: raise(Disruption.Error.PublishedAfterReady)
+      if valid_ids_count != length(ids), do: raise(Disruption.PublishedAfterReadyError)
 
       # Update disruptions only where the published revision is changing
       from([d, dr] in disruptions_with_revisions,

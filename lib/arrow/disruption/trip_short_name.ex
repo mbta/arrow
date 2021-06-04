@@ -1,4 +1,9 @@
 defmodule Arrow.Disruption.TripShortName do
+  @moduledoc """
+  The `trip_short_name` of the a specific trip a disruption applies to. Normally used to refer to
+  Commuter Rail train numbers.
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -10,8 +15,8 @@ defmodule Arrow.Disruption.TripShortName do
         }
 
   schema "disruption_trip_short_names" do
-    field :trip_short_name, :string
-    belongs_to :disruption_revision, Arrow.DisruptionRevision
+    field(:trip_short_name, :string)
+    belongs_to(:disruption_revision, Arrow.DisruptionRevision)
 
     timestamps(type: :utc_datetime)
   end
