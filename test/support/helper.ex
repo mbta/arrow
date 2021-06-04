@@ -1,4 +1,8 @@
 defmodule Test.Support.Helpers do
+  @moduledoc """
+  Helpers for tests
+  """
+
   defmacro reassign_env(var, value) do
     quote do
       old_value = Application.get_env(:arrow, unquote(var))

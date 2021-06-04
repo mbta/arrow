@@ -1,4 +1,6 @@
 defmodule ArrowWeb.AuthManager.Pipeline do
+  @moduledoc false
+
   use Guardian.Plug.Pipeline,
     otp_app: :arrow,
     error_handler: ArrowWeb.AuthManager.ErrorHandler,

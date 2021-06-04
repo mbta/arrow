@@ -1,6 +1,6 @@
 defmodule ArrowWeb.API.AdjustmentController do
   use ArrowWeb, :controller
-  alias Arrow.{Repo, Adjustment}
+  alias Arrow.{Adjustment, Repo}
   import Ecto.Query
 
   @filters ~w{route_id source}

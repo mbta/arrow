@@ -1,4 +1,8 @@
 defmodule Arrow.Disruption.DayOfWeek do
+  @moduledoc """
+  The day of the week that a disruption takes place.
+  """
+
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -12,10 +16,10 @@ defmodule Arrow.Disruption.DayOfWeek do
         }
 
   schema "disruption_day_of_weeks" do
-    field :day_name, :string
-    field :start_time, :time
-    field :end_time, :time
-    belongs_to :disruption_revision, Arrow.DisruptionRevision
+    field(:day_name, :string)
+    field(:start_time, :time)
+    field(:end_time, :time)
+    belongs_to(:disruption_revision, Arrow.DisruptionRevision)
 
     timestamps(type: :utc_datetime)
   end

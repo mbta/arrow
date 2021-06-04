@@ -1,4 +1,8 @@
 defmodule ArrowWeb.AuthManager.ErrorHandler do
+  @moduledoc """
+  Plug to handle if user is not authenticated.
+  """
+
   @behaviour Guardian.Plug.ErrorHandler
 
   @impl Guardian.Plug.ErrorHandler

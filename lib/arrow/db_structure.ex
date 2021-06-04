@@ -1,4 +1,6 @@
 defmodule Arrow.DBStructure.Table do
+  @moduledoc false
+
   @type t :: %__MODULE__{
           name: String.t(),
           columns: [atom()],
@@ -9,6 +11,11 @@ defmodule Arrow.DBStructure.Table do
 end
 
 defmodule Arrow.DBStructure do
+  @moduledoc """
+  Declarative description of our DB structure, so that it can be cloned locally
+  from dev/prod, maintaining foreign key relationships.
+  """
+
   import Ecto.Query
   alias Arrow.DBStructure.Table
 
@@ -105,83 +112,99 @@ defmodule Arrow.DBStructure do
   @spec load_data(Ecto.Repo.t(), %{}, db_structure) :: :ok
   def load_data(repo, data, structure \\ structure()) do
     repo.transaction(fn ->
-      # null out optional fkeys
-      structure
-      |> Enum.each(fn table ->
-        Enum.each(table.optional_fkeys, fn column ->
-          set = Keyword.new([{column, nil}])
-          table.name |> from(update: [set: ^set]) |> repo.update_all([])
-        end)
-      end)
-
-      # delete all rows
-      structure
-      |> Enum.reverse()
-      |> Enum.each(fn table ->
-        {_num_deleted, _return} = table.name |> from() |> repo.delete_all()
-      end)
-
-      # add back in rows, exclude optional fkeys
-
-      Enum.each(structure, fn table ->
-        columns_to_include = table.columns
-
-        repo.insert_all(
-          table.name,
-          data |> Map.get(table.name) |> Enum.map(&Map.take(&1, columns_to_include))
-        )
-      end)
-
-      # add back optional fkeys
-      %{num_rows: _, rows: _} =
-        Ecto.Adapters.SQL.query!(
-          repo,
-          "CREATE TEMP TABLE " <> @temp_table <> " (table_id INT, fkey_value INT)",
-          []
-        )
-
-      Enum.each(structure, fn table ->
-        Enum.each(table.optional_fkeys, fn fkey_column ->
-          @temp_table |> from() |> repo.delete_all()
-
-          temp_rows =
-            data
-            |> Map.get(table.name)
-            |> Enum.map(&%{table_id: Map.get(&1, :id), fkey_value: Map.get(&1, fkey_column)})
-            |> Enum.filter(&(!is_nil(&1[:fkey_value])))
-
-          {_num_inserted, _return} = repo.insert_all(@temp_table, temp_rows)
-
-          from(t in table.name,
-            join: j in @temp_table,
-            on: t.id == j.table_id,
-            update: [
-              set: [{^fkey_column, field(j, :fkey_value)}]
-            ]
-          )
-          |> repo.update_all([])
-
-          @temp_table |> from() |> repo.delete_all()
-        end)
-      end)
+      nullify_optional_fkeys(repo, structure)
+      delete_all_rows(repo, structure)
+      add_rows_excluding_optional_fkeys(repo, structure, data)
+      add_optional_fkeys(repo, structure, data)
 
       # reset sequences to avoid ID collisions
-
-      Enum.each(structure, fn table ->
-        Enum.each(table.sequences, fn {seq_col, seq_name} ->
-          max_id = from(t in table.name, select: max(field(t, ^seq_col))) |> repo.one()
-
-          if max_id do
-            Ecto.Adapters.SQL.query!(
-              repo,
-              "ALTER SEQUENCE #{seq_name} RESTART WITH #{max_id + 1}",
-              []
-            )
-          end
-        end)
-      end)
+      reset_sequences(repo, structure)
     end)
 
     :ok
+  end
+
+  defp nullify_optional_fkeys(repo, structure) do
+    structure
+    |> Enum.each(fn table ->
+      Enum.each(table.optional_fkeys, fn column ->
+        set = Keyword.new([{column, nil}])
+        table.name |> from(update: [set: ^set]) |> repo.update_all([])
+      end)
+    end)
+  end
+
+  defp delete_all_rows(repo, structure) do
+    structure
+    |> Enum.reverse()
+    |> Enum.each(fn table ->
+      {_num_deleted, _return} = table.name |> from() |> repo.delete_all()
+    end)
+  end
+
+  defp add_rows_excluding_optional_fkeys(repo, structure, data) do
+    Enum.each(structure, fn table ->
+      columns_to_include = table.columns
+
+      repo.insert_all(
+        table.name,
+        data |> Map.get(table.name) |> Enum.map(&Map.take(&1, columns_to_include))
+      )
+    end)
+  end
+
+  defp add_optional_fkeys(repo, structure, data) do
+    %{num_rows: _, rows: _} =
+      Ecto.Adapters.SQL.query!(
+        repo,
+        "CREATE TEMP TABLE " <> @temp_table <> " (table_id INT, fkey_value INT)",
+        []
+      )
+
+    Enum.each(structure, fn table ->
+      Enum.each(table.optional_fkeys, fn fkey_column ->
+        @temp_table |> from() |> repo.delete_all()
+
+        temp_rows =
+          data
+          |> Map.get(table.name)
+          |> Enum.map(&%{table_id: Map.get(&1, :id), fkey_value: Map.get(&1, fkey_column)})
+          |> Enum.filter(&(!is_nil(&1[:fkey_value])))
+
+        {_num_inserted, _return} = repo.insert_all(@temp_table, temp_rows)
+
+        from(t in table.name,
+          join: j in @temp_table,
+          on: t.id == j.table_id,
+          update: [
+            set: [{^fkey_column, field(j, :fkey_value)}]
+          ]
+        )
+        |> repo.update_all([])
+
+        @temp_table |> from() |> repo.delete_all()
+      end)
+    end)
+  end
+
+  defp reset_sequences(repo, structure) do
+    Enum.each(structure, fn table ->
+      Enum.each(table.sequences, fn {seq_col, seq_name} ->
+        max_id = from(t in table.name, select: max(field(t, ^seq_col))) |> repo.one()
+        reset_sequence(repo, seq_name, max_id)
+      end)
+    end)
+  end
+
+  defp reset_sequence(_repo, _seq_name, nil) do
+    nil
+  end
+
+  defp reset_sequence(repo, seq_name, max_id) do
+    Ecto.Adapters.SQL.query!(
+      repo,
+      "ALTER SEQUENCE #{seq_name} RESTART WITH #{max_id + 1}",
+      []
+    )
   end
 end

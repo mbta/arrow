@@ -1,4 +1,8 @@
 defmodule ArrowWeb.Utilities do
+  @moduledoc """
+  Some helper functions for the Arrow web application
+  """
+
   @doc """
   Extract the info from a json:api formatted set of relationships.
 

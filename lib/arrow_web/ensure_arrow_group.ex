@@ -1,4 +1,8 @@
 defmodule ArrowWeb.EnsureArrowGroup do
+  @moduledoc """
+  Plug to ensure that an authenticated user is authorized
+  """
+
   import Plug.Conn
 
   def init(options), do: options

@@ -69,7 +69,7 @@ defmodule Arrow.DBStructureTest do
       data = %{
         "adjustments" => [
           %{
-            id: 12208,
+            id: 12_208,
             inserted_at: ~U[2020-09-29 15:17:42.000000Z],
             route_id: "Red",
             source: "gtfs_creator",
@@ -78,14 +78,14 @@ defmodule Arrow.DBStructureTest do
           }
         ],
         "disruption_adjustments" => [
-          %{adjustment_id: 12208, disruption_revision_id: 11206, id: 10729}
+          %{adjustment_id: 12_208, disruption_revision_id: 11_206, id: 10_729}
         ],
         "disruption_day_of_weeks" => [
           %{
             day_name: "saturday",
-            disruption_revision_id: 11206,
+            disruption_revision_id: 11_206,
             end_time: nil,
-            id: 11483,
+            id: 11_483,
             inserted_at: ~U[2020-09-29 15:17:42.000000Z],
             start_time: nil,
             updated_at: ~U[2020-09-29 15:17:42.000000Z]
@@ -96,7 +96,7 @@ defmodule Arrow.DBStructureTest do
           %{
             disruption_id: 8338,
             end_date: ~D[2020-01-15],
-            id: 11206,
+            id: 11_206,
             inserted_at: ~U[2020-09-29 15:17:42.000000Z],
             is_active: true,
             start_date: ~D[2020-01-01],
@@ -109,7 +109,7 @@ defmodule Arrow.DBStructureTest do
             id: 8338,
             inserted_at: ~U[2020-09-29 15:17:42.000000Z],
             published_revision_id: nil,
-            ready_revision_id: 11206,
+            ready_revision_id: 11_206,
             updated_at: ~U[2020-09-29 15:17:42.000000Z],
             last_published_at: nil
           }

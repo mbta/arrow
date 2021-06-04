@@ -1,4 +1,6 @@
 defmodule Fake.ExAws do
+  @moduledoc false
+
   def arrow_group_request(_operation) do
     {:ok, %{"Groups" => [%{"GroupName" => Application.get_env(:arrow, :cognito_group)}]}}
   end
