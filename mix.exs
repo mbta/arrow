@@ -21,11 +21,7 @@ defmodule Arrow.MixProject do
         ],
         ignore_warnings: ".dialyzer.ignore-warnings"
       ],
-      test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [
-        coveralls: :test,
-        "coveralls.json": :test
-      ]
+      test_coverage: [tool: LcovEx]
     ]
   end
 
@@ -53,7 +49,7 @@ defmodule Arrow.MixProject do
       {:ex_aws_rds, "~> 2.0"},
       {:ex_aws_secretsmanager, "~> 2.0"},
       {:ex_machina, "~> 2.3", only: :test},
-      {:excoveralls, "~> 0.10", only: :test},
+      {:lcov_ex, "~> 0.2", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.0.0", only: :test},
       {:phoenix, "~> 1.5.0"},
       {:phoenix_pubsub, "~> 2.0"},
