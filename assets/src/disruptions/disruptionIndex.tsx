@@ -372,9 +372,8 @@ const DisruptionIndexView = ({
     [selectedRevisions, setSelectedRevisions]
   )
 
-  const [actionsMenuOpen, toggleActionsMenuOpen] = React.useState<boolean>(
-    false
-  )
+  const [actionsMenuOpen, toggleActionsMenuOpen] =
+    React.useState<boolean>(false)
 
   const toggleSelectAll = React.useCallback(() => {
     if (Object.keys(selectedRevisions).some((x) => selectedRevisions[x])) {

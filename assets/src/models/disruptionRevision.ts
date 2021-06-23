@@ -115,24 +115,24 @@ class DisruptionRevision extends JsonApiResourceObject {
         isActive: raw.attributes.is_active,
         insertedAt:
           raw.attributes.inserted_at && new Date(raw.attributes.inserted_at),
-        adjustments: (loadRelationship(
-          raw.relationships.adjustments,
-          included
-        ) as Adjustment[]).sort(
-          (a, b) => parseInt(a.id, 10) - parseInt(b.id, 10)
-        ),
-        daysOfWeek: (loadRelationship(
-          raw.relationships.days_of_week,
-          included
-        ) as DayOfWeek[]).sort(
-          (a, b) => dayNameToInt(a.dayName) - dayNameToInt(b.dayName)
-        ),
-        exceptions: (loadRelationship(
-          raw.relationships.exceptions,
-          included
-        ) as Exception[]).sort(
-          (a, b) => a.excludedDate.getTime() - b.excludedDate.getTime()
-        ),
+        adjustments: (
+          loadRelationship(
+            raw.relationships.adjustments,
+            included
+          ) as Adjustment[]
+        ).sort((a, b) => parseInt(a.id, 10) - parseInt(b.id, 10)),
+        daysOfWeek: (
+          loadRelationship(
+            raw.relationships.days_of_week,
+            included
+          ) as DayOfWeek[]
+        ).sort((a, b) => dayNameToInt(a.dayName) - dayNameToInt(b.dayName)),
+        exceptions: (
+          loadRelationship(
+            raw.relationships.exceptions,
+            included
+          ) as Exception[]
+        ).sort((a, b) => a.excludedDate.getTime() - b.excludedDate.getTime()),
         tripShortNames: loadRelationship(
           raw.relationships.trip_short_names,
           included

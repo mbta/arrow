@@ -68,10 +68,12 @@ class Disruption extends JsonApiResourceObject {
       typeof raw.attributes === "object" &&
       typeof raw.relationships === "object"
     ) {
-      const revisions = (loadRelationship(
-        raw.relationships.revisions,
-        included
-      ) as DisruptionRevision[]).sort((r1, r2) => {
+      const revisions = (
+        loadRelationship(
+          raw.relationships.revisions,
+          included
+        ) as DisruptionRevision[]
+      ).sort((r1, r2) => {
         return parseInt(r1.id || "", 10) - parseInt(r2.id || "", 10)
       })
       const disruption = new Disruption({

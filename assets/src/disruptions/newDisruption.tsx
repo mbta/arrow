@@ -232,18 +232,16 @@ const NewDisruption = ({}): JSX.Element => {
   const [adjustments, setAdjustments] = React.useState<Adjustment[]>([])
   const [fromDate, setFromDate] = React.useState<Date | null>(null)
   const [toDate, setToDate] = React.useState<Date | null>(null)
-  const [
-    disruptionDaysOfWeek,
-    setDisruptionDaysOfWeek,
-  ] = React.useState<DayOfWeekTimeRanges>([
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-  ])
+  const [disruptionDaysOfWeek, setDisruptionDaysOfWeek] =
+    React.useState<DayOfWeekTimeRanges>([
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ])
   const [exceptionDates, setExceptionDates] = React.useState<Date[]>([])
   const [tripShortNames, setTripShortNames] = React.useState<string>("")
   const [allAdjustments, setAllAdjustments] = React.useState<

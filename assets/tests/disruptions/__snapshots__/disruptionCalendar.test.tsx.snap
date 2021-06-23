@@ -227,7 +227,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -251,7 +256,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -275,7 +285,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -299,7 +314,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -323,7 +343,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -347,7 +372,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -373,8 +403,8 @@ Object {
                                         class="fc-daygrid-day-events"
                                       >
                                         <div
-                                          class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                          style="visibility: hidden;"
+                                          class="fc-daygrid-event-harness"
+                                          style="margin-top: 0px;"
                                         >
                                           <a
                                             class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past"
@@ -401,6 +431,10 @@ Object {
                                             </div>
                                           </a>
                                         </div>
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
                                       </div>
                                       <div
                                         class="fc-daygrid-day-bg"
@@ -429,8 +463,8 @@ Object {
                                         class="fc-daygrid-day-events"
                                       >
                                         <div
-                                          class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                          style="visibility: hidden;"
+                                          class="fc-daygrid-event-harness"
+                                          style="margin-top: 0px;"
                                         >
                                           <a
                                             class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past"
@@ -457,6 +491,10 @@ Object {
                                             </div>
                                           </a>
                                         </div>
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
                                       </div>
                                       <div
                                         class="fc-daygrid-day-bg"
@@ -481,7 +519,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -505,7 +548,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -529,7 +577,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -553,7 +606,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -580,7 +638,7 @@ Object {
                                       >
                                         <div
                                           class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                          style="visibility: hidden;"
+                                          style="top: 0px; left: 0px; right: 0px;"
                                         >
                                           <a
                                             class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past"
@@ -607,6 +665,10 @@ Object {
                                             </div>
                                           </a>
                                         </div>
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
                                       </div>
                                       <div
                                         class="fc-daygrid-day-bg"
@@ -631,7 +693,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -659,8 +726,8 @@ Object {
                                         class="fc-daygrid-day-events"
                                       >
                                         <div
-                                          class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                          style="visibility: hidden;"
+                                          class="fc-daygrid-event-harness"
+                                          style="margin-top: 0px;"
                                         >
                                           <a
                                             class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past"
@@ -687,6 +754,10 @@ Object {
                                             </div>
                                           </a>
                                         </div>
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
                                       </div>
                                       <div
                                         class="fc-daygrid-day-bg"
@@ -711,7 +782,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -735,7 +811,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -759,7 +840,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -783,7 +869,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -809,8 +900,37 @@ Object {
                                         class="fc-daygrid-day-events"
                                       >
                                         <div
+                                          class="fc-daygrid-event-harness"
+                                          style="margin-top: 0px;"
+                                        >
+                                          <a
+                                            class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past"
+                                            href="/disruptions/1"
+                                            style="background-color: rgb(218, 41, 28);"
+                                          >
+                                            <div
+                                              class="fc-event-main"
+                                            >
+                                              <div
+                                                class="fc-event-main-frame"
+                                              >
+                                                
+                                                <div
+                                                  class="fc-event-title-container"
+                                                >
+                                                  <div
+                                                    class="fc-event-title fc-sticky"
+                                                  >
+                                                    AlewifeHarvard
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </a>
+                                        </div>
+                                        <div
                                           class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                          style="visibility: hidden;"
+                                          style="top: 0px; left: 0px; right: 0px;"
                                         >
                                           <a
                                             class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past"
@@ -838,34 +958,9 @@ Object {
                                           </a>
                                         </div>
                                         <div
-                                          class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                          style="visibility: hidden;"
-                                        >
-                                          <a
-                                            class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past"
-                                            href="/disruptions/1"
-                                            style="background-color: rgb(218, 41, 28);"
-                                          >
-                                            <div
-                                              class="fc-event-main"
-                                            >
-                                              <div
-                                                class="fc-event-main-frame"
-                                              >
-                                                
-                                                <div
-                                                  class="fc-event-title-container"
-                                                >
-                                                  <div
-                                                    class="fc-event-title fc-sticky"
-                                                  >
-                                                    AlewifeHarvard
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </a>
-                                        </div>
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
                                       </div>
                                       <div
                                         class="fc-daygrid-day-bg"
@@ -890,7 +985,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -918,8 +1018,8 @@ Object {
                                         class="fc-daygrid-day-events"
                                       >
                                         <div
-                                          class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                          style="visibility: hidden;"
+                                          class="fc-daygrid-event-harness"
+                                          style="margin-top: 0px;"
                                         >
                                           <a
                                             class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past"
@@ -946,6 +1046,10 @@ Object {
                                             </div>
                                           </a>
                                         </div>
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
                                       </div>
                                       <div
                                         class="fc-daygrid-day-bg"
@@ -970,7 +1074,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -994,7 +1103,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1018,7 +1132,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1042,7 +1161,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1069,7 +1193,7 @@ Object {
                                       >
                                         <div
                                           class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                          style="visibility: hidden;"
+                                          style="top: 0px; left: 0px; right: 0px;"
                                         >
                                           <a
                                             class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past"
@@ -1096,6 +1220,10 @@ Object {
                                             </div>
                                           </a>
                                         </div>
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
                                       </div>
                                       <div
                                         class="fc-daygrid-day-bg"
@@ -1120,7 +1248,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1148,8 +1281,8 @@ Object {
                                         class="fc-daygrid-day-events"
                                       >
                                         <div
-                                          class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                          style="visibility: hidden;"
+                                          class="fc-daygrid-event-harness"
+                                          style="margin-top: 0px;"
                                         >
                                           <a
                                             class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past"
@@ -1176,6 +1309,10 @@ Object {
                                             </div>
                                           </a>
                                         </div>
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
                                       </div>
                                       <div
                                         class="fc-daygrid-day-bg"
@@ -1200,7 +1337,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1224,7 +1366,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1248,7 +1395,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1272,7 +1424,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1299,7 +1456,7 @@ Object {
                                       >
                                         <div
                                           class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                          style="visibility: hidden;"
+                                          style="top: 0px; left: 0px; right: 0px;"
                                         >
                                           <a
                                             class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past"
@@ -1326,6 +1483,10 @@ Object {
                                             </div>
                                           </a>
                                         </div>
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
                                       </div>
                                       <div
                                         class="fc-daygrid-day-bg"
@@ -1350,7 +1511,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1376,7 +1542,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1400,7 +1571,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1424,7 +1600,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1448,7 +1629,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1472,7 +1658,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1496,7 +1687,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1520,7 +1716,12 @@ Object {
                                       </div>
                                       <div
                                         class="fc-daygrid-day-events"
-                                      />
+                                      >
+                                        <div
+                                          class="fc-daygrid-day-bottom"
+                                          style="margin-top: 0px;"
+                                        />
+                                      </div>
                                       <div
                                         class="fc-daygrid-day-bg"
                                       />
@@ -1765,7 +1966,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -1789,7 +1995,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -1813,7 +2024,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -1837,7 +2053,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -1861,7 +2082,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -1885,7 +2111,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -1911,8 +2142,8 @@ Object {
                                       class="fc-daygrid-day-events"
                                     >
                                       <div
-                                        class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                        style="visibility: hidden;"
+                                        class="fc-daygrid-event-harness"
+                                        style="margin-top: 0px;"
                                       >
                                         <a
                                           class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past"
@@ -1939,6 +2170,10 @@ Object {
                                           </div>
                                         </a>
                                       </div>
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
                                     </div>
                                     <div
                                       class="fc-daygrid-day-bg"
@@ -1967,8 +2202,8 @@ Object {
                                       class="fc-daygrid-day-events"
                                     >
                                       <div
-                                        class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                        style="visibility: hidden;"
+                                        class="fc-daygrid-event-harness"
+                                        style="margin-top: 0px;"
                                       >
                                         <a
                                           class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past"
@@ -1995,6 +2230,10 @@ Object {
                                           </div>
                                         </a>
                                       </div>
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
                                     </div>
                                     <div
                                       class="fc-daygrid-day-bg"
@@ -2019,7 +2258,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2043,7 +2287,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2067,7 +2316,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2091,7 +2345,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2118,7 +2377,7 @@ Object {
                                     >
                                       <div
                                         class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                        style="visibility: hidden;"
+                                        style="top: 0px; left: 0px; right: 0px;"
                                       >
                                         <a
                                           class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past"
@@ -2145,6 +2404,10 @@ Object {
                                           </div>
                                         </a>
                                       </div>
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
                                     </div>
                                     <div
                                       class="fc-daygrid-day-bg"
@@ -2169,7 +2432,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2197,8 +2465,8 @@ Object {
                                       class="fc-daygrid-day-events"
                                     >
                                       <div
-                                        class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                        style="visibility: hidden;"
+                                        class="fc-daygrid-event-harness"
+                                        style="margin-top: 0px;"
                                       >
                                         <a
                                           class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past"
@@ -2225,6 +2493,10 @@ Object {
                                           </div>
                                         </a>
                                       </div>
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
                                     </div>
                                     <div
                                       class="fc-daygrid-day-bg"
@@ -2249,7 +2521,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2273,7 +2550,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2297,7 +2579,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2321,7 +2608,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2347,8 +2639,37 @@ Object {
                                       class="fc-daygrid-day-events"
                                     >
                                       <div
+                                        class="fc-daygrid-event-harness"
+                                        style="margin-top: 0px;"
+                                      >
+                                        <a
+                                          class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past"
+                                          href="/disruptions/1"
+                                          style="background-color: rgb(218, 41, 28);"
+                                        >
+                                          <div
+                                            class="fc-event-main"
+                                          >
+                                            <div
+                                              class="fc-event-main-frame"
+                                            >
+                                              
+                                              <div
+                                                class="fc-event-title-container"
+                                              >
+                                                <div
+                                                  class="fc-event-title fc-sticky"
+                                                >
+                                                  AlewifeHarvard
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </a>
+                                      </div>
+                                      <div
                                         class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                        style="visibility: hidden;"
+                                        style="top: 0px; left: 0px; right: 0px;"
                                       >
                                         <a
                                           class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past"
@@ -2376,34 +2697,9 @@ Object {
                                         </a>
                                       </div>
                                       <div
-                                        class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                        style="visibility: hidden;"
-                                      >
-                                        <a
-                                          class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past"
-                                          href="/disruptions/1"
-                                          style="background-color: rgb(218, 41, 28);"
-                                        >
-                                          <div
-                                            class="fc-event-main"
-                                          >
-                                            <div
-                                              class="fc-event-main-frame"
-                                            >
-                                              
-                                              <div
-                                                class="fc-event-title-container"
-                                              >
-                                                <div
-                                                  class="fc-event-title fc-sticky"
-                                                >
-                                                  AlewifeHarvard
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        </a>
-                                      </div>
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
                                     </div>
                                     <div
                                       class="fc-daygrid-day-bg"
@@ -2428,7 +2724,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2456,8 +2757,8 @@ Object {
                                       class="fc-daygrid-day-events"
                                     >
                                       <div
-                                        class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                        style="visibility: hidden;"
+                                        class="fc-daygrid-event-harness"
+                                        style="margin-top: 0px;"
                                       >
                                         <a
                                           class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past"
@@ -2484,6 +2785,10 @@ Object {
                                           </div>
                                         </a>
                                       </div>
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
                                     </div>
                                     <div
                                       class="fc-daygrid-day-bg"
@@ -2508,7 +2813,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2532,7 +2842,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2556,7 +2871,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2580,7 +2900,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2607,7 +2932,7 @@ Object {
                                     >
                                       <div
                                         class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                        style="visibility: hidden;"
+                                        style="top: 0px; left: 0px; right: 0px;"
                                       >
                                         <a
                                           class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past"
@@ -2634,6 +2959,10 @@ Object {
                                           </div>
                                         </a>
                                       </div>
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
                                     </div>
                                     <div
                                       class="fc-daygrid-day-bg"
@@ -2658,7 +2987,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2686,8 +3020,8 @@ Object {
                                       class="fc-daygrid-day-events"
                                     >
                                       <div
-                                        class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                        style="visibility: hidden;"
+                                        class="fc-daygrid-event-harness"
+                                        style="margin-top: 0px;"
                                       >
                                         <a
                                           class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past"
@@ -2714,6 +3048,10 @@ Object {
                                           </div>
                                         </a>
                                       </div>
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
                                     </div>
                                     <div
                                       class="fc-daygrid-day-bg"
@@ -2738,7 +3076,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2762,7 +3105,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2786,7 +3134,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2810,7 +3163,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2837,7 +3195,7 @@ Object {
                                     >
                                       <div
                                         class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                        style="visibility: hidden;"
+                                        style="top: 0px; left: 0px; right: 0px;"
                                       >
                                         <a
                                           class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past"
@@ -2864,6 +3222,10 @@ Object {
                                           </div>
                                         </a>
                                       </div>
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
                                     </div>
                                     <div
                                       class="fc-daygrid-day-bg"
@@ -2888,7 +3250,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2914,7 +3281,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2938,7 +3310,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2962,7 +3339,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -2986,7 +3368,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -3010,7 +3397,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -3034,7 +3426,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
@@ -3058,7 +3455,12 @@ Object {
                                     </div>
                                     <div
                                       class="fc-daygrid-day-events"
-                                    />
+                                    >
+                                      <div
+                                        class="fc-daygrid-day-bottom"
+                                        style="margin-top: 0px;"
+                                      />
+                                    </div>
                                     <div
                                       class="fc-daygrid-day-bg"
                                     />
