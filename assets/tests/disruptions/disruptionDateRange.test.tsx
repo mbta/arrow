@@ -35,15 +35,19 @@ describe("DisruptionDateRange", () => {
     fireEvent.change(rangeEndInput, { target: { value: "01/02/2020" } })
 
     expect(
-      (container.querySelector(
-        "#disruption-date-range-start"
-      ) as HTMLInputElement).value
+      (
+        container.querySelector(
+          "#disruption-date-range-start"
+        ) as HTMLInputElement
+      ).value
     ).toEqual("01/01/2020")
 
     expect(
-      (container.querySelector(
-        "#disruption-date-range-end"
-      ) as HTMLInputElement).value
+      (
+        container.querySelector(
+          "#disruption-date-range-end"
+        ) as HTMLInputElement
+      ).value
     ).toEqual("01/02/2020")
   })
 })

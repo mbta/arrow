@@ -547,9 +547,8 @@ describe("getUniqueRevisions", () => {
   ])(
     "returns unique revisions",
     (dis: Disruption, view: string, expectedId: string | null) => {
-      const rev = dis.getUniqueRevisions()[
-        view as "published" | "ready" | "draft"
-      ]
+      const rev =
+        dis.getUniqueRevisions()[view as "published" | "ready" | "draft"]
       expect(rev && rev.id).toEqual(expectedId)
     }
   )

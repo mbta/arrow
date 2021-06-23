@@ -918,9 +918,11 @@ describe("DisruptionIndexConnected", () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     fireEvent.click(container.querySelector('tr[data-revision-id="5"] input')!)
     expect(
-      (container.querySelector(
-        'tr[data-revision-id="5"] input[type=checkbox]'
-      ) as HTMLInputElement).checked
+      (
+        container.querySelector(
+          'tr[data-revision-id="5"] input[type=checkbox]'
+        ) as HTMLInputElement
+      ).checked
     ).toEqual(true)
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

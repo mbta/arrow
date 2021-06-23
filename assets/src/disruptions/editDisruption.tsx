@@ -206,20 +206,18 @@ const setDisruptionDaysOfWeekForDisruption = (
         let startTime
         if ((newDisruptionDaysOfWeek[i] as [Time | null, Time | null])[0]) {
           startTime = timeToString(
-            (newDisruptionDaysOfWeek[i] as [
-              Time | null,
-              Time | null
-            ])[0] as Time
+            (
+              newDisruptionDaysOfWeek[i] as [Time | null, Time | null]
+            )[0] as Time
           )
         }
 
         let endTime
         if ((newDisruptionDaysOfWeek[i] as [Time | null, Time | null])[1]) {
           endTime = timeToString(
-            (newDisruptionDaysOfWeek[i] as [
-              Time | null,
-              Time | null
-            ])[1] as Time
+            (
+              newDisruptionDaysOfWeek[i] as [Time | null, Time | null]
+            )[1] as Time
           )
         }
 

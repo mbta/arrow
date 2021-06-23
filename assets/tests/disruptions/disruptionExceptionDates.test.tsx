@@ -150,9 +150,11 @@ describe("DisruptionExceptionDates", () => {
     fireEvent.change(newDateExceptionInput, { target: { value: "01/01/2020" } })
 
     expect(
-      (container.querySelector(
-        "#date-exception-row-0 input"
-      ) as HTMLInputElement).value
+      (
+        container.querySelector(
+          "#date-exception-row-0 input"
+        ) as HTMLInputElement
+      ).value
     ).toEqual("01/01/2020")
 
     const dateException0Input = container.querySelector(
@@ -164,9 +166,11 @@ describe("DisruptionExceptionDates", () => {
     fireEvent.change(dateException0Input, { target: { value: "01/05/2020" } })
 
     expect(
-      (container.querySelector(
-        "#date-exception-row-0 input"
-      ) as HTMLInputElement).value
+      (
+        container.querySelector(
+          "#date-exception-row-0 input"
+        ) as HTMLInputElement
+      ).value
     ).toEqual("01/05/2020")
 
     const addDateExceptionLink = container.querySelector(
@@ -218,9 +222,11 @@ describe("DisruptionExceptionDates", () => {
     fireEvent.change(newDateExceptionInput, { target: { value: "01/01/2020" } })
 
     expect(
-      (container.querySelector(
-        "#date-exception-row-0 input"
-      ) as HTMLInputElement).value
+      (
+        container.querySelector(
+          "#date-exception-row-0 input"
+        ) as HTMLInputElement
+      ).value
     ).toEqual("01/01/2020")
 
     const dateException0Input = container.querySelector(
@@ -252,9 +258,11 @@ describe("DisruptionExceptionDates", () => {
     fireEvent.change(newDateExceptionInput, { target: { value: "01/01/2020" } })
 
     expect(
-      (container.querySelector(
-        "#date-exception-row-0 input"
-      ) as HTMLInputElement).value
+      (
+        container.querySelector(
+          "#date-exception-row-0 input"
+        ) as HTMLInputElement
+      ).value
     ).toEqual("01/01/2020")
 
     const dateExceptionsNoCheck = container.querySelector("#exception-add")
