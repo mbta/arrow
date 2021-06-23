@@ -10,8 +10,7 @@
     "lint:check": "eslint -c .eslintrc.js --ext ts,tsx,js ./src ./tests",
     "format": "prettier --write \"{.,**}/*.{js,json,ts,tsx,css,scss}\"",
     "format:check": "prettier --check \"{.,**}/*.{js,json,ts,tsx,css,scss}\"",
-    "check": "tsc --noEmit && npm run lint:check && npm run format:check",
-    "preinstall": "npx npm-force-resolutions"
+    "check": "tsc --noEmit && npm run lint:check && npm run format:check"
   },
   "dependencies": {
     "@fullcalendar/daygrid": "^5.8.0",
@@ -56,7 +55,6 @@
     "jest": "^25.5.4",
     "mini-css-extract-plugin": "^1.6.0",
     "node-sass": "^5.0.0",
-    "npm-force-resolutions": "0.0.3",
     "optimize-css-assets-webpack-plugin": "^5.0.8",
     "postcss": "^8.3.5",
     "postcss-loader": "^4.3.0",
