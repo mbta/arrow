@@ -15,7 +15,7 @@
   "dependencies": {
     "@fullcalendar/daygrid": "^5.8.0",
     "@fullcalendar/react": "^5.8.0",
-    "bootstrap": "^4.6.0",
+    "bootstrap": "^5.0.2",
     "classnames": "^2.3.1",
     "lodash": "^4.17.21",
     "phoenix": "file:../deps/phoenix",
