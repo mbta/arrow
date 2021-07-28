@@ -25,6 +25,7 @@
     "react-bootstrap": "^1.6.1",
     "react-datepicker": "^3.8.0",
     "react-dom": "^17.0.2",
+    "react-phoenix": "file:../deps/react_phoenix",
     "react-router-dom": "^5.2.0",
     "react-select": "^4.3.1",
     "rrule": "^2.6.8"

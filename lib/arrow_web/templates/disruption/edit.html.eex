@@ -1,0 +1,9 @@
+<h1> Edit disruption </h1>
+
+<%= form_for @conn, Routes.disruption_path(@conn, :edit, @disruption_revision.disruption_id), fn _f -> %>
+  <%= ReactPhoenix.ClientSide.react_component("Components.DisruptionFormWrapper", %{
+    disruptionId: @disruption_revision.disruption_id,
+    adjustments: adjustments(@disruption_revision.adjustments),
+    allAdjustments: adjustments(@all_adjustments)
+  }) %>
+<% end %>

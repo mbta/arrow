@@ -9,11 +9,21 @@ import "phoenix_html"
 import * as React from "react"
 import ReactDOM from "react-dom"
 import { BrowserRouter, Route, Switch } from "react-router-dom"
+import "react-phoenix"
 
 import EditDisruption from "./disruptions/editDisruption"
 import { NewDisruption } from "./disruptions/newDisruption"
 import ViewDisruption from "./disruptions/viewDisruption"
 import { DisruptionIndex } from "./disruptions/disruptionIndex"
+import DisruptionFormWrapper from "./disruptions/DisruptionForm"
+
+declare global {
+  interface Window {
+    Components: {
+      [name: string]: (props: any) => JSX.Element
+    }
+  }
+}
 
 const App = (): JSX.Element => {
   return (
@@ -36,4 +46,10 @@ const App = (): JSX.Element => {
   )
 }
 
-ReactDOM.render(<App />, document.getElementById("app"))
+if (document.getElementById("app")) {
+  ReactDOM.render(<App />, document.getElementById("app"))
+}
+
+window.Components = {
+  DisruptionFormWrapper
+}

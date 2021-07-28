@@ -11,7 +11,25 @@
   </head>
   <body>
     <main role="main" class="container">
-      <%= @inner_content %>
+      <div>
+        <div>
+          <nav class="navbar navbar-expand navbar-light bg-light">
+            <span class="navbar-brand">
+              <span class="m-header__arrow">
+                <img src="/images/logo.svg" width="34" height="34">
+                <span class="m-header__arrow-text">ARROW</span>
+              </span>
+            </span>
+            <div class="justify-content-end navbar-collapse collapse">
+              <span class="navbar-text">
+                <span class="m-header__long-name">Adjustments to the Regular Right of Way</span>
+              </span>
+            </div>
+          </nav>
+        </div>
+        <%= @inner_content %>
+      </div>
     </main>
+    <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
   </body>
 </html>

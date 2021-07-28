@@ -1,0 +1,10 @@
+<h1>create new disruption</h1>
+
+<%= form_for @conn, Routes.disruption_path(@conn, :create), fn f -> %>
+  <%= ReactPhoenix.ClientSide.react_component(
+    "Components.NewDisruption",
+    %{
+      allAdjustments: adjustments(@adjustments)
+    }
+  ) %>
+<% end %>

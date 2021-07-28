@@ -61,6 +61,7 @@ defmodule Arrow.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 2.11"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
+      {:react_phoenix, "~> 1.2"},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:ja_serializer, github: "mbta/ja_serializer", branch: "master"},

@@ -53,7 +53,7 @@ defmodule ArrowWeb.Router do
     get "/", PageController, :index
     get "/disruptions/new", PageController, :index
     get "/disruptions/:id", PageController, :index
-    get "/disruptions/:id/edit", PageController, :index
+    resources "/disruptions", DisruptionController, only: [:edit, :update]
     get "/mytoken", MyTokenController, :show
     get "/temp_review_changes", TempReviewChangesController, :index
     post "/temp_review_changes", TempReviewChangesController, :create
