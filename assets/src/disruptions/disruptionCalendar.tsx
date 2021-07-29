@@ -44,6 +44,10 @@ const addDay = (date: Date): Date => {
   return new Date(date.setTime(date.getTime() + 60 * 60 * 24 * 1000))
 }
 
+// Convert a date to a YYYY-MM-DD string, which FullCalendar will interpret as
+// being in the local time zone.
+const toISODate = (date: Date): string => date.toISOString().slice(0, 10)
+
 const disruptionsToCalendarEvents = (
   disruptionRevisions: DisruptionRevision[],
   view: DisruptionView
@@ -54,8 +58,8 @@ const disruptionsToCalendarEvents = (
         id?: string
         title?: string
         backgroundColor: string
-        start: Date
-        end: Date
+        start: string
+        end: string
         url: string
         eventDisplay: "block"
         allDay: true
@@ -104,8 +108,10 @@ const disruptionsToCalendarEvents = (
             id: disruptionRevision.id,
             title: adj.sourceLabel,
             backgroundColor: getRouteColor(adj.routeId),
-            start: group[0],
-            end: group.length > 1 ? addDay(group.slice(-1)[0]) : group[0],
+            start: toISODate(group[0]),
+            end: toISODate(
+              group.length > 1 ? addDay(group.slice(-1)[0]) : group[0]
+            ),
             url:
               `/disruptions/${disruptionRevision.disruptionId}` +
               (view === DisruptionView.Draft ? "?v=draft" : ""),
@@ -132,7 +138,6 @@ const DisruptionCalendar = ({
     <div id="calendar" className="my-3">
       <FullCalendar
         initialDate={initialDate}
-        timeZone="UTC"
         plugins={[dayGridPlugin]}
         initialView="dayGridMonth"
         events={calendarEvents}
