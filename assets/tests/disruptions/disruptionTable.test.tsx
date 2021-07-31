@@ -1,5 +1,4 @@
 import * as React from "react"
-import { MemoryRouter } from "react-router-dom"
 import { render, fireEvent, screen } from "@testing-library/react"
 import { DisruptionTable } from "../../src/disruptions/disruptionTable"
 import Adjustment from "../../src/models/adjustment"
@@ -8,13 +7,9 @@ import DisruptionRevision from "../../src/models/disruptionRevision"
 import { DisruptionView } from "../../src/models/disruption"
 import Exception from "../../src/models/exception"
 
-const DisruptionTableWithRouter = ({
-  initialEntries,
-}: {
-  initialEntries?: string[]
-}) => {
+const DisruptionTableWithRouter = () => {
   return (
-    <MemoryRouter initialEntries={initialEntries}>
+    <>
       <DisruptionTable
         selectEnabled={false}
         toggleRevisionSelection={() => true}
@@ -170,7 +165,7 @@ const DisruptionTableWithRouter = ({
           }
         })}
       />
-    </MemoryRouter>
+    </>
   )
 }
 

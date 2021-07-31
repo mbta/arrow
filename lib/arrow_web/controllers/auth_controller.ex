@@ -18,7 +18,7 @@ defmodule ArrowWeb.AuthController do
       ttl: {expiration - current_time, :seconds}
     )
     |> Plug.Conn.put_session(:arrow_username, username)
-    |> redirect(to: ArrowWeb.Router.Helpers.page_path(conn, :index))
+    |> redirect(to: ArrowWeb.Router.Helpers.disruption_path(conn, :index))
   end
 
   def callback(

@@ -10,7 +10,6 @@ import Adjustment from "../../src/models/adjustment"
 import DayOfWeek from "../../src/models/dayOfWeek"
 import Exception from "../../src/models/exception"
 import { toUTCDate } from "../../src/jsonApi"
-import { BrowserRouter } from "react-router-dom"
 import { DisruptionView } from "../../src/models/disruption"
 
 const SAMPLE_DISRUPTIONS = [
@@ -232,46 +231,44 @@ describe("DisruptionCalendar", () => {
 
   test("handles daylight savings correctly", () => {
     const { container } = render(
-      <BrowserRouter>
-        <DisruptionCalendar
-          initialDate={toUTCDate("2020-11-15")}
-          disruptionRevisions={[
-            new DisruptionRevision({
-              id: "1",
-              disruptionId: "1",
-              startDate: toUTCDate("2020-10-30"),
-              endDate: toUTCDate("2020-11-22"),
-              isActive: true,
-              adjustments: [
-                new Adjustment({
-                  id: "1",
-                  routeId: "Red",
-                  sourceLabel: "AlewifeHarvard",
-                }),
-              ],
-              daysOfWeek: [
-                new DayOfWeek({
-                  id: "1",
-                  startTime: "20:45:00",
-                  dayName: "friday",
-                }),
-                new DayOfWeek({
-                  id: "2",
-                  dayName: "saturday",
-                }),
-                new DayOfWeek({
-                  id: "3",
-                  dayName: "sunday",
-                }),
-              ],
-              exceptions: [
-                new Exception({ excludedDate: toUTCDate("2020-11-15") }),
-              ],
-              tripShortNames: [],
-            }),
-          ]}
-        />
-      </BrowserRouter>
+      <DisruptionCalendar
+        initialDate={toUTCDate("2020-11-15")}
+        disruptionRevisions={[
+          new DisruptionRevision({
+            id: "1",
+            disruptionId: "1",
+            startDate: toUTCDate("2020-10-30"),
+            endDate: toUTCDate("2020-11-22"),
+            isActive: true,
+            adjustments: [
+              new Adjustment({
+                id: "1",
+                routeId: "Red",
+                sourceLabel: "AlewifeHarvard",
+              }),
+            ],
+            daysOfWeek: [
+              new DayOfWeek({
+                id: "1",
+                startTime: "20:45:00",
+                dayName: "friday",
+              }),
+              new DayOfWeek({
+                id: "2",
+                dayName: "saturday",
+              }),
+              new DayOfWeek({
+                id: "3",
+                dayName: "sunday",
+              }),
+            ],
+            exceptions: [
+              new Exception({ excludedDate: toUTCDate("2020-11-15") }),
+            ],
+            tripShortNames: [],
+          }),
+        ]}
+      />
     )
 
     const activeDays = ["01", "06", "08", "13", "20", "22"]
@@ -291,12 +288,10 @@ describe("DisruptionCalendar", () => {
 
   test("renders correctly", () => {
     const tree = render(
-      <BrowserRouter>
-        <DisruptionCalendar
-          initialDate={toUTCDate("2019-11-15")}
-          disruptionRevisions={SAMPLE_DISRUPTIONS}
-        />
-      </BrowserRouter>
+      <DisruptionCalendar
+        initialDate={toUTCDate("2019-11-15")}
+        disruptionRevisions={SAMPLE_DISRUPTIONS}
+      />
     )
     expect(tree).toMatchSnapshot()
   })

@@ -1,5 +1,4 @@
 import * as React from "react"
-import { Link } from "react-router-dom"
 import classnames from "classnames"
 import Row from "react-bootstrap/Row"
 import Col from "react-bootstrap/Col"
@@ -11,7 +10,6 @@ import { DisruptionCalendar } from "./disruptionCalendar"
 import DisruptionRevision from "../models/disruptionRevision"
 import { apiGet, apiSend } from "../api"
 import { JsonApiResponse, toModelObject } from "../jsonApi"
-import { Page } from "../page"
 import Disruption, { DisruptionView } from "../models/disruption"
 import Checkbox from "../checkbox"
 import { ConfirmationModal } from "../confirmationModal"
@@ -392,12 +390,12 @@ const DisruptionIndexView = ({
   }, [selectedRevisions, setSelectedRevisions, filteredDisruptionRevisions])
 
   return (
-    <Page includeHomeLink={false}>
+    <>
       <Row className="my-3">
         <Col>
-          <Link id="new-disruption-link" to="/disruptions/new">
+          <a id="new-disruption-link" href="/disruptions/new">
             <PrimaryButton filled>+ create new</PrimaryButton>
-          </Link>
+          </a>
         </Col>
         <Col xs={3}>
           <Form.Control
@@ -560,7 +558,7 @@ const DisruptionIndexView = ({
           )}
         </Col>
       </Row>
-    </Page>
+    </>
   )
 }
 
