@@ -20,7 +20,7 @@ defmodule ArrowWeb.Controllers.AuthControllerTest do
 
       response = html_response(conn, 302)
 
-      assert response =~ ArrowWeb.Router.Helpers.page_path(conn, :index)
+      assert response =~ ArrowWeb.Router.Helpers.disruption_path(conn, :index)
       assert Guardian.Plug.current_claims(conn)["groups"] == ["test1"]
       assert Plug.Conn.get_session(conn, :arrow_username) == "foo@mbta.com"
     end

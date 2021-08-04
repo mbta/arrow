@@ -1,5 +1,4 @@
 import * as React from "react"
-import { BrowserRouter } from "react-router-dom"
 import {
   render,
   fireEvent,
@@ -40,7 +39,7 @@ const DisruptionIndexWithRouter = ({
   disruptions?: Disruption[]
 }) => {
   return (
-    <BrowserRouter>
+    <>
       {connected ? (
         <DisruptionIndex now={fakeNow} />
       ) : (
@@ -236,7 +235,7 @@ const DisruptionIndexWithRouter = ({
           }
         />
       )}
-    </BrowserRouter>
+    </>
   )
 }
 

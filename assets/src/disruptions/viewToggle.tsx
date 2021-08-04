@@ -1,10 +1,9 @@
-import { useHistory } from "react-router-dom"
 import queryString from "query-string"
 
 import { DisruptionView } from "../models/disruption"
 
 const useDisruptionViewParam = (): DisruptionView => {
-  const { v } = queryString.parse(useHistory().location.search)
+  const { v } = queryString.parse(window.location.search)
   switch (v) {
     case "draft": {
       return DisruptionView.Draft

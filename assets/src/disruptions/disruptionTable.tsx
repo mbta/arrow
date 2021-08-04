@@ -1,7 +1,6 @@
 import * as React from "react"
 import classnames from "classnames"
 import Table from "react-bootstrap/Table"
-import { Link } from "react-router-dom"
 import { formatDisruptionDate } from "./disruptions"
 import DisruptionRevision from "../models/disruptionRevision"
 import { parseDaysAndTimes } from "./time"
@@ -232,8 +231,8 @@ const DisruptionTableRow = ({
         }
       </td>
       <td>
-        <Link
-          to={`/disruptions/${current.disruptionId}?v=${
+        <a
+          href={`/disruptions/${current.disruptionId}?v=${
             current.status === DisruptionView.Draft
               ? "draft"
               : current.status === DisruptionView.Ready
@@ -242,7 +241,7 @@ const DisruptionTableRow = ({
           }`}
         >
           {current.disruptionId}
-        </Link>
+        </a>
       </td>
     </tr>
   )

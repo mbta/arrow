@@ -15,7 +15,7 @@ defmodule ArrowWeb.TempReviewChangesControllerTest do
 
     conn = post(conn, temp_review_changes_path(conn, :index))
 
-    assert html_response(conn, 302) =~ page_path(conn, :index)
+    assert html_response(conn, 302) =~ disruption_path(conn, :index)
 
     new_dr =
       Arrow.DisruptionRevision |> Arrow.Repo.get(dr.id) |> Arrow.Repo.preload([:disruption])
