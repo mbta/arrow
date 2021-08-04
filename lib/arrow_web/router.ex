@@ -52,6 +52,7 @@ defmodule ArrowWeb.Router do
 
     get "/", DisruptionController, :index
     resources("/disruptions", DisruptionController, only: [:show, :new, :edit])
+    get "/feed", FeedController, :index
     get "/mytoken", MyTokenController, :show
   end
 
