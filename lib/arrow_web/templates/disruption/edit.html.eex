@@ -1,1 +1,1 @@
-<%= ReactPhoenix.ClientSide.react_component("Components.EditDisruption", %{id: @id}) %>
+<%= react_component("Components.EditDisruption", %{id: @id}) %>
