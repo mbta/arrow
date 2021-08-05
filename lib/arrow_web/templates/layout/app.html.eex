@@ -9,27 +9,25 @@
 
     <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
   </head>
+
   <body>
-    <main role="main" class="container">
-      <div>
-        <div>
-          <nav class="navbar navbar-expand navbar-light bg-light">
-            <span class="navbar-brand">
-              <a href="/" class="m-header__arrow">
-                <img src="/images/logo.svg" width="34" height="34">
-                <span class="m-header__arrow-text">ARROW</span>
-              </a>
-            </span>
-            <div class="justify-content-end navbar-collapse collapse">
-              <span class="navbar-text">
-                <span class="m-header__long-name">Adjustments to the Regular Right of Way</span>
-              </span>
-            </div>
-          </nav>
-        </div>
-        <%= @inner_content %>
+    <nav class="container navbar navbar-expand navbar-light bg-light">
+      <div class="navbar-brand">
+        <a href="/" class="m-header__arrow">
+          <img src="/images/logo.svg" width="34" height="34">
+          <span class="m-header__arrow-text">ARROW</span>
+        </a>
       </div>
+
+      <div class="m-header__long-name navbar-text justify-content-end navbar-collapse collapse">
+        Adjustments to the Regular Right of Way
+      </div>
+    </nav>
+
+    <main class="container">
+      <%= @inner_content %>
     </main>
+
     <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
   </body>
 </html>
