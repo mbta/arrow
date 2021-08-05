@@ -17,8 +17,8 @@ defmodule ArrowWeb.AuthController do
       %{groups: credentials.other[:groups]},
       ttl: {expiration - current_time, :seconds}
     )
-    |> Plug.Conn.put_session(:arrow_username, username)
-    |> redirect(to: ArrowWeb.Router.Helpers.disruption_path(conn, :index))
+    |> put_session(:arrow_username, username)
+    |> redirect(to: Routes.disruption_path(conn, :index))
   end
 
   def callback(

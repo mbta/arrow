@@ -16,20 +16,20 @@ defmodule ArrowWeb.Controllers.AuthControllerTest do
       conn =
         conn
         |> assign(:ueberauth_auth, auth)
-        |> get(ArrowWeb.Router.Helpers.auth_path(conn, :callback, "cognito"))
+        |> get(Routes.auth_path(conn, :callback, "cognito"))
 
       response = html_response(conn, 302)
 
-      assert response =~ ArrowWeb.Router.Helpers.disruption_path(conn, :index)
+      assert response =~ Routes.disruption_path(conn, :index)
       assert Guardian.Plug.current_claims(conn)["groups"] == ["test1"]
-      assert Plug.Conn.get_session(conn, :arrow_username) == "foo@mbta.com"
+      assert get_session(conn, :arrow_username) == "foo@mbta.com"
     end
 
     test "handles generic failure", %{conn: conn} do
       conn =
         conn
         |> assign(:ueberauth_failure, %Ueberauth.Failure{})
-        |> get(ArrowWeb.Router.Helpers.auth_path(conn, :callback, "cognito"))
+        |> get(Routes.auth_path(conn, :callback, "cognito"))
 
       response = response(conn, 401)
 
@@ -39,11 +39,11 @@ defmodule ArrowWeb.Controllers.AuthControllerTest do
 
   describe "request" do
     test "redirects to auth callback", %{conn: conn} do
-      conn = get(conn, ArrowWeb.Router.Helpers.auth_path(conn, :request, "cognito"))
+      conn = get(conn, Routes.auth_path(conn, :request, "cognito"))
 
       response = response(conn, 302)
 
-      assert response =~ ArrowWeb.Router.Helpers.auth_path(conn, :callback, "cognito")
+      assert response =~ Routes.auth_path(conn, :callback, "cognito")
     end
   end
 end

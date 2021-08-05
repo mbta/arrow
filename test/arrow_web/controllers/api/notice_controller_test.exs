@@ -19,19 +19,11 @@ defmodule ArrowWeb.API.PublishNoticeControllerTest do
       log =
         capture_log([level: :info], fn ->
           conn =
-            post(
-              conn,
-              ArrowWeb.Router.Helpers.notice_path(conn, :publish,
-                revision_ids: Integer.to_string(dr.id)
-              )
-            )
+            post(conn, Routes.notice_path(conn, :publish, revision_ids: Integer.to_string(dr.id)))
 
           assert resp = response(conn, 200)
-
           assert resp == ""
-
           new_d = Arrow.Repo.get(Arrow.Disruption, d.id)
-
           assert new_d.published_revision_id == dr.id
         end)
 
@@ -46,32 +38,19 @@ defmodule ArrowWeb.API.PublishNoticeControllerTest do
       dr = insert(:disruption_revision, %{disruption: d})
 
       conn =
-        post(
-          conn,
-          ArrowWeb.Router.Helpers.notice_path(conn, :publish,
-            revision_ids: Integer.to_string(dr.id)
-          )
-        )
+        post(conn, Routes.notice_path(conn, :publish, revision_ids: Integer.to_string(dr.id)))
 
       assert resp = response(conn, 400)
-
       assert resp == "can't publish revision more recent than ready revision"
-
       new_d = Arrow.Repo.get(Arrow.Disruption, d.id)
-
       assert is_nil(new_d.published_revision_id)
     end
 
     @tag :authenticated
     test "returns 400 error when non-integer argument is given", %{conn: conn} do
-      conn =
-        post(
-          conn,
-          ArrowWeb.Router.Helpers.notice_path(conn, :publish, revision_ids: "foo")
-        )
+      conn = post(conn, Routes.notice_path(conn, :publish, revision_ids: "foo"))
 
       assert resp = response(conn, 400)
-
       assert resp == "bad argument"
     end
   end
@@ -91,19 +70,11 @@ defmodule ArrowWeb.API.PublishNoticeControllerTest do
       log =
         capture_log([level: :info], fn ->
           conn =
-            post(
-              conn,
-              ArrowWeb.Router.Helpers.notice_path(conn, :ready,
-                revision_ids: Integer.to_string(dr.id)
-              )
-            )
+            post(conn, Routes.notice_path(conn, :ready, revision_ids: Integer.to_string(dr.id)))
 
           assert resp = response(conn, 204)
-
           assert resp == ""
-
           new_d = Arrow.Repo.get(Arrow.Disruption, d.id)
-
           assert new_d.ready_revision_id == dr.id
         end)
 
@@ -119,32 +90,19 @@ defmodule ArrowWeb.API.PublishNoticeControllerTest do
       _dr_2 = insert(:disruption_revision, %{disruption: d})
 
       conn =
-        post(
-          conn,
-          ArrowWeb.Router.Helpers.notice_path(conn, :ready,
-            revision_ids: Integer.to_string(dr_1.id)
-          )
-        )
+        post(conn, Routes.notice_path(conn, :ready, revision_ids: Integer.to_string(dr_1.id)))
 
       assert resp = response(conn, 400)
-
       assert resp == "can't ready revision more recent than latest revision"
-
       new_d = Arrow.Repo.get(Arrow.Disruption, d.id)
-
       assert is_nil(new_d.ready_revision_id)
     end
 
     @tag :authenticated
     test "returns 400 error when non-integer argument is given", %{conn: conn} do
-      conn =
-        post(
-          conn,
-          ArrowWeb.Router.Helpers.notice_path(conn, :ready, revision_ids: "foo")
-        )
+      conn = post(conn, Routes.notice_path(conn, :ready, revision_ids: "foo"))
 
       assert resp = response(conn, 400)
-
       assert resp == "bad argument"
     end
   end

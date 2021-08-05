@@ -4,7 +4,7 @@ defmodule ArrowWeb.API.DBDumpControllerTest do
   describe "show/2" do
     @tag :authenticated
     test "returns JSON with database contents", %{conn: conn} do
-      conn = get(conn, ArrowWeb.Router.Helpers.db_dump_path(conn, :show))
+      conn = get(conn, Routes.db_dump_path(conn, :show))
 
       assert resp = json_response(conn, 200)
 

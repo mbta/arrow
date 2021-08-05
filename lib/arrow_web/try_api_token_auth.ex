@@ -60,7 +60,7 @@ defmodule ArrowWeb.TryApiTokenAuth do
           auth_token.username,
           %{groups: group_names}
         )
-        |> Plug.Conn.put_session(:arrow_username, auth_token.username)
+        |> put_session(:arrow_username, auth_token.username)
       end
     end
   end

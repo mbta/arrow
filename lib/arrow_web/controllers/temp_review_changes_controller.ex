@@ -10,6 +10,6 @@ defmodule ArrowWeb.TempReviewChangesController do
   def create(conn, _params) do
     :ok = Arrow.DisruptionRevision.ready_all!()
 
-    redirect(conn, to: ArrowWeb.Router.Helpers.disruption_path(conn, :index))
+    redirect(conn, to: Routes.disruption_path(conn, :index))
   end
 end

@@ -3,6 +3,8 @@ defmodule ArrowWeb.EnsureArrowGroup do
   Plug to ensure that an authenticated user is authorized
   """
 
+  alias ArrowWeb.Router.Helpers, as: Routes
+  alias Phoenix.Controller
   import Plug.Conn
 
   def init(options), do: options
@@ -15,11 +17,7 @@ defmodule ArrowWeb.EnsureArrowGroup do
       conn
     else
       _ ->
-        conn
-        |> Phoenix.Controller.redirect(
-          to: ArrowWeb.Router.Helpers.unauthorized_path(conn, :index)
-        )
-        |> halt()
+        conn |> Controller.redirect(to: Routes.unauthorized_path(conn, :index)) |> halt()
     end
   end
 end
