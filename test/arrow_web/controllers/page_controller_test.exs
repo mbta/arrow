@@ -27,7 +27,7 @@ defmodule ArrowWeb.PageControllerTest do
 
   @tag :authenticated
   test "GET / with HTTP redirects to HTTPS", %{conn: conn} do
-    conn = conn |> Plug.Conn.put_req_header("x-forwarded-proto", "http") |> get("/")
+    conn = conn |> put_req_header("x-forwarded-proto", "http") |> get("/")
 
     location_header = Enum.find(conn.resp_headers, fn {key, _value} -> key == "location" end)
     {"location", url} = location_header

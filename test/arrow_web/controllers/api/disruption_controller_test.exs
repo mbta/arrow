@@ -698,7 +698,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
       |> Ecto.Changeset.change(%{ready_revision_id: disruption_revision.id})
       |> Arrow.Repo.update!()
 
-      conn = delete(conn, ArrowWeb.Router.Helpers.disruption_path(conn, :delete, disruption.id))
+      conn = delete(conn, Routes.disruption_path(conn, :delete, disruption.id))
 
       response = response(conn, 204)
 
@@ -716,7 +716,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
 
     @tag :authenticated
     test "returns 404 when no disruption by given ID exists", %{conn: conn} do
-      conn = delete(conn, ArrowWeb.Router.Helpers.disruption_path(conn, :delete, 1))
+      conn = delete(conn, Routes.disruption_path(conn, :delete, 1))
 
       response = json_response(conn, 404)
 
