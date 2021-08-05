@@ -1,1 +1,1 @@
-<%= ReactPhoenix.ClientSide.react_component("Components.NewDisruption") %>
+<%= react_component("Components.NewDisruption") %>

@@ -1,1 +1,1 @@
-<%= ReactPhoenix.ClientSide.react_component("Components.DisruptionIndex") %>
+<%= react_component("Components.DisruptionIndex") %>
