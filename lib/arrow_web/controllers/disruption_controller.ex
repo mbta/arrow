@@ -1,8 +1,11 @@
 defmodule ArrowWeb.DisruptionController do
   use ArrowWeb, :controller
 
-  def index(conn, _params) do
-    render(conn, "index.html")
+  alias __MODULE__.{Filters, Index}
+
+  def index(conn, params) do
+    filters = Filters.from_params(params)
+    render(conn, "index.html", disruptions: Index.all(filters), filters: filters)
   end
 
   def show(conn, %{"id" => id}) do

@@ -112,23 +112,34 @@ defmodule Arrow.Disruption do
   end
 
   @doc """
-  Takes a disruption query (or starts a new one for Arrow.Disruption) and adds a new named join
-  to it with a column `latest_revision_id` which is that Disruption's latest revision.
-
-  Usage: from([disruption, latest_revisions] in with_latest_revision_id(), ...)
+  Given a query with a Disruption binding `disruptions`, adds a DisruptionRevision binding
+  `revisions` that is the latest revisions of each disruption.
   """
-  @spec with_latest_revision_id(Ecto.Queryable.t()) :: Ecto.Query.t()
-  def with_latest_revision_id(disruption_query \\ __MODULE__) do
-    latest_map =
-      from(dr in DisruptionRevision,
-        group_by: dr.disruption_id,
-        select: %{disruption_id: dr.disruption_id, latest_revision_id: max(dr.id)}
+  @spec with_latest_revisions(Ecto.Query.t()) :: Ecto.Query.t()
+  def with_latest_revisions(query \\ from(d in __MODULE__, as: :disruptions)) do
+    from([latest_ids: l] in with_latest_revision_ids(query),
+      join: r in DisruptionRevision,
+      on: r.id == l.latest_revision_id,
+      as: :revisions
+    )
+  end
+
+  @doc """
+  Given a query with a Disruption binding `disruptions`, adds a binding `latest_ids` with fields
+  `disruption_id` and `latest_revision_id`, indicating the latest revision of each disruption.
+  """
+  @spec with_latest_revision_ids(Ecto.Query.t()) :: Ecto.Query.t()
+  def with_latest_revision_ids(query \\ from(d in __MODULE__, as: :disruptions)) do
+    latest_ids =
+      from(r in DisruptionRevision,
+        group_by: r.disruption_id,
+        select: %{disruption_id: r.disruption_id, latest_revision_id: max(r.id)}
       )
 
-    from(d in disruption_query,
-      join: lm in subquery(latest_map),
-      as: :latest,
-      on: lm.disruption_id == d.id
+    from([disruptions: d] in query,
+      join: l in subquery(latest_ids),
+      on: l.disruption_id == d.id,
+      as: :latest_ids
     )
   end
 
@@ -139,13 +150,12 @@ defmodule Arrow.Disruption do
   """
   @spec latest_vs_published() :: {[t()], [t()]}
   def latest_vs_published do
-    from([d, latest] in with_latest_revision_id(),
-      join: dr in assoc(d, :revisions),
-      on: dr.disruption_id == d.id,
-      where:
-        is_nil(d.published_revision_id) or d.published_revision_id != latest.latest_revision_id,
-      where: dr.id == d.published_revision_id or dr.id == latest.latest_revision_id,
-      preload: [revisions: {dr, ^DisruptionRevision.associations()}]
+    from([disruptions: d, latest_ids: l] in with_latest_revision_ids(),
+      join: r in assoc(d, :revisions),
+      on: r.disruption_id == d.id,
+      where: is_nil(d.published_revision_id) or d.published_revision_id != l.latest_revision_id,
+      where: r.id == d.published_revision_id or r.id == l.latest_revision_id,
+      preload: [revisions: {r, ^DisruptionRevision.associations()}]
     )
     |> Arrow.Repo.all()
   end

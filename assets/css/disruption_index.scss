@@ -1,15 +1,7 @@
 .m-disruption-index__route_filter {
-  cursor: pointer;
-  margin-right: 2rem;
   opacity: 0.3;
 
   &.active {
     opacity: 1;
   }
-}
-
-.m-disruption-index__clear_filter_button {
-  border-bottom: 1px solid black;
-  cursor: pointer;
-  padding-bottom: 3px;
 }
