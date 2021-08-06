@@ -11,7 +11,7 @@ import "react-phoenix"
 import EditDisruption from "./disruptions/editDisruption"
 import { NewDisruption } from "./disruptions/newDisruption"
 import ViewDisruption from "./disruptions/viewDisruption"
-import { DisruptionIndex } from "./disruptions/disruptionIndex"
+import { DisruptionCalendar } from "./disruptions/disruptionCalendar"
 
 declare global {
   interface Window {
@@ -22,7 +22,7 @@ declare global {
 }
 
 window.Components = {
-  DisruptionIndex,
+  DisruptionCalendar,
   NewDisruption,
   ViewDisruption,
   EditDisruption,

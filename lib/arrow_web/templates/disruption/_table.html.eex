@@ -1,0 +1,59 @@
+<table class="table m-disruption-table border-top-dark">
+  <thead>
+    <tr>
+      <th><%= sort_link(@conn, @filters, :source_label, "adjustments") %></th>
+      <th><%= sort_link(@conn, @filters, :start_date, "date range") %></th>
+      <th>except</th>
+      <th>time period</th>
+      <th>status</th>
+      <th><%= sort_link(@conn, @filters, :id, "ID") %></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <%= for %{revisions: [revision]} = disruption <- @disruptions do %>
+      <tr class="<%= if not published?(disruption), do: 'bg-light-pink' %>">
+        <td>
+          <%= for adjustment <- revision.adjustments,
+                  icon = route_icon(adjustment.route_id) do %>
+            <div class="d-flex align-items-center">
+              <span
+                class="mr-2 m-icon m-icon-sm"
+                style="background-image: url(/images/icon-<%= icon %>.svg)"
+              >
+              </span>
+
+              <%= adjustment.source_label %>
+            </div>
+          <% end %>
+        </td>
+        <td>
+          <div><%= format_date(revision.start_date, "(no start date)") %></div>
+          <div><%= format_date(revision.end_date, "(no end date)") %></div>
+        </td>
+        <td>
+          <%= length(revision.exceptions) %>
+        </td>
+        <td>
+          <%= for desc <- DaysOfWeek.describe(revision.days_of_week), part <- desc do %>
+            <%= part %><br />
+          <% end %>
+        </td>
+        <td>
+          <%= if published?(disruption) do %>
+            <span class="btn btn-outline-dark m-disruption-table__status-indicator">
+              published
+            </span>
+          <% else %>
+            <span class="btn btn-outline-primary m-disruption-table__status-indicator">
+              pending
+            </span>
+          <% end %>
+        </td>
+        <td>
+          <%= link(disruption.id, to: Routes.disruption_path(@conn, :show, disruption.id)) %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

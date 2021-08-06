@@ -1,6 +1,10 @@
 .m-disruption-table {
-  td,
-  thead th {
+  th {
+    white-space: nowrap;
+  }
+
+  th,
+  td {
     border-bottom: none;
     border-top: 1px solid $dark;
     vertical-align: middle;

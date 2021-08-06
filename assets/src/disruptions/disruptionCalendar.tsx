@@ -3,15 +3,14 @@ import FullCalendar from "@fullcalendar/react"
 import dayGridPlugin from "@fullcalendar/daygrid"
 import { RRule, RRuleSet } from "rrule"
 import { getRouteColor } from "./disruptionIndex"
+import Disruption from "../models/disruption"
 import DisruptionRevision from "../models/disruptionRevision"
-import { DisruptionView } from "../models/disruption"
 import DayOfWeek from "../models/dayOfWeek"
-import { useDisruptionViewParam } from "./viewToggle"
+import { toModelObject } from "../jsonApi"
 
 interface DisruptionCalendarProps {
-  disruptionRevisions: DisruptionRevision[]
+  data: any
   initialDate?: Date
-  timeZone?: string
 }
 
 const dayNameToInt = (day: DayOfWeek["dayName"]): number => {
@@ -49,8 +48,7 @@ const addDay = (date: Date): Date => {
 const toISODate = (date: Date): string => date.toISOString().slice(0, 10)
 
 const disruptionsToCalendarEvents = (
-  disruptionRevisions: DisruptionRevision[],
-  view: DisruptionView
+  disruptionRevisions: DisruptionRevision[]
 ) => {
   return disruptionRevisions.reduce(
     (
@@ -112,9 +110,7 @@ const disruptionsToCalendarEvents = (
             end: toISODate(
               group.length > 1 ? addDay(group.slice(-1)[0]) : group[0]
             ),
-            url:
-              `/disruptions/${disruptionRevision.disruptionId}` +
-              (view === DisruptionView.Draft ? "?v=draft" : ""),
+            url: `/disruptions/${disruptionRevision.disruptionId}`,
             eventDisplay: "block",
             allDay: true,
           })
@@ -126,16 +122,36 @@ const disruptionsToCalendarEvents = (
   )
 }
 
-const DisruptionCalendar = ({
-  disruptionRevisions,
-  initialDate,
-}: DisruptionCalendarProps) => {
-  const view = useDisruptionViewParam()
+const DisruptionCalendar = ({ data, initialDate }: DisruptionCalendarProps) => {
+  const revisionsOrError = React.useMemo(() => {
+    if (Array.isArray(data)) {
+      return data
+    } else {
+      const disruptions = toModelObject(data)
+
+      if (disruptions === "error") {
+        return "error"
+      } else {
+        return (disruptions as Disruption[]).map(
+          ({ revisions }) => revisions[0]
+        )
+      }
+    }
+  }, [data])
+
   const calendarEvents = React.useMemo(() => {
-    return disruptionsToCalendarEvents(disruptionRevisions, view)
-  }, [disruptionRevisions, view])
+    if (revisionsOrError !== "error") {
+      return disruptionsToCalendarEvents(
+        revisionsOrError as DisruptionRevision[]
+      )
+    } else {
+      return []
+    }
+  }, [revisionsOrError])
+
   return (
     <div id="calendar" className="my-3">
+      {revisionsOrError === "error" && "Error loading calendar events!"}
       <FullCalendar
         initialDate={initialDate}
         plugins={[dayGridPlugin]}
