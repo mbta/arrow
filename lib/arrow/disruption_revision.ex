@@ -167,7 +167,26 @@ defmodule Arrow.DisruptionRevision do
         update: [set: [published_revision_id: dr.id, last_published_at: fragment("now()")]]
       )
       |> Repo.update_all([])
+
+      # since GTFS creator doesn't know about deleted disruptions, consider any currently
+      # deleted disruptions part of this publishing notice.
+      :ok = publish_deleted!()
     end)
+
+    :ok
+  end
+
+  @spec publish_deleted!() :: :ok
+  defp publish_deleted! do
+    from(
+      [d, latest] in Disruption.with_latest_revision_id(),
+      join: dr in assoc(d, :revisions),
+      where: dr.id == latest.latest_revision_id,
+      where: dr.is_active == false,
+      where: is_nil(d.published_revision_id) or d.published_revision_id != dr.id,
+      update: [set: [published_revision_id: dr.id, last_published_at: fragment("now()")]]
+    )
+    |> Repo.update_all([])
 
     :ok
   end

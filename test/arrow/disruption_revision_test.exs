@@ -144,6 +144,16 @@ defmodule Arrow.DisruptionRevisionTest do
 
       assert is_nil(new_d2.published_revision_id)
     end
+
+    test "publishes deleted revisions" do
+      d = insert(:disruption)
+      dr1 = insert(:disruption_revision, %{disruption: d, is_active: false})
+
+      assert :ok = DisruptionRevision.publish!([])
+
+      d = Arrow.Repo.get(Arrow.Disruption, d.id)
+      assert d.published_revision_id == dr1.id
+    end
   end
 
   describe "ready!/1" do

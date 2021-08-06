@@ -454,4 +454,34 @@ defmodule Arrow.DisruptionTest do
                queried_d.revisions
     end
   end
+
+  describe "latest_vs_published" do
+    test "returns the latest revision and the published revision when there are both" do
+      d = insert(:disruption)
+      _dr1 = insert(:disruption_revision, %{disruption: d})
+      dr2 = insert(:disruption_revision, %{disruption: d})
+      _dr3 = insert(:disruption_revision, %{disruption: d})
+      dr4 = insert(:disruption_revision, %{disruption: d})
+
+      Repo.update!(Ecto.Changeset.change(d, %{published_revision_id: dr2.id}))
+
+      assert [d] = Arrow.Disruption.latest_vs_published()
+
+      revision_ids = Enum.map(d.revisions, & &1.id)
+      assert length(revision_ids) == 2
+      assert dr2.id in revision_ids
+      assert dr4.id in revision_ids
+    end
+
+    test "returns just the latest revision if there is no published revision" do
+      d = insert(:disruption)
+      _dr1 = insert(:disruption_revision, %{disruption: d})
+      dr2 = insert(:disruption_revision, %{disruption: d})
+
+      assert [%Disruption{revisions: [%DisruptionRevision{id: id}]}] =
+               Arrow.Disruption.latest_vs_published()
+
+      assert id == dr2.id
+    end
+  end
 end
