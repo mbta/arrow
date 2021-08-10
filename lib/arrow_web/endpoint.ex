@@ -1,6 +1,10 @@
 defmodule ArrowWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :arrow
 
+  if Application.compile_env(:arrow, :env) == :test do
+    plug Phoenix.Ecto.SQL.Sandbox, sandbox: Ecto.Adapters.SQL.Sandbox
+  end
+
   socket "/socket", ArrowWeb.UserSocket,
     websocket: true,
     longpoll: false

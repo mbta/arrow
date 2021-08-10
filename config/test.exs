@@ -8,12 +8,10 @@ config :arrow, Arrow.Repo,
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
 
-# We don't run a server during test. If one is required,
-# you can enable the server option below.
 config :arrow, ArrowWeb.Endpoint,
   http: [port: 4002],
   secret_key_base: "local_secret_key_base_at_least_64_bytes_________________________________",
-  server: false
+  server: true
 
 config :arrow, ArrowWeb.AuthManager, secret_key: "test key"
 
@@ -30,3 +28,7 @@ config :arrow,
 config :logger, level: :warn
 
 config :arrow, env: :test
+
+config :wallaby,
+  driver: Wallaby.Chrome,
+  otp_app: :arrow

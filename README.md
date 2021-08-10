@@ -24,12 +24,14 @@
 - Update `.envrc` with your local Postgres username and password
 - `direnv allow`
 - `mix ecto.setup`
+- `brew install chromedriver`
 
 ### Useful commands
 
 - Run the app: `mix phx.server` (visit <http://localhost:4000/>)
 - Elixir:
   - `mix test` — run tests
+  - `mix test.integration` — run integration tests
   - `mix dialyzer` — check typespecs
   - `mix format` — format code
   - `mix credo` — lint code
