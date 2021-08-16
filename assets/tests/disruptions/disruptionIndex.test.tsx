@@ -1060,11 +1060,11 @@ describe("DisruptionIndexConnected", () => {
   test("displays only published revisions on the calendar view", async () => {
     const today = new Date()
     today.setUTCHours(0, 0, 0, 0)
-    const nextWeek = new Date(
+    const endDate = new Date(
       Date.UTC(
         today.getUTCFullYear(),
         today.getUTCMonth(),
-        today.getUTCDate() + 7
+        today.getUTCDate() + 6
       )
     )
 
@@ -1072,7 +1072,7 @@ describe("DisruptionIndexConnected", () => {
       id: "1",
       disruptionId: "1",
       startDate: today,
-      endDate: nextWeek,
+      endDate,
       isActive: true,
       adjustments: [
         new Adjustment({
