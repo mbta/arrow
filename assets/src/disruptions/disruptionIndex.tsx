@@ -370,8 +370,7 @@ const DisruptionIndexView = ({
     [selectedRevisions, setSelectedRevisions]
   )
 
-  const [actionsMenuOpen, toggleActionsMenuOpen] =
-    React.useState<boolean>(false)
+  const actionsMenuOpen = false
 
   const toggleSelectAll = React.useCallback(() => {
     if (Object.keys(selectedRevisions).some((x) => selectedRevisions[x])) {
@@ -471,26 +470,6 @@ const DisruptionIndexView = ({
               </LinkButton>
             )}
             <div className="my-3 ml-auto">
-              <SecondaryButton
-                disabled={
-                  view === "calendar" ||
-                  (!actionsMenuOpen && !selectableFilteredRevisions.length)
-                }
-                className={classnames({
-                  active: actionsMenuOpen,
-                })}
-                id="actions"
-                onClick={() => {
-                  if (actionsMenuOpen) {
-                    toggleActionsMenuOpen(false)
-                    setSelectedRevisions({})
-                  } else {
-                    toggleActionsMenuOpen(!actionsMenuOpen)
-                  }
-                }}
-              >
-                actions
-              </SecondaryButton>
               <SecondaryButton
                 id="view-toggle"
                 className="ml-2"

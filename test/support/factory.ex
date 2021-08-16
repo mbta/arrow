@@ -13,7 +13,6 @@ defmodule Arrow.Factory do
 
   def disruption_factory do
     %Arrow.Disruption{
-      ready_revision: nil,
       published_revision: nil
     }
   end
