@@ -14,7 +14,6 @@ defmodule Arrow.Disruption do
   alias Arrow.DisruptionRevision
 
   @type t :: %__MODULE__{
-          ready_revision: DisruptionRevision.t() | Ecto.Association.NotLoaded.t(),
           published_revision: DisruptionRevision.t() | Ecto.Association.NotLoaded.t(),
           last_published_at: DateTime.t() | nil,
           inserted_at: DateTime.t(),
@@ -22,7 +21,6 @@ defmodule Arrow.Disruption do
         }
 
   schema "disruptions" do
-    belongs_to :ready_revision, DisruptionRevision
     belongs_to :published_revision, DisruptionRevision
     has_many :revisions, DisruptionRevision
 
@@ -111,39 +109,6 @@ defmodule Arrow.Disruption do
       |> Arrow.Repo.update!()
 
     {:ok, disruption_revision}
-  end
-
-  @doc """
-  Returns all the disruptions whose draft and ready revisions are
-  different, preloaded with all the revisions between the two.
-  """
-  @spec draft_vs_ready() :: {[t()], [t()]}
-  def draft_vs_ready do
-    draft_map =
-      from(dr in DisruptionRevision,
-        select: %{disruption_id: dr.disruption_id, draft_id: max(dr.id)},
-        group_by: dr.disruption_id
-      )
-
-    updated =
-      from(d in Arrow.Disruption,
-        join: dm in subquery(draft_map),
-        as: :draft_map,
-        on: dm.disruption_id == d.id,
-        join: dr in assoc(d, :revisions),
-        on: dr.disruption_id == d.id,
-        where: d.ready_revision_id != dm.draft_id,
-        where: dr.id >= d.ready_revision_id and dr.id <= as(:draft_map).draft_id,
-        preload: [revisions: {dr, ^DisruptionRevision.associations()}]
-      )
-      |> Arrow.Repo.all()
-
-    new =
-      from(d in Arrow.Disruption, where: is_nil(d.ready_revision_id))
-      |> Arrow.Repo.all()
-      |> Arrow.Repo.preload(revisions: DisruptionRevision.associations())
-
-    {updated, new}
   end
 
   @doc """

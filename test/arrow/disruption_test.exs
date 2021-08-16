@@ -175,8 +175,6 @@ defmodule Arrow.DisruptionTest do
           trip_short_names: [build(:trip_short_name, %{trip_short_name: "777"})]
         })
 
-      Repo.update!(Ecto.Changeset.change(d, %{ready_revision_id: dr.id}))
-
       dr_id = dr.id
 
       new_attrs = %{
@@ -201,7 +199,6 @@ defmodule Arrow.DisruptionTest do
       d = Repo.get!(Arrow.Disruption, new_dr.disruption_id)
 
       assert new_dr.disruption_id == d.id
-      assert d.ready_revision_id == dr_id
       assert new_dr.start_date == ~D[2021-01-01]
       assert new_dr.end_date == ~D[2021-11-30]
 
@@ -230,8 +227,6 @@ defmodule Arrow.DisruptionTest do
           days_of_week: [build(:day_of_week, %{day_name: "tuesday"})]
         })
 
-      Repo.update!(Ecto.Changeset.change(d, %{ready_revision_id: dr.id}))
-
       attrs = %{
         "start_date" => "2020-12-31",
         "end_date" => "2020-01-01",
@@ -255,8 +250,6 @@ defmodule Arrow.DisruptionTest do
           end_date: ~D[2020-08-21],
           days_of_week: [build(:day_of_week, %{day_name: "tuesday"})]
         })
-
-      Repo.update!(Ecto.Changeset.change(d, %{ready_revision_id: dr.id}))
 
       attrs = %{
         "start_date" => "2020-08-17",
@@ -282,8 +275,6 @@ defmodule Arrow.DisruptionTest do
           end_date: ~D[2020-08-21],
           days_of_week: [build(:day_of_week, %{day_name: "tuesday"})]
         })
-
-      Repo.update!(Ecto.Changeset.change(d, %{ready_revision_id: dr.id}))
 
       attrs = %{
         "start_date" => "2020-08-17",
@@ -311,8 +302,6 @@ defmodule Arrow.DisruptionTest do
           days_of_week: [build(:day_of_week, %{day_name: "tuesday"})]
         })
 
-      Repo.update!(Ecto.Changeset.change(d, %{ready_revision_id: dr.id}))
-
       attrs = %{
         "start_date" => "2020-08-17",
         "end_date" => "2020-08-21",
@@ -339,8 +328,6 @@ defmodule Arrow.DisruptionTest do
           days_of_week: [build(:day_of_week, %{day_name: "tuesday"})]
         })
 
-      Repo.update!(Ecto.Changeset.change(d, %{ready_revision_id: dr.id}))
-
       attrs = %{
         "start_date" => "2020-08-17",
         "end_date" => "2020-08-21",
@@ -366,8 +353,6 @@ defmodule Arrow.DisruptionTest do
           end_date: ~D[2020-08-21],
           days_of_week: [build(:day_of_week, %{day_name: "tuesday"})]
         })
-
-      Repo.update!(Ecto.Changeset.change(d, %{ready_revision_id: dr.id}))
 
       attrs = %{
         "start_date" => "2020-08-17",
@@ -396,62 +381,10 @@ defmodule Arrow.DisruptionTest do
           days_of_week: [build(:day_of_week, %{day_name: "tuesday"})]
         })
 
-      Repo.update!(Ecto.Changeset.change(d, %{ready_revision_id: dr1.id}))
-
       assert {:ok, dr2} = Arrow.Disruption.delete(dr1.id)
-
-      d = Repo.get(Arrow.Disruption, d.id)
 
       assert Repo.all(from(dr in DisruptionRevision, select: count(dr.id))) == [2]
       assert dr2.is_active == false
-      assert d.ready_revision_id == dr1.id
-    end
-  end
-
-  describe "draft_vs_ready" do
-    test "returns all revisions between draft and ready" do
-      d = insert(:disruption)
-      _dr1 = insert(:disruption_revision, %{disruption: d})
-      dr2 = insert(:disruption_revision, %{disruption: d})
-      dr3 = insert(:disruption_revision, %{disruption: d})
-      dr4 = insert(:disruption_revision, %{disruption: d})
-      Repo.update!(Ecto.Changeset.change(d, %{ready_revision_id: dr2.id}))
-
-      dr2_id = dr2.id
-      dr3_id = dr3.id
-      dr4_id = dr4.id
-
-      assert {[queried_d], []} = Arrow.Disruption.draft_vs_ready()
-      assert queried_d.id == d.id
-
-      assert [
-               %DisruptionRevision{id: ^dr2_id},
-               %DisruptionRevision{id: ^dr3_id},
-               %DisruptionRevision{id: ^dr4_id}
-             ] = queried_d.revisions
-    end
-
-    test "does not return a disruption without a different draft" do
-      d = insert(:disruption)
-      _dr1 = insert(:disruption_revision, %{disruption: d})
-      dr2 = insert(:disruption_revision, %{disruption: d})
-      Repo.update!(Ecto.Changeset.change(d, %{ready_revision_id: dr2.id}))
-
-      assert Arrow.Disruption.draft_vs_ready() == {[], []}
-    end
-
-    test "returns a newly created disruption" do
-      d = insert(:disruption)
-      dr1 = insert(:disruption_revision, %{disruption: d})
-      dr2 = insert(:disruption_revision, %{disruption: d})
-
-      dr1_id = dr1.id
-      dr2_id = dr2.id
-
-      assert {[], [queried_d]} = Arrow.Disruption.draft_vs_ready()
-
-      assert [%DisruptionRevision{id: ^dr1_id}, %DisruptionRevision{id: ^dr2_id}] =
-               queried_d.revisions
     end
   end
 

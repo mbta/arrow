@@ -1,6 +1,6 @@
 import * as React from "react"
 import Alert from "react-bootstrap/Alert"
-import { LinkButton, PrimaryButton, SecondaryButton } from "../button"
+import { LinkButton, PrimaryButton } from "../button"
 import { apiGet, apiSend } from "../api"
 import Loading from "../loading"
 import { redirectTo } from "../navigation"
@@ -304,54 +304,6 @@ const ViewDisruptionForm = ({
                             </PrimaryButton>
                           </a>
                         )}
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      {view === DisruptionView.Draft && (
-                        <div>
-                          <hr className="my-3" />
-                          <div className="d-flex justify-content-center">
-                            <ConfirmationModal
-                              onClickConfirm={() => {
-                                apiSend({
-                                  method: "POST",
-                                  json: JSON.stringify({
-                                    revision_ids: disruptionRevision.id,
-                                  }),
-                                  url: "/api/ready_notice/",
-                                })
-                                  .then(async () => {
-                                    await fetchDisruption()
-                                    redirectTo(
-                                      "/disruptions/" +
-                                        encodeURIComponent(
-                                          disruptionRevision.disruptionId || ""
-                                        ) +
-                                        "?v=ready"
-                                    )
-                                  })
-                                  .catch(() => {
-                                    // eslint-disable-next-line no-console
-                                    console.log(
-                                      `failed to mark revision as ready: ${disruptionRevision.id}`
-                                    )
-                                  })
-                              }}
-                              confirmationButtonText="yes, mark as ready"
-                              confirmationText="Are you sure you want to mark these revisions as ready?"
-                              Component={
-                                <SecondaryButton id="mark-ready">
-                                  {"mark as ready" +
-                                    (disruptionRevision.isActive
-                                      ? ""
-                                      : " for deletion")}
-                                </SecondaryButton>
-                              }
-                            />
-                          </div>
-                        </div>
-                      )}
                     </Col>
                   </Row>
                 </div>

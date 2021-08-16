@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 11.9
--- Dumped by pg_dump version 11.9
+-- Dumped from database version 10.18
+-- Dumped by pg_dump version 13.4
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -32,8 +32,6 @@ CREATE TYPE public.day_name AS ENUM (
 
 
 SET default_tablespace = '';
-
-SET default_with_oids = false;
 
 --
 -- Name: adjustments; Type: TABLE; Schema: public; Owner: -
@@ -251,7 +249,6 @@ CREATE TABLE public.disruptions (
     published_revision_id bigint,
     inserted_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    ready_revision_id bigint,
     last_published_at timestamp with time zone
 );
 
@@ -552,14 +549,6 @@ ALTER TABLE ONLY public.disruptions
 
 
 --
--- Name: disruptions disruptions_ready_revision_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.disruptions
-    ADD CONSTRAINT disruptions_ready_revision_id_fkey FOREIGN KEY (ready_revision_id) REFERENCES public.disruption_revisions(id);
-
-
---
 -- PostgreSQL database dump complete
 --
 
@@ -575,3 +564,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20200713155611);
 INSERT INTO public."schema_migrations" (version) VALUES (20200812222513);
 INSERT INTO public."schema_migrations" (version) VALUES (20200909124316);
 INSERT INTO public."schema_migrations" (version) VALUES (20200925153736);
+INSERT INTO public."schema_migrations" (version) VALUES (20210816185635);
