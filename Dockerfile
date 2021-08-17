@@ -3,8 +3,8 @@ FROM hexpm/elixir:1.11.4-erlang-23.3-debian-buster-20210208 as builder
 ENV LANG=C.UTF-8 \
   MIX_ENV=prod
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  ca-certificates curl git
+RUN apt-get update --allow-releaseinfo-change && \
+  apt-get install -y --no-install-recommends ca-certificates curl git
 
 # Instructions from:
 # https://github.com/nodesource/distributions/blob/master/README.md
@@ -25,9 +25,9 @@ RUN mix local.hex --force && \
 
 FROM debian:buster
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  libssl1.1 libsctp1 curl \
-  && rm -rf /var/lib/apt/lists/*
+RUN apt-get update --allow-releaseinfo-change && \
+  apt-get install -y --no-install-recommends libssl1.1 libsctp1 curl && \
+  rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root
 EXPOSE 4000
