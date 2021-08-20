@@ -3,7 +3,7 @@
 // its own CSS file.
 declare function require(name: string): string
 // tslint:disable-next-line
-require("../css/app.scss")
+require("../css/app.css")
 
 import "phoenix_html"
 import "react-phoenix"

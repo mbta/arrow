@@ -1,0 +1,6 @@
+.m-disruption-index__route_filter {
+  opacity: 0.3;
+}
+.m-disruption-index__route_filter.active {
+  opacity: 1;
+}

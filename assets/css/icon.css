@@ -1,0 +1,13 @@
+.m-icon {
+  display: inline-block;
+}
+
+.m-icon.m-icon-sm {
+  height: 1rem;
+  width: 1rem;
+}
+
+.m-icon.m-icon-lg {
+  height: 34px;
+  width: 34px;
+}

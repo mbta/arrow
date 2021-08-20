@@ -62,9 +62,6 @@ module.exports = (env, options) => ({
             loader: "css-loader",
           },
           {
-            loader: "sass-loader",
-          },
-          {
             loader: "postcss-loader",
             options: {
               postcssOptions: {
