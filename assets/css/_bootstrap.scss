@@ -1,0 +1,15 @@
+/*
+This file is used to generate bootstrap.css.
+
+We don't plan to modify these styles as we migrate away from Bootstrap. However if necessary, the
+file can be regenerated via:
+
+$ npm install bootstrap@4.6.0
+$ npm install sass@1.35.1
+$ npx sass css/_bootstrap.scss css/bootstrap.css
+$ npm run format
+*/
+
+@import "_overrides.scss";
+@import "../node_modules/bootstrap/scss/bootstrap";
+@import "_button.scss";

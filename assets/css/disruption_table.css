@@ -1,0 +1,29 @@
+.m-disruption-table th {
+  white-space: nowrap;
+}
+
+.m-disruption-table th,
+.m-disruption-table td {
+  border-bottom: none;
+  border-top: 1px solid var(--black);
+  vertical-align: middle;
+}
+
+.m-disruption-table__sortable {
+  cursor: pointer;
+  padding-right: 1rem;
+  position: relative;
+}
+
+.m-disruption-table__sortable .m-disruption-table__sortable-indicator {
+  color: var(--grey);
+}
+
+.m-disruption-table__sortable.active .m-disruption-table__sortable-indicator {
+  color: var(--black);
+}
+
+.m-disruption-table__status-indicator {
+  min-width: 150px;
+  pointer-events: none;
+}

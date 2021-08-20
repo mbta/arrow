@@ -1,0 +1,30 @@
+.m-checkbox {
+  display: flex;
+  align-items: center;
+}
+.m-checkbox input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px; /* Fix for https://github.com/twbs/bootstrap/issues/25686 */
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.m-checkbox label .m-checkbox__image {
+  background-image: url("../static/images/checkbox-empty.png");
+  background-size: 100%;
+  cursor: pointer;
+  display: inline-block;
+  height: 1rem;
+  margin-bottom: 0;
+  margin-right: 0.5rem;
+  width: 1rem;
+}
+
+.m-checkbox input:checked + label .m-checkbox__image {
+  background-image: url("../static/images/checkbox-filled.png");
+}
