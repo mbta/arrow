@@ -1,1 +1,96 @@
-<%= react_component("Components.ViewDisruption", %{id: @id}) %>
+<div class="row">
+  <div class="col-lg-7">
+    <div class="m-disruption-details__header">
+      <div class="d-flex align-items-end">
+        <h2 class="mb-0">disruption</h2>
+        <h5>ID <span class="ml-2 font-weight-normal"><%= @id %></span></h5>
+      </div>
+
+      <%= if @revision.is_active do %>
+        <%= button("delete",
+              class: "btn btn-link",
+              method: :delete,
+              to: Routes.disruption_path(@conn, :delete, @id),
+              data: [confirm: "Permanently delete this disruption?"]
+            ) %>
+      <% end %>
+    </div>
+
+    <ul class="m-disruption-details__adjustment-list">
+      <%= for adjustment <- @revision.adjustments do %>
+        <li class="m-disruption-details__adjustment-item">
+          <%= route_icon(@conn, adjustment.route_id, "sm", class: "mr-2") %>
+          <%= adjustment.source_label %>
+        </li>
+      <% end %>
+    </ul>
+
+    <hr class="my-3" />
+
+    <div class="row">
+      <%= if not @revision.is_active do %>
+        <div class="col-xs-12">
+          <div class="m-disruption-details__deletion-indicator">
+            <b>Note:</b> This disruption is deleted. It will not appear in GTFS.
+          </div>
+        </div>
+      <% end %>
+
+      <% inactive_class = if(@revision.is_active, do: "", else: "text-muted") %>
+
+      <div class="col-md-10 <%= inactive_class %>">
+        <div class="mb-3">
+          <h4>date range</h4>
+
+          <div class="pl-3">
+            <%= format_date(@revision.start_date, "(no start date)") %>
+            – <%= format_date(@revision.end_date, "(no end date)") %>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <h4>time period</h4>
+
+          <div class="pl-3">
+            <%= for {day, times} <- DaysOfWeek.describe(@revision.days_of_week) do %>
+              <div><b><%= day %></b><br /><%= times %></div>
+            <% end %>
+          </div>
+        </div>
+
+        <%= if not Enum.empty?(@revision.trip_short_names) do %>
+          <div class="mb-3">
+            <h4>trips</h4>
+
+            <div class="pl-3">
+              <%= @revision.trip_short_names
+                  |> Enum.map(& &1.trip_short_name)
+                  |> Enum.join(", ") %>
+            </div>
+          </div>
+        <% end %>
+
+        <%= if not Enum.empty?(@revision.exceptions) do %>
+          <div class="mb-3">
+            <h4>exceptions</h4>
+
+            <div class="pl-3">
+              <%= for %{excluded_date: date} <- @revision.exceptions do %>
+                <div><%= format_date(date) %></div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%= if @revision.is_active do %>
+        <div class="col-md-2">
+          <%= link("edit",
+                class: "btn btn-primary w-100",
+                to: Routes.disruption_path(@conn, :edit, @id)
+              ) %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

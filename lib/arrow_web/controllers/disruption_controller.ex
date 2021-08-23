@@ -2,6 +2,7 @@ defmodule ArrowWeb.DisruptionController do
   use ArrowWeb, :controller
 
   alias __MODULE__.{Filters, Index}
+  alias Arrow.Disruption
 
   def index(conn, params) do
     filters = Filters.from_params(params)
@@ -9,7 +10,8 @@ defmodule ArrowWeb.DisruptionController do
   end
 
   def show(conn, %{"id" => id}) do
-    render(conn, "show.html", id: id)
+    %{id: id, revisions: [revision]} = Disruption.get!(id)
+    render(conn, "show.html", id: id, revision: revision)
   end
 
   def new(conn, _params) do
@@ -18,5 +20,10 @@ defmodule ArrowWeb.DisruptionController do
 
   def edit(conn, %{"id" => id}) do
     render(conn, "edit.html", id: id)
+  end
+
+  def delete(conn, %{"id" => id}) do
+    _revision = Disruption.delete!(id)
+    redirect(conn, to: Routes.disruption_path(conn, :show, id))
   end
 end
