@@ -101,17 +101,7 @@ defmodule ArrowWeb.API.DisruptionController do
 
   @spec delete(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def delete(conn, %{"id" => id}) do
-    disruption_revision =
-      DisruptionRevision
-      |> DisruptionRevision.latest_revision()
-      |> Repo.get_by(disruption_id: id)
-
-    if is_nil(disruption_revision) do
-      conn |> put_status(404) |> render(:errors, errors: [%{detail: "Not found"}])
-    else
-      {:ok, _disruption} = Disruption.delete(disruption_revision.id)
-
-      send_resp(conn, 204, "")
-    end
+    _revision = Disruption.delete!(id)
+    send_resp(conn, 204, "")
   end
 end

@@ -11,6 +11,59 @@ defmodule Arrow.DisruptionTest do
     end
   end
 
+  describe "get!/1" do
+    test "gets a disruption by ID with its latest revision and sorted associations" do
+      %{id: id} = disruption = insert(:disruption)
+      _old_revision = insert(:disruption_revision, disruption: disruption)
+
+      %{id: latest_revision_id} =
+        insert(:disruption_revision,
+          disruption: disruption,
+          adjustments: [
+            build(:adjustment, source_label: "B"),
+            build(:adjustment, source_label: "A"),
+            build(:adjustment, source_label: "C")
+          ],
+          days_of_week: [build(:day_of_week, day_name: "monday")],
+          exceptions: [
+            build(:exception, excluded_date: ~D[2021-01-02]),
+            build(:exception, excluded_date: ~D[2021-01-01]),
+            build(:exception, excluded_date: ~D[2021-01-03])
+          ],
+          trip_short_names: [
+            build(:trip_short_name, trip_short_name: "B"),
+            build(:trip_short_name, trip_short_name: "A"),
+            build(:trip_short_name, trip_short_name: "C")
+          ]
+        )
+
+      assert %{
+               id: ^id,
+               revisions: [
+                 %{
+                   id: ^latest_revision_id,
+                   adjustments: [
+                     %{source_label: "A"},
+                     %{source_label: "B"},
+                     %{source_label: "C"}
+                   ],
+                   days_of_week: [%{day_name: "monday"}],
+                   exceptions: [
+                     %{excluded_date: ~D[2021-01-01]},
+                     %{excluded_date: ~D[2021-01-02]},
+                     %{excluded_date: ~D[2021-01-03]}
+                   ],
+                   trip_short_names: [
+                     %{trip_short_name: "A"},
+                     %{trip_short_name: "B"},
+                     %{trip_short_name: "C"}
+                   ]
+                 }
+               ]
+             } = Disruption.get!(id)
+    end
+  end
+
   describe "create/2" do
     test "inserts a new disruption and revision" do
       adj = insert(:adjustment)
@@ -369,22 +422,21 @@ defmodule Arrow.DisruptionTest do
     end
   end
 
-  describe "delete/1" do
+  describe "delete!/1" do
     test "creates a new revision which isn't active" do
       d = insert(:disruption)
 
-      dr1 =
-        insert(:disruption_revision, %{
-          disruption: d,
-          start_date: ~D[2020-08-17],
-          end_date: ~D[2020-08-21],
-          days_of_week: [build(:day_of_week, %{day_name: "tuesday"})]
-        })
+      insert(:disruption_revision, %{
+        disruption: d,
+        start_date: ~D[2020-08-17],
+        end_date: ~D[2020-08-21],
+        days_of_week: [build(:day_of_week, %{day_name: "tuesday"})]
+      })
 
-      assert {:ok, dr2} = Arrow.Disruption.delete(dr1.id)
+      new_revision = Disruption.delete!(d.id)
 
       assert Repo.all(from(dr in DisruptionRevision, select: count(dr.id))) == [2]
-      assert dr2.is_active == false
+      assert new_revision.is_active == false
     end
   end
 

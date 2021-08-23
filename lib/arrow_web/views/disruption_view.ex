@@ -12,6 +12,7 @@ defmodule ArrowWeb.DisruptionView do
 
   defp filter_routes, do: ~w(Blue Orange Red Mattapan Green-B Green-C Green-D Green-E Commuter)
 
+  defp format_date(date, fallback \\ "❓")
   defp format_date(%Date{} = date, _fallback), do: Calendar.strftime(date, "%m/%d/%Y")
   defp format_date(nil, fallback), do: fallback
 
@@ -28,6 +29,16 @@ defmodule ArrowWeb.DisruptionView do
   defp published?(%{published_revision_id: id, revisions: [%{id: id}]}), do: true
   defp published?(_disruption), do: false
 
+  defp route_icon(conn, route, size, opts \\ []) when size in ~w(sm lg) do
+    class = Keyword.get(opts, :class, "")
+    icon_path = Routes.static_path(conn, "/images/icon-#{route_icon_name(route)}.svg")
+
+    content_tag(:span, "",
+      class: "m-icon m-icon-#{size} #{class}",
+      style: "background-image: url(#{icon_path})"
+    )
+  end
+
   @route_icons %{
     "Blue" => "blue-line-small",
     "Commuter" => "mode-commuter-rail-small",
@@ -41,11 +52,11 @@ defmodule ArrowWeb.DisruptionView do
   }
 
   for {name, icon} <- @route_icons do
-    defp route_icon(unquote(name)), do: unquote(icon)
+    defp route_icon_name(unquote(name)), do: unquote(icon)
   end
 
-  defp route_icon("CR-" <> _), do: "mode-commuter-rail-small"
-  defp route_icon(_), do: "404"
+  defp route_icon_name("CR-" <> _), do: "mode-commuter-rail-small"
+  defp route_icon_name(_), do: "404"
 
   defp sort_link(conn, filters, field, label) do
     %{view: %{sort: {current_direction, current_field}}} = filters

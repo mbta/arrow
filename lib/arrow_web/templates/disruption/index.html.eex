@@ -35,19 +35,16 @@
 <div class="row">
   <div class="col">
     <div class="my-3 d-flex align-items-center">
-      <%= for route <- filter_routes(), icon = route_icon(route) do %>
+      <%= for route <- filter_routes() do %>
         <% show_as_active? = MapSet.size(@filters.routes) == 0 or route in @filters.routes %>
         <% active_class = if(show_as_active?, do: "active", else: "") %>
 
-        <%= link class: "mr-1 m-disruption-index__route_filter #{active_class}",
-                 "aria-label": route,
-                 to: update_filters_path(@conn, Filters.toggle_route(@filters, route)) do %>
-          <span
-            class="m-icon m-icon-lg"
-            style="background-image: url(/images/icon-<%= icon %>.svg)"
-          >
-          </span>
-        <% end %>
+        <%= link(
+              route_icon(@conn, route, "lg"),
+              class: "mr-1 m-disruption-index__route_filter #{active_class}",
+              "aria-label": route,
+              to: update_filters_path(@conn, Filters.toggle_route(@filters, route))
+            ) %>
       <% end %>
 
       <%= if not Filters.calendar?(@filters) do %>

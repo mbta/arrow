@@ -9,7 +9,9 @@ defmodule Arrow.DisruptionRevision do
   alias Arrow.{Adjustment, Disruption, Repo}
   alias Arrow.Disruption.{DayOfWeek, Exception, TripShortName}
 
+  @type id :: integer
   @type t :: %__MODULE__{
+          id: id,
           end_date: Date.t() | nil,
           start_date: Date.t() | nil,
           is_active: boolean(),

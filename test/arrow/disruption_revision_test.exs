@@ -20,7 +20,7 @@ defmodule Arrow.DisruptionRevisionTest do
     test "returns nothing when latest revision of a disruption is deleted" do
       dr1 = insert(:disruption_revision) |> Arrow.Repo.preload([:disruption])
 
-      {:ok, _dr2} = Arrow.Disruption.delete(dr1.id)
+      _ = Arrow.Disruption.delete!(dr1.disruption_id)
 
       latest_dr =
         DisruptionRevision

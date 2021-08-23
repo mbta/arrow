@@ -10,10 +10,12 @@ defmodule Arrow.Disruption do
   import Ecto.Changeset
   import Ecto.Query
 
-  alias Arrow.Disruption.{DayOfWeek, Exception, TripShortName}
-  alias Arrow.DisruptionRevision
+  alias __MODULE__.{DayOfWeek, Exception, TripShortName}
+  alias Arrow.{DisruptionRevision, Repo}
 
+  @type id :: integer
   @type t :: %__MODULE__{
+          id: id,
           published_revision: DisruptionRevision.t() | Ecto.Association.NotLoaded.t(),
           last_published_at: DateTime.t() | nil,
           inserted_at: DateTime.t(),
@@ -27,6 +29,27 @@ defmodule Arrow.Disruption do
     field(:last_published_at, :utc_datetime)
 
     timestamps(type: :utc_datetime)
+  end
+
+  @doc """
+  Loads a single disruption by ID, with its latest revision preloaded, and all the revision's
+  associations preloaded. Adjustments, exceptions, and trip short names are also sorted.
+  """
+  @spec get!(id) :: t
+  def get!(id) do
+    from(
+      [disruptions: d, revisions: r] in with_latest_revisions(),
+      where: d.id == ^id,
+      left_join: a in assoc(r, :adjustments),
+      left_join: days in assoc(r, :days_of_week),
+      left_join: e in assoc(r, :exceptions),
+      left_join: t in assoc(r, :trip_short_names),
+      order_by: [a.source_label, e.excluded_date, t.trip_short_name],
+      preload: [
+        revisions: {r, [adjustments: a, days_of_week: days, exceptions: e, trip_short_names: t]}
+      ]
+    )
+    |> Repo.one!()
   end
 
   @spec create(map(), [Arrow.Adjustment.t()]) ::
@@ -99,16 +122,28 @@ defmodule Arrow.Disruption do
     end
   end
 
-  @spec delete(integer()) :: {:ok, DisruptionRevision.t()}
-  def delete(disruption_revision_id) do
-    new_disruption_revision = DisruptionRevision.clone!(disruption_revision_id)
+  @spec delete!(id) :: DisruptionRevision.t()
+  def delete!(id) do
+    {:ok, new_revision} =
+      Repo.transaction(fn ->
+        id
+        |> latest_revision_id()
+        |> DisruptionRevision.clone!()
+        |> change(%{is_active: false})
+        |> Repo.update!()
+      end)
 
-    disruption_revision =
-      Arrow.Repo.get(DisruptionRevision, new_disruption_revision.id)
-      |> change(%{is_active: false})
-      |> Arrow.Repo.update!()
+    new_revision
+  end
 
-    {:ok, disruption_revision}
+  @spec latest_revision_id(id) :: DisruptionRevision.id()
+  def latest_revision_id(id) do
+    from(r in DisruptionRevision,
+      where: r.disruption_id == ^id,
+      select: max(r.id),
+      group_by: r.disruption_id
+    )
+    |> Repo.one!()
   end
 
   @doc """

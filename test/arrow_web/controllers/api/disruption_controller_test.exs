@@ -612,7 +612,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
         trip_short_names: [build(:trip_short_name, trip_short_name: "006")]
       )
 
-      conn = delete(conn, Routes.disruption_path(conn, :delete, disruption.id))
+      conn = delete(conn, Routes.api_disruption_path(conn, :delete, disruption.id))
 
       response = response(conn, 204)
 
@@ -626,17 +626,6 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
         |> Enum.at(-1)
 
       refute new_disruption_revision.is_active
-    end
-
-    @tag :authenticated
-    test "returns 404 when no disruption by given ID exists", %{conn: conn} do
-      conn = delete(conn, Routes.disruption_path(conn, :delete, 1))
-
-      response = json_response(conn, 404)
-
-      assert response["errors"] == [
-               %{"detail" => "Not found"}
-             ]
     end
   end
 end

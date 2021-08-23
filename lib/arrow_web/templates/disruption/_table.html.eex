@@ -14,15 +14,9 @@
     <%= for %{revisions: [revision]} = disruption <- @disruptions do %>
       <tr class="<%= if not published?(disruption), do: 'bg-light-pink' %>">
         <td>
-          <%= for adjustment <- revision.adjustments,
-                  icon = route_icon(adjustment.route_id) do %>
+          <%= for adjustment <- revision.adjustments do %>
             <div class="d-flex align-items-center">
-              <span
-                class="mr-2 m-icon m-icon-sm"
-                style="background-image: url(/images/icon-<%= icon %>.svg)"
-              >
-              </span>
-
+              <%= route_icon(@conn, adjustment.route_id, "sm", class: "mr-2") %>
               <%= adjustment.source_label %>
             </div>
           <% end %>
@@ -35,7 +29,7 @@
           <%= length(revision.exceptions) %>
         </td>
         <td>
-          <%= for desc <- DaysOfWeek.describe(revision.days_of_week), part <- desc do %>
+          <%= for desc <- DaysOfWeek.summarize(revision.days_of_week), part <- desc do %>
             <%= part %><br />
           <% end %>
         </td>

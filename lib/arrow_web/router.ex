@@ -51,7 +51,7 @@ defmodule ArrowWeb.Router do
     pipe_through [:redirect_prod_http, :browser, :auth, :ensure_auth, :ensure_arrow_group]
 
     get "/", DisruptionController, :index
-    resources("/disruptions", DisruptionController, only: [:show, :new, :edit])
+    resources("/disruptions", DisruptionController, only: [:show, :new, :edit, :delete])
     get "/feed", FeedController, :index
     get "/mytoken", MyTokenController, :show
   end
@@ -67,7 +67,7 @@ defmodule ArrowWeb.Router do
     get("/:provider/callback", AuthController, :callback)
   end
 
-  scope "/api", ArrowWeb.API do
+  scope "/api", as: :api, alias: ArrowWeb.API do
     pipe_through([
       :redirect_prod_http,
       :json_api,

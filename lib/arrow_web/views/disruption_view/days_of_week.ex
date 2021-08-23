@@ -3,18 +3,24 @@ defmodule ArrowWeb.DisruptionView.DaysOfWeek do
 
   alias Arrow.Disruption.DayOfWeek
 
+  @doc "Describes each day-of-week of a disruption and its time period."
+  @spec describe([DayOfWeek.t()]) :: [{String.t(), String.t()}]
+  def describe(days_of_week) when is_list(days_of_week) do
+    days_of_week |> Enum.sort_by(&day_number/1) |> Enum.map(&describe_day(&1, :long))
+  end
+
   @doc """
-  Summarizes the days and time periods of a disruption.
+  Summarizes the days-of-week of a disruption and their time periods.
 
   Each item in the returned list is a description of a single day or set of consecutive days. The
   items are themselves lists, to suggest where e.g. line breaks might be placed between the "days"
   and "times" part of the description (if these are separate).
   """
-  @spec describe([DayOfWeek.t()]) :: [[String.t()]]
+  @spec summarize([DayOfWeek.t()]) :: [[String.t()]]
 
-  def describe([day_of_week]), do: [describe_day(day_of_week)]
+  def summarize([day_of_week]), do: [summarize_day(day_of_week)]
 
-  def describe(days_of_week) when is_list(days_of_week) do
+  def summarize(days_of_week) when is_list(days_of_week) do
     sorted_days = Enum.sort_by(days_of_week, &day_number/1)
     days_are_consecutive = consecutive?(sorted_days)
 
@@ -26,7 +32,7 @@ defmodule ArrowWeb.DisruptionView.DaysOfWeek do
         [describe_days_with_contiguous_times(hd(sorted_days), List.last(sorted_days))]
 
       true ->
-        Enum.map(sorted_days, &describe_day/1)
+        Enum.map(sorted_days, &summarize_day/1)
     end
   end
 
@@ -55,16 +61,16 @@ defmodule ArrowWeb.DisruptionView.DaysOfWeek do
   defp day_number("saturday"), do: 5
   defp day_number("sunday"), do: 6
 
-  defp describe_day(%{day_name: day_name, start_time: start_time, end_time: end_time}) do
-    [format_day(day_name), describe_times(start_time, end_time)]
+  defp describe_day(%{day_name: day_name, start_time: start_time, end_time: end_time}, format) do
+    {format_day(day_name, format), describe_times(start_time, end_time)}
   end
 
   defp describe_days_with_contiguous_times(
          %{day_name: first_day, start_time: start_time},
          %{day_name: last_day, end_time: end_time}
        ) do
-    from = format_day(first_day) <> " " <> describe_start_time(start_time)
-    to = format_day(last_day) <> " " <> describe_end_time(end_time)
+    from = format_day(first_day, :short) <> " " <> describe_start_time(start_time)
+    to = format_day(last_day, :short) <> " " <> describe_end_time(end_time)
     [from <> " – " <> to]
   end
 
@@ -73,7 +79,7 @@ defmodule ArrowWeb.DisruptionView.DaysOfWeek do
          %{day_name: last_day}
        ) do
     [
-      format_day(first_day) <> " – " <> format_day(last_day),
+      format_day(first_day, :short) <> " – " <> format_day(last_day, :short),
       describe_times(start_time, end_time)
     ]
   end
@@ -85,7 +91,8 @@ defmodule ArrowWeb.DisruptionView.DaysOfWeek do
   defp describe_end_time(time), do: format_time(time, "End of service")
   defp describe_start_time(time), do: format_time(time, "Start of service")
 
-  defp format_day(day_name), do: day_name |> String.slice(0..2) |> String.capitalize()
+  defp format_day(day_name, :long), do: String.capitalize(day_name)
+  defp format_day(day_name, :short), do: day_name |> String.slice(0..2) |> String.capitalize()
 
   defp format_time(%Time{} = time, _fallback), do: Calendar.strftime(time, "%-I:%M%p")
   defp format_time(nil, fallback), do: fallback
@@ -96,4 +103,6 @@ defmodule ArrowWeb.DisruptionView.DaysOfWeek do
       _ -> false
     end)
   end
+
+  defp summarize_day(day_of_week), do: day_of_week |> describe_day(:short) |> Tuple.to_list()
 end
