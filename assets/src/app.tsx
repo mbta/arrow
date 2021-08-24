@@ -6,7 +6,7 @@ declare function require(name: string): string
 require("../css/app.css")
 
 import "phoenix_html"
-import "react-phoenix"
+import ReactPhoenix from "./ReactPhoenix"
 
 import EditDisruption from "./disruptions/editDisruption"
 import { NewDisruption } from "./disruptions/newDisruption"
@@ -27,3 +27,5 @@ window.Components = {
   ViewDisruption,
   EditDisruption,
 }
+
+ReactPhoenix.init()
