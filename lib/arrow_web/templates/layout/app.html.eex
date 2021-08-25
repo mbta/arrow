@@ -7,14 +7,14 @@
 
     <title>Arrow</title>
 
-    <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
+    <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/assets/app.css") %>"/>
   </head>
 
   <body>
     <nav class="container navbar navbar-expand navbar-light bg-light">
       <div class="navbar-brand">
         <a href="/" class="m-header__arrow">
-          <img src="/images/logo.svg" width="34" height="34">
+          <img src="<%= Routes.static_path(@conn, "/images/logo.svg") %>" width="34" height="34">
           <span class="m-header__arrow-text">ARROW</span>
         </a>
       </div>
@@ -27,7 +27,6 @@
     <main class="container">
       <%= @inner_content %>
     </main>
-
-    <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
+    <script type="text/javascript" src="<%= Routes.static_path(@conn, "/assets/app.js") %>"></script>
   </body>
 </html>
