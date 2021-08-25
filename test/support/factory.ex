@@ -13,15 +13,14 @@ defmodule Arrow.Factory do
 
   def disruption_factory do
     %Arrow.Disruption{
-      ready_revision: nil,
       published_revision: nil
     }
   end
 
   def disruption_revision_factory do
     %Arrow.DisruptionRevision{
-      start_date: ~D[2020-01-01],
-      end_date: ~D[2020-01-15],
+      start_date: Date.utc_today(),
+      end_date: Date.utc_today() |> Date.add(6),
       disruption: build(:disruption),
       days_of_week: [build(:day_of_week)],
       adjustments: [build(:adjustment)],

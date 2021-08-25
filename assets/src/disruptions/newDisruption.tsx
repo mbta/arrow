@@ -1,6 +1,5 @@
 import * as React from "react"
 
-import { Redirect, useHistory } from "react-router-dom"
 import Select, { ValueType } from "react-select"
 
 import { PrimaryButton } from "../button"
@@ -11,6 +10,7 @@ import Row from "react-bootstrap/Row"
 
 import { apiGet, apiSend } from "../api"
 import { toModelObject, JsonApiResponse, parseErrors } from "../jsonApi"
+import { redirectTo } from "../navigation"
 import DisruptionRevision from "../models/disruptionRevision"
 import Adjustment from "../models/adjustment"
 import Exception from "../models/exception"
@@ -22,7 +22,6 @@ import { DisruptionTimePicker } from "./disruptionTimePicker"
 import { DisruptionDateRange } from "./disruptionDateRange"
 import { TransitMode, modeForRoute } from "./disruptions"
 import TripShortName from "../models/tripShortName"
-import { Page } from "../page"
 import { DisruptionExceptionDates } from "./disruptionExceptionDates"
 
 interface AdjustmentModePickerProps {
@@ -254,8 +253,6 @@ const NewDisruption = ({}): JSX.Element => {
   )
   const [whichTrips, setWhichTrips] = React.useState<"all" | "some">("all")
 
-  const history = useHistory()
-
   const createDisruption = React.useCallback(async () => {
     const result = await createFn({
       adjustments,
@@ -303,11 +300,11 @@ const NewDisruption = ({}): JSX.Element => {
   }
 
   if (doRedirect) {
-    return <Redirect to={`/`} />
+    redirectTo("/")
   }
 
   return (
-    <Page>
+    <>
       <Col lg={8}>
         <hr />
 
@@ -406,7 +403,7 @@ const NewDisruption = ({}): JSX.Element => {
               confirmationButtonText="discard changes"
               cancelButtonText="keep editing"
               onClickConfirm={() => {
-                history.push("/")
+                redirectTo("/")
               }}
               Component={
                 <PrimaryButton id="cancel-disruption-button" className="w-100">
@@ -417,7 +414,7 @@ const NewDisruption = ({}): JSX.Element => {
           </div>
         </div>
       </Col>
-    </Page>
+    </>
   )
 }
 

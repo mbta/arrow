@@ -1,6 +1,5 @@
 import * as React from "react"
 import { act } from "react-dom/test-utils"
-import { MemoryRouter, Route, Switch } from "react-router-dom"
 import { render, fireEvent, screen } from "@testing-library/react"
 import { waitForElementToBeRemoved } from "@testing-library/dom"
 
@@ -12,6 +11,12 @@ import DayOfWeek from "../../src/models/dayOfWeek"
 import Disruption from "../../src/models/disruption"
 import DisruptionRevision from "../../src/models/disruptionRevision"
 import Exception from "../../src/models/exception"
+
+jest.mock("../../src/navigation", () => ({
+  redirectTo: () => {
+    return
+  },
+}))
 
 describe("EditDisruption", () => {
   let apiCallSpy: jest.SpyInstance
@@ -95,72 +100,12 @@ describe("EditDisruption", () => {
     windowConfirmSpy.mockRestore()
   })
 
-  test("header include link to homepage", async () => {
-    const { container } = render(
-      <MemoryRouter initialEntries={["/disruptions/foo/edit"]}>
-        <Switch>
-          <Route
-            exact={true}
-            path="/disruptions/:id/edit"
-            component={EditDisruption}
-          />
-        </Switch>
-      </MemoryRouter>
-    )
-
-    await waitForElementToBeRemoved(
-      document.querySelector("#loading-indicator")
-    )
-
-    expect(container.querySelector("#header-home-link")).not.toBeNull()
-  })
-
-  test("cancel link redirects back to view page", async () => {
-    render(
-      <MemoryRouter
-        initialEntries={["/previouspage", "/disruptions/foo/edit"]}
-        initialIndex={1}
-      >
-        <Switch>
-          <Route
-            exact={true}
-            path="/previouspage"
-            render={() => <div>You went back</div>}
-          />
-          <Route
-            exact={true}
-            path="/disruptions/:id/edit"
-            component={EditDisruption}
-          />
-        </Switch>
-      </MemoryRouter>
-    )
-
-    await waitForElementToBeRemoved(
-      document.querySelector("#loading-indicator")
-    )
-
-    fireEvent.click(screen.getByText("cancel"))
-    fireEvent.click(screen.getByText("discard changes"))
-    expect(screen.queryByText("You went back")).not.toBeNull()
-  })
-
   test("handles error fetching disruption", async () => {
     apiCallSpy = jest.spyOn(api, "apiGet").mockImplementationOnce(() => {
       return Promise.resolve("error")
     })
 
-    render(
-      <MemoryRouter initialEntries={["/disruptions/foo/edit"]}>
-        <Switch>
-          <Route
-            exact={true}
-            path="/disruptions/:id/edit"
-            component={EditDisruption}
-          />
-        </Switch>
-      </MemoryRouter>
-    )
+    render(<EditDisruption id="foo" />)
 
     await waitForElementToBeRemoved(
       document.querySelector("#loading-indicator")
@@ -203,17 +148,7 @@ describe("EditDisruption", () => {
       )
     })
 
-    render(
-      <MemoryRouter initialEntries={["/disruptions/foo/edit"]}>
-        <Switch>
-          <Route
-            exact={true}
-            path="/disruptions/:id/edit"
-            component={EditDisruption}
-          />
-        </Switch>
-      </MemoryRouter>
-    )
+    render(<EditDisruption id="foo" />)
 
     await waitForElementToBeRemoved(
       document.querySelector("#loading-indicator")
@@ -225,17 +160,7 @@ describe("EditDisruption", () => {
   })
 
   test("update start date", async () => {
-    const { container } = render(
-      <MemoryRouter initialEntries={["/disruptions/foo/edit"]}>
-        <Switch>
-          <Route
-            exact={true}
-            path="/disruptions/:id/edit"
-            component={EditDisruption}
-          />
-        </Switch>
-      </MemoryRouter>
-    )
+    const { container } = render(<EditDisruption id="foo" />)
 
     await waitForElementToBeRemoved(
       document.querySelector("#loading-indicator")
@@ -255,17 +180,7 @@ describe("EditDisruption", () => {
   })
 
   test("clear start date", async () => {
-    const { container } = render(
-      <MemoryRouter initialEntries={["/disruptions/foo/edit"]}>
-        <Switch>
-          <Route
-            exact={true}
-            path="/disruptions/:id/edit"
-            component={EditDisruption}
-          />
-        </Switch>
-      </MemoryRouter>
-    )
+    const { container } = render(<EditDisruption id="foo" />)
 
     await waitForElementToBeRemoved(
       document.querySelector("#loading-indicator")
@@ -285,17 +200,7 @@ describe("EditDisruption", () => {
   })
 
   test("update end date", async () => {
-    const { container } = render(
-      <MemoryRouter initialEntries={["/disruptions/foo/edit"]}>
-        <Switch>
-          <Route
-            exact={true}
-            path="/disruptions/:id/edit"
-            component={EditDisruption}
-          />
-        </Switch>
-      </MemoryRouter>
-    )
+    const { container } = render(<EditDisruption id="foo" />)
 
     await waitForElementToBeRemoved(
       document.querySelector("#loading-indicator")
@@ -313,17 +218,7 @@ describe("EditDisruption", () => {
   })
 
   test("clear end date", async () => {
-    const { container } = render(
-      <MemoryRouter initialEntries={["/disruptions/foo/edit"]}>
-        <Switch>
-          <Route
-            exact={true}
-            path="/disruptions/:id/edit"
-            component={EditDisruption}
-          />
-        </Switch>
-      </MemoryRouter>
-    )
+    const { container } = render(<EditDisruption id="foo" />)
 
     await waitForElementToBeRemoved(
       document.querySelector("#loading-indicator")
@@ -341,17 +236,7 @@ describe("EditDisruption", () => {
   })
 
   test("adding exception date", async () => {
-    const { container } = render(
-      <MemoryRouter initialEntries={["/disruptions/foo/edit"]}>
-        <Switch>
-          <Route
-            exact={true}
-            path="/disruptions/:id/edit"
-            component={EditDisruption}
-          />
-        </Switch>
-      </MemoryRouter>
-    )
+    const { container } = render(<EditDisruption id="foo" />)
 
     await waitForElementToBeRemoved(
       document.querySelector("#loading-indicator")
@@ -379,17 +264,7 @@ describe("EditDisruption", () => {
   })
 
   test("removing exception date", async () => {
-    render(
-      <MemoryRouter initialEntries={["/disruptions/foo/edit"]}>
-        <Switch>
-          <Route
-            exact={true}
-            path="/disruptions/:id/edit"
-            component={EditDisruption}
-          />
-        </Switch>
-      </MemoryRouter>
-    )
+    render(<EditDisruption id="foo" />)
 
     await waitForElementToBeRemoved(
       document.querySelector("#loading-indicator")
@@ -401,17 +276,7 @@ describe("EditDisruption", () => {
   })
 
   test("adding and updating day of week", async () => {
-    const { container } = render(
-      <MemoryRouter initialEntries={["/disruptions/foo/edit"]}>
-        <Switch>
-          <Route
-            exact={true}
-            path="/disruptions/:id/edit"
-            component={EditDisruption}
-          />
-        </Switch>
-      </MemoryRouter>
-    )
+    const { container } = render(<EditDisruption id="foo" />)
 
     await waitForElementToBeRemoved(
       document.querySelector("#loading-indicator")
@@ -473,22 +338,7 @@ describe("EditDisruption", () => {
       })
     })
 
-    const { container } = render(
-      <MemoryRouter initialEntries={["/disruptions/foo/edit"]}>
-        <Switch>
-          <Route
-            exact={true}
-            path="/disruptions/:id"
-            render={() => <div>Success!!!</div>}
-          />
-          <Route
-            exact={true}
-            path="/disruptions/:id/edit"
-            component={EditDisruption}
-          />
-        </Switch>
-      </MemoryRouter>
-    )
+    const { container } = render(<EditDisruption id="foo" />)
 
     await waitForElementToBeRemoved(
       document.querySelector("#loading-indicator")
@@ -505,7 +355,11 @@ describe("EditDisruption", () => {
       throw new Error("save button not found")
     }
 
-    expect(screen.queryByText("Success!!!")).not.toBeNull()
+    expect(apiSendSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        json: expect.anything(),
+      })
+    )
   })
 
   test("handles error with saving disruption", async () => {
@@ -515,22 +369,7 @@ describe("EditDisruption", () => {
       })
     })
 
-    const { container } = render(
-      <MemoryRouter initialEntries={["/disruptions/foo/edit"]}>
-        <Switch>
-          <Route
-            exact={true}
-            path="/disruptions/:id"
-            render={() => <div>Success!!!</div>}
-          />
-          <Route
-            exact={true}
-            path="/disruptions/:id/edit"
-            component={EditDisruption}
-          />
-        </Switch>
-      </MemoryRouter>
-    )
+    const { container } = render(<EditDisruption id="foo" />)
 
     await waitForElementToBeRemoved(
       document.querySelector("#loading-indicator")

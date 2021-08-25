@@ -6,34 +6,24 @@ declare function require(name: string): string
 require("../css/app.scss")
 
 import "phoenix_html"
-import * as React from "react"
-import ReactDOM from "react-dom"
-import { BrowserRouter, Route, Switch } from "react-router-dom"
+import "react-phoenix"
 
 import EditDisruption from "./disruptions/editDisruption"
 import { NewDisruption } from "./disruptions/newDisruption"
 import ViewDisruption from "./disruptions/viewDisruption"
-import { DisruptionIndex } from "./disruptions/disruptionIndex"
+import { DisruptionCalendar } from "./disruptions/disruptionCalendar"
 
-const App = (): JSX.Element => {
-  return (
-    <BrowserRouter>
-      <Switch>
-        <Route exact={true} path="/" component={DisruptionIndex} />
-        <Route exact={true} path="/disruptions/new" component={NewDisruption} />
-        <Route
-          exact={true}
-          path="/disruptions/:id"
-          component={ViewDisruption}
-        />
-        <Route
-          exact={true}
-          path="/disruptions/:id/edit"
-          component={EditDisruption}
-        />
-      </Switch>
-    </BrowserRouter>
-  )
+declare global {
+  interface Window {
+    Components: {
+      [name: string]: (props: any) => JSX.Element
+    }
+  }
 }
 
-ReactDOM.render(<App />, document.getElementById("app"))
+window.Components = {
+  DisruptionCalendar,
+  NewDisruption,
+  ViewDisruption,
+  EditDisruption,
+}

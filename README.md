@@ -1,20 +1,39 @@
 # Arrow
 
-To start your Phoenix server:
+🏹 Adjustments to the Regular Right of Way
 
-  * Install tools with `asdf install`
-  * Install dependencies with `mix deps.get`
-  * Create and migrate your database with `mix ecto.setup`
-  * Install Node.js dependencies with `cd assets && npm install`
-  * Start Phoenix endpoint with `mix phx.server`
+## Setup
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+### Requirements
 
-Useful when developing:
+- [`asdf`](https://github.com/asdf-vm/asdf)
+  - Add `erlang`, `elixir`, and `nodejs` plugins
+  - Install [additional requirements][nodejs-reqs] for `nodejs` plugin
+- [`direnv`](https://github.com/direnv/direnv)
+- PostgreSQL 11 (using Homebrew: `brew install postgresql@11`)
 
-  * Test elixir code with `mix test`
-  * Format elixir code with `mix format`
-  * Lint elixir code with `mix dialyzer` and `mix credo`
-  * Test frontend code with `npm run test`
-  * Format frontend code with `npm run format`
-  * Lint frontend code with `npm run lint`
+[nodejs-reqs]: https://github.com/asdf-vm/asdf-nodejs#requirements
+
+### Instructions
+
+- `asdf install`
+- `mix deps.get`
+- `npm install --prefix assets`
+- `cp .envrc.example .envrc`
+- Update `.envrc` with your local Postgres username and password
+- `direnv allow`
+- `mix ecto.setup`
+
+### Useful commands
+
+- Run the app: `mix phx.server` (visit <http://localhost:4000/>)
+- Elixir:
+  - `mix test` — run tests
+  - `mix dialyzer` — check typespecs
+  - `mix format` — format code
+  - `mix credo` — lint code
+- JavaScript: `cd assets` and...
+  - `npm run test` — run tests
+  - `npm run test -- --watch` — run tests continuously for changed code
+  - `npm run format` — format code
+  - `npm run lint` — lint code (and fix automatically if possible)

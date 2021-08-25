@@ -1,18 +1,11 @@
 import * as React from "react"
-import {
-  RouteComponentProps,
-  Link,
-  Redirect,
-  NavLink,
-  useHistory,
-} from "react-router-dom"
 import Alert from "react-bootstrap/Alert"
-import { LinkButton, PrimaryButton, SecondaryButton } from "../button"
+import { LinkButton, PrimaryButton } from "../button"
 import { apiGet, apiSend } from "../api"
 import Loading from "../loading"
+import { redirectTo } from "../navigation"
 import { fromDaysOfWeek, timePeriodDescription } from "./time"
 import { JsonApiResponse, toModelObject, parseErrors } from "../jsonApi"
-import { Page } from "../page"
 import Disruption, { DisruptionView } from "../models/disruption"
 import { useDisruptionViewParam } from "./viewToggle"
 import Row from "react-bootstrap/Row"
@@ -21,14 +14,12 @@ import { formatDisruptionDate } from "./disruptions"
 import { ConfirmationModal } from "../confirmationModal"
 import { AdjustmentSummary } from "./adjustmentSummary"
 
-interface TParams {
+interface ViewDisruptionProps {
   id: string
 }
 
-const ViewDisruption = ({
-  match,
-}: RouteComponentProps<TParams>): JSX.Element => {
-  return <ViewDisruptionForm disruptionId={match.params.id} />
+const ViewDisruption = ({ id }: ViewDisruptionProps): JSX.Element => {
+  return <ViewDisruptionForm disruptionId={id} />
 }
 
 interface ViewDisruptionFormProps {
@@ -41,7 +32,6 @@ const ViewDisruptionForm = ({
   const [disruption, setDisruption] = React.useState<
     Disruption | "error" | null
   >(null)
-  const history = useHistory()
   const [doRedirect, setDoRedirect] = React.useState<boolean>(false)
   const [deletionErrors, setDeletionErrors] = React.useState<string[]>([])
   const fetchDisruption = React.useCallback(() => {
@@ -64,7 +54,7 @@ const ViewDisruptionForm = ({
   const view = useDisruptionViewParam()
 
   if (doRedirect) {
-    return <Redirect to={`/`} />
+    redirectTo("/")
   }
 
   if (disruption && disruption !== "error" && disruption.id) {
@@ -89,7 +79,7 @@ const ViewDisruptionForm = ({
 
     if (disruptionDaysOfWeek !== "error") {
       return (
-        <Page>
+        <>
           <Row>
             <Col lg={7}>
               {deletionErrors.length > 0 && (
@@ -167,12 +157,13 @@ const ViewDisruptionForm = ({
                 </div>
                 <div className="m-disruption-details__view-toggle-group d-flex flex-column">
                   {published && (
-                    <NavLink
+                    <a
                       id="published"
-                      to="?"
-                      className="m-disruption-details__view-toggle"
-                      activeClassName="active"
-                      isActive={() => view === DisruptionView.Published}
+                      href="?"
+                      className={
+                        "m-disruption-details__view-toggle " +
+                        (view === DisruptionView.Published ? "active" : "")
+                      }
                     >
                       <strong className="mr-3">published</strong>
                       <span className="text-muted">
@@ -181,44 +172,44 @@ const ViewDisruptionForm = ({
                           disruption.lastPublishedAt || null
                         )}
                       </span>
-                    </NavLink>
+                    </a>
                   )}
                   {ready && (
-                    <NavLink
+                    <a
                       id="ready"
-                      className="m-disruption-details__view-toggle"
-                      to="?v=ready"
-                      activeClassName="active"
-                      isActive={() => view === DisruptionView.Ready}
-                      replace
+                      className={
+                        "m-disruption-details__view-toggle " +
+                        (view === DisruptionView.Ready ? "active" : "")
+                      }
+                      href="?v=ready"
                     >
                       <strong className="mr-3">ready</strong>
                       <span className="text-muted">
                         Created {formatDisruptionDate(ready.insertedAt || null)}
                       </span>
-                    </NavLink>
+                    </a>
                   )}
                   {draft ? (
-                    <NavLink
+                    <a
                       id="draft"
-                      className="m-disruption-details__view-toggle text-primary"
-                      to="?v=draft"
-                      activeClassName="active"
-                      isActive={() => view === DisruptionView.Draft}
-                      replace
+                      className={
+                        "m-disruption-details__view-toggle text-primary " +
+                        (view === DisruptionView.Draft ? "active" : "")
+                      }
+                      href="?v=draft"
                     >
                       <strong className="mr-3">needs review</strong>
                       <span className="text-muted">
                         Created {formatDisruptionDate(draft.insertedAt || null)}
                       </span>
-                    </NavLink>
+                    </a>
                   ) : !anyDeleted ? (
-                    <Link
+                    <a
                       className="m-disruption-details__view-toggle text-primary"
-                      to={`/disruptions/${disruption.id}/edit`}
+                      href={`/disruptions/${disruption.id}/edit`}
                     >
                       <strong>create new draft</strong>
-                    </Link>
+                    </a>
                   ) : null}
                 </div>
               </div>
@@ -303,7 +294,7 @@ const ViewDisruptionForm = ({
                     <Col md={2}>
                       {view === DisruptionView.Draft &&
                         disruptionRevision.isActive && (
-                          <Link to={`/disruptions/${disruption.id}/edit`}>
+                          <a href={`/disruptions/${disruption.id}/edit`}>
                             <PrimaryButton
                               id="edit-disruption-link"
                               className="w-100"
@@ -311,56 +302,8 @@ const ViewDisruptionForm = ({
                             >
                               edit
                             </PrimaryButton>
-                          </Link>
+                          </a>
                         )}
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col>
-                      {view === DisruptionView.Draft && (
-                        <div>
-                          <hr className="my-3" />
-                          <div className="d-flex justify-content-center">
-                            <ConfirmationModal
-                              onClickConfirm={() => {
-                                apiSend({
-                                  method: "POST",
-                                  json: JSON.stringify({
-                                    revision_ids: disruptionRevision.id,
-                                  }),
-                                  url: "/api/ready_notice/",
-                                })
-                                  .then(async () => {
-                                    await fetchDisruption()
-                                    history.replace(
-                                      "/disruptions/" +
-                                        encodeURIComponent(
-                                          disruptionRevision.disruptionId || ""
-                                        ) +
-                                        "?v=ready"
-                                    )
-                                  })
-                                  .catch(() => {
-                                    // eslint-disable-next-line no-console
-                                    console.log(
-                                      `failed to mark revision as ready: ${disruptionRevision.id}`
-                                    )
-                                  })
-                              }}
-                              confirmationButtonText="yes, mark as ready"
-                              confirmationText="Are you sure you want to mark these revisions as ready?"
-                              Component={
-                                <SecondaryButton id="mark-ready">
-                                  {"mark as ready" +
-                                    (disruptionRevision.isActive
-                                      ? ""
-                                      : " for deletion")}
-                                </SecondaryButton>
-                              }
-                            />
-                          </div>
-                        </div>
-                      )}
                     </Col>
                   </Row>
                 </div>
@@ -377,7 +320,7 @@ const ViewDisruptionForm = ({
               )}
             </Col>
           </Row>
-        </Page>
+        </>
       )
     } else {
       return <div>Error parsing day of week information.</div>

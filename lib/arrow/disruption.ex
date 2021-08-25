@@ -14,7 +14,6 @@ defmodule Arrow.Disruption do
   alias Arrow.DisruptionRevision
 
   @type t :: %__MODULE__{
-          ready_revision: DisruptionRevision.t() | Ecto.Association.NotLoaded.t(),
           published_revision: DisruptionRevision.t() | Ecto.Association.NotLoaded.t(),
           last_published_at: DateTime.t() | nil,
           inserted_at: DateTime.t(),
@@ -22,7 +21,6 @@ defmodule Arrow.Disruption do
         }
 
   schema "disruptions" do
-    belongs_to :ready_revision, DisruptionRevision
     belongs_to :published_revision, DisruptionRevision
     has_many :revisions, DisruptionRevision
 
@@ -114,36 +112,52 @@ defmodule Arrow.Disruption do
   end
 
   @doc """
-  Returns all the disruptions whose draft and ready revisions are
-  different, preloaded with all the revisions between the two.
+  Given a query with a Disruption binding `disruptions`, adds a DisruptionRevision binding
+  `revisions` that is the latest revisions of each disruption.
   """
-  @spec draft_vs_ready() :: {[t()], [t()]}
-  def draft_vs_ready do
-    draft_map =
-      from(dr in DisruptionRevision,
-        select: %{disruption_id: dr.disruption_id, draft_id: max(dr.id)},
-        group_by: dr.disruption_id
+  @spec with_latest_revisions(Ecto.Query.t()) :: Ecto.Query.t()
+  def with_latest_revisions(query \\ from(d in __MODULE__, as: :disruptions)) do
+    from([latest_ids: l] in with_latest_revision_ids(query),
+      join: r in DisruptionRevision,
+      on: r.id == l.latest_revision_id,
+      as: :revisions
+    )
+  end
+
+  @doc """
+  Given a query with a Disruption binding `disruptions`, adds a binding `latest_ids` with fields
+  `disruption_id` and `latest_revision_id`, indicating the latest revision of each disruption.
+  """
+  @spec with_latest_revision_ids(Ecto.Query.t()) :: Ecto.Query.t()
+  def with_latest_revision_ids(query \\ from(d in __MODULE__, as: :disruptions)) do
+    latest_ids =
+      from(r in DisruptionRevision,
+        group_by: r.disruption_id,
+        select: %{disruption_id: r.disruption_id, latest_revision_id: max(r.id)}
       )
 
-    updated =
-      from(d in Arrow.Disruption,
-        join: dm in subquery(draft_map),
-        as: :draft_map,
-        on: dm.disruption_id == d.id,
-        join: dr in assoc(d, :revisions),
-        on: dr.disruption_id == d.id,
-        where: d.ready_revision_id != dm.draft_id,
-        where: dr.id >= d.ready_revision_id and dr.id <= as(:draft_map).draft_id,
-        preload: [revisions: {dr, ^DisruptionRevision.associations()}]
-      )
-      |> Arrow.Repo.all()
+    from([disruptions: d] in query,
+      join: l in subquery(latest_ids),
+      on: l.disruption_id == d.id,
+      as: :latest_ids
+    )
+  end
 
-    new =
-      from(d in Arrow.Disruption, where: is_nil(d.ready_revision_id))
-      |> Arrow.Repo.all()
-      |> Arrow.Repo.preload(revisions: DisruptionRevision.associations())
-
-    {updated, new}
+  @doc """
+  Returns all the disruptions whose latest and published revisions are different,
+  preloaded with the latest revision, and published revision if there is one.
+  Order of revisions is not guaranteed
+  """
+  @spec latest_vs_published() :: {[t()], [t()]}
+  def latest_vs_published do
+    from([disruptions: d, latest_ids: l] in with_latest_revision_ids(),
+      join: r in assoc(d, :revisions),
+      on: r.disruption_id == d.id,
+      where: is_nil(d.published_revision_id) or d.published_revision_id != l.latest_revision_id,
+      where: r.id == d.published_revision_id or r.id == l.latest_revision_id,
+      preload: [revisions: {r, ^DisruptionRevision.associations()}]
+    )
+    |> Arrow.Repo.all()
   end
 
   @spec common_validations(Ecto.Changeset.t()) :: Ecto.Changeset.t(t())

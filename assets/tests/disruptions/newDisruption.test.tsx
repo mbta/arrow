@@ -1,6 +1,5 @@
 import * as React from "react"
 
-import { MemoryRouter, Route, Switch } from "react-router-dom"
 import { act } from "react-dom/test-utils"
 import { render, fireEvent, screen } from "@testing-library/react"
 import { waitForElementToBeRemoved } from "@testing-library/dom"
@@ -54,16 +53,6 @@ describe("NewDisruption", () => {
   afterAll(() => {
     apiCallSpy.mockRestore()
     apiSendSpy.mockRestore()
-  })
-
-  test("header include link to homepage", async () => {
-    const { container } = render(<NewDisruption />)
-
-    await waitForElementToBeRemoved(
-      document.querySelector("#loading-indicator")
-    )
-
-    expect(container.querySelector("#header-home-link")).not.toBeNull()
   })
 
   test("selecting a mode filters the available adjustments", async () => {
@@ -238,14 +227,7 @@ describe("NewDisruption", () => {
       })
     })
 
-    const { container } = render(
-      <MemoryRouter initialEntries={["/disruptions/new"]}>
-        <Switch>
-          <Route path="/disruptions/new" component={NewDisruption} />
-          <Route path="/" render={() => <div>Success!!!</div>} />
-        </Switch>
-      </MemoryRouter>
-    )
+    const { container } = render(<NewDisruption />)
     await act(async () => {
       await waitForElementToBeRemoved(
         document.querySelector("#loading-indicator")
@@ -296,7 +278,6 @@ describe("NewDisruption", () => {
       })
     })
 
-    await screen.findByText("Success!!!")
     const apiSendCall = apiSendSpy.mock.calls[0][0]
     const apiSendData = JSON.parse(apiSendCall.json)
     expect(apiSendCall.url).toEqual("/api/disruptions")
@@ -319,14 +300,7 @@ describe("NewDisruption", () => {
     })
 
     await act(async () => {
-      const { container } = render(
-        <MemoryRouter initialEntries={["/disruptions/new"]}>
-          <Switch>
-            <Route path="/disruptions/new" component={NewDisruption} />
-            <Route path="/" render={() => <div>Success!!!</div>} />
-          </Switch>
-        </MemoryRouter>
-      )
+      const { container } = render(<NewDisruption />)
 
       await waitForElementToBeRemoved(
         document.querySelector("#loading-indicator")
@@ -338,32 +312,5 @@ describe("NewDisruption", () => {
     })
 
     await screen.findByText("Data is all wrong")
-  })
-
-  test("canceling sends back to the home page", async () => {
-    render(
-      <MemoryRouter initialEntries={["/disruptions/new", "/previouspage"]}>
-        <Switch>
-          <Route
-            exact={true}
-            path="/"
-            render={() => <div>This is the homepage</div>}
-          />
-          <Route
-            exact={true}
-            path="/disruptions/new"
-            component={NewDisruption}
-          />
-        </Switch>
-      </MemoryRouter>
-    )
-
-    await waitForElementToBeRemoved(
-      document.querySelector("#loading-indicator")
-    )
-
-    fireEvent.click(screen.getByText("cancel"))
-    fireEvent.click(screen.getByText("discard changes"))
-    expect(screen.queryByText("This is the homepage")).not.toBeNull()
   })
 })

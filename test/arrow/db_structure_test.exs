@@ -17,7 +17,7 @@ defmodule Arrow.DBStructureTest do
           trip_short_names: []
         })
 
-      :ok = Arrow.DisruptionRevision.ready_all!()
+      :ok = Arrow.DisruptionRevision.publish!([dr.id])
 
       adj_id = adj.id
       dr_id = dr.id
@@ -53,13 +53,7 @@ defmodule Arrow.DBStructureTest do
                  }
                ],
                "disruption_trip_short_names" => [],
-               "disruptions" => [
-                 %{
-                   id: ^d_id,
-                   published_revision_id: nil,
-                   ready_revision_id: ^dr_id
-                 }
-               ]
+               "disruptions" => [%{id: ^d_id, published_revision_id: ^dr_id}]
              } = Arrow.DBStructure.dump_data()
     end
   end
@@ -108,8 +102,7 @@ defmodule Arrow.DBStructureTest do
           %{
             id: 8338,
             inserted_at: ~U[2020-09-29 15:17:42.000000Z],
-            published_revision_id: nil,
-            ready_revision_id: 11_206,
+            published_revision_id: 11_206,
             updated_at: ~U[2020-09-29 15:17:42.000000Z],
             last_published_at: nil
           }

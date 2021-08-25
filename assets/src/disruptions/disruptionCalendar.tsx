@@ -3,15 +3,14 @@ import FullCalendar from "@fullcalendar/react"
 import dayGridPlugin from "@fullcalendar/daygrid"
 import { RRule, RRuleSet } from "rrule"
 import { getRouteColor } from "./disruptionIndex"
+import Disruption from "../models/disruption"
 import DisruptionRevision from "../models/disruptionRevision"
-import { DisruptionView } from "../models/disruption"
 import DayOfWeek from "../models/dayOfWeek"
-import { useDisruptionViewParam } from "./viewToggle"
+import { toModelObject } from "../jsonApi"
 
 interface DisruptionCalendarProps {
-  disruptionRevisions: DisruptionRevision[]
+  data: any
   initialDate?: Date
-  timeZone?: string
 }
 
 const dayNameToInt = (day: DayOfWeek["dayName"]): number => {
@@ -44,9 +43,12 @@ const addDay = (date: Date): Date => {
   return new Date(date.setTime(date.getTime() + 60 * 60 * 24 * 1000))
 }
 
+// Convert a date to a YYYY-MM-DD string, which FullCalendar will interpret as
+// being in the local time zone.
+const toISODate = (date: Date): string => date.toISOString().slice(0, 10)
+
 const disruptionsToCalendarEvents = (
-  disruptionRevisions: DisruptionRevision[],
-  view: DisruptionView
+  disruptionRevisions: DisruptionRevision[]
 ) => {
   return disruptionRevisions.reduce(
     (
@@ -54,8 +56,8 @@ const disruptionsToCalendarEvents = (
         id?: string
         title?: string
         backgroundColor: string
-        start: Date
-        end: Date
+        start: string
+        end: string
         url: string
         eventDisplay: "block"
         allDay: true
@@ -104,11 +106,11 @@ const disruptionsToCalendarEvents = (
             id: disruptionRevision.id,
             title: adj.sourceLabel,
             backgroundColor: getRouteColor(adj.routeId),
-            start: group[0],
-            end: group.length > 1 ? addDay(group.slice(-1)[0]) : group[0],
-            url:
-              `/disruptions/${disruptionRevision.disruptionId}` +
-              (view === DisruptionView.Draft ? "?v=draft" : ""),
+            start: toISODate(group[0]),
+            end: toISODate(
+              group.length > 1 ? addDay(group.slice(-1)[0]) : group[0]
+            ),
+            url: `/disruptions/${disruptionRevision.disruptionId}`,
             eventDisplay: "block",
             allDay: true,
           })
@@ -120,19 +122,38 @@ const disruptionsToCalendarEvents = (
   )
 }
 
-const DisruptionCalendar = ({
-  disruptionRevisions,
-  initialDate,
-}: DisruptionCalendarProps) => {
-  const view = useDisruptionViewParam()
+const DisruptionCalendar = ({ data, initialDate }: DisruptionCalendarProps) => {
+  const revisionsOrError = React.useMemo(() => {
+    if (Array.isArray(data)) {
+      return data
+    } else {
+      const disruptions = toModelObject(data)
+
+      if (disruptions === "error") {
+        return "error"
+      } else {
+        return (disruptions as Disruption[]).map(
+          ({ revisions }) => revisions[0]
+        )
+      }
+    }
+  }, [data])
+
   const calendarEvents = React.useMemo(() => {
-    return disruptionsToCalendarEvents(disruptionRevisions, view)
-  }, [disruptionRevisions, view])
+    if (revisionsOrError !== "error") {
+      return disruptionsToCalendarEvents(
+        revisionsOrError as DisruptionRevision[]
+      )
+    } else {
+      return []
+    }
+  }, [revisionsOrError])
+
   return (
     <div id="calendar" className="my-3">
+      {revisionsOrError === "error" && "Error loading calendar events!"}
       <FullCalendar
         initialDate={initialDate}
-        timeZone="UTC"
         plugins={[dayGridPlugin]}
         initialView="dayGridMonth"
         events={calendarEvents}

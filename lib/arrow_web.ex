@@ -42,6 +42,9 @@ defmodule ArrowWeb do
       import ArrowWeb.ErrorHelpers
       import ArrowWeb.Gettext
       alias ArrowWeb.Router.Helpers, as: Routes
+
+      # Import the `react_component` helper
+      import ReactPhoenix.ClientSide
     end
   end
 

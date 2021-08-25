@@ -4,9 +4,8 @@ import Alert from "react-bootstrap/Alert"
 import { PrimaryButton } from "../button"
 import Col from "react-bootstrap/Col"
 
-import { Redirect, RouteComponentProps, useHistory } from "react-router-dom"
-
 import { apiGet, apiSend } from "../api"
+import { redirectTo } from "../navigation"
 
 import Loading from "../loading"
 import { AdjustmentSummary } from "./adjustmentSummary"
@@ -25,18 +24,15 @@ import DisruptionRevision from "../models/disruptionRevision"
 import Exception from "../models/exception"
 import { JsonApiResponse, toModelObject, parseErrors } from "../jsonApi"
 import DayOfWeek from "../models/dayOfWeek"
-import { Page } from "../page"
 import { ConfirmationModal } from "../confirmationModal"
 import { DisruptionExceptionDates } from "./disruptionExceptionDates"
 import { DisruptionDateRange } from "./disruptionDateRange"
 
-interface TParams {
+interface EditDisruptionProps {
   id: string
 }
 
-const EditDisruption = ({
-  match,
-}: RouteComponentProps<TParams>): JSX.Element => {
+const EditDisruption = ({ id }: EditDisruptionProps): JSX.Element => {
   const [disruptionRevision, setDisruptionRevision] = React.useState<
     DisruptionRevision | "error" | null
   >(null)
@@ -45,7 +41,7 @@ const EditDisruption = ({
 
   const saveDisruption = React.useCallback(async () => {
     const result = await apiSend({
-      url: "/api/disruptions/" + encodeURIComponent(match.params.id),
+      url: "/api/disruptions/" + encodeURIComponent(id),
       method: "PATCH",
       json: JSON.stringify(
         (disruptionRevision as DisruptionRevision).toJsonApi()
@@ -59,11 +55,11 @@ const EditDisruption = ({
     } else if (result.error) {
       setValidationErrors(result.error)
     }
-  }, [disruptionRevision, match])
+  }, [disruptionRevision, id])
 
   React.useEffect(() => {
     apiGet<JsonApiResponse>({
-      url: "/api/disruptions/" + encodeURIComponent(match.params.id),
+      url: "/api/disruptions/" + encodeURIComponent(id),
       parser: toModelObject,
       defaultResult: "error",
     }).then((result: JsonApiResponse) => {
@@ -80,14 +76,10 @@ const EditDisruption = ({
         setDisruptionRevision("error")
       }
     })
-  }, [match.params.id])
+  }, [id])
 
   if (doRedirect) {
-    return (
-      <Redirect
-        to={"/disruptions/" + encodeURIComponent(match.params.id) + "?v=draft"}
-      />
-    )
+    redirectTo("/disruptions/" + encodeURIComponent(id) + "?v=draft")
   }
 
   if (disruptionRevision === "error") {
@@ -113,7 +105,7 @@ const EditDisruption = ({
 
   return (
     <EditDisruptionForm
-      disruptionId={match.params.id}
+      disruptionId={id}
       adjustments={disruptionRevision.adjustments}
       fromDate={disruptionRevision.startDate || null}
       setFromDate={(newDate) => {
@@ -272,10 +264,8 @@ const EditDisruptionForm = ({
   saveDisruption,
   validationErrors,
 }: EditDisruptionFormProps): JSX.Element => {
-  const history = useHistory()
-
   return (
-    <Page>
+    <>
       <Col lg={8}>
         <hr />
         <h1>
@@ -347,7 +337,7 @@ const EditDisruptionForm = ({
               confirmationButtonText="discard changes"
               cancelButtonText="keep editing"
               onClickConfirm={() => {
-                history.goBack()
+                window.history.back()
               }}
               Component={
                 <PrimaryButton id="cancel-disruption-button" className="w-100">
@@ -358,7 +348,7 @@ const EditDisruptionForm = ({
           </div>
         </div>
       </Col>
-    </Page>
+    </>
   )
 }
 

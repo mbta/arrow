@@ -33,4 +33,8 @@ npm-debug.log
 # this depending on your deployment strategy.
 /priv/static/
 
+# Code coverage from React tests
 /assets/coverage/
+
+# Private environment variables
+.envrc

@@ -6,7 +6,7 @@ defmodule Arrow.DisruptionRevision do
   use Ecto.Schema
   import Ecto.Query
 
-  alias Arrow.{Disruption, Repo}
+  alias Arrow.{Adjustment, Disruption, Repo}
   alias Arrow.Disruption.{DayOfWeek, Exception, TripShortName}
 
   @type t :: %__MODULE__{
@@ -17,7 +17,7 @@ defmodule Arrow.DisruptionRevision do
           days_of_week: [DayOfWeek.t()] | Ecto.Association.NotLoaded.t(),
           exceptions: [Exception.t()] | Ecto.Association.NotLoaded.t(),
           trip_short_names: [TripShortName.t()] | Ecto.Association.NotLoaded.t(),
-          adjustments: [Arrow.Adjustment.t()] | Ecto.Association.NotLoaded.t(),
+          adjustments: [Adjustment.t()] | Ecto.Association.NotLoaded.t(),
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil
         }
@@ -31,7 +31,7 @@ defmodule Arrow.DisruptionRevision do
     has_many(:days_of_week, DayOfWeek, on_replace: :delete)
     has_many(:exceptions, Exception, on_replace: :delete)
     has_many(:trip_short_names, TripShortName, on_replace: :delete)
-    many_to_many(:adjustments, Arrow.Adjustment, join_through: "disruption_adjustments")
+    many_to_many(:adjustments, Adjustment, join_through: "disruption_adjustments")
 
     timestamps(type: :utc_datetime)
   end
@@ -41,13 +41,6 @@ defmodule Arrow.DisruptionRevision do
   @spec associations() :: [atom()]
   def associations do
     @associations
-  end
-
-  @spec only_ready(Ecto.Queryable.t()) :: Ecto.Query.t()
-  def only_ready(query) do
-    ready_ids = from(d in Disruption, select: d.ready_revision_id)
-
-    from(dr in query, where: dr.id in subquery(ready_ids) and dr.is_active)
   end
 
   @spec latest_revision(Ecto.Queryable.t()) :: Ecto.Query.t()
@@ -100,74 +93,35 @@ defmodule Arrow.DisruptionRevision do
     |> Arrow.Repo.insert!()
   end
 
-  @spec ready_all!() :: :ok
-  def ready_all! do
-    draft_map =
-      from(dr in Arrow.DisruptionRevision,
-        select: %{disruption_id: dr.disruption_id, draft_id: max(dr.id)},
-        group_by: dr.disruption_id
-      )
-
-    from(d in Arrow.Disruption,
-      join: dm in subquery(draft_map),
-      on: dm.disruption_id == d.id,
-      where: is_nil(d.ready_revision_id) or dm.draft_id != d.ready_revision_id,
-      update: [set: [ready_revision_id: dm.draft_id]]
-    )
-    |> Arrow.Repo.update_all([])
-
-    :ok
-  end
-
-  @spec ready!([integer()]) :: :ok
-  def ready!(ids) do
-    Arrow.Repo.transaction(fn ->
-      draft_map =
-        from(dr in Arrow.DisruptionRevision,
-          select: %{disruption_id: dr.disruption_id, draft_id: max(dr.id)},
-          group_by: dr.disruption_id
-        )
-
-      {updated, _} =
-        from(d in Arrow.Disruption,
-          join: dm in subquery(draft_map),
-          on: dm.disruption_id == d.id,
-          where:
-            dm.draft_id in type(^ids, {:array, :integer}) and
-              (is_nil(d.ready_revision_id) or
-                 dm.draft_id != d.ready_revision_id),
-          update: [set: [ready_revision_id: dm.draft_id]]
-        )
-        |> Arrow.Repo.update_all([])
-
-      if updated != Enum.count(ids) do
-        raise Disruption.ReadyNotLatestError
-      end
-    end)
-
-    :ok
-  end
-
   @spec publish!([integer()]) :: :ok
   def publish!(ids) do
-    disruptions_with_revisions =
-      from(d in Disruption, join: dr in assoc(d, :revisions), where: dr.id in ^ids)
-
     Repo.transaction(fn ->
-      # Validate each to-be-published revision is older than, or is, the ready revision
-      valid_ids_count =
-        from([d, dr] in disruptions_with_revisions, where: dr.id <= d.ready_revision_id)
-        |> Repo.aggregate(:count)
-
-      if valid_ids_count != length(ids), do: raise(Disruption.PublishedAfterReadyError)
-
       # Update disruptions only where the published revision is changing
-      from([d, dr] in disruptions_with_revisions,
+      from(d in Disruption,
+        join: dr in assoc(d, :revisions),
+        where: dr.id in ^ids,
         where: dr.id != d.published_revision_id or is_nil(d.published_revision_id),
         update: [set: [published_revision_id: dr.id, last_published_at: fragment("now()")]]
       )
       |> Repo.update_all([])
+
+      # since GTFS creator doesn't know about deleted disruptions, consider any currently
+      # deleted disruptions part of this publishing notice.
+      :ok = publish_deleted!()
     end)
+
+    :ok
+  end
+
+  @spec publish_deleted!() :: :ok
+  defp publish_deleted! do
+    from(
+      [disruptions: d, revisions: r] in Disruption.with_latest_revisions(),
+      where: r.is_active == false,
+      where: is_nil(d.published_revision_id) or d.published_revision_id != r.id,
+      update: [set: [published_revision_id: r.id, last_published_at: fragment("now()")]]
+    )
+    |> Repo.update_all([])
 
     :ok
   end

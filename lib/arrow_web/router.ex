@@ -50,13 +50,10 @@ defmodule ArrowWeb.Router do
   scope "/", ArrowWeb do
     pipe_through [:redirect_prod_http, :browser, :auth, :ensure_auth, :ensure_arrow_group]
 
-    get "/", PageController, :index
-    get "/disruptions/new", PageController, :index
-    get "/disruptions/:id", PageController, :index
-    get "/disruptions/:id/edit", PageController, :index
+    get "/", DisruptionController, :index
+    resources("/disruptions", DisruptionController, only: [:show, :new, :edit])
+    get "/feed", FeedController, :index
     get "/mytoken", MyTokenController, :show
-    get "/temp_review_changes", TempReviewChangesController, :index
-    post "/temp_review_changes", TempReviewChangesController, :create
   end
 
   scope "/", ArrowWeb do
@@ -98,7 +95,6 @@ defmodule ArrowWeb.Router do
     ])
 
     post "/publish_notice", NoticeController, :publish
-    post "/ready_notice", NoticeController, :ready
     get "/db_dump", DBDumpController, :show
   end
 

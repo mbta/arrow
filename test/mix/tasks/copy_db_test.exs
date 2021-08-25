@@ -31,13 +31,8 @@ defmodule Mix.Tasks.CopyDbTest do
           disruption: d2
         })
 
-      d1
-      |> Ecto.Changeset.change(%{ready_revision_id: dr1.id, published_revision_id: dr1.id})
-      |> Arrow.Repo.update!()
-
-      d2
-      |> Ecto.Changeset.change(%{ready_revision_id: dr2.id, published_revision_id: dr2.id})
-      |> Arrow.Repo.update!()
+      d1 |> Ecto.Changeset.change(%{published_revision_id: dr1.id}) |> Arrow.Repo.update!()
+      d2 |> Ecto.Changeset.change(%{published_revision_id: dr2.id}) |> Arrow.Repo.update!()
     end
 
     test "replaces current database with values pulled from API" do
@@ -49,7 +44,7 @@ defmodule Mix.Tasks.CopyDbTest do
       assert [
                %Arrow.Disruption{
                  id: 10,
-                 ready_revision: %Arrow.DisruptionRevision{
+                 published_revision: %Arrow.DisruptionRevision{
                    id: 9,
                    start_date: ~D[2020-10-05],
                    end_date: ~D[2020-10-08],
@@ -100,15 +95,11 @@ defmodule Mix.Tasks.CopyDbTest do
                        trip_short_name: "412"
                      }
                    ]
-                 },
-                 published_revision: nil
+                 }
                }
              ] =
                Arrow.Repo.all(from d in Arrow.Disruption, order_by: d.id)
-               |> Arrow.Repo.preload(
-                 ready_revision: Arrow.DisruptionRevision.associations(),
-                 published_revision: Arrow.DisruptionRevision.associations()
-               )
+               |> Arrow.Repo.preload(published_revision: Arrow.DisruptionRevision.associations())
 
       assert [
                %Arrow.Adjustment{
@@ -238,8 +229,7 @@ defmodule Fake.HTTPoison do
               %{
                 "id" => 10,
                 "inserted_at" => "2020-09-29T18:54:00.000000Z",
-                "published_revision_id" => nil,
-                "ready_revision_id" => 9,
+                "published_revision_id" => 9,
                 "updated_at" => "2020-09-29T18:54:00.000000Z"
               }
             ]

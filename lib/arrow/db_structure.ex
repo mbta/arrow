@@ -38,7 +38,7 @@ defmodule Arrow.DBStructure do
           :updated_at,
           :last_published_at
         ],
-        optional_fkeys: [:ready_revision_id, :published_revision_id],
+        optional_fkeys: [:published_revision_id],
         sequences: [{:id, "disruptions_id_seq1"}]
       },
       %Table{

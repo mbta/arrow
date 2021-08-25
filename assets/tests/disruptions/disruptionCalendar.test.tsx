@@ -10,8 +10,6 @@ import Adjustment from "../../src/models/adjustment"
 import DayOfWeek from "../../src/models/dayOfWeek"
 import Exception from "../../src/models/exception"
 import { toUTCDate } from "../../src/jsonApi"
-import { BrowserRouter } from "react-router-dom"
-import { DisruptionView } from "../../src/models/disruption"
 
 const SAMPLE_DISRUPTIONS = [
   new DisruptionRevision({
@@ -114,15 +112,13 @@ describe("DisruptionCalendar", () => {
 
   describe("disruptionsToCalendarEvents", () => {
     it("parses disruptions", () => {
-      expect(
-        disruptionsToCalendarEvents(SAMPLE_DISRUPTIONS, DisruptionView.Ready)
-      ).toEqual([
+      expect(disruptionsToCalendarEvents(SAMPLE_DISRUPTIONS)).toEqual([
         {
           id: "1",
           title: "AlewifeHarvard",
           backgroundColor: "#da291c",
-          start: toUTCDate("2019-11-02"),
-          end: toUTCDate("2019-11-04"),
+          start: "2019-11-02",
+          end: "2019-11-04",
           url: "/disruptions/1",
           eventDisplay: "block",
           allDay: true,
@@ -131,8 +127,8 @@ describe("DisruptionCalendar", () => {
           id: "1",
           title: "AlewifeHarvard",
           backgroundColor: "#da291c",
-          start: toUTCDate("2019-11-08"),
-          end: toUTCDate("2019-11-11"),
+          start: "2019-11-08",
+          end: "2019-11-11",
           url: "/disruptions/1",
           eventDisplay: "block",
           allDay: true,
@@ -141,8 +137,8 @@ describe("DisruptionCalendar", () => {
           id: "1",
           title: "AlewifeHarvard",
           backgroundColor: "#da291c",
-          start: toUTCDate("2019-11-15"),
-          end: toUTCDate("2019-11-15"),
+          start: "2019-11-15",
+          end: "2019-11-15",
           url: "/disruptions/1",
           eventDisplay: "block",
           allDay: true,
@@ -151,8 +147,8 @@ describe("DisruptionCalendar", () => {
           id: "3",
           title: "Kenmore-Newton Highlands",
           backgroundColor: "#00843d",
-          start: toUTCDate("2019-11-15"),
-          end: toUTCDate("2019-11-18"),
+          start: "2019-11-15",
+          end: "2019-11-18",
           url: "/disruptions/3",
           eventDisplay: "block",
           allDay: true,
@@ -161,8 +157,8 @@ describe("DisruptionCalendar", () => {
           id: "3",
           title: "Kenmore-Newton Highlands",
           backgroundColor: "#00843d",
-          start: toUTCDate("2019-11-22"),
-          end: toUTCDate("2019-11-25"),
+          start: "2019-11-22",
+          end: "2019-11-25",
           url: "/disruptions/3",
           eventDisplay: "block",
           allDay: true,
@@ -171,8 +167,8 @@ describe("DisruptionCalendar", () => {
           id: "3",
           title: "Kenmore-Newton Highlands",
           backgroundColor: "#00843d",
-          start: toUTCDate("2019-11-29"),
-          end: toUTCDate("2019-12-01"),
+          start: "2019-11-29",
+          end: "2019-12-01",
           url: "/disruptions/3",
           eventDisplay: "block",
           allDay: true,
@@ -180,98 +176,159 @@ describe("DisruptionCalendar", () => {
       ])
     })
 
-    it("correctly adds view query param to detail page links", () => {
-      expect(
-        disruptionsToCalendarEvents(
-          SAMPLE_DISRUPTIONS,
-          DisruptionView.Ready
-        ).every((x) => !x.url.includes("?v=draft"))
-      ).toEqual(true)
-
-      expect(
-        disruptionsToCalendarEvents(
-          SAMPLE_DISRUPTIONS,
-          DisruptionView.Draft
-        ).every((x) => x.url.includes("?v=draft"))
-      ).toEqual(true)
-    })
-
     it("handles invalid days of week gracefully", () => {
       expect(
-        disruptionsToCalendarEvents(
-          [
-            new DisruptionRevision({
-              id: "1",
-              disruptionId: "1",
-              startDate: toUTCDate("2020-07-01"),
-              endDate: toUTCDate("2020-07-02"),
-              isActive: true,
-              adjustments: [
-                new Adjustment({
-                  id: "1",
-                  routeId: "Red",
-                  sourceLabel: "AlewifeHarvard",
-                }),
-              ],
-              daysOfWeek: [
-                new DayOfWeek({
-                  id: "1",
-                  startTime: "20:45:00",
-                  dayName: "friday",
-                }),
-              ],
-              exceptions: [],
-              tripShortNames: [],
-            }),
-          ],
-          DisruptionView.Ready
-        )
+        disruptionsToCalendarEvents([
+          new DisruptionRevision({
+            id: "1",
+            disruptionId: "1",
+            startDate: toUTCDate("2020-07-01"),
+            endDate: toUTCDate("2020-07-02"),
+            isActive: true,
+            adjustments: [
+              new Adjustment({
+                id: "1",
+                routeId: "Red",
+                sourceLabel: "AlewifeHarvard",
+              }),
+            ],
+            daysOfWeek: [
+              new DayOfWeek({
+                id: "1",
+                startTime: "20:45:00",
+                dayName: "friday",
+              }),
+            ],
+            exceptions: [],
+            tripShortNames: [],
+          }),
+        ])
       ).toEqual([])
     })
   })
 
+  test("renders correctly", () => {
+    const tree = render(
+      <DisruptionCalendar
+        initialDate={toUTCDate("2019-11-15")}
+        data={SAMPLE_DISRUPTIONS}
+      />
+    )
+    expect(tree).toMatchSnapshot()
+  })
+
+  test("accepts a JSON:API disruptions response as input", () => {
+    const calendar = render(
+      <DisruptionCalendar
+        initialDate={toUTCDate("2021-01-01")}
+        data={{
+          data: [
+            {
+              attributes: {},
+              id: "1",
+              relationships: {
+                revisions: { data: [{ id: "1", type: "disruption_revision" }] },
+                ready_revision: { data: null },
+                published_revision: { data: null },
+              },
+              type: "disruption",
+            },
+          ],
+          included: [
+            {
+              attributes: {
+                end_date: "2021-01-01",
+                start_date: "2021-01-01",
+                is_active: true,
+              },
+              id: "1",
+              relationships: {
+                adjustments: {
+                  data: [{ id: "1", type: "adjustment" }],
+                },
+                days_of_week: { data: [{ id: "1", type: "day_of_week" }] },
+                exceptions: { data: [] },
+                trip_short_names: { data: [] },
+              },
+              type: "disruption_revision",
+            },
+            {
+              attributes: { day_name: "friday" },
+              id: "1",
+              type: "day_of_week",
+            },
+            {
+              attributes: {
+                route_id: "Green-D",
+                source: "gtfs_creator",
+                source_label: "KenmoreReservoir",
+              },
+              id: "1",
+              type: "adjustment",
+            },
+          ],
+          jsonapi: { version: "1.0" },
+        }}
+      />
+    )
+
+    expect(calendar.queryByText(/error loading/i)).toBeNull()
+
+    expect(
+      calendar.container.querySelector(
+        '[data-date="2021-01-01"] .fc-daygrid-event'
+      )
+    ).not.toBeNull()
+  })
+
+  test("displays an error if the input is not valid JSON:API data", () => {
+    const calendar = render(
+      <DisruptionCalendar data={{ this_data: "is not JSON:API" }} />
+    )
+
+    expect(calendar.queryByText(/error loading/i)).not.toBeNull()
+  })
+
   test("handles daylight savings correctly", () => {
     const { container } = render(
-      <BrowserRouter>
-        <DisruptionCalendar
-          initialDate={toUTCDate("2020-11-15")}
-          disruptionRevisions={[
-            new DisruptionRevision({
-              id: "1",
-              disruptionId: "1",
-              startDate: toUTCDate("2020-10-30"),
-              endDate: toUTCDate("2020-11-22"),
-              isActive: true,
-              adjustments: [
-                new Adjustment({
-                  id: "1",
-                  routeId: "Red",
-                  sourceLabel: "AlewifeHarvard",
-                }),
-              ],
-              daysOfWeek: [
-                new DayOfWeek({
-                  id: "1",
-                  startTime: "20:45:00",
-                  dayName: "friday",
-                }),
-                new DayOfWeek({
-                  id: "2",
-                  dayName: "saturday",
-                }),
-                new DayOfWeek({
-                  id: "3",
-                  dayName: "sunday",
-                }),
-              ],
-              exceptions: [
-                new Exception({ excludedDate: toUTCDate("2020-11-15") }),
-              ],
-              tripShortNames: [],
-            }),
-          ]}
-        />
-      </BrowserRouter>
+      <DisruptionCalendar
+        initialDate={toUTCDate("2020-11-15")}
+        data={[
+          new DisruptionRevision({
+            id: "1",
+            disruptionId: "1",
+            startDate: toUTCDate("2020-10-30"),
+            endDate: toUTCDate("2020-11-22"),
+            isActive: true,
+            adjustments: [
+              new Adjustment({
+                id: "1",
+                routeId: "Red",
+                sourceLabel: "AlewifeHarvard",
+              }),
+            ],
+            daysOfWeek: [
+              new DayOfWeek({
+                id: "1",
+                startTime: "20:45:00",
+                dayName: "friday",
+              }),
+              new DayOfWeek({
+                id: "2",
+                dayName: "saturday",
+              }),
+              new DayOfWeek({
+                id: "3",
+                dayName: "sunday",
+              }),
+            ],
+            exceptions: [
+              new Exception({ excludedDate: toUTCDate("2020-11-15") }),
+            ],
+            tripShortNames: [],
+          }),
+        ]}
+      />
     )
 
     const activeDays = ["01", "06", "08", "13", "20", "22"]
@@ -287,17 +344,5 @@ describe("DisruptionCalendar", () => {
     expect(
       container.querySelector('[data-date="2020-11-15"] .fc-daygrid-event')
     ).toBeNull()
-  })
-
-  test("renders correctly", () => {
-    const tree = render(
-      <BrowserRouter>
-        <DisruptionCalendar
-          initialDate={toUTCDate("2019-11-15")}
-          disruptionRevisions={SAMPLE_DISRUPTIONS}
-        />
-      </BrowserRouter>
-    )
-    expect(tree).toMatchSnapshot()
   })
 })
