@@ -87,6 +87,7 @@ defmodule Arrow.MixProject do
       test: ["ecto.create --quiet", "ecto.migrate", "test"],
       "assets.build": ["esbuild default --sourcemap=inline"],
       "assets.deploy": [
+        "cmd --cd assets npm run css",
         "esbuild default --minify",
         "phx.digest"
       ]

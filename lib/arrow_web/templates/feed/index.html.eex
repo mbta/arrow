@@ -1,5 +1,3 @@
-<link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
-
 <div class="p-8">
   <h1 class="text-6xl">Feed</h1>
 
