@@ -6,7 +6,8 @@ file can be regenerated via:
 
 $ npm install bootstrap@4.6.0
 $ npm install sass@1.35.1
-$ npx sass css/_bootstrap.scss css/bootstrap.css
+$ npx sass _bootstrap.scss bootstrap.css
+$ [copy bootstrap.css to assets/css/bootstrap.css]
 $ npm run format
 */
 
