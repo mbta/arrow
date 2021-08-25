@@ -50,7 +50,7 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "file-loader": "^6.2.0",
     "identity-obj-proxy": "^3.0.0",
-    "jest": "^27.0.5",
+    "jest": "^27.0.6",
     "mini-css-extract-plugin": "^1.6.0",
     "postcss": "^8.3.5",
     "postcss-loader": "^4.3.0",
