@@ -18,9 +18,9 @@ ADD . .
 RUN mix local.hex --force && \
   mix local.rebar --force && \
   mix do deps.get --only prod, compile --force && \
+  mix esbuild.install && \
   npm --prefix assets ci && \
-  npm --prefix assets run deploy && \
-  mix phx.digest && \
+  mix assets.deploy && \
   mix release
 
 FROM debian:buster

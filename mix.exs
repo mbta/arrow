@@ -47,6 +47,7 @@ defmodule Arrow.MixProject do
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
       {:ecto_sql, "~> 3.1"},
+      {:esbuild, "~> 0.2", runtime: Mix.env() == :dev},
       {:ex_aws_rds, "~> 2.0"},
       {:ex_aws_secretsmanager, "~> 2.0"},
       {:ex_aws, "~> 2.1"},
@@ -83,7 +84,12 @@ defmodule Arrow.MixProject do
     [
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate", "test"]
+      test: ["ecto.create --quiet", "ecto.migrate", "test"],
+      "assets.build": ["esbuild default --sourcemap=inline"],
+      "assets.deploy": [
+        "esbuild default --minify",
+        "phx.digest"
+      ]
     ]
   end
 

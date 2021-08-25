@@ -27,6 +27,15 @@ config :arrow, ArrowWeb.Endpoint,
   render_errors: [view: ArrowWeb.ErrorView, accepts: ~w(html json)],
   pubsub_server: Arrow.PubSub
 
+config :esbuild,
+  version: "0.12.17",
+  default: [
+    args:
+      ~w(src/app.tsx --bundle --target=es2015 --loader:.png=file --loader:.woff=file --outdir=../priv/static/assets),
+    cd: Path.expand("../assets", __DIR__),
+    env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+  ]
+
 config :arrow, ArrowWeb.AuthManager, issuer: "arrow"
 
 config :ueberauth, Ueberauth,

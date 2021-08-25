@@ -22,11 +22,11 @@ config :arrow, ArrowWeb.Endpoint,
   check_origin: false,
   secret_key_base: "local_secret_key_base_at_least_64_bytes_________________________________",
   watchers: [
-    node: [
-      "node_modules/webpack/bin/webpack.js",
-      "--mode",
-      "development",
-      cd: Path.expand("../assets", __DIR__)
+    mix: [
+      "esbuild",
+      "default",
+      "--sourcemap=inline",
+      "--watch"
     ]
   ]
 
