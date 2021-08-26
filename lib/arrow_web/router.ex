@@ -51,7 +51,7 @@ defmodule ArrowWeb.Router do
     pipe_through [:redirect_prod_http, :browser, :auth, :ensure_auth, :ensure_arrow_group]
 
     get "/", DisruptionController, :index
-    resources("/disruptions", DisruptionController, only: [:show, :new, :edit, :delete])
+    resources("/disruptions", DisruptionController, except: [:index])
     get "/feed", FeedController, :index
     get "/mytoken", MyTokenController, :show
   end
@@ -77,10 +77,7 @@ defmodule ArrowWeb.Router do
       :ensure_arrow_group
     ])
 
-    resources("/disruptions", DisruptionController,
-      only: [:index, :show, :create, :update, :delete]
-    )
-
+    resources("/disruptions", DisruptionController, only: [:index])
     resources("/adjustments", AdjustmentController, only: [:index])
   end
 

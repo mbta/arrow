@@ -1,7 +1,7 @@
 defmodule ArrowWeb.DisruptionView do
   use ArrowWeb, :view
 
-  alias __MODULE__.DaysOfWeek
+  alias __MODULE__.{DaysOfWeek, Form}
   alias ArrowWeb.API
   alias ArrowWeb.DisruptionController.Filters
   alias Phoenix.Controller

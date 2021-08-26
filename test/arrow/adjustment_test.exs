@@ -38,8 +38,14 @@ defmodule Arrow.AdjustmentTest do
     end
   end
 
-  describe "changeset_assoc/2" do
-    assert %Ecto.Changeset{valid?: true} =
-             Adjustment.changeset_assoc(%Adjustment{}, %{id: 10, source: "foo"})
+  describe "from_revision_attrs/1" do
+    test "fetches adjustments for DisruptionRevision changeset params" do
+      [%{id: id1}, _, %{id: id2}] = insert_list(3, :adjustment)
+      attrs = %{"adjustments" => [%{"id" => "#{id1}"}, %{"id" => "#{id2}"}]}
+
+      adjustments = Adjustment.from_revision_attrs(attrs)
+
+      assert [%Adjustment{id: ^id1}, %Adjustment{id: ^id2}] = adjustments
+    end
   end
 end

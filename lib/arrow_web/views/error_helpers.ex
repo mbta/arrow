@@ -15,6 +15,14 @@ defmodule ArrowWeb.ErrorHelpers do
   end
 
   @doc """
+  Converts a nested error map as returned from `Ecto.Changeset.traverse_errors/1` into a flat list
+  of error messages.
+  """
+  def flatten_errors(errors) when is_map(errors) do
+    errors |> Enum.flat_map(&error_messages/1) |> Enum.sort()
+  end
+
+  @doc """
   Translates an error message using gettext.
   """
   def translate_error({msg, opts}) do
@@ -40,5 +48,24 @@ defmodule ArrowWeb.ErrorHelpers do
     else
       Gettext.dgettext(ArrowWeb.Gettext, "errors", msg, opts)
     end
+  end
+
+  defp error_messages(field_errors, context \\ [])
+  defp error_messages({_field, []}, _context), do: []
+
+  defp error_messages({field, [error | rest]}, context) when is_binary(error) do
+    field_description =
+      [field | context]
+      |> Enum.reverse()
+      |> Enum.map(&(&1 |> to_string() |> String.replace("_", " ")))
+      |> Enum.join(": ")
+      |> String.capitalize()
+
+    ["#{field_description} #{error}" | error_messages({field, rest}, context)]
+  end
+
+  defp error_messages({field, [errors | rest]}, context) when is_map(errors) do
+    Enum.flat_map(errors, &error_messages(&1, [field | context])) ++
+      error_messages({field, rest}, context)
   end
 end

@@ -14,11 +14,15 @@
     <%= for %{revisions: [revision]} = disruption <- @disruptions do %>
       <tr class="<%= if not published?(disruption), do: 'bg-light-pink' %>">
         <td>
-          <%= for adjustment <- revision.adjustments do %>
-            <div class="d-flex align-items-center">
-              <%= route_icon(@conn, adjustment.route_id, "sm", class: "mr-2") %>
-              <%= adjustment.source_label %>
-            </div>
+          <%= if Enum.any?(revision.adjustments) do %>
+            <%= for adjustment <- revision.adjustments do %>
+              <div class="d-flex align-items-center">
+                <%= route_icon(@conn, adjustment.route_id, "sm", class: "mr-2") %>
+                <%= adjustment.source_label %>
+              </div>
+            <% end %>
+          <% else %>
+            <i>(no adjustments selected)</i>
           <% end %>
         </td>
         <td>

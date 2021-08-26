@@ -19,6 +19,8 @@ defmodule Arrow.Adjustment do
 
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
+  alias Arrow.Repo
 
   @type t :: %__MODULE__{
           route_id: String.t() | nil,
@@ -45,8 +47,16 @@ defmodule Arrow.Adjustment do
     |> unique_constraint(:source_label)
   end
 
-  @spec changeset_assoc(t(), map()) :: Ecto.Changeset.t()
-  def changeset_assoc(adjustment, attrs) do
-    cast(adjustment, attrs, [:id])
+  @doc """
+  Fetches the adjustments corresponding to the given `DisruptionRevision` changeset parameters.
+  Allows us to `put_assoc` adjustments when building a revision changeset, since `many_to_many`
+  associations don't support updating values in the join table using `cast_assoc`.
+  """
+  @spec from_revision_attrs(%{String.t() => any}) :: [t()]
+  def from_revision_attrs(%{"adjustments" => adjustments}) do
+    ids = adjustments |> Enum.map(& &1["id"]) |> Enum.reject(&(&1 in [nil, ""]))
+    Repo.all(from a in __MODULE__, where: a.id in ^ids)
   end
+
+  def from_revision_attrs(_), do: []
 end
