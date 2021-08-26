@@ -1,7 +1,9 @@
 defmodule Arrow.DisruptionTest do
   @moduledoc false
   use Arrow.DataCase
+  import Ecto.Query
   alias Arrow.Disruption
+  alias Arrow.Disruption.DayOfWeek
   alias Arrow.DisruptionRevision
   alias Arrow.Repo
 
@@ -64,21 +66,20 @@ defmodule Arrow.DisruptionTest do
     end
   end
 
-  describe "create/2" do
+  describe "create/1" do
     test "inserts a new disruption and revision" do
-      adj = insert(:adjustment)
-
       attrs = %{
         "start_date" => "2021-01-01",
         "end_date" => "2021-12-31",
+        "adjustments" => [%{"id" => insert(:adjustment).id}],
         "days_of_week" => [%{"day_name" => "monday", "start_time" => "20:00:00"}],
         "exceptions" => [%{"excluded_date" => "2021-01-11"}],
         "trip_short_names" => [%{"trip_short_name" => "777"}]
       }
 
-      assert {:ok, _dr} = Arrow.Disruption.create(attrs, [adj])
+      {:ok, _id} = Disruption.create(attrs)
 
-      [d] = Repo.all(Arrow.Disruption)
+      [d] = Repo.all(Disruption)
 
       [dr] =
         DisruptionRevision
@@ -89,53 +90,38 @@ defmodule Arrow.DisruptionTest do
       assert dr.start_date == ~D[2021-01-01]
       assert dr.end_date == ~D[2021-12-31]
 
-      assert [
-               %Arrow.Disruption.DayOfWeek{
-                 day_name: "monday",
-                 start_time: ~T[20:00:00],
-                 end_time: nil
-               }
-             ] = dr.days_of_week
+      assert [%DayOfWeek{day_name: "monday", start_time: ~T[20:00:00], end_time: nil}] =
+               dr.days_of_week
 
-      assert [%Arrow.Disruption.Exception{excluded_date: ~D[2021-01-11]}] = dr.exceptions
-      assert [%Arrow.Disruption.TripShortName{trip_short_name: "777"}] = dr.trip_short_names
+      assert [%Disruption.Exception{excluded_date: ~D[2021-01-11]}] = dr.exceptions
+      assert [%Disruption.TripShortName{trip_short_name: "777"}] = dr.trip_short_names
     end
 
     test "can't create disruption with start date after end date" do
-      adj = insert(:adjustment)
-
       attrs = %{
         "start_date" => "2020-12-31",
         "end_date" => "2020-01-01",
         "days_of_week" => [%{"day_name" => "monday"}]
       }
 
-      assert {:error, e} = Arrow.Disruption.create(attrs, [adj])
+      {:error, changeset} = Disruption.create(attrs)
 
-      assert [
-               %{detail: "Start date can't be after end date."}
-             ] = ArrowWeb.Utilities.format_errors(e)
+      assert "can't be after end date" in errors_on(changeset).start_date
     end
 
     test "can't create disruption with day of week outside date range" do
-      adj = insert(:adjustment)
-
       attrs = %{
         "start_date" => "2020-08-17",
         "end_date" => "2020-08-21",
         "days_of_week" => [%{"day_name" => "sunday"}]
       }
 
-      assert {:error, e} = Arrow.Disruption.create(attrs, [adj])
+      {:error, changeset} = Disruption.create(attrs)
 
-      assert [
-               %{detail: "Days of week should fall between start and end dates"}
-             ] = ArrowWeb.Utilities.format_errors(e)
+      assert "should fall between start and end dates" in errors_on(changeset).days_of_week
     end
 
     test "can't create disruption with exception date outside date range" do
-      adj = insert(:adjustment)
-
       attrs = %{
         "start_date" => "2020-08-17",
         "end_date" => "2020-08-21",
@@ -143,16 +129,12 @@ defmodule Arrow.DisruptionTest do
         "exceptions" => [%{"excluded_date" => "2020-09-01"}]
       }
 
-      assert {:error, e} = Arrow.Disruption.create(attrs, [adj])
+      {:error, changeset} = Disruption.create(attrs)
 
-      assert [
-               %{detail: "Exceptions should fall between start and end dates"}
-             ] = ArrowWeb.Utilities.format_errors(e)
+      assert "should fall between start and end dates" in errors_on(changeset).exceptions
     end
 
     test "can't create disruption with duplicate exception dates" do
-      adj = insert(:adjustment)
-
       attrs = %{
         "start_date" => "2020-08-17",
         "end_date" => "2020-08-21",
@@ -160,16 +142,12 @@ defmodule Arrow.DisruptionTest do
         "exceptions" => [%{"excluded_date" => "2020-08-18"}, %{"excluded_date" => "2020-08-18"}]
       }
 
-      assert {:error, e} = Arrow.Disruption.create(attrs, [adj])
+      {:error, changeset} = Disruption.create(attrs)
 
-      assert [
-               %{detail: "Exceptions should be unique"}
-             ] = ArrowWeb.Utilities.format_errors(e)
+      assert "should be unique" in errors_on(changeset).exceptions
     end
 
     test "can't create disruption with exception dates that don't apply to day of week" do
-      adj = insert(:adjustment)
-
       attrs = %{
         "start_date" => "2020-08-17",
         "end_date" => "2020-08-21",
@@ -177,50 +155,27 @@ defmodule Arrow.DisruptionTest do
         "exceptions" => [%{"excluded_date" => "2020-08-19"}]
       }
 
-      assert {:error, e} = Arrow.Disruption.create(attrs, [adj])
+      {:error, changeset} = Disruption.create(attrs)
 
-      assert [
-               %{detail: "Exceptions should be applicable to days of week"}
-             ] = ArrowWeb.Utilities.format_errors(e)
+      assert "should be applicable to days of week" in errors_on(changeset).exceptions
     end
 
     test "can't create disruption without days of week" do
-      adj = insert(:adjustment)
+      attrs = %{"start_date" => "2020-08-17", "end_date" => "2020-08-21"}
 
-      attrs = %{
-        "start_date" => "2020-08-17",
-        "end_date" => "2020-08-21"
-      }
+      {:error, changeset} = Disruption.create(attrs)
 
-      assert {:error, e} = Arrow.Disruption.create(attrs, [adj])
-
-      assert [
-               %{detail: "Days of week should have at least 1 item(s)"}
-             ] = ArrowWeb.Utilities.format_errors(e)
-    end
-
-    test "can't create disruption without adjustments" do
-      attrs = %{
-        "start_date" => "2020-08-17",
-        "end_date" => "2020-08-21",
-        "days_of_week" => [%{"day_name" => "tuesday"}]
-      }
-
-      assert {:error, e} = Arrow.Disruption.create(attrs, [])
-
-      assert [
-               %{detail: "Adjustments should have at least 1 item(s)"}
-             ] = ArrowWeb.Utilities.format_errors(e)
+      assert "must be selected" in errors_on(changeset).days_of_week
     end
   end
 
   describe "update/2" do
     test "creates a new disruption revision" do
-      d = insert(:disruption)
+      %{id: id} = disruption = insert(:disruption)
 
-      dr =
+      %{id: dr_id} =
         insert(:disruption_revision, %{
-          disruption: d,
+          disruption: disruption,
           start_date: ~D[2021-01-01],
           end_date: ~D[2021-12-31],
           days_of_week: [build(:day_of_week, %{day_name: "monday"})],
@@ -228,9 +183,7 @@ defmodule Arrow.DisruptionTest do
           trip_short_names: [build(:trip_short_name, %{trip_short_name: "777"})]
         })
 
-      dr_id = dr.id
-
-      new_attrs = %{
+      attrs = %{
         "start_date" => "2021-01-01",
         "end_date" => "2021-11-30",
         "days_of_week" => [%{"day_name" => "monday", "start_time" => "20:45:00"}],
@@ -238,9 +191,9 @@ defmodule Arrow.DisruptionTest do
         "trip_short_names" => [%{"trip_short_name" => "777"}, %{"trip_short_name" => "888"}]
       }
 
-      assert {:ok, _dr} = Arrow.Disruption.update(dr_id, new_attrs)
+      {:ok, _id} = Disruption.update(id, attrs)
 
-      dr_ids = Repo.all(Ecto.Query.from(dr in DisruptionRevision, select: dr.id))
+      dr_ids = Repo.all(from(dr in DisruptionRevision, select: dr.id))
       assert length(dr_ids) == 2
       new_dr_id = Enum.find(dr_ids, &(&1 != dr_id))
 
@@ -249,19 +202,13 @@ defmodule Arrow.DisruptionTest do
         |> Repo.get!(new_dr_id)
         |> Repo.preload(DisruptionRevision.associations())
 
-      d = Repo.get!(Arrow.Disruption, new_dr.disruption_id)
-
-      assert new_dr.disruption_id == d.id
+      assert new_dr.disruption_id == id
+      assert new_dr.is_active
       assert new_dr.start_date == ~D[2021-01-01]
       assert new_dr.end_date == ~D[2021-11-30]
 
-      assert [
-               %Arrow.Disruption.DayOfWeek{
-                 day_name: "monday",
-                 start_time: ~T[20:45:00],
-                 end_time: nil
-               }
-             ] = new_dr.days_of_week
+      assert [%DayOfWeek{day_name: "monday", start_time: ~T[20:45:00], end_time: nil}] =
+               new_dr.days_of_week
 
       assert Enum.find(new_dr.exceptions, &(&1.excluded_date == ~D[2021-01-11]))
       assert Enum.find(new_dr.exceptions, &(&1.excluded_date == ~D[2021-01-18]))
@@ -269,12 +216,17 @@ defmodule Arrow.DisruptionTest do
       assert Enum.find(new_dr.trip_short_names, &(&1.trip_short_name == "888"))
     end
 
-    test "can't update disruption with start date after end date" do
-      d = insert(:disruption)
+    test "doesn't create a new revision if there is a validation error" do
+      %{disruption_id: id} = insert(:disruption_revision)
 
-      dr =
+      {:error, _} = Disruption.update(id, %{start_date: nil})
+
+      assert Repo.one!(DisruptionRevision)
+    end
+
+    test "can't update disruption with start date after end date" do
+      %{disruption_id: id} =
         insert(:disruption_revision, %{
-          disruption: d,
           start_date: ~D[2020-08-17],
           end_date: ~D[2020-08-21],
           days_of_week: [build(:day_of_week, %{day_name: "tuesday"})]
@@ -286,19 +238,14 @@ defmodule Arrow.DisruptionTest do
         "days_of_week" => [%{"day_name" => "tuesday"}]
       }
 
-      assert {:error, e} = Arrow.Disruption.update(dr.id, attrs)
+      {:error, changeset} = Disruption.update(id, attrs)
 
-      assert [
-               %{detail: "Start date can't be after end date."}
-             ] = ArrowWeb.Utilities.format_errors(e)
+      assert "can't be after end date" in errors_on(changeset).start_date
     end
 
     test "can't update disruption with day of week outside date range" do
-      d = insert(:disruption)
-
-      dr =
+      %{disruption_id: id} =
         insert(:disruption_revision, %{
-          disruption: d,
           start_date: ~D[2020-08-17],
           end_date: ~D[2020-08-21],
           days_of_week: [build(:day_of_week, %{day_name: "tuesday"})]
@@ -310,20 +257,14 @@ defmodule Arrow.DisruptionTest do
         "days_of_week" => [%{"day_name" => "sunday"}]
       }
 
-      assert {:error, e} = Arrow.Disruption.update(dr.id, attrs)
-      assert Repo.all(from(dr in DisruptionRevision, select: count(dr.id))) == [1]
+      {:error, changeset} = Disruption.update(id, attrs)
 
-      assert [
-               %{detail: "Days of week should fall between start and end dates"}
-             ] = ArrowWeb.Utilities.format_errors(e)
+      assert "should fall between start and end dates" in errors_on(changeset).days_of_week
     end
 
     test "can't update disruption with exception date outside date range" do
-      d = insert(:disruption)
-
-      dr =
+      %{disruption_id: id} =
         insert(:disruption_revision, %{
-          disruption: d,
           start_date: ~D[2020-08-17],
           end_date: ~D[2020-08-21],
           days_of_week: [build(:day_of_week, %{day_name: "tuesday"})]
@@ -336,20 +277,14 @@ defmodule Arrow.DisruptionTest do
         "exceptions" => [%{"excluded_date" => "2020-09-01"}]
       }
 
-      assert {:error, e} = Arrow.Disruption.update(dr.id, attrs)
-      assert Repo.all(from(dr in DisruptionRevision, select: count(dr.id))) == [1]
+      {:error, changeset} = Disruption.update(id, attrs)
 
-      assert [
-               %{detail: "Exceptions should fall between start and end dates"}
-             ] = ArrowWeb.Utilities.format_errors(e)
+      assert "should fall between start and end dates" in errors_on(changeset).exceptions
     end
 
     test "can't update disruption with duplicate exception dates" do
-      d = insert(:disruption)
-
-      dr =
+      %{disruption_id: id} =
         insert(:disruption_revision, %{
-          disruption: d,
           start_date: ~D[2020-08-17],
           end_date: ~D[2020-08-21],
           days_of_week: [build(:day_of_week, %{day_name: "tuesday"})]
@@ -362,20 +297,14 @@ defmodule Arrow.DisruptionTest do
         "exceptions" => [%{"excluded_date" => "2020-08-18"}, %{"excluded_date" => "2020-08-18"}]
       }
 
-      assert {:error, e} = Arrow.Disruption.update(dr.id, attrs)
-      assert Repo.all(from(dr in DisruptionRevision, select: count(dr.id))) == [1]
+      {:error, changeset} = Disruption.update(id, attrs)
 
-      assert [
-               %{detail: "Exceptions should be unique"}
-             ] = ArrowWeb.Utilities.format_errors(e)
+      assert "should be unique" in errors_on(changeset).exceptions
     end
 
     test "can't update disruption with exception dates that don't apply to day of week" do
-      d = insert(:disruption)
-
-      dr =
+      %{disruption_id: id} =
         insert(:disruption_revision, %{
-          disruption: d,
           start_date: ~D[2020-08-17],
           end_date: ~D[2020-08-21],
           days_of_week: [build(:day_of_week, %{day_name: "tuesday"})]
@@ -388,20 +317,14 @@ defmodule Arrow.DisruptionTest do
         "exceptions" => [%{"excluded_date" => "2020-08-19"}]
       }
 
-      assert {:error, e} = Arrow.Disruption.update(dr.id, attrs)
-      assert Repo.all(from(dr in DisruptionRevision, select: count(dr.id))) == [1]
+      {:error, changeset} = Disruption.update(id, attrs)
 
-      assert [
-               %{detail: "Exceptions should be applicable to days of week"}
-             ] = ArrowWeb.Utilities.format_errors(e)
+      assert "should be applicable to days of week" in errors_on(changeset).exceptions
     end
 
     test "can't update disruption to remove all days of week" do
-      d = insert(:disruption)
-
-      dr =
+      %{disruption_id: id} =
         insert(:disruption_revision, %{
-          disruption: d,
           start_date: ~D[2020-08-17],
           end_date: ~D[2020-08-21],
           days_of_week: [build(:day_of_week, %{day_name: "tuesday"})]
@@ -413,12 +336,9 @@ defmodule Arrow.DisruptionTest do
         "days_of_week" => []
       }
 
-      assert {:error, e} = Arrow.Disruption.update(dr.id, attrs)
-      assert Repo.all(from(dr in DisruptionRevision, select: count(dr.id))) == [1]
+      {:error, changeset} = Disruption.update(id, attrs)
 
-      assert [
-               %{detail: "Days of week should have at least 1 item(s)"}
-             ] = ArrowWeb.Utilities.format_errors(e)
+      assert "must be selected" in errors_on(changeset).days_of_week
     end
   end
 

@@ -30,8 +30,10 @@
     </nav>
 
     <main class="container">
+      <%= render "_flash.html", conn: @conn %>
       <%= @inner_content %>
     </main>
+
     <%= content_tag(:script, "", type: "text/javascript", src: Routes.static_path(@conn, "/assets/app.js")) %>
   </body>
 </html>

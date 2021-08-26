@@ -8,9 +8,8 @@ require("../css/app.css")
 import "phoenix_html"
 import ReactPhoenix from "./ReactPhoenix"
 
-import EditDisruption from "./disruptions/editDisruption"
-import { NewDisruption } from "./disruptions/newDisruption"
 import { DisruptionCalendar } from "./disruptions/disruptionCalendar"
+import DisruptionForm from "./disruptionForm"
 
 declare global {
   interface Window {
@@ -20,10 +19,6 @@ declare global {
   }
 }
 
-window.Components = {
-  DisruptionCalendar,
-  NewDisruption,
-  EditDisruption,
-}
+window.Components = { DisruptionCalendar, DisruptionForm }
 
 ReactPhoenix.init()

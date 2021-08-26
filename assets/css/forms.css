@@ -1,5 +1,21 @@
-.m-forms__sublegend {
+fieldset {
+  margin-left: 1.5rem;
+  margin-top: 1rem;
+}
+
+fieldset fieldset {
+  margin-left: 0;
+  margin-top: 0.5rem;
+}
+
+legend {
   font-weight: bold;
+  margin-left: -1.5rem;
+}
+
+fieldset fieldset legend {
+  font-size: 100%;
+  margin-left: 0;
 }
 
 .m-forms__day-of-week-bubble input {
