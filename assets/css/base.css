@@ -1,4 +1,4 @@
-// Tweaks to base elements on all pages
+/* Tweaks to base elements on all pages */
 @font-face {
   font-family: "Inter";
   src: url("../fonts/Inter-Regular.woff") format("woff");
@@ -33,7 +33,7 @@ body {
 }
 
 hr {
-  border-top: 1px solid $black;
+  border-top: 1px solid var(--black);
 }
 
 .light-hr {

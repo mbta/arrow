@@ -1,0 +1,15 @@
+/*
+  Variables for the app.
+
+  If you change these, also update _overrides.scss and regenerate bootstrap.css
+*/
+
+:root {
+  --black: #1e2127;
+  --blue-grey: #9fa9c3;
+  --grey: #aeaeae;
+  --light-grey: #f8f9fa;
+  --light-pink: #fbeaee;
+
+  --primary: #dd3159;
+}

@@ -47,6 +47,7 @@ defmodule Arrow.MixProject do
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
       {:ecto_sql, "~> 3.1"},
+      {:esbuild, "~> 0.2", runtime: Mix.env() == :dev},
       {:ex_aws_rds, "~> 2.0"},
       {:ex_aws_secretsmanager, "~> 2.0"},
       {:ex_aws, "~> 2.1"},
@@ -66,7 +67,8 @@ defmodule Arrow.MixProject do
       {:phoenix, "~> 1.5.0"},
       {:plug_cowboy, "~> 2.1"},
       {:postgrex, ">= 0.0.0"},
-      {:react_phoenix, "~> 1.2"},
+      # If react_phoenix changes, check assets/src/ReactPhoenix.js, too
+      {:react_phoenix, "1.2.0"},
       {:tzdata, "~> 1.1"},
       {:ueberauth_cognito, "~> 0.1"},
       {:ueberauth, "~> 0.6"}
@@ -85,7 +87,9 @@ defmodule Arrow.MixProject do
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       "ecto.rollback": ["ecto.rollback", "ecto.dump --quiet"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      "assets.build": ["esbuild default --sourcemap=inline"],
+      "assets.deploy": ["esbuild default --minify", "phx.digest"]
     ]
   end
 

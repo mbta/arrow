@@ -3,10 +3,10 @@
 // its own CSS file.
 declare function require(name: string): string
 // tslint:disable-next-line
-require("../css/app.scss")
+require("../css/app.css")
 
 import "phoenix_html"
-import "react-phoenix"
+import ReactPhoenix from "./ReactPhoenix"
 
 import EditDisruption from "./disruptions/editDisruption"
 import { NewDisruption } from "./disruptions/newDisruption"
@@ -25,3 +25,5 @@ window.Components = {
   NewDisruption,
   EditDisruption,
 }
+
+ReactPhoenix.init()

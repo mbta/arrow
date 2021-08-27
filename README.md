@@ -18,6 +18,7 @@
 
 - `asdf install`
 - `mix deps.get`
+- `mix esbuild.install`
 - `npm install --prefix assets`
 - `cp .envrc.example .envrc`
 - Update `.envrc` with your local Postgres username and password
