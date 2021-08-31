@@ -70,8 +70,8 @@ defmodule Arrow.MixProject do
       # If react_phoenix changes, check assets/src/ReactPhoenix.js, too
       {:react_phoenix, "1.2.0"},
       {:tzdata, "~> 1.1"},
-      {:ueberauth_cognito, "~> 0.1"},
-      {:ueberauth, "~> 0.6"}
+      {:ueberauth_cognito, github: "wkirschbaum/ueberauth_cognito", branch: "upgrade-0.7"},
+      {:ueberauth, "~> 0.7"}
     ]
   end
 
