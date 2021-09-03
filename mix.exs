@@ -21,6 +21,7 @@ defmodule Arrow.MixProject do
         ],
         ignore_warnings: ".dialyzer.ignore-warnings"
       ],
+      preferred_cli_env: ["test.integration": :test],
       test_coverage: [tool: LcovEx]
     ]
   end
@@ -71,7 +72,8 @@ defmodule Arrow.MixProject do
       {:react_phoenix, "1.2.0"},
       {:tzdata, "~> 1.1"},
       {:ueberauth_cognito, "~> 0.1"},
-      {:ueberauth, "~> 0.6"}
+      {:ueberauth, "~> 0.6"},
+      {:wallaby, "~> 0.28.1", runtime: false, only: :test}
     ]
   end
 
@@ -89,7 +91,13 @@ defmodule Arrow.MixProject do
       "ecto.rollback": ["ecto.rollback", "ecto.dump --quiet"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.build": ["esbuild default --sourcemap=inline"],
-      "assets.deploy": ["esbuild default --minify", "phx.digest"]
+      "assets.deploy": ["esbuild default --minify", "phx.digest"],
+      "test.integration": [
+        "assets.build",
+        "ecto.create --quiet",
+        "ecto.migrate --quiet",
+        "test --only integration"
+      ]
     ]
   end
 
