@@ -30,8 +30,15 @@ config :arrow, ArrowWeb.Endpoint,
 config :esbuild,
   version: "0.12.17",
   default: [
-    args:
-      ~w(src/app.tsx --bundle --target=es2015 --loader:.png=file --loader:.woff=file --outdir=../priv/static/assets),
+    args: ~w(
+      src/app.tsx
+      --bundle
+      --target=es2015
+      --loader:.png=file
+      --loader:.woff=file
+      --outdir=../priv/static/assets
+      #{if(Mix.env() == :test, do: "--define:__REACT_DEVTOOLS_GLOBAL_HOOK__={'isDisabled':true}")}
+    ),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
