@@ -36,3 +36,6 @@ npm-debug.log
 
 # Private environment variables
 .envrc
+
+# Screenshots taken by Wallaby
+/test/integration/screenshots

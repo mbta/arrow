@@ -31,4 +31,6 @@ config :arrow, env: :test
 
 config :wallaby,
   driver: Wallaby.Chrome,
-  otp_app: :arrow
+  otp_app: :arrow,
+  screenshot_dir: "test/integration/screenshots",
+  screenshot_on_failure: true
