@@ -7,6 +7,7 @@ module.exports = {
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
+    "plugin:jest-dom/recommended",
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -18,6 +19,7 @@ module.exports = {
     "prefer-arrow",
     "react-hooks",
     "import",
+    "jest-dom",
   ],
   rules: {
     "@typescript-eslint/array-type": "error",

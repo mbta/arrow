@@ -272,7 +272,7 @@ describe("DisruptionCalendar", () => {
       />
     )
 
-    expect(calendar.queryByText(/error loading/i)).toBeNull()
+    expect(calendar.queryByText(/error loading/i)).not.toBeInTheDocument()
 
     expect(
       calendar.container.querySelector(
@@ -286,7 +286,7 @@ describe("DisruptionCalendar", () => {
       <DisruptionCalendar data={{ this_data: "is not JSON:API" }} />
     )
 
-    expect(calendar.queryByText(/error loading/i)).not.toBeNull()
+    expect(calendar.queryByText(/error loading/i)).toBeInTheDocument()
   })
 
   test("handles daylight savings correctly", () => {
