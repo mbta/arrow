@@ -28,7 +28,9 @@
   },
   "devDependencies": {
     "@testing-library/dom": "^7.31.2",
+    "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
+    "@testing-library/user-event": "^13.2.1",
     "@types/jest": "^26.0.23",
     "@types/react": "^17.0.2",
     "@types/react-datepicker": "^3.1.8",
@@ -38,6 +40,7 @@
     "@typescript-eslint/parser": "^2.34.0",
     "eslint": "^6.8.0",
     "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-jest-dom": "^3.9.0",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-react": "^7.24.0",
     "eslint-plugin-react-hooks": "^4.2.0",
@@ -71,7 +74,7 @@
     "moduleNameMapper": {
       "\\.(css)$": "identity-obj-proxy"
     },
-    "setupFilesAfterEnv": [],
+    "setupFilesAfterEnv": ["<rootDir>/jest-setup.ts"],
     "collectCoverage": true,
     "globals": {
       "ts-jest": {

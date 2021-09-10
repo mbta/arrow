@@ -6,6 +6,6 @@ describe("Loading", () => {
   test('says "Loading"', () => {
     render(<Loading />)
 
-    expect(screen.queryByText("Loading…")).not.toBeNull()
+    expect(screen.queryByText("Loading…")).toBeInTheDocument()
   })
 })
