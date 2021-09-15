@@ -6,8 +6,8 @@
     "test": "jest",
     "lint": "eslint -c .eslintrc.js --ext ts,tsx,js ./src ./tests --fix",
     "lint:check": "eslint -c .eslintrc.js --ext ts,tsx,js ./src ./tests",
-    "format": "prettier --write \"{.,**}/*.{js,json,ts,tsx,css,scss}\"",
-    "format:check": "prettier --check \"{.,**}/*.{js,json,ts,tsx,css,scss}\"",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "check": "tsc --noEmit && npm run lint:check && npm run format:check"
   },
   "dependencies": {
