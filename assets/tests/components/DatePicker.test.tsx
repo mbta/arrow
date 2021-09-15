@@ -1,7 +1,10 @@
 import React from "react"
 import { render, screen } from "@testing-library/react"
-import DatePicker, { encodeDate, parseDate } from "../src/datePicker"
-import { hiddenInputValue, pickDate } from "./testHelpers"
+import DatePicker, {
+  encodeDate,
+  parseDate,
+} from "../../src/components/DatePicker"
+import { hiddenInputValue, pickDate } from "../testHelpers"
 
 describe("DatePicker", () => {
   test("exposes the selected date as ISO using a hidden input", () => {

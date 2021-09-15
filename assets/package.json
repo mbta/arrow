@@ -13,16 +13,11 @@
   "dependencies": {
     "@fullcalendar/daygrid": "^5.8.0",
     "@fullcalendar/react": "^5.8.0",
-    "classnames": "^2.3.1",
-    "lodash": "^4.17.21",
     "phoenix": "file:../deps/phoenix",
     "phoenix_html": "file:../deps/phoenix_html",
-    "query-string": "^7.0.1",
     "react": "^17.0.2",
-    "react-bootstrap": "^1.6.1",
     "react-datepicker": "^3.8.0",
     "react-dom": "^17.0.2",
-    "react-phoenix": "file:../deps/react_phoenix",
     "react-select": "^4.3.1",
     "rrule": "^2.6.8"
   },
@@ -31,10 +26,8 @@
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^13.2.1",
-    "@types/jest": "^26.0.23",
     "@types/react": "^17.0.2",
     "@types/react-datepicker": "^3.1.8",
-    "@types/react-dom": "^17.0.2",
     "@types/react-select": "^4.0.16",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
@@ -46,7 +39,6 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "jest": "^27.0.6",
     "prettier": "^2.3.1",
-    "react-select-event": "^5.3.0",
     "ts-jest": "^27.0.3",
     "typescript": "^3.9.10"
   },
@@ -74,7 +66,9 @@
     "moduleNameMapper": {
       "\\.(css)$": "identity-obj-proxy"
     },
-    "setupFilesAfterEnv": ["<rootDir>/jest-setup.ts"],
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest-setup.ts"
+    ],
     "collectCoverage": true,
     "globals": {
       "ts-jest": {

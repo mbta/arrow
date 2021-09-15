@@ -1,4 +1,4 @@
-import * as React from "react"
+import React, { DetailedHTMLProps, InputHTMLAttributes } from "react"
 
 const Checkbox = ({
   containerClassName,
@@ -7,10 +7,7 @@ const Checkbox = ({
   labelText,
   ...props
 }: Omit<
-  React.DetailedHTMLProps<
-    React.InputHTMLAttributes<HTMLInputElement>,
-    HTMLInputElement
-  >,
+  DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>,
   "className" | "type"
 > & {
   id: string

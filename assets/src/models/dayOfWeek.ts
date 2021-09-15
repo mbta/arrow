@@ -1,15 +1,7 @@
+import { DayName } from "../daysOfWeek"
 import { JsonApiResource, JsonApiResourceData } from "../jsonApiResource"
 import JsonApiResourceObject from "../jsonApiResourceObject"
 import { ModelObject } from "../jsonApi"
-
-type DayName =
-  | "monday"
-  | "tuesday"
-  | "wednesday"
-  | "thursday"
-  | "friday"
-  | "saturday"
-  | "sunday"
 
 class DayOfWeek extends JsonApiResourceObject {
   id?: string

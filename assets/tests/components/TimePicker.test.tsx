@@ -1,8 +1,11 @@
 import React from "react"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import TimePicker, { encodeTime, parseTime } from "../src/timePicker"
-import { hiddenInputValue } from "./testHelpers"
+import TimePicker, {
+  encodeTime,
+  parseTime,
+} from "../../src/components/TimePicker"
+import { hiddenInputValue } from "../testHelpers"
 
 describe("TimePicker", () => {
   test("allows selecting a time", () => {

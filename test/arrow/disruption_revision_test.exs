@@ -2,34 +2,6 @@ defmodule Arrow.DisruptionRevisionTest do
   @moduledoc false
   use Arrow.DataCase
   alias Arrow.DisruptionRevision
-  import Ecto.Query
-
-  describe "latest_revision/1" do
-    test "selects revisions that are the latest revision of their disruption" do
-      d = insert(:disruption)
-      insert(:disruption_revision, %{disruption: d})
-      %{id: latest_id} = insert(:disruption_revision, %{disruption: d})
-
-      base = from(d in Arrow.DisruptionRevision)
-
-      assert [
-               %{id: ^latest_id}
-             ] = base |> Arrow.DisruptionRevision.latest_revision() |> Repo.all()
-    end
-
-    test "returns nothing when latest revision of a disruption is deleted" do
-      dr1 = insert(:disruption_revision) |> Arrow.Repo.preload([:disruption])
-
-      _ = Arrow.Disruption.delete!(dr1.disruption_id)
-
-      latest_dr =
-        DisruptionRevision
-        |> DisruptionRevision.latest_revision()
-        |> Repo.get_by(disruption_id: dr1.disruption.id)
-
-      assert is_nil(latest_dr)
-    end
-  end
 
   describe "publish!/1" do
     test "updates published revision ID" do

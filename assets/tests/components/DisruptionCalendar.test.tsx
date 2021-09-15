@@ -1,9 +1,7 @@
 import React from "react"
-import {
-  DisruptionCalendar,
+import DisruptionCalendar, {
   disruptionsToCalendarEvents,
-  dayNameToInt,
-} from "../../src/disruptions/disruptionCalendar"
+} from "../../src/components/DisruptionCalendar"
 import { render } from "@testing-library/react"
 import DisruptionRevision from "../../src/models/disruptionRevision"
 import Adjustment from "../../src/models/adjustment"
@@ -94,22 +92,6 @@ const SAMPLE_DISRUPTIONS = [
 ]
 
 describe("DisruptionCalendar", () => {
-  test("dayNameToInt", () => {
-    ;(
-      [
-        "monday",
-        "tuesday",
-        "wednesday",
-        "thursday",
-        "friday",
-        "saturday",
-        "sunday",
-      ] as DayOfWeek["dayName"][]
-    ).forEach((day, i) => {
-      expect(dayNameToInt(day)).toEqual(i)
-    })
-  })
-
   describe("disruptionsToCalendarEvents", () => {
     it("parses disruptions", () => {
       expect(disruptionsToCalendarEvents(SAMPLE_DISRUPTIONS)).toEqual([
