@@ -1,8 +1,12 @@
 import React, { useState, useMemo } from "react"
 import Select from "react-select"
-import DatePicker from "./datePicker"
-import TimePicker from "./timePicker"
-import { TransitMode, modeForRoute } from "./disruptions/disruptions"
+import DatePicker from "./DatePicker"
+import TimePicker from "./TimePicker"
+
+enum TransitMode {
+  Subway,
+  CommuterRail,
+}
 
 type TimeRange = { start: string | null; end: string | null }
 type Adjustment = { id: number; routeId: string; sourceLabel: string }
@@ -43,6 +47,9 @@ const adjustmentSelectOption = (adjustment: Adjustment) => {
     data: adjustment,
   }
 }
+
+const modeForRoute = (route: string): TransitMode =>
+  route.startsWith("CR-") ? TransitMode.CommuterRail : TransitMode.Subway
 
 interface DisruptionFormProps {
   allAdjustments: Adjustment[]
@@ -235,7 +242,7 @@ const DisruptionForm = ({
           <legend>Choose days of week</legend>
 
           {days.map((day) => (
-            <span key={day} className="m-forms__day-of-week-bubble">
+            <span key={day} className="m-disruption-form__day-of-week">
               <div className="form-check form-check-inline">
                 <input
                   id={`day-input-${day}`}

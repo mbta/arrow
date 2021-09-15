@@ -1,3 +1,22 @@
+.m-disruption-form__day-of-week input {
+  display: none;
+}
+
+.m-disruption-form__day-of-week label {
+  border: 1px solid #dd3159;
+  border-radius: 1.25rem;
+  color: #dd3159;
+  height: 2rem;
+  padding-top: 0.2rem;
+  text-align: center;
+  width: 4rem;
+}
+
+.m-disruption-form__day-of-week input:checked + label {
+  background-color: #dd3159;
+  color: white;
+}
+
 .m-disruption-form__header-id {
   display: inline-block;
   font-size: large;

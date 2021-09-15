@@ -1,40 +1,40 @@
-import * as React from "react"
+import React, { useMemo } from "react"
 import FullCalendar from "@fullcalendar/react"
 import dayGridPlugin from "@fullcalendar/daygrid"
 import { RRule, RRuleSet } from "rrule"
-import { getRouteColor } from "./disruptionIndex"
 import Disruption from "../models/disruption"
 import DisruptionRevision from "../models/disruptionRevision"
-import DayOfWeek from "../models/dayOfWeek"
 import { toModelObject } from "../jsonApi"
+import { dayNumbers } from "../daysOfWeek"
 
-interface DisruptionCalendarProps {
-  data: any
-  initialDate?: Date
-}
-
-const dayNameToInt = (day: DayOfWeek["dayName"]): number => {
-  switch (day) {
-    case "monday": {
-      return 0
+const routeColor = (route: string): string => {
+  switch (route) {
+    case "Red": {
+      return "#da291c"
     }
-    case "tuesday": {
-      return 1
+    case "Blue": {
+      return "#003da5"
     }
-    case "wednesday": {
-      return 2
+    case "Mattapan": {
+      return "#da291c"
     }
-    case "thursday": {
-      return 3
+    case "Orange": {
+      return "#ed8b00"
     }
-    case "friday": {
-      return 4
+    case "Green-B": {
+      return "#00843d"
     }
-    case "saturday": {
-      return 5
+    case "Green-C": {
+      return "#00843d"
     }
-    case "sunday": {
-      return 6
+    case "Green-D": {
+      return "#00843d"
+    }
+    case "Green-E": {
+      return "#00843d"
+    }
+    default: {
+      return "#80276c"
     }
   }
 }
@@ -71,8 +71,8 @@ const disruptionsToCalendarEvents = (
         const ruleSet = new RRuleSet()
         ruleSet.rrule(
           new RRule({
-            byweekday: disruptionRevision.daysOfWeek?.map((x) =>
-              dayNameToInt(x.dayName)
+            byweekday: disruptionRevision.daysOfWeek?.map(
+              (x) => dayNumbers[x.dayName]
             ),
             dtstart: disruptionRevision.startDate,
             until: disruptionRevision.endDate,
@@ -105,7 +105,7 @@ const disruptionsToCalendarEvents = (
           disruptionRevisionsAcc.push({
             id: disruptionRevision.id,
             title: adj.sourceLabel,
-            backgroundColor: getRouteColor(adj.routeId),
+            backgroundColor: routeColor(adj.routeId),
             start: toISODate(group[0]),
             end: toISODate(
               group.length > 1 ? addDay(group.slice(-1)[0]) : group[0]
@@ -122,8 +122,13 @@ const disruptionsToCalendarEvents = (
   )
 }
 
+interface DisruptionCalendarProps {
+  data: any
+  initialDate?: Date
+}
+
 const DisruptionCalendar = ({ data, initialDate }: DisruptionCalendarProps) => {
-  const revisionsOrError = React.useMemo(() => {
+  const revisionsOrError = useMemo(() => {
     if (Array.isArray(data)) {
       return data
     } else {
@@ -139,7 +144,7 @@ const DisruptionCalendar = ({ data, initialDate }: DisruptionCalendarProps) => {
     }
   }, [data])
 
-  const calendarEvents = React.useMemo(() => {
+  const calendarEvents = useMemo(() => {
     if (revisionsOrError !== "error") {
       return disruptionsToCalendarEvents(
         revisionsOrError as DisruptionRevision[]
@@ -162,4 +167,5 @@ const DisruptionCalendar = ({ data, initialDate }: DisruptionCalendarProps) => {
   )
 }
 
-export { DisruptionCalendar, disruptionsToCalendarEvents, dayNameToInt }
+export default DisruptionCalendar
+export { disruptionsToCalendarEvents }

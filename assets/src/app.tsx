@@ -2,14 +2,15 @@
 // The MiniCssExtractPlugin is used to separate it out into
 // its own CSS file.
 declare function require(name: string): string
+
 // tslint:disable-next-line
 require("../css/app.css")
 
 import "phoenix_html"
-import ReactPhoenix from "./ReactPhoenix"
 
-import { DisruptionCalendar } from "./disruptions/disruptionCalendar"
-import DisruptionForm from "./disruptionForm"
+import ReactPhoenix from "./ReactPhoenix"
+import DisruptionCalendar from "./components/DisruptionCalendar"
+import DisruptionForm from "./components/DisruptionForm"
 
 declare global {
   interface Window {

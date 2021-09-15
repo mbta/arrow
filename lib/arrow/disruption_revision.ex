@@ -43,19 +43,8 @@ defmodule Arrow.DisruptionRevision do
     timestamps(type: :utc_datetime)
   end
 
-  @associations [:days_of_week, :exceptions, :trip_short_names, :adjustments]
-
   @spec associations() :: [atom()]
-  def associations do
-    @associations
-  end
-
-  @spec latest_revision(Ecto.Queryable.t()) :: Ecto.Query.t()
-  def latest_revision(query) do
-    draft_ids = from(dr in __MODULE__, select: %{id: max(dr.id)}, group_by: dr.disruption_id)
-
-    from(dr in query, where: dr.id in subquery(draft_ids) and dr.is_active)
-  end
+  def associations, do: ~w(adjustments days_of_week exceptions trip_short_names)a
 
   @spec changeset(t(), map) :: Changeset.t(t())
   def changeset(revision, attrs) do
@@ -78,12 +67,12 @@ defmodule Arrow.DisruptionRevision do
     |> validate_start_date_before_end_date()
   end
 
-  @spec clone!(integer()) :: __MODULE__.t()
+  @spec clone!(id) :: t
   def clone!(disruption_revision_id) do
     disruption_revision =
-      Arrow.DisruptionRevision
-      |> Arrow.Repo.get!(disruption_revision_id)
-      |> Arrow.Repo.preload(@associations)
+      __MODULE__
+      |> Repo.get!(disruption_revision_id)
+      |> Repo.preload(associations())
 
     days_of_week =
       for dow <- disruption_revision.days_of_week || [] do
@@ -106,7 +95,7 @@ defmodule Arrow.DisruptionRevision do
     adjustments = disruption_revision.adjustments
     disruption_revision = Map.take(disruption_revision, [:disruption_id, :start_date, :end_date])
 
-    %Arrow.DisruptionRevision{is_active: true}
+    %DisruptionRevision{is_active: true}
     |> Ecto.Changeset.cast(disruption_revision, [
       :disruption_id,
       :start_date,
@@ -118,7 +107,7 @@ defmodule Arrow.DisruptionRevision do
     |> Ecto.Changeset.put_assoc(:days_of_week, days_of_week)
     |> Ecto.Changeset.put_assoc(:exceptions, exceptions)
     |> Ecto.Changeset.put_assoc(:trip_short_names, trip_short_names)
-    |> Arrow.Repo.insert!()
+    |> Repo.insert!()
   end
 
   @doc """

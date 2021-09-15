@@ -1,8 +1,8 @@
 import React from "react"
 import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import DisruptionForm from "../src/disruptionForm"
-import { pickDate } from "./testHelpers"
+import DisruptionForm from "../../src/components/DisruptionForm"
+import { pickDate } from "../testHelpers"
 
 describe("DisruptionForm", () => {
   const adjustments = [

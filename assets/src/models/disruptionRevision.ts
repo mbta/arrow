@@ -7,7 +7,7 @@ import DayOfWeek from "./dayOfWeek"
 import Exception from "./exception"
 import TripShortName from "./tripShortName"
 import { DisruptionView } from "./disruption"
-import { dayNameToInt } from "../disruptions/disruptionCalendar"
+import { dayNumbers } from "../daysOfWeek"
 
 class DisruptionRevision extends JsonApiResourceObject {
   id?: string
@@ -126,7 +126,7 @@ class DisruptionRevision extends JsonApiResourceObject {
             raw.relationships.days_of_week,
             included
           ) as DayOfWeek[]
-        ).sort((a, b) => dayNameToInt(a.dayName) - dayNameToInt(b.dayName)),
+        ).sort((a, b) => dayNumbers[a.dayName] - dayNumbers[b.dayName]),
         exceptions: (
           loadRelationship(
             raw.relationships.exceptions,
