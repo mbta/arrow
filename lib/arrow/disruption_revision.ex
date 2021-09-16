@@ -95,7 +95,7 @@ defmodule Arrow.DisruptionRevision do
     adjustments = disruption_revision.adjustments
     disruption_revision = Map.take(disruption_revision, [:disruption_id, :start_date, :end_date])
 
-    %DisruptionRevision{is_active: true}
+    %__MODULE__{is_active: true}
     |> Ecto.Changeset.cast(disruption_revision, [
       :disruption_id,
       :start_date,

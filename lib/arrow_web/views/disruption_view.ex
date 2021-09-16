@@ -2,13 +2,9 @@ defmodule ArrowWeb.DisruptionView do
   use ArrowWeb, :view
 
   alias __MODULE__.{DaysOfWeek, Form}
-  alias ArrowWeb.API
+  alias __MODULE__.Calendar, as: DCalendar
   alias ArrowWeb.DisruptionController.Filters
   alias Phoenix.Controller
-
-  defp calendar_props(disruptions) do
-    %{"data" => API.DisruptionView.render("index.json-api", data: disruptions)}
-  end
 
   defp filter_routes, do: ~w(Blue Orange Red Mattapan Green-B Green-C Green-D Green-E Commuter)
 

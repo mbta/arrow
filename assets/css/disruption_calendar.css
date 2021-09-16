@@ -1,0 +1,23 @@
+.fc-event.route-Red {
+  background-color: #da291c;
+}
+
+.fc-event.route-Blue {
+  background-color: #003da5;
+}
+
+.fc-event.route-Orange {
+  background-color: #ed8b00;
+}
+
+.fc-event.route-Mattapan {
+  background-color: #da291c;
+}
+
+.fc-event[class*="route-Green"] {
+  background-color: #00843d;
+}
+
+.fc-event[class*="route-CR"] {
+  background-color: #80276c;
+}

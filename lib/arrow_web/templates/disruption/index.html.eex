@@ -74,7 +74,9 @@
 <div class="row">
   <div class="col">
     <%= if Filters.calendar?(@filters) do %>
-      <%= react_component("Components.DisruptionCalendar", calendar_props(@disruptions)) %>
+      <div class="my-3">
+        <%= react_component("Components.DisruptionCalendar", DCalendar.props(@disruptions)) %>
+      </div>
     <% else %>
       <%= render("_table.html", conn: @conn, disruptions: @disruptions, filters: @filters) %>
     <% end %>
