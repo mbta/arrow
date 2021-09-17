@@ -9,7 +9,7 @@ enum TransitMode {
 }
 
 type TimeRange = { start: string | null; end: string | null }
-type Adjustment = { id: number; routeId: string; sourceLabel: string }
+type Adjustment = { id: number; label: string; routeId: string }
 type DaysOfWeek = { [dayName: string]: TimeRange }
 type DisruptionRevision = {
   startDate: string | null
@@ -42,7 +42,7 @@ const whichTripsLabels: ["all" | "some", string][] = [
 
 const adjustmentSelectOption = (adjustment: Adjustment) => {
   return {
-    label: adjustment.sourceLabel,
+    label: adjustment.label,
     value: adjustment.id,
     data: adjustment,
   }
