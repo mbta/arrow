@@ -16,14 +16,7 @@
       <% end %>
     </div>
 
-    <ul class="m-disruption-details__adjustment-list">
-      <%= for adjustment <- @revision.adjustments do %>
-        <li class="m-disruption-details__adjustment-item">
-          <%= route_icon(@conn, adjustment.route_id, "sm", class: "mr-2") %>
-          <%= adjustment.source_label %>
-        </li>
-      <% end %>
-    </ul>
+    <%= render("_description.html", conn: @conn, revision: @revision) %>
 
     <hr class="my-3" />
 

@@ -12,6 +12,7 @@ defmodule ArrowWeb.DisruptionView.Form do
       start_date: start_date,
       end_date: end_date,
       row_approved: row_approved,
+      description: description,
       adjustments: adjustments,
       days_of_week: days_of_week,
       exceptions: exceptions,
@@ -21,6 +22,7 @@ defmodule ArrowWeb.DisruptionView.Form do
     %{
       "allAdjustments" => Enum.map(all_adjustments, &encode_adjustment/1),
       "disruptionRevision" => %{
+        "description" => description,
         "startDate" => start_date,
         "endDate" => end_date,
         "rowApproved" => row_approved,

@@ -12,6 +12,7 @@ type TimeRange = { start: string | null; end: string | null }
 type Adjustment = { id: number; label: string; routeId: string }
 type DaysOfWeek = { [dayName: string]: TimeRange }
 type DisruptionRevision = {
+  description: string
   startDate: string | null
   endDate: string | null
   rowApproved: boolean
@@ -80,6 +81,7 @@ interface DisruptionFormProps {
 const DisruptionForm = ({
   allAdjustments,
   disruptionRevision: {
+    description: initialDescription,
     startDate: initialStartDate,
     endDate: initialEndDate,
     rowApproved: initialRowApproved,
@@ -96,6 +98,8 @@ const DisruptionForm = ({
       ? TransitMode.Subway
       : modeForRoute(initialAdjustments[0].routeId)
   )
+
+  const [description, setDescription] = useState(initialDescription)
 
   const [adjustments, setAdjustments] = useState(initialAdjustments)
   const adjustmentSelectOptions = useMemo(() => {
@@ -116,6 +120,7 @@ const DisruptionForm = ({
   const [daysOfWeek, setDaysOfWeek] = useState<Map<string, TimeRange | null>>(
     new Map(days.map((day) => [day, initialDaysOfWeek[day] || null]))
   )
+
   const toggleDayOfWeek = (day: string) => {
     const newValue = daysOfWeek.get(day)
       ? null
@@ -178,6 +183,23 @@ const DisruptionForm = ({
             {label}
           </label>
         ))}
+      </fieldset>
+
+      <fieldset>
+        <legend>description</legend>
+        <textarea
+          className="form-control"
+          cols={30}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          name="revision[description]"
+          aria-describedby="descriptionHelp"
+          aria-label="description"
+          required
+        />
+        <small id="descriptionHelp" className="form-text">
+          please include: types of disruption, place, and reason
+        </small>
       </fieldset>
 
       <fieldset>

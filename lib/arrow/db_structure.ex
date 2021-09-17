@@ -47,6 +47,7 @@ defmodule Arrow.DBStructure do
           :id,
           :start_date,
           :end_date,
+          :description,
           :row_approved,
           :is_active,
           :disruption_id,

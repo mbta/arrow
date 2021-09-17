@@ -17,6 +17,7 @@ defmodule Arrow.DisruptionRevision do
           start_date: Date.t() | nil,
           row_approved: boolean(),
           is_active: boolean(),
+          description: String.t(),
           disruption: Disruption.t() | Ecto.Association.NotLoaded.t(),
           days_of_week: [DayOfWeek.t()] | Ecto.Association.NotLoaded.t(),
           exceptions: [Exception.t()] | Ecto.Association.NotLoaded.t(),
@@ -31,6 +32,7 @@ defmodule Arrow.DisruptionRevision do
     field(:start_date, :date)
     field(:is_active, :boolean)
     field(:row_approved, :boolean, default: true)
+    field(:description, :string)
 
     belongs_to(:disruption, Disruption)
     has_many(:days_of_week, DayOfWeek, on_replace: :delete)
@@ -55,7 +57,7 @@ defmodule Arrow.DisruptionRevision do
   @spec changeset(t() | Changeset.t(t()), map) :: Changeset.t(t())
   def changeset(data, attrs) do
     data
-    |> Changeset.cast(attrs, [:start_date, :end_date, :row_approved])
+    |> Changeset.cast(attrs, [:start_date, :end_date, :row_approved, :description])
     |> Changeset.put_assoc(:adjustments, Adjustment.from_revision_attrs(attrs))
     |> Changeset.cast_assoc(:days_of_week,
       with: &DayOfWeek.changeset/2,
@@ -64,7 +66,7 @@ defmodule Arrow.DisruptionRevision do
     )
     |> Changeset.cast_assoc(:exceptions, with: &Exception.changeset/2)
     |> Changeset.cast_assoc(:trip_short_names, with: &TripShortName.changeset/2)
-    |> Changeset.validate_required([:start_date, :end_date, :row_approved])
+    |> Changeset.validate_required([:start_date, :end_date, :row_approved, :description])
     |> Changeset.validate_length(:days_of_week, min: 1)
     |> validate_days_of_week_between_start_and_end_date()
     |> validate_exceptions_are_applicable()

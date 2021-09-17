@@ -23,6 +23,7 @@ defmodule Arrow.DBStructureTest do
       dr_id = dr.id
       d_id = d.id
       ddow_id = dr.days_of_week |> Enum.at(0) |> Map.get(:id)
+      description = dr.description
 
       assert %{
                "adjustments" => [
@@ -47,6 +48,7 @@ defmodule Arrow.DBStructureTest do
                  %{
                    disruption_id: ^d_id,
                    end_date: ~D[2020-01-15],
+                   description: ^description,
                    id: ^dr_id,
                    is_active: true,
                    start_date: ~D[2020-01-01]
@@ -89,6 +91,7 @@ defmodule Arrow.DBStructureTest do
         "disruption_revisions" => [
           %{
             disruption_id: 8338,
+            description: "this is a disruption",
             end_date: ~D[2020-01-15],
             id: 11_206,
             inserted_at: ~U[2020-09-29 15:17:42.000000Z],

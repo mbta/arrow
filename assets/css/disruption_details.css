@@ -11,18 +11,6 @@
   margin-left: 2rem;
 }
 
-.m-disruption-details__adjustment-list {
-  margin-bottom: 1.5rem;
-  padding-left: 0;
-}
-
-.m-disruption-details__adjustment-item {
-  display: flex;
-  align-items: center;
-  font-weight: 700;
-  list-style: none;
-}
-
 .m-disruption-details__deletion-indicator {
   background-color: var(--light-grey);
   border: 1px solid var(--blue-grey);

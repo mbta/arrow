@@ -10,7 +10,7 @@ defmodule Mix.Tasks.CopyDb do
   @impl Mix.Task
   def run(_args) do
     api_key = System.get_env("ARROW_API_KEY")
-    domain = System.get_env("ARROW_DOMAIN", "https://arrow-dev.mbtace.com")
+    domain = System.get_env("ARROW_DOMAIN", "https://arrow.mbta.com")
     fetch_module = Application.get_env(:arrow, :http_client)
 
     Ecto.Migrator.with_repo(Arrow.Repo, fn repo ->

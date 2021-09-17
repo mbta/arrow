@@ -1,0 +1,10 @@
+<div class="d-flex align-items-center">
+  <%= if Enum.any?(@revision.adjustments) do %>
+    <div class="d-flex flex-column">
+      <%= for adjustment <- Enum.uniq_by(@revision.adjustments, &(route_id_uniq(&1.route_id))) do %>
+          <%= route_icon(@conn, adjustment.route_id, "sm", class: "my-1 mr-2") %>
+      <% end %>
+    </div>
+  <% end %>
+  <%= @revision.description %>
+</div>
