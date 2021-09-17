@@ -6,10 +6,10 @@ import { pickDate } from "../testHelpers"
 
 describe("DisruptionForm", () => {
   const adjustments = [
-    { id: 1, routeId: "Red", sourceLabel: "Alewife" },
-    { id: 2, routeId: "Blue", sourceLabel: "Bowdoin" },
-    { id: 3, routeId: "CR-Lowell", sourceLabel: "Lowell" },
-    { id: 4, routeId: "CR-Worcester", sourceLabel: "Worcester" },
+    { id: 1, label: "Alewife", routeId: "Red" },
+    { id: 2, label: "Bowdoin", routeId: "Blue" },
+    { id: 3, label: "Lowell", routeId: "CR-Lowell" },
+    { id: 4, label: "Worcester", routeId: "CR-Worcester" },
   ]
 
   const blankRevision = {
@@ -33,9 +33,7 @@ describe("DisruptionForm", () => {
             ...blankRevision,
             startDate: "2021-01-01",
             endDate: "2021-01-31",
-            adjustments: [
-              { id: 3, routeId: "CR-Lowell", sourceLabel: "Lowell" },
-            ],
+            adjustments: [{ id: 3, label: "Lowell", routeId: "CR-Lowell" }],
             daysOfWeek: {
               monday: { start: null, end: null },
               tuesday: { start: "20:00:00", end: null },

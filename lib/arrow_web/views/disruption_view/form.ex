@@ -30,8 +30,8 @@ defmodule ArrowWeb.DisruptionView.Form do
     }
   end
 
-  defp encode_adjustment(%Adjustment{id: id, route_id: route_id, source_label: source_label}) do
-    %{"id" => id, "routeId" => route_id, "sourceLabel" => source_label}
+  defp encode_adjustment(%Adjustment{id: id, route_id: route_id} = adjustment) do
+    %{"id" => id, "label" => Adjustment.display_label(adjustment), "routeId" => route_id}
   end
 
   defp encode_day_of_week(%DayOfWeek{

@@ -52,6 +52,17 @@ defmodule Arrow.Adjustment do
   end
 
   @doc """
+  Returns a version of the adjustment's `source_label` with spaces between words. Attempts to
+  correctly handle uppercased acronyms such as "JFK" or "SL2".
+  """
+  @spec display_label(t()) :: String.t()
+  def display_label(%__MODULE__{source_label: source_label}) do
+    source_label
+    |> String.replace(~r/([[:lower:]])([[:upper:]\d])/, "\\1 \\2")
+    |> String.replace(~r/([[:upper:]\d])([[:upper:]\d])(?=[[:lower:]])/, "\\1 \\2")
+  end
+
+  @doc """
   Fetches the adjustments corresponding to the given `DisruptionRevision` changeset parameters.
   Allows us to `put_assoc` adjustments when building a revision changeset, since `many_to_many`
   associations don't support updating values in the join table using `cast_assoc`.

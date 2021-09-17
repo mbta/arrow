@@ -29,13 +29,13 @@ defmodule ArrowWeb.DisruptionView.FormTest do
 
       expected = %{
         "allAdjustments" => [
-          %{"id" => 1, "routeId" => "Red", "sourceLabel" => "Kendall"},
-          %{"id" => 2, "routeId" => "Orange", "sourceLabel" => "Wellington"}
+          %{"id" => 1, "label" => "Kendall", "routeId" => "Red"},
+          %{"id" => 2, "label" => "Wellington", "routeId" => "Orange"}
         ],
         "disruptionRevision" => %{
           "startDate" => ~D[2021-01-01],
           "endDate" => ~D[2021-02-28],
-          "adjustments" => [%{"id" => 1, "routeId" => "Red", "sourceLabel" => "Kendall"}],
+          "adjustments" => [%{"id" => 1, "label" => "Kendall", "routeId" => "Red"}],
           "daysOfWeek" => %{"monday" => %{"start" => ~T[21:15:00], "end" => nil}},
           "exceptions" => [~D[2021-01-11]],
           "tripShortNames" => "one,two"

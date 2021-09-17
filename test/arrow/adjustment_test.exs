@@ -38,6 +38,17 @@ defmodule Arrow.AdjustmentTest do
     end
   end
 
+  describe "display_label/1" do
+    defp display_label(label), do: Adjustment.display_label(%Adjustment{source_label: label})
+
+    test "returns a friendlier label for the adjustment" do
+      assert display_label("AirportBowdoinExpress") == "Airport Bowdoin Express"
+      assert display_label("GreenEStopAtBrighamCircle") == "Green E Stop At Brigham Circle"
+      assert display_label("AshmontJFK") == "Ashmont JFK"
+      assert display_label("SL2NoTransitwayAM") == "SL2 No Transitway AM"
+    end
+  end
+
   describe "from_revision_attrs/1" do
     test "fetches adjustments for DisruptionRevision changeset params" do
       [%{id: id1}, _, %{id: id2}] = insert_list(3, :adjustment)
