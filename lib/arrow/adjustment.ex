@@ -38,6 +38,10 @@ defmodule Arrow.Adjustment do
     timestamps(type: :utc_datetime)
   end
 
+  @doc "Returns all adjustments, sorted by label."
+  @spec all() :: [t()]
+  def all, do: Repo.all(from a in __MODULE__, order_by: :source_label)
+
   @doc false
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(adjustment, attrs) do
