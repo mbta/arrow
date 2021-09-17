@@ -62,9 +62,7 @@ defmodule ArrowWeb.DisruptionController.Index do
            [
              {:adjustments, ^from(a in Adjustment, order_by: :source_label)},
              :days_of_week,
-             :exceptions,
-             # Required (but unused) for JSON:API serialization for the calendar
-             :trip_short_names
+             :exceptions
            ]}
       ]
   end
