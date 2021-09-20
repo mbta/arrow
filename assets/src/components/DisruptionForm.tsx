@@ -48,6 +48,14 @@ const adjustmentSelectOption = (adjustment: Adjustment) => {
   }
 }
 
+const defaultTimeRange = (mode: TransitMode, day: string): TimeRange => {
+  if (mode === TransitMode.Subway && day !== "saturday" && day !== "sunday") {
+    return { start: "20:45:00", end: null }
+  } else {
+    return { start: null, end: null }
+  }
+}
+
 const modeForRoute = (route: string): TransitMode =>
   route.startsWith("CR-") ? TransitMode.CommuterRail : TransitMode.Subway
 
@@ -100,7 +108,10 @@ const DisruptionForm = ({
     new Map(days.map((day) => [day, initialDaysOfWeek[day] || null]))
   )
   const toggleDayOfWeek = (day: string) => {
-    const newValue = daysOfWeek.get(day) ? null : { start: null, end: null }
+    const newValue = daysOfWeek.get(day)
+      ? null
+      : defaultTimeRange(transitMode, day)
+
     setDaysOfWeek((prev) => new Map(prev).set(day, newValue))
   }
 
