@@ -41,7 +41,7 @@
 
         <%= link(
               route_icon(@conn, route, "lg"),
-              class: "mr-1 m-disruption-index__route_filter #{active_class}",
+              class: "d-flex mr-1 m-disruption-index__route_filter #{active_class}",
               "aria-label": route,
               to: update_filters_path(@conn, Filters.toggle_route(@filters, route))
             ) %>
