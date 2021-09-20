@@ -64,7 +64,7 @@ defmodule Arrow.Integration.DisruptionsTest do
     assert revision_day.day_name ==
              now |> Calendar.strftime("%A") |> String.downcase()
 
-    assert revision_day.start_time == nil
+    assert revision_day.start_time == ~T[20:45:00]
     assert revision_day.end_time == nil
     assert Enum.at(revision.adjustments, 0).source_label == adjustment.source_label
   end
