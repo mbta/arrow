@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="h-100" lang="en">
   <head>
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
@@ -15,24 +15,43 @@
     <%= tag :link, rel: "stylesheet", href: Routes.static_path(@conn, "/assets/app.css") %>
   </head>
 
-  <body>
-    <nav class="container navbar navbar-expand navbar-light bg-light">
-      <div class="navbar-brand">
-        <a href="/" class="m-header__arrow">
-          <%= img_tag(Routes.static_path(@conn, "/images/logo.svg"), width: "34", height: "34") %>
-          <span class="m-header__arrow-text">ARROW</span>
-        </a>
-      </div>
+  <body class="d-flex flex-column h-100">
+    <header class="container bg-light">
+      <nav class="navbar navbar-expand navbar-light">
+        <div class="navbar-brand">
+          <a href="/" class="m-header__arrow">
+            <%= img_tag(Routes.static_path(@conn, "/images/logo.svg"), width: "34", height: "34") %>
+            <span class="m-header__arrow-text">ARROW</span>
+          </a>
+        </div>
 
-      <div class="m-header__long-name navbar-text justify-content-end navbar-collapse collapse">
-        Adjustments to the Regular Right of Way
-      </div>
-    </nav>
+        <div class="m-header__long-name navbar-text justify-content-end navbar-collapse collapse">
+          Adjustments to the Regular Right of Way
+        </div>
+      </nav>
+    </header>
 
     <main class="container">
       <%= render "_flash.html", conn: @conn %>
       <%= @inner_content %>
     </main>
+
+    <footer class="container bg-light mt-auto px-5 py-1">
+      <div class="row align-items-center">
+        <div class="col-md-7 py-2 m-footer__explanation">
+          Arrow is built and maintained by the Customer Technology Department's Transit Real-time
+          team.
+        </div>
+
+        <div class="col-md-4 offset-md-1 py-2">
+          <b>Contact Us</b>
+          <br>
+          Slack: <a href="https://mbta.slack.com/archives/C6XAZ1R8E"><code>#disruptions</code></a>
+          <br>
+          Email: <a href="mailto:trc@mbta.com">trc@mbta.com</a>
+        </div>
+      </div>
+    </footer>
 
     <%= content_tag(:script, "", type: "text/javascript", src: Routes.static_path(@conn, "/assets/app.js")) %>
   </body>
