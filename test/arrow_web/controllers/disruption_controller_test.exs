@@ -53,6 +53,7 @@ defmodule ArrowWeb.DisruptionControllerTest do
         "revision" => %{
           "start_date" => "2021-01-01",
           "end_date" => "2021-01-07",
+          "row_confirmed" => "false",
           "days_of_week" => %{
             "0" => %{"day_name" => "friday", "start_time" => "20:45:00"},
             "1" => %{"day_name" => "saturday"}

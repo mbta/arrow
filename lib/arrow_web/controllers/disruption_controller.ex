@@ -32,6 +32,8 @@ defmodule ArrowWeb.DisruptionController do
   end
 
   def create(conn, %{"revision" => attrs}) do
+    attrs = update_in(attrs["row_confirmed"], &boolify_row_value/1)
+
     case Disruption.create(attrs) do
       {:ok, id} ->
         conn
@@ -46,6 +48,8 @@ defmodule ArrowWeb.DisruptionController do
   end
 
   def update(conn, %{"id" => id, "revision" => attrs}) do
+    attrs = update_in(attrs["row_confirmed"], &boolify_row_value/1)
+
     case Disruption.update(id, attrs) do
       {:ok, id} ->
         conn
@@ -69,4 +73,7 @@ defmodule ArrowWeb.DisruptionController do
     |> Changeset.traverse_errors(&ErrorHelpers.translate_error/1)
     |> ErrorHelpers.flatten_errors()
   end
+
+  defp boolify_row_value("false"), do: false
+  defp boolify_row_value(_), do: true
 end

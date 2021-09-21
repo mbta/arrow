@@ -3,6 +3,9 @@
   <dl>
     <div class="flex flex-col md:flex-row">
       <div class="flex-1">
+        <dt class="mt-3">ROW Status</dt>
+        <dd> <%= if @revision.row_confirmed, do: "Confirmed", else: "Pending" %></dd>
+
         <dt class="mt-3">Adjustments</dt>
         <dd>
           <%= for a <- @revision.adjustments do %>

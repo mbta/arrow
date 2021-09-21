@@ -36,6 +36,7 @@ defmodule Arrow.Integration.DisruptionsTest do
       |> visit("/")
       |> click(link("create new"))
       |> assert_text("create new disruption")
+      |> click(text("Pending"))
       |> click(text("Select..."))
       |> click(text(adjustment.source_label))
       |> fill_in(text_field("start"), with: date)
@@ -58,6 +59,7 @@ defmodule Arrow.Integration.DisruptionsTest do
 
     assert revision.start_date == now |> DateTime.to_date()
     assert revision.end_date == now |> DateTime.to_date()
+    assert revision.row_confirmed == false
     assert Enum.count(revision.days_of_week) == 1
     revision_day = Enum.at(revision.days_of_week, 0)
 
