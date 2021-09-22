@@ -59,7 +59,7 @@ defmodule Arrow.Integration.DisruptionsTest do
 
     assert revision.start_date == now |> DateTime.to_date()
     assert revision.end_date == now |> DateTime.to_date()
-    assert revision.row_confirmed == false
+    assert revision.row_approved == false
     assert Enum.count(revision.days_of_week) == 1
     revision_day = Enum.at(revision.days_of_week, 0)
 

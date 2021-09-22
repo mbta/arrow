@@ -71,7 +71,7 @@ defmodule Arrow.DisruptionTest do
       attrs = %{
         "start_date" => "2021-01-01",
         "end_date" => "2021-12-31",
-        "row_confirmed" => "true",
+        "row_approved" => "true",
         "adjustments" => [%{"id" => insert(:adjustment).id}],
         "days_of_week" => [%{"day_name" => "monday", "start_time" => "20:00:00"}],
         "exceptions" => [%{"excluded_date" => "2021-01-11"}],
@@ -90,7 +90,7 @@ defmodule Arrow.DisruptionTest do
       assert dr.disruption_id == d.id
       assert dr.start_date == ~D[2021-01-01]
       assert dr.end_date == ~D[2021-12-31]
-      assert dr.row_confirmed == true
+      assert dr.row_approved == true
 
       assert [%DayOfWeek{day_name: "monday", start_time: ~T[20:00:00], end_time: nil}] =
                dr.days_of_week
@@ -188,7 +188,7 @@ defmodule Arrow.DisruptionTest do
       attrs = %{
         "start_date" => "2021-01-01",
         "end_date" => "2021-11-30",
-        "row_confirmed" => false,
+        "row_approved" => false,
         "days_of_week" => [%{"day_name" => "monday", "start_time" => "20:45:00"}],
         "exceptions" => [%{"excluded_date" => "2021-01-11"}, %{"excluded_date" => "2021-01-18"}],
         "trip_short_names" => [%{"trip_short_name" => "777"}, %{"trip_short_name" => "888"}]
@@ -209,7 +209,7 @@ defmodule Arrow.DisruptionTest do
       assert new_dr.is_active
       assert new_dr.start_date == ~D[2021-01-01]
       assert new_dr.end_date == ~D[2021-11-30]
-      assert new_dr.row_confirmed == false
+      assert new_dr.row_approved == false
 
       assert [%DayOfWeek{day_name: "monday", start_time: ~T[20:45:00], end_time: nil}] =
                new_dr.days_of_week
