@@ -15,6 +15,7 @@ describe("DisruptionForm", () => {
   const blankRevision = {
     startDate: null,
     endDate: null,
+    rowConfirmed: true,
     adjustments: [],
     daysOfWeek: {},
     exceptions: [],
@@ -33,6 +34,7 @@ describe("DisruptionForm", () => {
             ...blankRevision,
             startDate: "2021-01-01",
             endDate: "2021-01-31",
+            rowConfirmed: true,
             adjustments: [{ id: 3, label: "Lowell", routeId: "CR-Lowell" }],
             daysOfWeek: {
               monday: { start: null, end: null },

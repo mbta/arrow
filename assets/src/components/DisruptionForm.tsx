@@ -14,6 +14,7 @@ type DaysOfWeek = { [dayName: string]: TimeRange }
 type DisruptionRevision = {
   startDate: string | null
   endDate: string | null
+  rowConfirmed: boolean
   adjustments: Adjustment[]
   daysOfWeek: DaysOfWeek
   exceptions: string[]
@@ -28,6 +29,11 @@ const days = [
   "friday",
   "saturday",
   "sunday",
+]
+
+const rowStatusLabels: [boolean, string][] = [
+  [true, "Approved"],
+  [false, "Pending"],
 ]
 
 const transitModeLabels: [TransitMode, string][] = [
@@ -76,12 +82,15 @@ const DisruptionForm = ({
   disruptionRevision: {
     startDate: initialStartDate,
     endDate: initialEndDate,
+    rowConfirmed: initialRowConfirmed,
     adjustments: initialAdjustments,
     daysOfWeek: initialDaysOfWeek,
     exceptions: initialExceptions,
     tripShortNames: initialTripShortNames,
   },
 }: DisruptionFormProps) => {
+  const [isRowConfirmed, setIsRowConfirmed] = useState(initialRowConfirmed)
+
   const [transitMode, setTransitMode] = useState<TransitMode>(
     initialAdjustments.length === 0
       ? TransitMode.Subway
@@ -133,6 +142,24 @@ const DisruptionForm = ({
 
   return (
     <>
+      <fieldset>
+        <legend>approval status</legend>
+        {rowStatusLabels.map(([rowValue, rowLabel]) => (
+          <label key={rowLabel} className="form-check form-check-label">
+            <input
+              className="form-check-input"
+              type="radio"
+              name="revision[row_confirmed]"
+              value={`${rowValue}`}
+              checked={rowValue === isRowConfirmed}
+              onChange={() => {
+                setIsRowConfirmed(rowValue)
+              }}
+            />
+            {rowLabel}
+          </label>
+        ))}
+      </fieldset>
       <fieldset>
         <legend>mode</legend>
 

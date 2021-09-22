@@ -29,6 +29,7 @@ defmodule Arrow.DisruptionRevision do
     field(:end_date, :date)
     field(:start_date, :date)
     field(:is_active, :boolean)
+    field(:row_confirmed, :boolean, default: true)
 
     belongs_to(:disruption, Disruption)
     has_many(:days_of_week, DayOfWeek, on_replace: :delete)
@@ -49,7 +50,7 @@ defmodule Arrow.DisruptionRevision do
   @spec changeset(t(), map) :: Changeset.t(t())
   def changeset(revision, attrs) do
     revision
-    |> Changeset.cast(attrs, [:start_date, :end_date])
+    |> Changeset.cast(attrs, [:start_date, :end_date, :row_confirmed])
     |> Changeset.put_assoc(:adjustments, Adjustment.from_revision_attrs(attrs))
     |> Changeset.cast_assoc(:days_of_week,
       with: &DayOfWeek.changeset/2,
@@ -58,7 +59,7 @@ defmodule Arrow.DisruptionRevision do
     )
     |> Changeset.cast_assoc(:exceptions, with: &Exception.changeset/2)
     |> Changeset.cast_assoc(:trip_short_names, with: &TripShortName.changeset/2)
-    |> Changeset.validate_required([:start_date, :end_date])
+    |> Changeset.validate_required([:start_date, :end_date, :row_confirmed])
     |> Changeset.validate_length(:days_of_week, min: 1)
     |> validate_days_of_week_between_start_and_end_date()
     |> validate_exceptions_are_applicable()
