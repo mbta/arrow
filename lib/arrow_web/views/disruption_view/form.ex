@@ -11,7 +11,7 @@ defmodule ArrowWeb.DisruptionView.Form do
     %DisruptionRevision{
       start_date: start_date,
       end_date: end_date,
-      row_confirmed: row_confirmed,
+      row_approved: row_approved,
       adjustments: adjustments,
       days_of_week: days_of_week,
       exceptions: exceptions,
@@ -23,7 +23,7 @@ defmodule ArrowWeb.DisruptionView.Form do
       "disruptionRevision" => %{
         "startDate" => start_date,
         "endDate" => end_date,
-        "rowConfirmed" => row_confirmed,
+        "rowApproved" => row_approved,
         "adjustments" => Enum.map(adjustments, &encode_adjustment/1),
         "daysOfWeek" => days_of_week |> Enum.map(&encode_day_of_week/1) |> Enum.into(%{}),
         "exceptions" => Enum.map(exceptions, & &1.excluded_date),

@@ -94,7 +94,8 @@ defmodule Arrow.DBStructureTest do
             inserted_at: ~U[2020-09-29 15:17:42.000000Z],
             is_active: true,
             start_date: ~D[2020-01-01],
-            updated_at: ~U[2020-09-29 15:17:42.000000Z]
+            updated_at: ~U[2020-09-29 15:17:42.000000Z],
+            row_approved: true
           }
         ],
         "disruption_trip_short_names" => [],

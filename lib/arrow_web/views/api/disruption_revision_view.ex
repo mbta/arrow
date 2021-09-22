@@ -2,7 +2,7 @@ defmodule ArrowWeb.API.DisruptionRevisionView do
   use ArrowWeb, :view
   use JaSerializer.PhoenixView
 
-  attributes([:start_date, :end_date, :is_active, :inserted_at])
+  attributes([:start_date, :end_date, :row_approved, :is_active, :inserted_at])
 
   has_many :adjustments,
     serializer: ArrowWeb.API.AdjustmentView,

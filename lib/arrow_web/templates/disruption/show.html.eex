@@ -40,6 +40,16 @@
 
       <div class="col-md-10 <%= inactive_class %>">
         <div class="mb-3">
+          <h4>approval status</h4>
+
+          <div class="pl-3">
+            <span class="m-disruption-details__row_status">
+              <%= if @revision.row_approved, do: "Approved", else: "Pending" %>
+            </span>
+          </div>
+        </div>
+
+        <div class="mb-3">
           <h4>date range</h4>
 
           <div class="pl-3">

@@ -5,7 +5,7 @@
       <th><%= sort_link(@conn, @filters, :start_date, "date range") %></th>
       <th>except</th>
       <th>time period</th>
-      <th>status</th>
+      <th>GTFS status</th>
       <th><%= sort_link(@conn, @filters, :id, "ID") %></th>
     </tr>
   </thead>

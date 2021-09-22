@@ -205,7 +205,7 @@ CREATE TABLE public.disruption_revisions (
     disruption_id bigint NOT NULL,
     author character varying(255),
     is_active boolean DEFAULT true,
-    row_confirmed boolean DEFAULT true NOT NULL
+    row_approved boolean DEFAULT true NOT NULL
 );
 
 
@@ -567,3 +567,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20200909124316);
 INSERT INTO public."schema_migrations" (version) VALUES (20200925153736);
 INSERT INTO public."schema_migrations" (version) VALUES (20210816185635);
 INSERT INTO public."schema_migrations" (version) VALUES (20210921192435);
+INSERT INTO public."schema_migrations" (version) VALUES (20210922191945);

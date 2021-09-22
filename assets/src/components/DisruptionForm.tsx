@@ -14,7 +14,7 @@ type DaysOfWeek = { [dayName: string]: TimeRange }
 type DisruptionRevision = {
   startDate: string | null
   endDate: string | null
-  rowConfirmed: boolean
+  rowApproved: boolean
   adjustments: Adjustment[]
   daysOfWeek: DaysOfWeek
   exceptions: string[]
@@ -82,14 +82,14 @@ const DisruptionForm = ({
   disruptionRevision: {
     startDate: initialStartDate,
     endDate: initialEndDate,
-    rowConfirmed: initialRowConfirmed,
+    rowApproved: initialRowApproved,
     adjustments: initialAdjustments,
     daysOfWeek: initialDaysOfWeek,
     exceptions: initialExceptions,
     tripShortNames: initialTripShortNames,
   },
 }: DisruptionFormProps) => {
-  const [isRowConfirmed, setIsRowConfirmed] = useState(initialRowConfirmed)
+  const [isRowApproved, setIsRowApproved] = useState(initialRowApproved)
 
   const [transitMode, setTransitMode] = useState<TransitMode>(
     initialAdjustments.length === 0
@@ -149,11 +149,11 @@ const DisruptionForm = ({
             <input
               className="form-check-input"
               type="radio"
-              name="revision[row_confirmed]"
+              name="revision[row_approved]"
               value={`${rowValue}`}
-              checked={rowValue === isRowConfirmed}
+              checked={rowValue === isRowApproved}
               onChange={() => {
-                setIsRowConfirmed(rowValue)
+                setIsRowApproved(rowValue)
               }}
             />
             {rowLabel}
