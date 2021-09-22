@@ -29,7 +29,7 @@ defmodule Arrow.DisruptionRevision do
     field(:end_date, :date)
     field(:start_date, :date)
     field(:is_active, :boolean)
-    field(:row_confirmed, :boolean, default: false)
+    field(:row_confirmed, :boolean, default: true)
 
     belongs_to(:disruption, Disruption)
     has_many(:days_of_week, DayOfWeek, on_replace: :delete)

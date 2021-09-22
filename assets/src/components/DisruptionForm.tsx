@@ -89,8 +89,7 @@ const DisruptionForm = ({
     tripShortNames: initialTripShortNames,
   },
 }: DisruptionFormProps) => {
-  const [isRowConfirmed, setIsRowConfirmed] =
-    useState<boolean>(initialRowConfirmed)
+  const [isRowConfirmed, setIsRowConfirmed] = useState(initialRowConfirmed)
 
   const [transitMode, setTransitMode] = useState<TransitMode>(
     initialAdjustments.length === 0
@@ -150,7 +149,7 @@ const DisruptionForm = ({
             <input
               className="form-check-input"
               type="radio"
-              name="row_confirmed"
+              name="revision[row_confirmed]"
               value={`${rowValue}`}
               checked={rowValue === isRowConfirmed}
               onChange={() => {
