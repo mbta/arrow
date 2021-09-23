@@ -48,9 +48,13 @@ defmodule Arrow.DisruptionRevision do
   @spec associations() :: [atom()]
   def associations, do: ~w(adjustments days_of_week exceptions trip_short_names)a
 
-  @spec changeset(t(), map) :: Changeset.t(t())
-  def changeset(revision, attrs) do
-    revision
+  @doc "Gets a revision by ID with preloaded associations."
+  @spec get!(id()) :: t()
+  def get!(id), do: __MODULE__ |> Repo.get!(id) |> Repo.preload(associations())
+
+  @spec changeset(t() | Changeset.t(t()), map) :: Changeset.t(t())
+  def changeset(data, attrs) do
+    data
     |> Changeset.cast(attrs, [:start_date, :end_date, :row_approved])
     |> Changeset.put_assoc(:adjustments, Adjustment.from_revision_attrs(attrs))
     |> Changeset.cast_assoc(:days_of_week,
@@ -69,48 +73,23 @@ defmodule Arrow.DisruptionRevision do
     |> validate_start_date_before_end_date()
   end
 
-  @spec clone!(id) :: t
-  def clone!(disruption_revision_id) do
-    disruption_revision =
-      __MODULE__
-      |> Repo.get!(disruption_revision_id)
-      |> Repo.preload(associations())
-
-    days_of_week =
-      for dow <- disruption_revision.days_of_week || [] do
-        dow = Map.take(dow, [:day_name, :start_time, :end_time])
-        DayOfWeek.changeset(%DayOfWeek{}, dow)
-      end
-
-    exceptions =
-      for exception <- disruption_revision.exceptions || [] do
-        exception = Map.take(exception, [:excluded_date])
-        Exception.changeset(%Exception{}, exception)
-      end
-
-    trip_short_names =
-      for name <- disruption_revision.trip_short_names || [] do
-        name = Map.take(name, [:trip_short_name])
-        TripShortName.changeset(%TripShortName{}, name)
-      end
-
-    adjustments = disruption_revision.adjustments
-    disruption_revision = Map.take(disruption_revision, [:disruption_id, :start_date, :end_date])
-
-    %__MODULE__{is_active: true}
-    |> Ecto.Changeset.cast(disruption_revision, [
-      :disruption_id,
-      :start_date,
-      :end_date,
-      :row_approved,
-      :is_active
-    ])
-    |> Ecto.Changeset.validate_required([:disruption_id, :is_active, :row_approved])
-    |> Ecto.Changeset.put_assoc(:adjustments, adjustments)
-    |> Ecto.Changeset.put_assoc(:days_of_week, days_of_week)
-    |> Ecto.Changeset.put_assoc(:exceptions, exceptions)
-    |> Ecto.Changeset.put_assoc(:trip_short_names, trip_short_names)
-    |> Repo.insert!()
+  @doc """
+  Creates a changeset for a new revision with changes mirroring the fields and associations of an
+  existing revision.
+  """
+  @spec clone(t()) :: Changeset.t(t())
+  def clone(%__MODULE__{adjustments: adjustments} = revision) do
+    Changeset.change(
+      %__MODULE__{},
+      revision
+      |> clone_fields()
+      |> Map.merge(%{adjustments: adjustments})
+      |> Map.merge(
+        ~w(days_of_week exceptions trip_short_names)a
+        |> Enum.map(fn assoc -> {assoc, Enum.map(Map.get(revision, assoc), &clone_fields/1)} end)
+        |> Enum.into(%{})
+      )
+    )
   end
 
   @doc """
@@ -142,6 +121,13 @@ defmodule Arrow.DisruptionRevision do
     end)
 
     :ok
+  end
+
+  defp clone_fields(%module{} = record) do
+    Map.take(
+      record,
+      module.__schema__(:fields) -- ~w(id disruption_revision_id inserted_at updated_at)a
+    )
   end
 
   @spec publish_deleted!() :: :ok

@@ -52,7 +52,8 @@ defmodule Arrow.Disruption do
   end
 
   @doc "Creates a new disruption, with its first revision having the given attributes."
-  @spec create(map) :: {:ok, id} | {:error, Changeset.t(DisruptionRevision.t())}
+  @spec create(map) ::
+          {:ok, DisruptionRevision.t()} | {:error, Changeset.t(DisruptionRevision.t())}
   def create(attrs) do
     Repo.transaction(fn ->
       %{id: id} = Repo.insert!(%__MODULE__{})
@@ -60,40 +61,33 @@ defmodule Arrow.Disruption do
       case DisruptionRevision.new(disruption_id: id)
            |> DisruptionRevision.changeset(attrs)
            |> Repo.insert() do
-        {:ok, _revision} -> id
+        {:ok, revision} -> revision
         {:error, changeset} -> Repo.rollback(changeset)
       end
     end)
   end
 
   @doc "Creates a new revision, with given attributes, of the given disruption ID."
-  @spec update(id, map) :: {:ok, id} | {:error, Changeset.t(DisruptionRevision.t())}
+  @spec update(id, map) ::
+          {:ok, DisruptionRevision.t()} | {:error, Changeset.t(DisruptionRevision.t())}
   def update(id, attrs) do
-    Repo.transaction(fn ->
-      case id
-           |> latest_revision_id()
-           |> DisruptionRevision.clone!()
-           |> DisruptionRevision.changeset(attrs)
-           |> Repo.update() do
-        {:ok, _revision} -> id
-        {:error, changeset} -> Repo.rollback(changeset)
-      end
-    end)
+    id
+    |> latest_revision_id()
+    |> DisruptionRevision.get!()
+    |> DisruptionRevision.clone()
+    |> DisruptionRevision.changeset(attrs)
+    |> Repo.insert()
   end
 
   @doc "Creates a new revision of the given disruption ID with `is_active` set to false."
   @spec delete!(id) :: DisruptionRevision.t()
   def delete!(id) do
-    {:ok, new_revision} =
-      Repo.transaction(fn ->
-        id
-        |> latest_revision_id()
-        |> DisruptionRevision.clone!()
-        |> Changeset.change(%{is_active: false})
-        |> Repo.update!()
-      end)
-
-    new_revision
+    id
+    |> latest_revision_id()
+    |> DisruptionRevision.get!()
+    |> DisruptionRevision.clone()
+    |> Changeset.change(%{is_active: false})
+    |> Repo.insert!()
   end
 
   @spec latest_revision_id(id) :: DisruptionRevision.id()
