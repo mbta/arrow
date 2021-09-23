@@ -33,7 +33,7 @@ defmodule ArrowWeb.DisruptionController do
 
   def create(conn, %{"revision" => attrs}) do
     case Disruption.create(attrs) do
-      {:ok, id} ->
+      {:ok, %{disruption_id: id}} ->
         conn
         |> put_flash(:info, "Disruption created successfully.")
         |> redirect(to: Routes.disruption_path(conn, :show, id))
@@ -47,7 +47,7 @@ defmodule ArrowWeb.DisruptionController do
 
   def update(conn, %{"id" => id, "revision" => attrs}) do
     case Disruption.update(id, attrs) do
-      {:ok, id} ->
+      {:ok, _revision} ->
         conn
         |> put_flash(:info, "Disruption updated successfully.")
         |> redirect(to: Routes.disruption_path(conn, :show, id))
