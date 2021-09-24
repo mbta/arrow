@@ -1,2 +1,4 @@
-DATABASE_USERNAME=postgres
-DATABASE_PASSWORD=postgres
+export ARROW_DOMAIN=https://arrow.mbta.com
+export ARROW_API_KEY=
+export DATABASE_USERNAME=postgres
+export DATABASE_PASSWORD=postgres
