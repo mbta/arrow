@@ -21,6 +21,7 @@ defmodule Arrow.Factory do
     %Arrow.DisruptionRevision{
       start_date: Date.utc_today(),
       end_date: Date.utc_today() |> Date.add(6),
+      description: sequence("Description"),
       disruption: build(:disruption),
       days_of_week: [build(:day_of_week)],
       adjustments: [build(:adjustment)],

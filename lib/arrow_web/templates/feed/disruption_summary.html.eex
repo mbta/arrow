@@ -20,6 +20,8 @@
           <span class="text-xs">end</span>
           <%= @revision.end_date %>
         </dd>
+        <dt class="mt-3">Description</dt>
+        <dd><%= @revision.description %></dd>
       </div>
       <div class="flex-1">
         <dt>Exception Dates</dt>

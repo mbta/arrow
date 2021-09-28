@@ -25,6 +25,8 @@
 - `direnv allow`
 - `mix ecto.setup`
 - `brew install chromedriver`
+- Add your Arrow API key from https://arrow.mbta.com/mytoken to `.envrc`
+- `mix copy_db` to seed your database
 
 ### Useful commands
 

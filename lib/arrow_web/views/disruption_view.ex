@@ -76,4 +76,7 @@ defmodule ArrowWeb.DisruptionView do
   defp update_view_path(conn, %{view: view} = filters, key, value) do
     update_filters_path(conn, %{filters | view: %{view | key => value}})
   end
+
+  defp route_id_uniq("CR-" <> _), do: "CR"
+  defp route_id_uniq(route_id), do: route_id
 end

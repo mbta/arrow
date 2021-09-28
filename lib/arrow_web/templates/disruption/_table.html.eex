@@ -1,7 +1,7 @@
 <table class="table m-disruption-table border-top-dark">
   <thead>
     <tr>
-      <th><%= sort_link(@conn, @filters, :source_label, "adjustments") %></th>
+      <th>description</th>
       <th><%= sort_link(@conn, @filters, :start_date, "date range") %></th>
       <th>except</th>
       <th>time period</th>
@@ -14,16 +14,7 @@
     <%= for %{revisions: [revision]} = disruption <- @disruptions do %>
       <tr class="<%= if not published?(disruption), do: 'bg-light-pink' %>">
         <td>
-          <%= if Enum.any?(revision.adjustments) do %>
-            <%= for adjustment <- revision.adjustments do %>
-              <div class="d-flex align-items-center">
-                <%= route_icon(@conn, adjustment.route_id, "sm", class: "mr-2") %>
-                <%= adjustment.source_label %>
-              </div>
-            <% end %>
-          <% else %>
-            <i>(no adjustments selected)</i>
-          <% end %>
+          <%= render("_description.html", conn: @conn, revision: revision) %>
         </td>
         <td>
           <div><%= format_date(revision.start_date, "(no start date)") %></div>

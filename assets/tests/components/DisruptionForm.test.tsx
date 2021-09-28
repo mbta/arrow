@@ -16,6 +16,7 @@ describe("DisruptionForm", () => {
     startDate: null,
     endDate: null,
     rowApproved: true,
+    description: "",
     adjustments: [],
     daysOfWeek: {},
     exceptions: [],
@@ -47,6 +48,10 @@ describe("DisruptionForm", () => {
       </form>
     )
 
+    userEvent.type(
+      withinFieldset("description").getByRole("textbox"),
+      "Worcester test disruption"
+    )
     const adjusts = withinFieldset("adjustment location")
     userEvent.click(adjusts.getByRole("textbox"))
     userEvent.click(adjusts.getByText("Worcester"))
@@ -70,6 +75,7 @@ describe("DisruptionForm", () => {
       "revision[adjustments][][id]": ["3", "4"],
       "revision[start_date]": "2021-01-04",
       "revision[end_date]": "2021-01-29",
+      "revision[description]": "Worcester test disruption",
       "revision[days_of_week][0][day_name]": "tuesday",
       "revision[days_of_week][0][start_time]": "20:00:00",
       "revision[days_of_week][0][end_time]": "",

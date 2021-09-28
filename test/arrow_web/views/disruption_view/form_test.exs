@@ -18,6 +18,7 @@ defmodule ArrowWeb.DisruptionView.FormTest do
           start_date: ~D[2021-01-01],
           end_date: ~D[2021-01-31],
           row_approved: true,
+          description: "a disruption for testing",
           adjustments: [hd(adjustments)],
           days_of_week: [%DayOfWeek{day_name: "monday", start_time: ~T[21:15:00], end_time: nil}],
           exceptions: [%Exception{excluded_date: ~D[2021-01-11]}],
@@ -40,7 +41,8 @@ defmodule ArrowWeb.DisruptionView.FormTest do
           "adjustments" => [%{"id" => 1, "label" => "Kendall", "routeId" => "Red"}],
           "daysOfWeek" => %{"monday" => %{"start" => ~T[21:15:00], "end" => nil}},
           "exceptions" => [~D[2021-01-11]],
-          "tripShortNames" => "one,two"
+          "tripShortNames" => "one,two",
+          "description" => "a disruption for testing"
         }
       }
 

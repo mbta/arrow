@@ -75,7 +75,8 @@ defmodule Arrow.DisruptionTest do
         "adjustments" => [%{"id" => insert(:adjustment).id}],
         "days_of_week" => [%{"day_name" => "monday", "start_time" => "20:00:00"}],
         "exceptions" => [%{"excluded_date" => "2021-01-11"}],
-        "trip_short_names" => [%{"trip_short_name" => "777"}]
+        "trip_short_names" => [%{"trip_short_name" => "777"}],
+        "description" => "a testing disruption"
       }
 
       {:ok, _id} = Disruption.create(attrs)
@@ -91,6 +92,7 @@ defmodule Arrow.DisruptionTest do
       assert dr.start_date == ~D[2021-01-01]
       assert dr.end_date == ~D[2021-12-31]
       assert dr.row_approved == true
+      assert dr.description == "a testing disruption"
 
       assert [%DayOfWeek{day_name: "monday", start_time: ~T[20:00:00], end_time: nil}] =
                dr.days_of_week

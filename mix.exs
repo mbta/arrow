@@ -78,7 +78,7 @@ defmodule Arrow.MixProject do
   end
 
   # Aliases are shortcuts or tasks specific to the current project.
-  # For example, to create, migrate and run the seeds file at once:
+  # For example, to create and migrate at once:
   #
   #     $ mix ecto.setup
   #
@@ -86,7 +86,7 @@ defmodule Arrow.MixProject do
   defp aliases do
     [
       "ecto.migrate": ["ecto.migrate", "ecto.dump --quiet"],
-      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ecto.setup": ["ecto.create", "ecto.migrate"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       "ecto.rollback": ["ecto.rollback", "ecto.dump --quiet"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],

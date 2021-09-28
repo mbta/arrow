@@ -10,13 +10,12 @@ defmodule Arrow.Integration.DisruptionsTest do
 
   feature "can view disruption on home page", %{session: session} do
     disruption = insert(:disruption_revision)
-    adjustment = Enum.at(disruption.adjustments, 0)
     start_date = Calendar.strftime(disruption.start_date, "%m/%d/%Y")
     end_date = Calendar.strftime(disruption.start_date, "%m/%d/%Y")
 
     session
     |> visit("/")
-    |> assert_text(adjustment.source_label)
+    |> assert_text(disruption.description)
     |> assert_text(start_date)
     |> assert_text(end_date)
     |> assert_text("Start of service – End of service")
@@ -37,6 +36,7 @@ defmodule Arrow.Integration.DisruptionsTest do
       |> click(link("create new"))
       |> assert_text("create new disruption")
       |> click(text("Pending"))
+      |> fill_in(css("[aria-label='description']"), with: "a test description")
       |> click(text("Select..."))
       |> click(text(adjustment.source_label))
       |> fill_in(text_field("start"), with: date)
@@ -60,6 +60,7 @@ defmodule Arrow.Integration.DisruptionsTest do
     assert revision.start_date == now |> DateTime.to_date()
     assert revision.end_date == now |> DateTime.to_date()
     assert revision.row_approved == false
+    assert revision.description == "a test description"
     assert Enum.count(revision.days_of_week) == 1
     revision_day = Enum.at(revision.days_of_week, 0)
 
@@ -73,13 +74,12 @@ defmodule Arrow.Integration.DisruptionsTest do
 
   feature "can filter disruptions", %{session: session} do
     revision = insert(create_disruption_revision())
-    adjustment = Enum.at(revision.adjustments, 0)
 
     session
     |> visit("/")
-    |> assert_text(adjustment.source_label)
+    |> assert_text(revision.description)
     |> click(xpath("//a[@aria-label='Blue']"))
-    |> refute_has(text(adjustment.source_label))
+    |> refute_has(text(revision.description))
   end
 
   feature "can view disruption on calendar", %{session: session} do

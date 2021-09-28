@@ -49,6 +49,7 @@ defmodule Mix.Tasks.CopyDbTest do
                    start_date: ~D[2020-10-05],
                    end_date: ~D[2020-10-08],
                    is_active: true,
+                   description: "this is a disruption",
                    adjustments: [
                      %Arrow.Adjustment{
                        id: 7935,
@@ -209,6 +210,7 @@ defmodule Fake.HTTPoison do
               %{
                 "disruption_id" => 10,
                 "end_date" => "2020-10-08",
+                "description" => "this is a disruption",
                 "id" => 9,
                 "inserted_at" => "2020-09-29T18:54:00.000000Z",
                 "is_active" => true,
