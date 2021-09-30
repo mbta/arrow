@@ -5,14 +5,14 @@
       <th><%= sort_link(@conn, @filters, :start_date, "date range") %></th>
       <th>except</th>
       <th>time period</th>
-      <th>GTFS status</th>
+      <th>status</th>
       <th><%= sort_link(@conn, @filters, :id, "ID") %></th>
     </tr>
   </thead>
 
   <tbody>
     <%= for %{revisions: [revision]} = disruption <- @disruptions do %>
-      <tr class="<%= if not published?(disruption), do: 'bg-light-pink' %>">
+      <tr class="<%= if not revision.row_approved, do: 'bg-light-pink' %>">
         <td>
           <%= render("_description.html", conn: @conn, revision: revision) %>
         </td>
@@ -29,9 +29,9 @@
           <% end %>
         </td>
         <td>
-          <%= if published?(disruption) do %>
+          <%= if revision.row_approved do %>
             <span class="btn btn-outline-dark m-disruption-table__status-indicator">
-              published
+              approved
             </span>
           <% else %>
             <span class="btn btn-outline-primary m-disruption-table__status-indicator">
