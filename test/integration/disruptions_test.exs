@@ -72,7 +72,7 @@ defmodule Arrow.Integration.DisruptionsTest do
     assert Enum.at(revision.adjustments, 0).source_label == adjustment.source_label
   end
 
-  feature "can filter disruptions", %{session: session} do
+  feature "can filter disruptions by route", %{session: session} do
     revision = insert(create_disruption_revision())
 
     session
@@ -80,6 +80,32 @@ defmodule Arrow.Integration.DisruptionsTest do
     |> assert_text(revision.description)
     |> click(xpath("//a[@aria-label='Blue']"))
     |> refute_has(text(revision.description))
+  end
+
+  feature "can filter disruptions by ROW status", %{session: session} do
+    approved = insert(:disruption_revision, %{row_approved: true})
+    pending = insert(:disruption_revision, %{row_approved: false})
+
+    session
+    |> visit("/")
+    |> assert_text(approved.description)
+    |> assert_text(pending.description)
+    |> click(link("approved"))
+    |> assert_text(approved.description)
+    |> refute_has(text(pending.description))
+  end
+
+  feature "can show past disruptions", %{session: session} do
+    today = Date.utc_today()
+    week_ago = Date.add(today, -7)
+    yesterday = Date.add(today, -1)
+    past = insert(:disruption_revision, %{start_date: week_ago, end_date: yesterday})
+
+    session
+    |> visit("/")
+    |> refute_has(text(past.description))
+    |> click(link("include past"))
+    |> assert_text(past.description)
   end
 
   feature "can view disruption on calendar", %{session: session} do

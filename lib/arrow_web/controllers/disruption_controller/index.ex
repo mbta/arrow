@@ -15,6 +15,10 @@ defmodule ArrowWeb.DisruptionController.Index do
     from [revisions: r] in query, where: is_nil(r.end_date) or r.end_date > ^cutoff
   end
 
+  defp apply_filter({:only_approved, true}, query) do
+    from [revisions: r] in query, where: r.row_approved
+  end
+
   @empty_set MapSet.new()
 
   defp apply_filter({:routes, routes}, query) when routes != @empty_set do

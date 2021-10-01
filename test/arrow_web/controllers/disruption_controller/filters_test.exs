@@ -35,6 +35,13 @@ defmodule ArrowWeb.DisruptionController.FiltersTest do
       assert to_params(%Filters{routes: set()}) == %{}
     end
 
+    test "table view: only_approved is indicated with a param if true" do
+      assert_equivalent(%{"only_approved" => "true"}, %Filters{only_approved?: true})
+      assert from_params(%{"only_approved" => "abc"}) == %Filters{only_approved?: true}
+      assert from_params(%{"only_approved" => nil}) == %Filters{only_approved?: false}
+      assert to_params(%Filters{only_approved?: false}) == %{}
+    end
+
     test "table view: include_past is indicated with a param if true" do
       assert_equivalent(%{"include_past" => "true"}, %Filters{view: %Table{include_past: true}})
       assert from_params(%{"include_past" => "abc"}) == %Filters{view: %Table{include_past: true}}
@@ -62,8 +69,20 @@ defmodule ArrowWeb.DisruptionController.FiltersTest do
       calendar_filters = %Filters{routes: routes, search: "test", view: %Calendar{}}
       table_filters = %{calendar_filters | view: %Table{include_past: true, sort: {:asc, :id}}}
 
-      assert Filters.flatten(calendar_filters) == %{routes: routes, search: "test"}
-      table_expected = %{routes: routes, search: "test", include_past: true, sort: {:asc, :id}}
+      assert Filters.flatten(calendar_filters) == %{
+               routes: routes,
+               only_approved?: false,
+               search: "test"
+             }
+
+      table_expected = %{
+        routes: routes,
+        search: "test",
+        include_past: true,
+        only_approved?: false,
+        sort: {:asc, :id}
+      }
+
       assert Filters.flatten(table_filters) == table_expected
     end
   end
@@ -74,6 +93,7 @@ defmodule ArrowWeb.DisruptionController.FiltersTest do
       refute Filters.resettable?(%Filters{view: %Calendar{}})
       assert Filters.resettable?(%Filters{search: "test"})
       assert Filters.resettable?(%Filters{view: %Table{include_past: true}})
+      assert Filters.resettable?(%Filters{only_approved?: true})
     end
 
     test "does not treat the sort field of the table view as resettable" do
@@ -83,7 +103,13 @@ defmodule ArrowWeb.DisruptionController.FiltersTest do
 
   describe "reset/1" do
     test "resets filters to their default values without changing the view" do
-      filters = %Filters{search: "test", routes: set(~w(Red)), view: %Table{include_past: true}}
+      filters = %Filters{
+        search: "test",
+        routes: set(~w(Red)),
+        only_approved?: true,
+        view: %Table{include_past: true}
+      }
+
       assert Filters.reset(filters) == %Filters{}
       assert Filters.reset(%{filters | view: %Calendar{}}) == %Filters{view: %Calendar{}}
     end
@@ -103,6 +129,18 @@ defmodule ArrowWeb.DisruptionController.FiltersTest do
     test "removes the given route from the route filter if it is present" do
       filters = %Filters{routes: set(~w(Red Blue))}
       assert Filters.toggle_route(filters, "Red") == %Filters{routes: set(~w(Blue))}
+    end
+  end
+
+  describe "toggle_only_approved/1" do
+    test "toggles only showing approved disruptions" do
+      assert Filters.toggle_only_approved(%Filters{only_approved?: false}) == %Filters{
+               only_approved?: true
+             }
+
+      assert Filters.toggle_only_approved(%Filters{only_approved?: true}) == %Filters{
+               only_approved?: false
+             }
     end
   end
 
