@@ -21,10 +21,6 @@ defmodule ArrowWeb.DisruptionView do
     |> Enum.map(fn {key, value} -> tag(:input, type: "hidden", name: key, value: value) end)
   end
 
-  defp published?(%{published_revision_id: nil}), do: false
-  defp published?(%{published_revision_id: id, revisions: [%{id: id}]}), do: true
-  defp published?(_disruption), do: false
-
   defp route_icon(conn, route, size, opts \\ []) when size in ~w(sm lg) do
     class = Keyword.get(opts, :class, "")
     icon_path = Routes.static_path(conn, "/images/icon-#{route_icon_name(route)}.svg")
