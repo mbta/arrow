@@ -22,11 +22,12 @@ defmodule ArrowWeb.DisruptionController.Filters do
 
   @type t :: %__MODULE__{
           routes: MapSet.t(String.t()),
+          only_approved?: boolean(),
           search: String.t() | nil,
           view: Calendar.t() | Table.t()
         }
 
-  defstruct routes: @empty_set, search: nil, view: %Table{}
+  defstruct routes: @empty_set, only_approved?: false, search: nil, view: %Table{}
 
   @spec calendar?(%__MODULE__{}) :: boolean
   def calendar?(%__MODULE__{view: %Calendar{}}), do: true
@@ -43,6 +44,7 @@ defmodule ArrowWeb.DisruptionController.Filters do
 
     %__MODULE__{
       routes: params |> Map.get("routes", []) |> MapSet.new(),
+      only_approved?: not is_nil(params["only_approved"]),
       search: if(params["search"] in [nil, ""], do: nil, else: params["search"]),
       view: view_mod.from_params(params)
     }
@@ -66,15 +68,26 @@ defmodule ArrowWeb.DisruptionController.Filters do
     struct!(filters, routes: new_routes)
   end
 
+  @spec toggle_only_approved(t()) :: t()
+  def toggle_only_approved(%__MODULE__{only_approved?: only_approved} = filters) do
+    %__MODULE__{filters | only_approved?: !only_approved}
+  end
+
   @spec toggle_view(%__MODULE__{}) :: %__MODULE__{}
   def toggle_view(%__MODULE__{view: %Calendar{}} = filters), do: %{filters | view: %Table{}}
   def toggle_view(%__MODULE__{view: %Table{}} = filters), do: %{filters | view: %Calendar{}}
 
   @impl true
-  def to_params(%__MODULE__{routes: routes, search: search, view: %{__struct__: view_mod} = view}) do
+  def to_params(%__MODULE__{
+        routes: routes,
+        only_approved?: only_approved,
+        search: search,
+        view: %{__struct__: view_mod} = view
+      }) do
     %{}
     |> put_if(view_mod == Calendar, "view", "calendar")
     |> put_if(routes != @empty_set, "routes", routes |> MapSet.to_list() |> Enum.sort())
+    |> put_if(only_approved, "only_approved", "true")
     |> put_if(not is_nil(search), "search", search)
     |> Map.merge(view_mod.to_params(view))
   end

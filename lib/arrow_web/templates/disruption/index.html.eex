@@ -56,6 +56,13 @@
             ) %>
       <% end %>
 
+      <%= link("approved",
+            class:
+              "mx-2 btn btn-outline-secondary" <>
+                if(@filters.only_approved?, do: " active", else: ""),
+            to: update_filters_path(@conn, Filters.toggle_only_approved(@filters))
+          ) %>
+
       <%= if Filters.resettable?(@filters) do %>
         <%= link("reset filters",
               class: "btn btn-link",
