@@ -15,9 +15,13 @@ defmodule ArrowWeb.DisruptionController.Index do
     from [revisions: r] in query, where: is_nil(r.end_date) or r.end_date > ^cutoff
   end
 
-  defp apply_filter({:only_approved, true}, query) do
+  defp apply_filter({:include_past?, true}, query), do: query
+
+  defp apply_filter({:only_approved?, true}, query) do
     from [revisions: r] in query, where: r.row_approved
   end
+
+  defp apply_filter({:only_approved?, false}, query), do: query
 
   @empty_set MapSet.new()
 
@@ -31,9 +35,13 @@ defmodule ArrowWeb.DisruptionController.Index do
     from [adjustments: a] in query, where: ^condition
   end
 
+  defp apply_filter({:routes, routes}, query) when routes == @empty_set, do: query
+
   defp apply_filter({:search, search}, query) when is_binary(search) do
     from [adjustments: a] in query, where: ilike(a.source_label, ^"%#{search}%")
   end
+
+  defp apply_filter({:search, nil}, query), do: query
 
   defp apply_filter({:sort, {direction, :id}}, query) do
     from [disruptions: d] in query, order_by: {^direction, d.id}
@@ -46,8 +54,6 @@ defmodule ArrowWeb.DisruptionController.Index do
   defp apply_filter({:sort, {direction, :start_date}}, query) do
     from [revisions: r] in query, order_by: {^direction, r.start_date}
   end
-
-  defp apply_filter(_, query), do: query
 
   defp apply_filters(query, nil), do: query
 
