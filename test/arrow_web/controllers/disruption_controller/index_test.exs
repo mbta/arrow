@@ -76,7 +76,7 @@ defmodule ArrowWeb.DisruptionController.IndexTest do
   describe "all/1" do
     defp filters(attrs) do
       # Undo the default date filter and sort by ID for consistent ordering
-      struct(%Filters{view: struct(%Table{include_past: true, sort: {:asc, :id}}, attrs)}, attrs)
+      struct(%Filters{view: struct(%Table{include_past?: true, sort: {:asc, :id}}, attrs)}, attrs)
     end
 
     defp filtered(attrs), do: attrs |> filters() |> Index.all()
@@ -86,8 +86,8 @@ defmodule ArrowWeb.DisruptionController.IndexTest do
       %{disruption_id: new_id} = insert(:disruption_revision, end_date: today)
       %{disruption_id: old_id} = insert(:disruption_revision, end_date: Date.add(today, -8))
 
-      assert [%{id: ^new_id}] = filtered(include_past: false)
-      assert [%{id: ^new_id}, %{id: ^old_id}] = filtered(include_past: true)
+      assert [%{id: ^new_id}] = filtered(include_past?: false)
+      assert [%{id: ^new_id}, %{id: ^old_id}] = filtered(include_past?: true)
     end
 
     test "filters by a case-insensitive search term in adjustment labels" do

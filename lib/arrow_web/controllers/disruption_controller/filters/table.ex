@@ -6,27 +6,27 @@ defmodule ArrowWeb.DisruptionController.Filters.Table do
   import ArrowWeb.DisruptionController.Filters.Helpers
 
   @type sort :: :id | :source_label | :start_date
-  @type t :: %__MODULE__{include_past: boolean, sort: {:asc | :desc, sort}}
+  @type t :: %__MODULE__{include_past?: boolean, sort: {:asc | :desc, sort}}
 
-  defstruct include_past: false, sort: {:asc, :source_label}
+  defstruct include_past?: false, sort: {:asc, :source_label}
 
   @impl true
   def from_params(params) when is_map(params) do
     %__MODULE__{
-      include_past: not is_nil(params["include_past"]),
+      include_past?: not is_nil(params["include_past"]),
       sort: parse_sort(params["sort"])
     }
   end
 
   @impl true
-  def resettable?(%__MODULE__{include_past: true}), do: true
+  def resettable?(%__MODULE__{include_past?: true}), do: true
   def resettable?(_), do: false
 
   @impl true
-  def reset(%__MODULE__{} = table), do: %{table | include_past: false}
+  def reset(%__MODULE__{} = table), do: %{table | include_past?: false}
 
   @impl true
-  def to_params(%__MODULE__{include_past: include_past, sort: sort}) do
+  def to_params(%__MODULE__{include_past?: include_past, sort: sort}) do
     %{}
     |> put_if(include_past, "include_past", "true")
     |> put_if(sort != %__MODULE__{}.sort, "sort", encode_sort(sort))

@@ -51,8 +51,8 @@
         <%= link("include past",
               class:
                 "mx-2 btn btn-outline-secondary" <>
-                  if(@filters.view.include_past, do: " active", else: ""),
-              to: update_view_path(@conn, @filters, :include_past, !@filters.view.include_past)
+                  if(@filters.view.include_past?, do: " active", else: ""),
+              to: update_view_path(@conn, @filters, :include_past?, !@filters.view.include_past?)
             ) %>
       <% end %>
 

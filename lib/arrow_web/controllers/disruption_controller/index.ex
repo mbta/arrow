@@ -10,7 +10,7 @@ defmodule ArrowWeb.DisruptionController.Index do
   @spec all(Filters.t() | nil) :: [Disruption.t()]
   def all(filters \\ nil), do: base_query() |> apply_filters(filters) |> Repo.all()
 
-  defp apply_filter({:include_past, false}, query) do
+  defp apply_filter({:include_past?, false}, query) do
     cutoff = Date.utc_today() |> Date.add(-7)
     from [revisions: r] in query, where: is_nil(r.end_date) or r.end_date > ^cutoff
   end
