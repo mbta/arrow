@@ -22,7 +22,7 @@ defmodule Arrow.MixProject do
         ignore_warnings: ".dialyzer.ignore-warnings"
       ],
       preferred_cli_env: ["test.integration": :test],
-      test_coverage: [tool: LcovEx]
+      test_coverage: [tool: LcovEx, ignore_paths: ["deps/"]]
     ]
   end
 
