@@ -43,10 +43,14 @@ defmodule ArrowWeb.DisruptionController.FiltersTest do
     end
 
     test "table view: include_past is indicated with a param if true" do
-      assert_equivalent(%{"include_past" => "true"}, %Filters{view: %Table{include_past: true}})
-      assert from_params(%{"include_past" => "abc"}) == %Filters{view: %Table{include_past: true}}
-      assert from_params(%{"include_past" => nil}) == %Filters{view: %Table{include_past: false}}
-      assert to_params(%Filters{view: %Table{include_past: false}}) == %{}
+      assert_equivalent(%{"include_past" => "true"}, %Filters{view: %Table{include_past?: true}})
+
+      assert from_params(%{"include_past" => "abc"}) == %Filters{
+               view: %Table{include_past?: true}
+             }
+
+      assert from_params(%{"include_past" => nil}) == %Filters{view: %Table{include_past?: false}}
+      assert to_params(%Filters{view: %Table{include_past?: false}}) == %{}
     end
 
     test "table view: sort has a default and can be expressed as ascending or descending" do
@@ -67,7 +71,7 @@ defmodule ArrowWeb.DisruptionController.FiltersTest do
     test "flattens base and view-specific filters into a map" do
       routes = set(~w(Red Blue))
       calendar_filters = %Filters{routes: routes, search: "test", view: %Calendar{}}
-      table_filters = %{calendar_filters | view: %Table{include_past: true, sort: {:asc, :id}}}
+      table_filters = %{calendar_filters | view: %Table{include_past?: true, sort: {:asc, :id}}}
 
       assert Filters.flatten(calendar_filters) == %{
                routes: routes,
@@ -78,7 +82,7 @@ defmodule ArrowWeb.DisruptionController.FiltersTest do
       table_expected = %{
         routes: routes,
         search: "test",
-        include_past: true,
+        include_past?: true,
         only_approved?: false,
         sort: {:asc, :id}
       }
@@ -92,7 +96,7 @@ defmodule ArrowWeb.DisruptionController.FiltersTest do
       refute Filters.resettable?(%Filters{})
       refute Filters.resettable?(%Filters{view: %Calendar{}})
       assert Filters.resettable?(%Filters{search: "test"})
-      assert Filters.resettable?(%Filters{view: %Table{include_past: true}})
+      assert Filters.resettable?(%Filters{view: %Table{include_past?: true}})
       assert Filters.resettable?(%Filters{only_approved?: true})
     end
 
@@ -107,7 +111,7 @@ defmodule ArrowWeb.DisruptionController.FiltersTest do
         search: "test",
         routes: set(~w(Red)),
         only_approved?: true,
-        view: %Table{include_past: true}
+        view: %Table{include_past?: true}
       }
 
       assert Filters.reset(filters) == %Filters{}
