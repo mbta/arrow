@@ -82,7 +82,7 @@ defmodule ArrowWeb.DisruptionControllerTest do
   describe "update/2" do
     test "updates a disruption", %{conn: conn} do
       %{disruption_id: id} = insert(:disruption_revision, start_date: ~D[2021-01-01])
-      params = %{"revision" => %{"start_date" => "2021-01-02"}}
+      params = %{"revision" => string_params_for(:disruption_revision, start_date: "2021-01-02")}
 
       location = conn |> put(Routes.disruption_path(conn, :update, id), params) |> redirected_to()
 
@@ -94,12 +94,31 @@ defmodule ArrowWeb.DisruptionControllerTest do
 
     test "fails to update a disruption", %{conn: conn} do
       %{disruption_id: id} = insert(:disruption_revision, start_date: ~D[2021-01-01])
-      params = %{"revision" => %{"start_date" => ""}}
+      params = %{"revision" => string_params_for(:disruption_revision, start_date: "")}
 
       resp = conn |> put(Routes.disruption_path(conn, :update, id), params) |> html_response(200)
 
       assert Repo.one(DisruptionRevision)
       assert resp =~ "Start date can&#39;t be blank"
+    end
+
+    test "deletes all records for an omitted association", %{conn: conn} do
+      %{disruption_id: id} =
+        insert(:disruption_revision,
+          start_date: ~D[2021-01-01],
+          end_date: ~D[2021-01-07],
+          exceptions: [build(:exception, excluded_date: ~D[2021-01-03])]
+        )
+
+      params = %{
+        "revision" => string_params_for(:disruption_revision) |> Map.delete("exceptions")
+      }
+
+      _ = conn |> put(Routes.disruption_path(conn, :update, id), params) |> redirected_to()
+
+      assert %{exceptions: []} =
+               Repo.get!(DisruptionRevision, Disruption.latest_revision_id(id))
+               |> Repo.preload(:exceptions)
     end
   end
 

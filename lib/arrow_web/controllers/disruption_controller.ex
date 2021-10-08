@@ -46,7 +46,7 @@ defmodule ArrowWeb.DisruptionController do
   end
 
   def update(conn, %{"id" => id, "revision" => attrs}) do
-    case Disruption.update(id, attrs) do
+    case Disruption.update(id, put_new_assocs(attrs)) do
       {:ok, _revision} ->
         conn
         |> put_flash(:info, "Disruption updated successfully.")
@@ -68,5 +68,15 @@ defmodule ArrowWeb.DisruptionController do
     changeset
     |> Changeset.traverse_errors(&ErrorHelpers.translate_error/1)
     |> ErrorHelpers.flatten_errors()
+  end
+
+  defp put_new_assocs(attrs) do
+    # Ensure a form submission with no instances of an association is interpreted as "delete all
+    # existing records" rather than "leave existing records alone"
+    attrs
+    |> Map.put_new("adjustments", [])
+    |> Map.put_new("days_of_week", [])
+    |> Map.put_new("exceptions", [])
+    |> Map.put_new("trip_short_names", [])
   end
 end
