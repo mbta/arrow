@@ -17,6 +17,7 @@ defmodule ArrowWeb.ConnCase do
 
   use ExUnit.CaseTemplate
   import Plug.Test
+  alias Arrow.Accounts.Group
 
   using do
     quote do
@@ -39,33 +40,24 @@ defmodule ArrowWeb.ConnCase do
 
     cond do
       tags[:authenticated] ->
-        user = "test_user"
+        {:ok, conn: build_conn("test_user")}
 
-        arrow_group = Application.get_env(:arrow, :cognito_group)
-
-        conn =
-          Phoenix.ConnTest.build_conn()
-          |> Plug.Conn.put_req_header("x-forwarded-proto", "https")
-          |> init_test_session(%{arrow_username: user})
-          |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{groups: [arrow_group]})
-
-        {:ok, conn: conn}
-
-      tags[:authenticated_not_in_group] ->
-        user = "test_user"
-
-        conn =
-          Phoenix.ConnTest.build_conn()
-          |> Plug.Conn.put_req_header("x-forwarded-proto", "https")
-          |> init_test_session(%{arrow_username: user})
-          |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{groups: []})
-
-        {:ok, conn: conn}
+      tags[:authenticated_admin] ->
+        {:ok, conn: build_conn("test_user", [Group.admin()])}
 
       true ->
         {:ok,
          conn:
-           Phoenix.ConnTest.build_conn() |> Plug.Conn.put_req_header("x-forwarded-proto", "https")}
+           Phoenix.ConnTest.build_conn()
+           |> Plug.Conn.put_req_header("x-forwarded-proto", "https")}
     end
+  end
+
+  @spec build_conn(String.t(), [String.t()] | []) :: Plug.Conn.t()
+  defp build_conn(user, groups \\ []) do
+    Phoenix.ConnTest.build_conn()
+    |> Plug.Conn.put_req_header("x-forwarded-proto", "https")
+    |> init_test_session(%{arrow_username: user})
+    |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{groups: groups})
   end
 end

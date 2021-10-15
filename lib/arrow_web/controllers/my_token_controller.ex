@@ -2,7 +2,9 @@ defmodule ArrowWeb.MyTokenController do
   use ArrowWeb, :controller
   alias Arrow.AuthToken
 
-  @spec show(Plug.Conn.t(), map()) :: Plug.Conn.t()
+  plug(ArrowWeb.Plug.Authorize, :use_api)
+
+  @spec show(Plug.Conn.t(), Plug.Conn.params()) :: Plug.Conn.t()
   def show(conn, _params) do
     token = conn |> get_session(:arrow_username) |> AuthToken.get_or_create_token_for_user()
 

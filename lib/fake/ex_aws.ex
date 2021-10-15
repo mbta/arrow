@@ -1,8 +1,10 @@
 defmodule Fake.ExAws do
   @moduledoc false
+  alias Arrow.Accounts.Group
 
-  def arrow_group_request(_operation) do
-    {:ok, %{"Groups" => [%{"GroupName" => Application.get_env(:arrow, :cognito_group)}]}}
+  @spec admin_group_request(any) :: {:ok, %{optional(<<_::48>>) => [map, ...]}}
+  def admin_group_request(_operation) do
+    {:ok, %{"Groups" => [%{"GroupName" => Group.admin()}]}}
   end
 
   def unexpected_response(_operation) do

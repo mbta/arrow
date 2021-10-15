@@ -4,11 +4,16 @@ defmodule ArrowWeb.API.AdjustmentControllerTest do
 
   describe "index/2" do
     @tag :authenticated
+    test "non-admin user can't access the adjustments API", %{conn: conn} do
+      assert conn |> get("/api/adjustments") |> redirected_to() == "/unauthorized"
+    end
+
+    @tag :authenticated_admin
     test "returns 200", %{conn: conn} do
       assert %{status: 200} = get(conn, "/api/adjustments")
     end
 
-    @tag :authenticated
+    @tag :authenticated_admin
     test "returns all adjustments by default", %{conn: conn} do
       insert_adjusments()
 
@@ -34,7 +39,7 @@ defmodule ArrowWeb.API.AdjustmentControllerTest do
              ] = res["data"]
     end
 
-    @tag :authenticated
+    @tag :authenticated_admin
     test "can filter by route_id", %{conn: conn} do
       {adjustment_1, _} = insert_adjusments()
 
@@ -48,7 +53,7 @@ defmodule ArrowWeb.API.AdjustmentControllerTest do
       assert List.first(data)["id"] == Integer.to_string(adjustment_1.id)
     end
 
-    @tag :authenticated
+    @tag :authenticated_admin
     test "can filter by source", %{conn: conn} do
       {_, adjustment_2} = insert_adjusments()
 

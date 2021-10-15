@@ -16,9 +16,18 @@ config :arrow,
   # Run migrations synchronously before anything else. Must finish in <5 seconds
   migrate_synchronously?: true,
   redirect_http?: true,
-  cognito_group: "arrow-admin",
+  cognito_groups: %{
+    "arrow-admin" => :admin
+  },
+  required_groups: %{
+    create_disruption: [:admin],
+    update_disruption: [:admin],
+    delete_disruption: [:admin],
+    use_api: [:admin],
+    view_change_feed: [:admin]
+  },
   time_zone: "America/New_York",
-  ex_aws_requester: {Fake.ExAws, :arrow_group_request},
+  ex_aws_requester: {Fake.ExAws, :admin_group_request},
   http_client: HTTPoison
 
 # Configures the endpoint

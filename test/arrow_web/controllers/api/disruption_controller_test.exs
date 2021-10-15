@@ -6,11 +6,16 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
 
   describe "index/2" do
     @tag :authenticated
+    test "non-admin user can't access the disruptions API", %{conn: conn} do
+      assert conn |> get("/api/disruptions") |> redirected_to() == "/unauthorized"
+    end
+
+    @tag :authenticated_admin
     test "returns 200", %{conn: conn} do
       assert %{status: 200} = get(conn, "/api/disruptions")
     end
 
-    @tag :authenticated
+    @tag :authenticated_admin
     test "includes all revisions for all disruptions", %{conn: conn} do
       d1 = insert(:disruption)
 
