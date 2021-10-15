@@ -2,6 +2,7 @@ defmodule Arrow.Ueberauth.Strategy.Fake do
   @moduledoc false
 
   use Ueberauth.Strategy
+  alias Arrow.Accounts.Group
 
   @impl Ueberauth.Strategy
   def handle_request!(conn) do
@@ -27,7 +28,7 @@ defmodule Arrow.Ueberauth.Strategy.Fake do
       refresh_token: "fake_refresh_token",
       expires: true,
       expires_at: System.system_time(:second) + 60 * 60,
-      other: %{groups: [Application.get_env(:arrow, :cognito_group)]}
+      other: %{groups: [Group.admin()]}
     }
   end
 

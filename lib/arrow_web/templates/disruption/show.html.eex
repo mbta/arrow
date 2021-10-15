@@ -6,7 +6,7 @@
         <h5>ID <span class="ml-2 font-weight-normal"><%= @id %></span></h5>
       </div>
 
-      <%= if @revision.is_active do %>
+      <%= if Permissions.authorize?(:delete_disruption, @user) and @revision.is_active do %>
         <%= button("delete",
               class: "btn btn-link",
               method: :delete,
@@ -84,7 +84,7 @@
         <% end %>
       </div>
 
-      <%= if @revision.is_active do %>
+      <%= if @revision.is_active and Permissions.authorize?(:update_disruption, @user) do %>
         <div class="col-md-2">
           <%= link("edit",
                 class: "btn btn-primary w-100",

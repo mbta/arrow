@@ -2,7 +2,7 @@ defmodule ArrowWeb.UnauthorizedControllerTest do
   use ArrowWeb.ConnCase
 
   describe "index/2" do
-    @tag :authenticated_not_in_group
+    @tag :authenticated
     test "renders response", %{conn: conn} do
       conn = get(conn, Routes.unauthorized_path(conn, :index))
 

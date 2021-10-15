@@ -2,7 +2,7 @@ defmodule ArrowWeb.API.DBDumpControllerTest do
   use ArrowWeb.ConnCase
 
   describe "show/2" do
-    @tag :authenticated
+    @tag :authenticated_admin
     test "returns JSON with database contents", %{conn: conn} do
       conn = get(conn, Routes.db_dump_path(conn, :show))
 
@@ -17,6 +17,11 @@ defmodule ArrowWeb.API.DBDumpControllerTest do
       assert "disruption_revisions" in keys
       assert "disruption_trip_short_names" in keys
       assert "disruptions" in keys
+    end
+
+    @tag :authenticated
+    test "non-admins can't dump the db", %{conn: conn} do
+      assert conn |> get(Routes.db_dump_path(conn, :show)) |> redirected_to() == "/unauthorized"
     end
   end
 end
