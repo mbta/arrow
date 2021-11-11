@@ -13,6 +13,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
       >
         <h2
           class="fc-toolbar-title"
+          id="fc-dom-1"
         >
           November 2019
         </h2>
@@ -24,7 +25,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
         class="fc-toolbar-chunk"
       >
         <button
+          aria-pressed="false"
           class="fc-today-button fc-button fc-button-primary"
+          title="This month"
           type="button"
         >
           today
@@ -33,8 +36,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
           class="fc-button-group"
         >
           <button
-            aria-label="prev"
+            aria-pressed="false"
             class="fc-prev-button fc-button fc-button-primary"
+            title="Previous month"
             type="button"
           >
             <span
@@ -42,8 +46,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
             />
           </button>
           <button
-            aria-label="next"
+            aria-pressed="false"
             class="fc-next-button fc-button fc-button-primary"
+            title="Next month"
             type="button"
           >
             <span
@@ -54,6 +59,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
       </div>
     </div>
     <div
+      aria-labelledby="fc-dom-1"
       class="fc-view-harness fc-view-harness-active"
       style="padding-bottom: 74.07407407407408%; height: 0px;"
     >
@@ -62,12 +68,18 @@ exports[`DisruptionCalendar renders correctly 1`] = `
       >
         <table
           class="fc-scrollgrid  fc-scrollgrid-liquid"
+          role="grid"
         >
-          <tbody>
+          <tbody
+            role="rowgroup"
+          >
             <tr
               class="fc-scrollgrid-section fc-scrollgrid-section-header "
+              role="presentation"
             >
-              <td>
+              <th
+                role="presentation"
+              >
                 <div
                   class="fc-scroller-harness"
                 >
@@ -77,18 +89,25 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                   >
                     <table
                       class="fc-col-header "
+                      role="presentation"
                       style="width: 0px;"
                     >
                       <colgroup />
-                      <tbody>
-                        <tr>
+                      <thead
+                        role="presentation"
+                      >
+                        <tr
+                          role="row"
+                        >
                           <th
                             class="fc-col-header-cell fc-day fc-day-sun"
+                            role="columnheader"
                           >
                             <div
                               class="fc-scrollgrid-sync-inner"
                             >
                               <a
+                                aria-label="Sunday"
                                 class="fc-col-header-cell-cushion "
                               >
                                 Sun
@@ -97,11 +116,13 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                           </th>
                           <th
                             class="fc-col-header-cell fc-day fc-day-mon"
+                            role="columnheader"
                           >
                             <div
                               class="fc-scrollgrid-sync-inner"
                             >
                               <a
+                                aria-label="Monday"
                                 class="fc-col-header-cell-cushion "
                               >
                                 Mon
@@ -110,11 +131,13 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                           </th>
                           <th
                             class="fc-col-header-cell fc-day fc-day-tue"
+                            role="columnheader"
                           >
                             <div
                               class="fc-scrollgrid-sync-inner"
                             >
                               <a
+                                aria-label="Tuesday"
                                 class="fc-col-header-cell-cushion "
                               >
                                 Tue
@@ -123,11 +146,13 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                           </th>
                           <th
                             class="fc-col-header-cell fc-day fc-day-wed"
+                            role="columnheader"
                           >
                             <div
                               class="fc-scrollgrid-sync-inner"
                             >
                               <a
+                                aria-label="Wednesday"
                                 class="fc-col-header-cell-cushion "
                               >
                                 Wed
@@ -136,11 +161,13 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                           </th>
                           <th
                             class="fc-col-header-cell fc-day fc-day-thu"
+                            role="columnheader"
                           >
                             <div
                               class="fc-scrollgrid-sync-inner"
                             >
                               <a
+                                aria-label="Thursday"
                                 class="fc-col-header-cell-cushion "
                               >
                                 Thu
@@ -149,11 +176,13 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                           </th>
                           <th
                             class="fc-col-header-cell fc-day fc-day-fri"
+                            role="columnheader"
                           >
                             <div
                               class="fc-scrollgrid-sync-inner"
                             >
                               <a
+                                aria-label="Friday"
                                 class="fc-col-header-cell-cushion "
                               >
                                 Fri
@@ -162,11 +191,13 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                           </th>
                           <th
                             class="fc-col-header-cell fc-day fc-day-sat"
+                            role="columnheader"
                           >
                             <div
                               class="fc-scrollgrid-sync-inner"
                             >
                               <a
+                                aria-label="Saturday"
                                 class="fc-col-header-cell-cushion "
                               >
                                 Sat
@@ -174,16 +205,19 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </div>
                           </th>
                         </tr>
-                      </tbody>
+                      </thead>
                     </table>
                   </div>
                 </div>
-              </td>
+              </th>
             </tr>
             <tr
               class="fc-scrollgrid-section fc-scrollgrid-section-body  fc-scrollgrid-section-liquid"
+              role="presentation"
             >
-              <td>
+              <td
+                role="presentation"
+              >
                 <div
                   class="fc-scroller-harness fc-scroller-harness-liquid"
                 >
@@ -197,14 +231,21 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                     >
                       <table
                         class="fc-scrollgrid-sync-table"
+                        role="presentation"
                         style="width: 0px; height: 0px;"
                       >
                         <colgroup />
-                        <tbody>
-                          <tr>
+                        <tbody
+                          role="presentation"
+                        >
+                          <tr
+                            role="row"
+                          >
                             <td
+                              aria-labelledby="fc-dom-2"
                               class="fc-daygrid-day fc-day fc-day-sun fc-day-past fc-day-other"
                               data-date="2019-10-27"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -213,7 +254,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="October 27, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-2"
                                   >
                                     27
                                   </a>
@@ -232,8 +275,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-4"
                               class="fc-daygrid-day fc-day fc-day-mon fc-day-past fc-day-other"
                               data-date="2019-10-28"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -242,7 +287,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="October 28, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-4"
                                   >
                                     28
                                   </a>
@@ -261,8 +308,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-6"
                               class="fc-daygrid-day fc-day fc-day-tue fc-day-past fc-day-other"
                               data-date="2019-10-29"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -271,7 +320,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="October 29, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-6"
                                   >
                                     29
                                   </a>
@@ -290,8 +341,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-8"
                               class="fc-daygrid-day fc-day fc-day-wed fc-day-past fc-day-other"
                               data-date="2019-10-30"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -300,7 +353,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="October 30, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-8"
                                   >
                                     30
                                   </a>
@@ -319,8 +374,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-10"
                               class="fc-daygrid-day fc-day fc-day-thu fc-day-past fc-day-other"
                               data-date="2019-10-31"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -329,7 +386,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="October 31, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-10"
                                   >
                                     31
                                   </a>
@@ -348,8 +407,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-12"
                               class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
                               data-date="2019-11-01"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -358,7 +419,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 1, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-12"
                                   >
                                     1
                                   </a>
@@ -377,8 +440,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-14"
                               class="fc-daygrid-day fc-day fc-day-sat fc-day-past"
                               data-date="2019-11-02"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -387,7 +452,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 2, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-14"
                                   >
                                     2
                                   </a>
@@ -434,10 +501,14 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                           </tr>
-                          <tr>
+                          <tr
+                            role="row"
+                          >
                             <td
+                              aria-labelledby="fc-dom-16"
                               class="fc-daygrid-day fc-day fc-day-sun fc-day-past"
                               data-date="2019-11-03"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -446,7 +517,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 3, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-16"
                                   >
                                     3
                                   </a>
@@ -493,8 +566,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-18"
                               class="fc-daygrid-day fc-day fc-day-mon fc-day-past"
                               data-date="2019-11-04"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -503,7 +578,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 4, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-18"
                                   >
                                     4
                                   </a>
@@ -522,8 +599,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-20"
                               class="fc-daygrid-day fc-day fc-day-tue fc-day-past"
                               data-date="2019-11-05"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -532,7 +611,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 5, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-20"
                                   >
                                     5
                                   </a>
@@ -551,8 +632,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-22"
                               class="fc-daygrid-day fc-day fc-day-wed fc-day-past"
                               data-date="2019-11-06"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -561,7 +644,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 6, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-22"
                                   >
                                     6
                                   </a>
@@ -580,8 +665,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-24"
                               class="fc-daygrid-day fc-day fc-day-thu fc-day-past"
                               data-date="2019-11-07"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -590,7 +677,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 7, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-24"
                                   >
                                     7
                                   </a>
@@ -609,8 +698,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-26"
                               class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
                               data-date="2019-11-08"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -619,7 +710,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 8, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-26"
                                   >
                                     8
                                   </a>
@@ -666,8 +759,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-28"
                               class="fc-daygrid-day fc-day fc-day-sat fc-day-past"
                               data-date="2019-11-09"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -676,7 +771,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 9, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-28"
                                   >
                                     9
                                   </a>
@@ -695,10 +792,14 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                           </tr>
-                          <tr>
+                          <tr
+                            role="row"
+                          >
                             <td
+                              aria-labelledby="fc-dom-30"
                               class="fc-daygrid-day fc-day fc-day-sun fc-day-past"
                               data-date="2019-11-10"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -707,7 +808,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 10, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-30"
                                   >
                                     10
                                   </a>
@@ -754,8 +857,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-32"
                               class="fc-daygrid-day fc-day fc-day-mon fc-day-past"
                               data-date="2019-11-11"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -764,7 +869,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 11, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-32"
                                   >
                                     11
                                   </a>
@@ -783,8 +890,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-34"
                               class="fc-daygrid-day fc-day fc-day-tue fc-day-past"
                               data-date="2019-11-12"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -793,7 +902,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 12, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-34"
                                   >
                                     12
                                   </a>
@@ -812,8 +923,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-36"
                               class="fc-daygrid-day fc-day fc-day-wed fc-day-past"
                               data-date="2019-11-13"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -822,7 +935,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 13, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-36"
                                   >
                                     13
                                   </a>
@@ -841,8 +956,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-38"
                               class="fc-daygrid-day fc-day fc-day-thu fc-day-past"
                               data-date="2019-11-14"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -851,7 +968,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 14, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-38"
                                   >
                                     14
                                   </a>
@@ -870,8 +989,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-40"
                               class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
                               data-date="2019-11-15"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -880,7 +1001,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 15, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-40"
                                   >
                                     15
                                   </a>
@@ -955,8 +1078,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-42"
                               class="fc-daygrid-day fc-day fc-day-sat fc-day-past"
                               data-date="2019-11-16"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -965,7 +1090,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 16, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-42"
                                   >
                                     16
                                   </a>
@@ -984,10 +1111,14 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                           </tr>
-                          <tr>
+                          <tr
+                            role="row"
+                          >
                             <td
+                              aria-labelledby="fc-dom-44"
                               class="fc-daygrid-day fc-day fc-day-sun fc-day-past"
                               data-date="2019-11-17"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -996,7 +1127,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 17, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-44"
                                   >
                                     17
                                   </a>
@@ -1043,8 +1176,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-46"
                               class="fc-daygrid-day fc-day fc-day-mon fc-day-past"
                               data-date="2019-11-18"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1053,7 +1188,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 18, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-46"
                                   >
                                     18
                                   </a>
@@ -1072,8 +1209,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-48"
                               class="fc-daygrid-day fc-day fc-day-tue fc-day-past"
                               data-date="2019-11-19"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1082,7 +1221,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 19, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-48"
                                   >
                                     19
                                   </a>
@@ -1101,8 +1242,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-50"
                               class="fc-daygrid-day fc-day fc-day-wed fc-day-past"
                               data-date="2019-11-20"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1111,7 +1254,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 20, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-50"
                                   >
                                     20
                                   </a>
@@ -1130,8 +1275,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-52"
                               class="fc-daygrid-day fc-day fc-day-thu fc-day-past"
                               data-date="2019-11-21"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1140,7 +1287,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 21, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-52"
                                   >
                                     21
                                   </a>
@@ -1159,8 +1308,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-54"
                               class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
                               data-date="2019-11-22"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1169,7 +1320,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 22, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-54"
                                   >
                                     22
                                   </a>
@@ -1216,8 +1369,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-56"
                               class="fc-daygrid-day fc-day fc-day-sat fc-day-past"
                               data-date="2019-11-23"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1226,7 +1381,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 23, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-56"
                                   >
                                     23
                                   </a>
@@ -1245,10 +1402,14 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                           </tr>
-                          <tr>
+                          <tr
+                            role="row"
+                          >
                             <td
+                              aria-labelledby="fc-dom-58"
                               class="fc-daygrid-day fc-day fc-day-sun fc-day-past"
                               data-date="2019-11-24"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1257,7 +1418,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 24, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-58"
                                   >
                                     24
                                   </a>
@@ -1304,8 +1467,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-60"
                               class="fc-daygrid-day fc-day fc-day-mon fc-day-past"
                               data-date="2019-11-25"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1314,7 +1479,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 25, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-60"
                                   >
                                     25
                                   </a>
@@ -1333,8 +1500,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-62"
                               class="fc-daygrid-day fc-day fc-day-tue fc-day-past"
                               data-date="2019-11-26"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1343,7 +1512,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 26, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-62"
                                   >
                                     26
                                   </a>
@@ -1362,8 +1533,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-64"
                               class="fc-daygrid-day fc-day fc-day-wed fc-day-past"
                               data-date="2019-11-27"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1372,7 +1545,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 27, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-64"
                                   >
                                     27
                                   </a>
@@ -1391,8 +1566,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-66"
                               class="fc-daygrid-day fc-day fc-day-thu fc-day-past"
                               data-date="2019-11-28"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1401,7 +1578,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 28, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-66"
                                   >
                                     28
                                   </a>
@@ -1420,8 +1599,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-68"
                               class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
                               data-date="2019-11-29"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1430,7 +1611,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 29, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-68"
                                   >
                                     29
                                   </a>
@@ -1477,8 +1660,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-70"
                               class="fc-daygrid-day fc-day fc-day-sat fc-day-past"
                               data-date="2019-11-30"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1487,7 +1672,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="November 30, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-70"
                                   >
                                     30
                                   </a>
@@ -1506,10 +1693,14 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                           </tr>
-                          <tr>
+                          <tr
+                            role="row"
+                          >
                             <td
+                              aria-labelledby="fc-dom-72"
                               class="fc-daygrid-day fc-day fc-day-sun fc-day-past fc-day-other"
                               data-date="2019-12-01"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1518,7 +1709,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="December 1, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-72"
                                   >
                                     1
                                   </a>
@@ -1537,8 +1730,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-74"
                               class="fc-daygrid-day fc-day fc-day-mon fc-day-past fc-day-other"
                               data-date="2019-12-02"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1547,7 +1742,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="December 2, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-74"
                                   >
                                     2
                                   </a>
@@ -1566,8 +1763,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-76"
                               class="fc-daygrid-day fc-day fc-day-tue fc-day-past fc-day-other"
                               data-date="2019-12-03"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1576,7 +1775,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="December 3, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-76"
                                   >
                                     3
                                   </a>
@@ -1595,8 +1796,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-78"
                               class="fc-daygrid-day fc-day fc-day-wed fc-day-past fc-day-other"
                               data-date="2019-12-04"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1605,7 +1808,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="December 4, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-78"
                                   >
                                     4
                                   </a>
@@ -1624,8 +1829,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-80"
                               class="fc-daygrid-day fc-day fc-day-thu fc-day-past fc-day-other"
                               data-date="2019-12-05"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1634,7 +1841,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="December 5, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-80"
                                   >
                                     5
                                   </a>
@@ -1653,8 +1862,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-82"
                               class="fc-daygrid-day fc-day fc-day-fri fc-day-past fc-day-other"
                               data-date="2019-12-06"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1663,7 +1874,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="December 6, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-82"
                                   >
                                     6
                                   </a>
@@ -1682,8 +1895,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                               </div>
                             </td>
                             <td
+                              aria-labelledby="fc-dom-84"
                               class="fc-daygrid-day fc-day fc-day-sat fc-day-past fc-day-other"
                               data-date="2019-12-07"
+                              role="gridcell"
                             >
                               <div
                                 class="fc-daygrid-day-frame fc-scrollgrid-sync-inner"
@@ -1692,7 +1907,9 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   class="fc-daygrid-day-top"
                                 >
                                   <a
+                                    aria-label="December 7, 2019"
                                     class="fc-daygrid-day-number"
+                                    id="fc-dom-84"
                                   >
                                     7
                                   </a>
