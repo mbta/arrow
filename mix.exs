@@ -62,17 +62,22 @@ defmodule Arrow.MixProject do
       {:lcov_ex, "~> 0.2", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.0.0", only: :test},
       {:phoenix_ecto, "~> 4.0"},
-      {:phoenix_html, "~> 2.11"},
+      # override for react_phoenix, pending
+      # https://github.com/geolessel/react-phoenix/pull/58
+      {:phoenix_html, "~> 3.0", override: true},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
+      {:phoenix_live_view, "~> 0.17.5"},
       {:phoenix_pubsub, "~> 2.0"},
-      {:phoenix, "~> 1.5.0"},
+      {:phoenix, "~> 1.6.0"},
       {:plug_cowboy, "~> 2.1"},
       {:postgrex, ">= 0.0.0"},
       # If react_phoenix changes, check assets/src/ReactPhoenix.js, too
       {:react_phoenix, "1.2.0"},
+      {:telemetry_metrics, "~> 0.6"},
+      {:telemetry_poller, "~> 0.5"},
       {:tzdata, "~> 1.1"},
-      {:ueberauth_cognito, "~> 0.1"},
-      {:ueberauth, "~> 0.6"},
+      {:ueberauth_cognito, "0.2.0"},
+      {:ueberauth, "0.6.3"},
       {:wallaby, "~> 0.28.1", runtime: false, only: :test}
     ]
   end
