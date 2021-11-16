@@ -37,7 +37,7 @@ config :arrow, ArrowWeb.Endpoint,
   pubsub_server: Arrow.PubSub
 
 config :esbuild,
-  version: "0.12.17",
+  version: "0.12.18",
   default: [
     args: ~w(
       src/app.tsx

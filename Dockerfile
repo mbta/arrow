@@ -1,4 +1,4 @@
-FROM hexpm/elixir:1.11.4-erlang-23.3-debian-buster-20210208 as builder
+FROM hexpm/elixir:1.12.3-erlang-24.1.5-debian-buster-20210902 as builder
 
 ENV LANG=C.UTF-8 \
   MIX_ENV=prod

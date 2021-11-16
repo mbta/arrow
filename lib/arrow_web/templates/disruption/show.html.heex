@@ -31,7 +31,7 @@
 
       <% inactive_class = if(@revision.is_active, do: "", else: "text-muted") %>
 
-      <div class="col-md-10 <%= inactive_class %>">
+      <div class={"col-md-10 " <> inactive_class}>
         <div class="mb-3">
           <h4>approval status</h4>
 

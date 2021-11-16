@@ -22,7 +22,7 @@ config :arrow, ArrowWeb.Endpoint,
   check_origin: false,
   secret_key_base: "local_secret_key_base_at_least_64_bytes_________________________________",
   watchers: [
-    mix: ~w(esbuild default --sourcemap=inline --watch),
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
     node: ~w(assets/node_modules/.bin/tsc --project assets --noEmit --watch --preserveWatchOutput)
   ]
 

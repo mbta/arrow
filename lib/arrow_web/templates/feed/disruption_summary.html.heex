@@ -1,4 +1,4 @@
-<div class="border p-3 bg-gray-100 relative <%= if !@revision.is_active, do: "bg-red-100" %>">
+<div class={"border p-3 bg-gray-100 relative" <> (if !@revision.is_active, do: " bg-red-100", else: "")}>
   <div class="text-xs absolute bottom-0 right-0">Revision #<%= @revision.id %></div>
   <dl>
     <div class="flex flex-col md:flex-row">
