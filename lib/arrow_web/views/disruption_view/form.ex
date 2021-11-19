@@ -29,7 +29,7 @@ defmodule ArrowWeb.DisruptionView.Form do
         "adjustments" => Enum.map(adjustments, &encode_adjustment/1),
         "daysOfWeek" => days_of_week |> Enum.map(&encode_day_of_week/1) |> Enum.into(%{}),
         "exceptions" => Enum.map(exceptions, & &1.excluded_date),
-        "tripShortNames" => trip_short_names |> Enum.map(& &1.trip_short_name) |> Enum.join(",")
+        "tripShortNames" => trip_short_names |> Enum.map_join(",", & &1.trip_short_name)
       }
     }
   end
