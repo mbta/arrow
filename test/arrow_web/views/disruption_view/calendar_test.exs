@@ -29,56 +29,56 @@ defmodule ArrowWeb.DisruptionView.CalendarTest do
       expected_events = [
         %{
           title: "Wonderland",
-          classNames: "route-Blue",
+          classNames: "status-approved route-Blue",
           start: ~D[2021-01-04],
           end: ~D[2021-01-06],
           url: "/disruptions/123"
         },
         %{
           title: "Wonderland",
-          classNames: "route-Blue",
+          classNames: "status-approved route-Blue",
           start: ~D[2021-01-12],
           end: ~D[2021-01-13],
           url: "/disruptions/123"
         },
         %{
           title: "Wonderland",
-          classNames: "route-Blue",
+          classNames: "status-approved route-Blue",
           start: ~D[2021-01-18],
           end: ~D[2021-01-20],
           url: "/disruptions/123"
         },
         %{
           title: "Wonderland",
-          classNames: "route-Blue",
+          classNames: "status-approved route-Blue",
           start: ~D[2021-01-25],
           end: ~D[2021-01-27],
           url: "/disruptions/123"
         },
         %{
           title: "Wellington",
-          classNames: "route-Orange",
+          classNames: "status-approved route-Orange",
           start: ~D[2021-01-04],
           end: ~D[2021-01-06],
           url: "/disruptions/123"
         },
         %{
           title: "Wellington",
-          classNames: "route-Orange",
+          classNames: "status-approved route-Orange",
           start: ~D[2021-01-12],
           end: ~D[2021-01-13],
           url: "/disruptions/123"
         },
         %{
           title: "Wellington",
-          classNames: "route-Orange",
+          classNames: "status-approved route-Orange",
           start: ~D[2021-01-18],
           end: ~D[2021-01-20],
           url: "/disruptions/123"
         },
         %{
           title: "Wellington",
-          classNames: "route-Orange",
+          classNames: "status-approved route-Orange",
           start: ~D[2021-01-25],
           end: ~D[2021-01-27],
           url: "/disruptions/123"
@@ -109,7 +109,7 @@ defmodule ArrowWeb.DisruptionView.CalendarTest do
       expected_events = [
         %{
           title: "(disruption 123)",
-          classNames: "route-none",
+          classNames: "status-approved route-none",
           start: ~D[2021-01-04],
           end: ~D[2021-01-05],
           url: "/disruptions/123"
