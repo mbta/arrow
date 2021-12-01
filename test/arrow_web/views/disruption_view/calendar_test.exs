@@ -92,13 +92,13 @@ defmodule ArrowWeb.DisruptionView.CalendarTest do
       assert DCalendar.props([]) == %{events: []}
     end
 
-    test "returns no events for disruptions with no adjustments" do
+    test "outputs a single event for a disruption with no adjustments" do
       disruption = %Disruption{
         id: 123,
         revisions: [
           %DisruptionRevision{
-            start_date: ~D[2021-01-01],
-            end_date: ~D[2021-01-31],
+            start_date: ~D[2021-01-04],
+            end_date: ~D[2021-01-04],
             adjustments: [],
             days_of_week: [%DayOfWeek{day_name: "monday", start_time: nil, end_time: nil}],
             exceptions: []
@@ -106,7 +106,17 @@ defmodule ArrowWeb.DisruptionView.CalendarTest do
         ]
       }
 
-      assert DCalendar.props([disruption]) == %{events: []}
+      expected_events = [
+        %{
+          title: "(disruption 123)",
+          classNames: "route-none",
+          start: ~D[2021-01-04],
+          end: ~D[2021-01-05],
+          url: "/disruptions/123"
+        }
+      ]
+
+      assert DCalendar.props([disruption]) == %{events: expected_events}
     end
   end
 end

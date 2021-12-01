@@ -17,6 +17,10 @@ defmodule ArrowWeb.DisruptionView.Calendar do
     Enum.flat_map(disruptions, &events/1)
   end
 
+  defp events(%Disruption{id: id, revisions: [%{adjustments: []} = revision]}) do
+    events(id, revision, %Adjustment{route_id: "none", source_label: "(disruption #{id})"})
+  end
+
   defp events(%Disruption{id: id, revisions: [%{adjustments: adjustments} = revision]}) do
     Enum.flat_map(adjustments, &events(id, revision, &1))
   end
