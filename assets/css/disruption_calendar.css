@@ -1,3 +1,9 @@
+.fc-h-event {
+  /* replace colored border with padding */
+  border: none;
+  padding: 2px;
+}
+
 .fc-event.route-Red {
   background-color: #da291c;
 }
