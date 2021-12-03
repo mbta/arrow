@@ -14,26 +14,50 @@
   color: #aaa;
 }
 
-.fc-event.route-Red {
+.fc-event.status-approved.route-Red {
   background-color: #da291c;
 }
 
-.fc-event.route-Blue {
+.fc-event.status-pending.route-Red {
+  background-color: #f4bfbb;
+}
+
+.fc-event.status-approved.route-Blue {
   background-color: #003da5;
 }
 
-.fc-event.route-Orange {
+.fc-event.status-pending.route-Blue {
+  background-color: #b3c5e4;
+}
+
+.fc-event.status-approved.route-Orange {
   background-color: #ed8b00;
 }
 
-.fc-event.route-Mattapan {
+.fc-event.status-pending.route-Orange {
+  background-color: #f9d6a6;
+}
+
+.fc-event.status-approved.route-Mattapan {
   background-color: #da291c;
 }
 
-.fc-event[class*="route-Green"] {
+.fc-event.status-pending.route-Mattapan {
+  background-color: #f4bfbb;
+}
+
+.fc-event.status-approved[class*="route-Green"] {
   background-color: #00843d;
 }
 
-.fc-event[class*="route-CR"] {
+.fc-event.status-pending[class*="route-Green"] {
+  background-color: #cce6d8;
+}
+
+.fc-event.status-approved[class*="route-CR"] {
   background-color: #80276c;
+}
+
+.fc-event.status-pending[class*="route-CR"] {
+  background-color: #d98fd3;
 }

@@ -31,7 +31,8 @@ defmodule ArrowWeb.DisruptionView.Calendar do
            start_date: start_date,
            end_date: end_date,
            days_of_week: days_of_week,
-           exceptions: exceptions
+           exceptions: exceptions,
+           row_approved: row_approved
          },
          %Adjustment{route_id: route_id, source_label: source_label}
        ) do
@@ -46,7 +47,7 @@ defmodule ArrowWeb.DisruptionView.Calendar do
     |> Enum.map(fn {event_start, event_end} ->
       %{
         title: source_label,
-        classNames: "route-#{route_id}",
+        classNames: "#{row_status_class(row_approved)} route-#{route_id}",
         start: event_start,
         # end date is treated as exclusive
         end: Date.add(event_end, 1),
@@ -54,6 +55,9 @@ defmodule ArrowWeb.DisruptionView.Calendar do
       }
     end)
   end
+
+  defp row_status_class(true), do: "status-approved"
+  defp row_status_class(false), do: "status-pending"
 
   # Starting a new chunk
   defp chunk_dates(date, []), do: {:cont, [date]}
