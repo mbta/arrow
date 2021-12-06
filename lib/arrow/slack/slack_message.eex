@@ -1,0 +1,4 @@
+<%= route_icons %> _*<%= header %>*_
+<%= description %>
+<%= start_date %> - <%= end_date %>
+see <<%= url %>|Arrow disruption #<%= id %>> to view details

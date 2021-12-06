@@ -2,7 +2,7 @@ defmodule ArrowWeb.DisruptionController do
   use ArrowWeb, :controller
 
   alias __MODULE__.{Filters, Index}
-  alias Arrow.{Adjustment, Disruption, DisruptionRevision}
+  alias Arrow.{Adjustment, Disruption, DisruptionRevision, Slack}
   alias ArrowWeb.ErrorHelpers
   alias ArrowWeb.Plug.Authorize
   alias Ecto.Changeset
@@ -45,7 +45,9 @@ defmodule ArrowWeb.DisruptionController do
   @spec create(Conn.t(), Conn.params()) :: Conn.t()
   def create(conn, %{"revision" => attrs}) do
     case Disruption.create(attrs) do
-      {:ok, %{disruption_id: id}} ->
+      {:ok, %{disruption_id: id} = revision} ->
+        Slack.Notifier.created(revision)
+
         conn
         |> put_flash(:info, "Disruption created successfully.")
         |> redirect(to: Routes.disruption_path(conn, :show, id))
@@ -59,8 +61,11 @@ defmodule ArrowWeb.DisruptionController do
 
   @spec update(Conn.t(), Conn.params()) :: Conn.t()
   def update(conn, %{"id" => id, "revision" => attrs}) do
+    before_update = Disruption.get!(id).revisions |> Enum.at(0)
     case Disruption.update(id, put_new_assocs(attrs)) do
-      {:ok, _revision} ->
+      {:ok, revision} ->
+        Slack.Notifier.edited(before_update, revision)
+
         conn
         |> put_flash(:info, "Disruption updated successfully.")
         |> redirect(to: Routes.disruption_path(conn, :show, id))
@@ -74,7 +79,8 @@ defmodule ArrowWeb.DisruptionController do
 
   @spec delete(Conn.t(), Conn.params()) :: Conn.t()
   def delete(conn, %{"id" => id}) do
-    _revision = Disruption.delete!(id)
+    revision = Disruption.delete!(id)
+    Slack.Notifier.cancelled(revision)
     redirect(conn, to: Routes.disruption_path(conn, :show, id))
   end
 
