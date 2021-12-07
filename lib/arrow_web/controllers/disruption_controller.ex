@@ -62,6 +62,7 @@ defmodule ArrowWeb.DisruptionController do
   @spec update(Conn.t(), Conn.params()) :: Conn.t()
   def update(conn, %{"id" => id, "revision" => attrs}) do
     before_update = Disruption.get!(id).revisions |> Enum.at(0)
+
     case Disruption.update(id, put_new_assocs(attrs)) do
       {:ok, revision} ->
         Slack.Notifier.edited(before_update, revision)
