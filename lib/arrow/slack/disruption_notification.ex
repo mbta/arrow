@@ -45,14 +45,24 @@ defmodule Arrow.Slack.DisruptionNotification do
     end
   end
 
+  @spec check_adjustments(%{:adjustments => [integer()], optional(any) => any()}, %{
+          :adjustments => [integer()],
+          optional(any) => any()
+        }) ::
+          String.t() | nil
   def check_adjustments(rev1, rev2) do
     if rev1.adjustments != rev2.adjustments do
       "updated limits"
     else
-      ""
+      nil
     end
   end
 
+  @spec check_row_status(%{:row_approved => boolean(), optional(any) => any()}, %{
+          :row_approved => boolean(),
+          optional(any) => any()
+        }) ::
+          String.t() | nil
   def check_row_status(rev1, rev2) do
     if rev1.row_approved != rev2.row_approved do
       "status update: #{row_status(rev2.row_approved)}"
@@ -61,9 +71,17 @@ defmodule Arrow.Slack.DisruptionNotification do
     end
   end
 
+  @spec row_status(boolean()) :: String.t()
   def row_status(true), do: "Approved"
   def row_status(false), do: "Pending"
 
+  @spec important_fields(DisruptionRevision.t()) :: %{
+          row_approved: boolean(),
+          adjustments: [integer()],
+          exceptions: [Date.t()],
+          start_date: Date.t(),
+          end_date: Date.t()
+        }
   def important_fields(%{
         adjustments: adjustments,
         exceptions: exceptions,
@@ -72,9 +90,9 @@ defmodule Arrow.Slack.DisruptionNotification do
         end_date: end_date
       }) do
     %{
+      row_approved: row_approved,
       adjustments: adjustments |> Enum.map(& &1.id),
       exceptions: exceptions |> Enum.map(& &1.excluded_date),
-      row_approved: row_approved,
       start_date: start_date,
       end_date: end_date
     }
