@@ -1,15 +1,15 @@
 defmodule Arrow.Slack.DisruptionNotification do
+  alias Arrow.DisruptionRevision
   alias ArrowWeb.Router.Helpers, as: Routes
   require EEx
 
-  @type status :: :created | :edited | :cancelled
-  defstruct [:revision, :initial, :status]
-
-  def format(%__MODULE__{revision: rev, status: :created}) do
+  @spec format_created(DisruptionRevision.t()) :: binary
+  def format_created(rev) do
     slack_message(rev, row_status(rev.row_approved))
   end
 
-  def format(%__MODULE__{revision: revised, initial: initial}) do
+  @spec format_edited(DisruptionRevision.t(), DisruptionRevision.t()) :: nil | binary
+  def format_edited(initial, revised) do
     {ii, ri} = {important_fields(initial), important_fields(revised)}
     IO.inspect(ii)
     IO.inspect(ri)
@@ -21,15 +21,18 @@ defmodule Arrow.Slack.DisruptionNotification do
           check_adjustments(ii, ri),
           check_row_status(ii, ri)
         ]
-        |> Enum.filter(&(String.length(&1) > 0))
+        |> Stream.filter(&(not is_nil(&1)))
         |> Enum.join(", ")
 
       slack_message(revised, header)
     end
+
+    nil
   end
 
-  def format(%__MODULE__{revision: rev, status: status}) do
-    slack_message(rev, status)
+  @spec format_cancelled(Arrow.DisruptionRevision.t()) :: binary
+  def format_cancelled(rev) do
+    slack_message(rev, "cancelled")
   end
 
   def check_dates(rev1, rev2) do
@@ -38,7 +41,7 @@ defmodule Arrow.Slack.DisruptionNotification do
          rev1.exceptions != rev2.exceptions do
       "updated dates"
     else
-      ""
+      nil
     end
   end
 
@@ -54,20 +57,20 @@ defmodule Arrow.Slack.DisruptionNotification do
     if rev1.row_approved != rev2.row_approved do
       "status update: #{row_status(rev2.row_approved)}"
     else
-      ""
+      nil
     end
   end
 
-  defp row_status(true), do: "Approved"
-  defp row_status(false), do: "Pending"
+  def row_status(true), do: "Approved"
+  def row_status(false), do: "Pending"
 
-  defp important_fields(%{
-         adjustments: adjustments,
-         exceptions: exceptions,
-         row_approved: row_approved,
-         start_date: start_date,
-         end_date: end_date
-       }) do
+  def important_fields(%{
+        adjustments: adjustments,
+        exceptions: exceptions,
+        row_approved: row_approved,
+        start_date: start_date,
+        end_date: end_date
+      }) do
     %{
       adjustments: adjustments |> Enum.map(& &1.id),
       exceptions: exceptions |> Enum.map(& &1.excluded_date),
@@ -77,13 +80,14 @@ defmodule Arrow.Slack.DisruptionNotification do
     }
   end
 
-  def slack_message(rev, header) do
+  @spec slack_message(DisruptionRevision.t(), String.t()) :: String.t()
+  defp slack_message(rev, header) do
     start_date = Calendar.strftime(rev.start_date, "%m/%d/%Y")
     end_date = Calendar.strftime(rev.end_date, "%m/%d/%Y")
 
     %{
       text:
-        slack_format(
+        disruption_message(
           route_icons(rev),
           header,
           rev.description,
@@ -96,7 +100,16 @@ defmodule Arrow.Slack.DisruptionNotification do
     |> Jason.encode!()
   end
 
-  EEx.function_from_file(:defp, :slack_format, "lib/arrow/slack/slack_message.eex", [
+  @spec disruption_message(
+          String.t(),
+          String.t(),
+          String.t(),
+          String.t(),
+          String.t(),
+          String.t(),
+          integer()
+        ) :: String.t()
+  EEx.function_from_file(:defp, :disruption_message, "lib/arrow/slack/disruption_message.eex", [
     :route_icons,
     :header,
     :description,
@@ -106,8 +119,10 @@ defmodule Arrow.Slack.DisruptionNotification do
     :id
   ])
 
+  @spec url(DisruptionRevision.t()) :: String.t()
   defp url(rev), do: Routes.disruption_url(ArrowWeb.Endpoint, :show, rev.disruption_id)
 
+  @spec route_icons(DisruptionRevision.t()) :: String.t()
   defp route_icons(rev) do
     for adjustment <-
           rev.adjustments
@@ -117,23 +132,25 @@ defmodule Arrow.Slack.DisruptionNotification do
     end
   end
 
-  defp icon("Blue"), do: ":bl:"
-  defp icon("Orange"), do: ":ol:"
-  defp icon("Red"), do: ":rl:"
-  defp icon("Mattapan"), do: ":mattapan:"
-  defp icon("Green-B"), do: ":glb:"
-  defp icon("Green-C"), do: ":glc:"
-  defp icon("Green-D"), do: ":gld:"
-  defp icon("Green-E"), do: ":gle:"
-  defp icon("CR-" <> _line), do: ":cr:"
+  @spec icon(String.t()) :: String.t()
+  def icon("Blue"), do: ":bl:"
+  def icon("Orange"), do: ":ol:"
+  def icon("Red"), do: ":rl:"
+  def icon("Mattapan"), do: ":mattapan:"
+  def icon("Green-B"), do: ":glb:"
+  def icon("Green-C"), do: ":glc:"
+  def icon("Green-D"), do: ":gld:"
+  def icon("Green-E"), do: ":gle:"
+  def icon("CR-" <> _line), do: ":cr:"
 
-  defp rank("Blue"), do: 0
-  defp rank("Orange"), do: 1
-  defp rank("Red"), do: 2
-  defp rank("Mattapan"), do: 3
-  defp rank("Green-B"), do: 4
-  defp rank("Green-C"), do: 5
-  defp rank("Green-D"), do: 6
-  defp rank("Green-E"), do: 7
-  defp rank("CR-" <> _line), do: 8
+  @spec rank(String.t()) :: integer()
+  def rank("Blue"), do: 0
+  def rank("Orange"), do: 1
+  def rank("Red"), do: 2
+  def rank("Mattapan"), do: 3
+  def rank("Green-B"), do: 4
+  def rank("Green-C"), do: 5
+  def rank("Green-D"), do: 6
+  def rank("Green-E"), do: 7
+  def rank("CR-" <> _line), do: 8
 end

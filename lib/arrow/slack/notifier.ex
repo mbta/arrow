@@ -4,40 +4,30 @@ defmodule Arrow.Slack.Notifier do
 
   @spec created(DisruptionRevision.t()) :: HTTPoison.Response.t()
   def created(rev) do
-    %DisruptionNotification{
-      revision: rev,
-      status: :created
-    }
-    |> send_notification()
+    DisruptionNotification.format_created(rev)
+    |> notify()
   end
 
-  @spec edited(DisruptionRevision.t(), DisruptionRevision.t()) :: HTTPoison.Response.t()
-  def edited(initial, revised) do
-    %DisruptionNotification{
-      revision: revised,
-      initial: initial,
-      status: :edited
-    }
-    |> send_notification()
+  @spec edited(DisruptionRevision.t(), DisruptionRevision.t()) ::
+          HTTPoison.Response.t()
+  def edited(before, updated) do
+    message = DisruptionNotification.format_edited(before, updated)
+
+    if message do
+      notify(message)
+    end
   end
 
   @spec cancelled(DisruptionRevision.t()) :: HTTPoison.Response.t()
   def cancelled(rev) do
-    %DisruptionNotification{
-      revision: rev,
-      status: :cancelled
-    }
-    |> send_notification()
+    DisruptionNotification.format_cancelled(rev)
+    |> notify()
   end
 
-  @spec send_notification(DisruptionNotification.t()) :: HTTPoison.Response.t()
-  defp send_notification(%DisruptionNotification{} = notification) do
+  @spec notify(String.t()) :: HTTPoison.Response.t()
+  defp notify(body) do
     url = System.get_env("SLACK_WEBHOOK_DEV")
 
-    body = DisruptionNotification.format(notification)
-
-    if body do
-      HTTPoison.post!(url, body, "content-type": "application/json")
-    end
+    HTTPoison.post!(url, body, "content-type": "application/json")
   end
 end
