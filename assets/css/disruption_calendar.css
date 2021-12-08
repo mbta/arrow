@@ -14,6 +14,10 @@
   color: #aaa;
 }
 
+.fc-event.status-pending .fc-event-title {
+  color: #1e2127;
+}
+
 .fc-event.status-approved.route-Red {
   background-color: #da291c;
 }
