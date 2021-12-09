@@ -1,20 +1,8 @@
 defmodule Arrow.Adjustment do
   @moduledoc """
-  Adjustment: a change to a particular route which can be activated.
-
-  In practice, a function from a list of trips (on the given route) to a list
-  of trips (on the given route or not). Analogous to the current Shuttle in
-  gtfs_creator.
-
-  Examples:
-  - Green-D: Kenmore to Newton Highlands shuttle
-  - Red: Broadway to Kendall/MIT shuttle
-  - Silver: Line running on the surface
-  - Green-C: Haymarket Station closed (trains do not pass through)
-  - Green-E: Haymarket Station closed (trains do not pass through)
-  - Red: Wollaston closed (trains run through the station)
-  - 87: rerouted around Davis Square
-  - Mattapan: replaced with shuttles
+  Represents a change to a route, which can be activated by a disruption. Known as "shuttles" in
+  gtfs_creator, though the change may or may not involve a shuttle (e.g. a closed subway station,
+  or a re-routed bus route).
   """
 
   use Ecto.Schema
@@ -37,6 +25,24 @@ defmodule Arrow.Adjustment do
 
     timestamps(type: :utc_datetime)
   end
+
+  # See also the `DisruptionForm` React component
+  @kinds ~w(
+    blue_line
+    orange_line
+    red_line
+    mattapan_line
+    green_line
+    green_line_b
+    green_line_c
+    green_line_d
+    green_line_e
+    commuter_rail
+    silver_line
+    bus
+  )a
+
+  @silver_line_routes ~w(741 742 743 746 747 749 751)
 
   @doc "Returns all adjustments, sorted by label."
   @spec all() :: [t()]
@@ -63,15 +69,43 @@ defmodule Arrow.Adjustment do
   end
 
   @doc """
-  Fetches the adjustments corresponding to the given `DisruptionRevision` changeset parameters.
-  Allows us to `put_assoc` adjustments when building a revision changeset, since `many_to_many`
-  associations don't support updating values in the join table using `cast_assoc`.
+  Returns all possible "kinds" of adjustment, an Arrow-specific categorization that doesn't
+  correspond exactly to a route ID or route type. These are used to unify handling of disruptions
+  that have adjustments, and disruptions where a new adjustment is being requested.
   """
-  @spec from_revision_attrs(%{String.t() => any}) :: [t()]
-  def from_revision_attrs(%{"adjustments" => adjustments}) do
-    ids = adjustments |> Enum.map(& &1["id"]) |> Enum.reject(&(&1 in [nil, ""]))
-    Repo.all(from a in __MODULE__, where: a.id in ^ids)
-  end
+  @spec kinds() :: [atom()]
+  def kinds, do: @kinds
 
-  def from_revision_attrs(_), do: []
+  @doc "Determines the kind of an adjustment."
+  @spec kind(t()) :: atom()
+  def kind(%__MODULE__{route_id: "Blue"}), do: :blue_line
+  def kind(%__MODULE__{route_id: "Orange"}), do: :orange_line
+  def kind(%__MODULE__{route_id: "Red"}), do: :red_line
+  def kind(%__MODULE__{route_id: "Mattapan"}), do: :mattapan_line
+  def kind(%__MODULE__{route_id: "Green-B"}), do: :green_line_b
+  def kind(%__MODULE__{route_id: "Green-C"}), do: :green_line_c
+  def kind(%__MODULE__{route_id: "Green-D"}), do: :green_line_d
+  def kind(%__MODULE__{route_id: "Green-E"}), do: :green_line_e
+  def kind(%__MODULE__{route_id: "CR-" <> _}), do: :commuter_rail
+  def kind(%__MODULE__{route_id: id}) when id in @silver_line_routes, do: :silver_line
+  def kind(%__MODULE__{}), do: :bus
+
+  @doc """
+  Builds an Ecto `where` fragment for selecting adjustments with the given kind. Assumes a named
+  binding `adjustments`. Bus adjustments are not yet supported in general, so we assume there are
+  none in the database.
+  """
+  @spec kind_is(atom()) :: %Ecto.Query.DynamicExpr{}
+  def kind_is(:blue_line), do: dynamic([adjustments: a], a.route_id == "Blue")
+  def kind_is(:orange_line), do: dynamic([adjustments: a], a.route_id == "Orange")
+  def kind_is(:red_line), do: dynamic([adjustments: a], a.route_id == "Red")
+  def kind_is(:mattapan_line), do: dynamic([adjustments: a], a.route_id == "Mattapan")
+  def kind_is(:green_line), do: dynamic(false)
+  def kind_is(:green_line_b), do: dynamic([adjustments: a], a.route_id == "Green-B")
+  def kind_is(:green_line_c), do: dynamic([adjustments: a], a.route_id == "Green-C")
+  def kind_is(:green_line_d), do: dynamic([adjustments: a], a.route_id == "Green-D")
+  def kind_is(:green_line_e), do: dynamic([adjustments: a], a.route_id == "Green-E")
+  def kind_is(:commuter_rail), do: dynamic([adjustments: a], like(a.route_id, "CR-%"))
+  def kind_is(:silver_line), do: dynamic([adjustments: a], a.route_id in @silver_line_routes)
+  def kind_is(:bus), do: dynamic(false)
 end

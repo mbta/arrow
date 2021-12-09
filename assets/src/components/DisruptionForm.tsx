@@ -3,19 +3,35 @@ import Select from "react-select"
 import DatePicker from "./DatePicker"
 import TimePicker from "./TimePicker"
 
-enum TransitMode {
-  Subway,
-  CommuterRail,
-}
+// See also the `Adjustment` Elixir module
+const modeAdjustmentKinds = ["bus", "commuter_rail", "silver_line"] as const
 
+const subwayLineAdjustmentKinds = [
+  "blue_line",
+  "green_line",
+  "green_line_b",
+  "green_line_c",
+  "green_line_d",
+  "green_line_e",
+  "mattapan_line",
+  "orange_line",
+  "red_line",
+] as const
+
+type Mode = typeof modeAdjustmentKinds[number] | "subway"
+type SubwayLine = typeof subwayLineAdjustmentKinds[number]
+type AdjustmentKind = typeof modeAdjustmentKinds[number] | SubwayLine
+
+type Adjustment = { id: number; label: string; kind: AdjustmentKind }
 type TimeRange = { start: string | null; end: string | null }
-type Adjustment = { id: number; label: string; routeId: string }
 type DaysOfWeek = { [dayName: string]: TimeRange }
+
 type DisruptionRevision = {
   description: string
   startDate: string | null
   endDate: string | null
   rowApproved: boolean
+  adjustmentKind: AdjustmentKind | null
   adjustments: Adjustment[]
   daysOfWeek: DaysOfWeek
   exceptions: string[]
@@ -37,15 +53,35 @@ const rowStatusLabels: [boolean, string][] = [
   [false, "Pending"],
 ]
 
-const transitModeLabels: [TransitMode, string][] = [
-  [TransitMode.Subway, "Subway"],
-  [TransitMode.CommuterRail, "Commuter Rail"],
+const modeLabels: [Mode, string][] = [
+  ["subway", "Subway"],
+  ["commuter_rail", "Commuter Rail"],
+  ["bus", "Bus"],
+  ["silver_line", "Silver Line"],
+]
+
+const subwayLineLabels: [SubwayLine, string][] = [
+  ["red_line", "Red Line"],
+  ["orange_line", "Orange Line"],
+  ["blue_line", "Blue Line"],
+  ["green_line_b", "Green B"],
+  ["green_line_c", "Green C"],
+  ["green_line_d", "Green D"],
+  ["green_line_e", "Green E"],
+  ["green_line", "GL Trunk"],
+  ["mattapan_line", "Mattapan"],
 ]
 
 const whichTripsLabels: ["all" | "some", string][] = [
   ["all", "All Trips"],
   ["some", "Some Trips"],
 ]
+
+const adjustmentKindForMode = (mode: Mode | null): AdjustmentKind | null =>
+  mode === "subway" ? null : mode
+
+const adjustmentKindsForMode = (mode: Mode | null): readonly AdjustmentKind[] =>
+  mode === "subway" ? subwayLineAdjustmentKinds : mode === null ? [] : [mode]
 
 const adjustmentSelectOption = (adjustment: Adjustment) => {
   return {
@@ -55,20 +91,43 @@ const adjustmentSelectOption = (adjustment: Adjustment) => {
   }
 }
 
-const defaultTimeRange = (mode: TransitMode, day: string): TimeRange => {
-  if (mode === TransitMode.Subway && day !== "saturday" && day !== "sunday") {
+const defaultTimeRange = (mode: Mode | null, day: string): TimeRange => {
+  if (mode === "subway" && day !== "saturday" && day !== "sunday") {
     return { start: "20:45:00", end: null }
   } else {
     return { start: null, end: null }
   }
 }
 
-const modeForRoute = (route: string): TransitMode =>
-  route.startsWith("CR-") ? TransitMode.CommuterRail : TransitMode.Subway
+const initialMode = (
+  adjustments: Adjustment[],
+  adjustmentKind: AdjustmentKind | null
+): Mode | null => {
+  if (adjustmentKind !== null) {
+    return modeForAdjustmentKind(adjustmentKind)
+  } else if (adjustments.length > 0) {
+    return modeForAdjustmentKind(adjustments[0].kind)
+  } else {
+    return null
+  }
+}
+
+const modeForAdjustmentKind = (adjustmentKind: AdjustmentKind): Mode | null => {
+  if ((modeAdjustmentKinds as readonly string[]).includes(adjustmentKind)) {
+    return adjustmentKind as Mode
+  } else if (
+    (subwayLineAdjustmentKinds as readonly string[]).includes(adjustmentKind)
+  ) {
+    return "subway"
+  } else {
+    return null
+  }
+}
 
 interface DisruptionFormProps {
   allAdjustments: Adjustment[]
   disruptionRevision: DisruptionRevision
+  iconPaths: { [icon: string]: string }
 }
 
 /**
@@ -85,28 +144,29 @@ const DisruptionForm = ({
     startDate: initialStartDate,
     endDate: initialEndDate,
     rowApproved: initialRowApproved,
+    adjustmentKind: initialAdjustmentKind,
     adjustments: initialAdjustments,
     daysOfWeek: initialDaysOfWeek,
     exceptions: initialExceptions,
     tripShortNames: initialTripShortNames,
   },
+  iconPaths,
 }: DisruptionFormProps) => {
   const [isRowApproved, setIsRowApproved] = useState(initialRowApproved)
+  const [description, setDescription] = useState(initialDescription)
+  const [adjustmentKind, setAdjustmentKind] = useState(initialAdjustmentKind)
+  const [hasAdjustments, setHasAdjustments] = useState(adjustmentKind === null)
+  const [adjustments, setAdjustments] = useState(initialAdjustments)
 
-  const [transitMode, setTransitMode] = useState<TransitMode>(
-    initialAdjustments.length === 0
-      ? TransitMode.Subway
-      : modeForRoute(initialAdjustments[0].routeId)
+  const [mode, setMode] = useState<Mode | null>(
+    initialMode(adjustments, adjustmentKind)
   )
 
-  const [description, setDescription] = useState(initialDescription)
-
-  const [adjustments, setAdjustments] = useState(initialAdjustments)
   const adjustmentSelectOptions = useMemo(() => {
     return allAdjustments
-      .filter((adjustment) => modeForRoute(adjustment.routeId) === transitMode)
+      .filter(({ kind }) => adjustmentKindsForMode(mode).includes(kind))
       .map(adjustmentSelectOption)
-  }, [allAdjustments, transitMode])
+  }, [allAdjustments, mode])
   const adjustmentSelectValues = useMemo(
     () => adjustments.map(adjustmentSelectOption),
     [adjustments]
@@ -122,10 +182,7 @@ const DisruptionForm = ({
   )
 
   const toggleDayOfWeek = (day: string) => {
-    const newValue = daysOfWeek.get(day)
-      ? null
-      : defaultTimeRange(transitMode, day)
-
+    const newValue = daysOfWeek.get(day) ? null : defaultTimeRange(mode, day)
     setDaysOfWeek((prev) => new Map(prev).set(day, newValue))
   }
 
@@ -147,6 +204,12 @@ const DisruptionForm = ({
 
   return (
     <>
+      <input
+        type="hidden"
+        name="revision[adjustment_kind]"
+        value={adjustmentKind || ""}
+      />
+
       <fieldset>
         <legend>approval status</legend>
         {rowStatusLabels.map(([rowValue, rowLabel]) => (
@@ -165,21 +228,29 @@ const DisruptionForm = ({
           </label>
         ))}
       </fieldset>
+
       <fieldset>
         <legend>mode</legend>
 
-        {transitModeLabels.map(([mode, label]) => (
-          <label key={mode} className="form-check form-check-label">
+        {modeLabels.map(([value, label]) => (
+          <label key={value} className="form-check form-check-label">
             <input
               className="form-check-input"
               type="radio"
               name="mode"
-              checked={transitMode === mode}
+              checked={mode === value}
               onChange={() => {
+                setMode(value)
                 setAdjustments([])
-                setTransitMode(mode)
+                setAdjustmentKind(adjustmentKindForMode(value))
               }}
             />
+
+            <span
+              className="m-icon m-icon-sm mr-1"
+              style={{ backgroundImage: `url(${iconPaths[value]})` }}
+            ></span>
+
             {label}
           </label>
         ))}
@@ -202,22 +273,81 @@ const DisruptionForm = ({
         </small>
       </fieldset>
 
-      <fieldset>
-        <legend>adjustment location</legend>
+      {mode && mode !== "bus" && (
+        <fieldset>
+          <legend>limits</legend>
 
-        <Select
-          classNamePrefix="adjustment-select"
-          name="revision[adjustments][][id]"
-          isMulti={true}
-          options={adjustmentSelectOptions}
-          value={adjustmentSelectValues}
-          onChange={(value) => {
-            setAdjustments(value.map((option) => option.data))
-          }}
-        />
-      </fieldset>
+          <label className="form-check form-check-label">
+            <input
+              className="form-check-input"
+              type="radio"
+              name="limits"
+              checked={hasAdjustments}
+              onChange={() => {
+                setAdjustmentKind(null)
+                setHasAdjustments(true)
+              }}
+            />
+            select existing diverted route(s)
+          </label>
 
-      {transitMode === TransitMode.CommuterRail && (
+          {hasAdjustments && (
+            <Select
+              className="ml-4 mb-4"
+              classNamePrefix="adjustment-select"
+              name="revision[adjustments][][id]"
+              isMulti={true}
+              options={adjustmentSelectOptions}
+              value={adjustmentSelectValues}
+              onChange={(value) => {
+                setAdjustments(value.map((option) => option.data))
+              }}
+            />
+          )}
+
+          <label className="form-check form-check-label">
+            <input
+              className="form-check-input"
+              type="radio"
+              name="limits"
+              checked={!hasAdjustments}
+              onChange={() => {
+                setAdjustments([])
+                setHasAdjustments(false)
+              }}
+            />
+            request a new diverted route
+          </label>
+
+          {!hasAdjustments && mode === "subway" && (
+            <fieldset className="ml-4">
+              <legend className="sr-only">diversion type</legend>
+
+              {subwayLineLabels.map(([line, label]) => (
+                <label key={line} className="form-check form-check-label">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    name="line"
+                    value={line}
+                    checked={adjustmentKind === line}
+                    onChange={() => setAdjustmentKind(line)}
+                  />
+
+                  <span
+                    className="m-icon m-icon-sm mr-1"
+                    style={{ backgroundImage: `url(${iconPaths[line]})` }}
+                  ></span>
+
+                  {label}
+                </label>
+              ))}
+            </fieldset>
+          )}
+        </fieldset>
+      )}
+
+      {mode === "commuter_rail" && (
         <fieldset>
           <legend>trips</legend>
 

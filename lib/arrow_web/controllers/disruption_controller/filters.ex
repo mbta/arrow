@@ -21,13 +21,13 @@ defmodule ArrowWeb.DisruptionController.Filters do
   @behaviour Behaviour
 
   @type t :: %__MODULE__{
-          routes: MapSet.t(String.t()),
+          kinds: MapSet.t(atom()),
           only_approved?: boolean(),
           search: String.t() | nil,
           view: Calendar.t() | Table.t()
         }
 
-  defstruct routes: @empty_set, only_approved?: false, search: nil, view: %Table{}
+  defstruct kinds: @empty_set, only_approved?: false, search: nil, view: %Table{}
 
   @spec calendar?(%__MODULE__{}) :: boolean
   def calendar?(%__MODULE__{view: %Calendar{}}), do: true
@@ -43,7 +43,8 @@ defmodule ArrowWeb.DisruptionController.Filters do
     view_mod = if(params["view"] == "calendar", do: Calendar, else: Table)
 
     %__MODULE__{
-      routes: params |> Map.get("routes", []) |> MapSet.new(),
+      kinds:
+        params |> Map.get("kinds", []) |> Enum.map(&String.to_existing_atom/1) |> MapSet.new(),
       only_approved?: not is_nil(params["only_approved"]),
       search: if(params["search"] in [nil, ""], do: nil, else: params["search"]),
       view: view_mod.from_params(params)
@@ -60,12 +61,10 @@ defmodule ArrowWeb.DisruptionController.Filters do
     %__MODULE__{view: view_mod.reset(view)}
   end
 
-  @spec toggle_route(%__MODULE__{}, String.t()) :: %__MODULE__{}
-  def toggle_route(%__MODULE__{routes: routes} = filters, route) do
-    new_routes =
-      if(route in routes, do: MapSet.delete(routes, route), else: MapSet.put(routes, route))
-
-    struct!(filters, routes: new_routes)
+  @spec toggle_kind(%__MODULE__{}, atom()) :: %__MODULE__{}
+  def toggle_kind(%__MODULE__{kinds: kinds} = filters, kind) do
+    new_kinds = if(kind in kinds, do: MapSet.delete(kinds, kind), else: MapSet.put(kinds, kind))
+    struct!(filters, kinds: new_kinds)
   end
 
   @spec toggle_only_approved(t()) :: t()
@@ -79,14 +78,18 @@ defmodule ArrowWeb.DisruptionController.Filters do
 
   @impl true
   def to_params(%__MODULE__{
-        routes: routes,
+        kinds: kinds,
         only_approved?: only_approved,
         search: search,
         view: %{__struct__: view_mod} = view
       }) do
     %{}
     |> put_if(view_mod == Calendar, "view", "calendar")
-    |> put_if(routes != @empty_set, "routes", routes |> MapSet.to_list() |> Enum.sort())
+    |> put_if(
+      kinds != @empty_set,
+      "kinds",
+      kinds |> MapSet.to_list() |> Enum.map(&to_string/1) |> Enum.sort()
+    )
     |> put_if(only_approved, "only_approved", "true")
     |> put_if(not is_nil(search), "search", search)
     |> Map.merge(view_mod.to_params(view))

@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 11.13
--- Dumped by pg_dump version 13.4
+-- Dumped from database version 11.14
+-- Dumped by pg_dump version 14.1
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -206,7 +206,8 @@ CREATE TABLE public.disruption_revisions (
     author character varying(255),
     is_active boolean DEFAULT true,
     row_approved boolean DEFAULT true NOT NULL,
-    description text NOT NULL
+    description text NOT NULL,
+    adjustment_kind character varying(255)
 );
 
 
@@ -570,3 +571,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20210816185635);
 INSERT INTO public."schema_migrations" (version) VALUES (20210921192435);
 INSERT INTO public."schema_migrations" (version) VALUES (20210922191945);
 INSERT INTO public."schema_migrations" (version) VALUES (20210924180538);
+INSERT INTO public."schema_migrations" (version) VALUES (20211209185029);

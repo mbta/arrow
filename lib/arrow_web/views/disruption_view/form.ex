@@ -3,16 +3,21 @@ defmodule ArrowWeb.DisruptionView.Form do
 
   alias Arrow.{Adjustment, DisruptionRevision}
   alias Arrow.Disruption.DayOfWeek
+  alias ArrowWeb.DisruptionView
+  alias ArrowWeb.Router.Helpers, as: Routes
   alias Ecto.Changeset
 
   @doc "Encodes the required props passed to the `DisruptionForm` component."
-  @spec props(Changeset.t(DisruptionRevision.t()), [Adjustment.t()]) :: %{String.t() => any}
-  def props(changeset, all_adjustments) do
+  @spec props(Plug.Conn.t(), Changeset.t(DisruptionRevision.t()), [Adjustment.t()]) :: %{
+          String.t() => any
+        }
+  def props(conn, changeset, all_adjustments) do
     %DisruptionRevision{
       start_date: start_date,
       end_date: end_date,
       row_approved: row_approved,
       description: description,
+      adjustment_kind: adjustment_kind,
       adjustments: adjustments,
       days_of_week: days_of_week,
       exceptions: exceptions,
@@ -26,16 +31,22 @@ defmodule ArrowWeb.DisruptionView.Form do
         "startDate" => start_date,
         "endDate" => end_date,
         "rowApproved" => row_approved,
+        "adjustmentKind" => adjustment_kind,
         "adjustments" => Enum.map(adjustments, &encode_adjustment/1),
         "daysOfWeek" => days_of_week |> Enum.map(&encode_day_of_week/1) |> Enum.into(%{}),
         "exceptions" => Enum.map(exceptions, & &1.excluded_date),
         "tripShortNames" => trip_short_names |> Enum.map(& &1.trip_short_name) |> Enum.join(",")
-      }
+      },
+      "iconPaths" => icon_paths(conn)
     }
   end
 
-  defp encode_adjustment(%Adjustment{id: id, route_id: route_id} = adjustment) do
-    %{"id" => id, "label" => Adjustment.display_label(adjustment), "routeId" => route_id}
+  defp encode_adjustment(%Adjustment{id: id} = adjustment) do
+    %{
+      "id" => id,
+      "label" => Adjustment.display_label(adjustment),
+      "kind" => adjustment |> Adjustment.kind() |> to_string()
+    }
   end
 
   defp encode_day_of_week(%DayOfWeek{
@@ -44,5 +55,12 @@ defmodule ArrowWeb.DisruptionView.Form do
          end_time: end_time
        }) do
     {day_name, %{"start" => start_time, "end" => end_time}}
+  end
+
+  defp icon_paths(conn) do
+    Adjustment.kinds()
+    |> Stream.map(&{&1, DisruptionView.adjustment_kind_icon_path(conn, &1)})
+    |> Enum.into(%{})
+    |> Map.put(:subway, Routes.static_path(conn, "/images/icon-mode-subway-small.svg"))
   end
 end

@@ -18,6 +18,7 @@ defmodule Arrow.DisruptionRevision do
           row_approved: boolean(),
           is_active: boolean(),
           description: String.t(),
+          adjustment_kind: atom() | nil,
           disruption: Disruption.t() | Ecto.Association.NotLoaded.t(),
           days_of_week: [DayOfWeek.t()] | Ecto.Association.NotLoaded.t(),
           exceptions: [Exception.t()] | Ecto.Association.NotLoaded.t(),
@@ -33,6 +34,7 @@ defmodule Arrow.DisruptionRevision do
     field(:is_active, :boolean)
     field(:row_approved, :boolean, default: true)
     field(:description, :string)
+    field(:adjustment_kind, Ecto.Enum, values: Adjustment.kinds())
 
     belongs_to(:disruption, Disruption)
     has_many(:days_of_week, DayOfWeek, on_replace: :delete)
@@ -47,6 +49,19 @@ defmodule Arrow.DisruptionRevision do
     timestamps(type: :utc_datetime)
   end
 
+  @required_fields [:start_date, :end_date, :row_approved, :description]
+  @permitted_fields @required_fields ++ [:adjustment_kind]
+
+  @doc """
+  Returns a list of either the revision's `adjustment_kind` if it has one, or the distinct kinds
+  of its `adjustments`.
+  """
+  @spec adjustment_kinds(t()) :: [atom()]
+  def adjustment_kinds(%__MODULE__{adjustment_kind: kind}) when not is_nil(kind), do: [kind]
+
+  def adjustment_kinds(%__MODULE__{adjustments: adjustments}) when is_list(adjustments),
+    do: adjustments |> Stream.map(&Adjustment.kind/1) |> Enum.uniq()
+
   @spec associations() :: [atom()]
   def associations, do: ~w(adjustments days_of_week exceptions trip_short_names)a
 
@@ -57,8 +72,8 @@ defmodule Arrow.DisruptionRevision do
   @spec changeset(t() | Changeset.t(t()), map) :: Changeset.t(t())
   def changeset(data, attrs) do
     data
-    |> Changeset.cast(attrs, [:start_date, :end_date, :row_approved, :description])
-    |> Changeset.put_assoc(:adjustments, Adjustment.from_revision_attrs(attrs))
+    |> Changeset.cast(attrs, @permitted_fields)
+    |> cast_adjustments(attrs)
     |> Changeset.cast_assoc(:days_of_week,
       with: &DayOfWeek.changeset/2,
       required: true,
@@ -66,8 +81,9 @@ defmodule Arrow.DisruptionRevision do
     )
     |> Changeset.cast_assoc(:exceptions, with: &Exception.changeset/2)
     |> Changeset.cast_assoc(:trip_short_names, with: &TripShortName.changeset/2)
-    |> Changeset.validate_required([:start_date, :end_date, :row_approved, :description])
+    |> Changeset.validate_required(@required_fields)
     |> Changeset.validate_length(:days_of_week, min: 1)
+    |> validate_adjustments_or_adjustment_kind()
     |> validate_days_of_week_between_start_and_end_date()
     |> validate_exceptions_are_applicable()
     |> validate_exceptions_are_unique()
@@ -125,6 +141,17 @@ defmodule Arrow.DisruptionRevision do
     :ok
   end
 
+  # For `many_to_many` associations, `cast_assoc` only supports creating/updating/deleting the
+  # records in the target table (adjustments), not the records in the join table, so we have to
+  # implement this cast ourselves
+  defp cast_adjustments(data, %{"adjustments" => attrs}) do
+    ids = attrs |> Enum.map(& &1["id"]) |> Enum.reject(&(&1 in [nil, ""]))
+    adjustments = Repo.all(from a in Adjustment, where: a.id in ^ids)
+    Changeset.put_assoc(data, :adjustments, adjustments)
+  end
+
+  defp cast_adjustments(data, _), do: data
+
   defp clone_fields(%module{} = record) do
     Map.take(
       record,
@@ -143,6 +170,24 @@ defmodule Arrow.DisruptionRevision do
     |> Repo.update_all([])
 
     :ok
+  end
+
+  defp validate_adjustments_or_adjustment_kind(changeset) do
+    kind = Changeset.get_field(changeset, :adjustment_kind)
+    adjustments = Changeset.get_field(changeset, :adjustments)
+
+    cond do
+      adjustments == [] ->
+        Changeset.validate_required(changeset, :adjustment_kind,
+          message: "is required without adjustments"
+        )
+
+      adjustments != [] and kind not in [nil, ""] ->
+        Changeset.add_error(changeset, :adjustment_kind, "cannot be set with adjustments")
+
+      true ->
+        changeset
+    end
   end
 
   @spec validate_days_of_week_between_start_and_end_date(Changeset.t(t())) :: Changeset.t(t())

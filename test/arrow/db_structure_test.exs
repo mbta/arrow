@@ -90,6 +90,7 @@ defmodule Arrow.DBStructureTest do
         "disruption_exceptions" => [],
         "disruption_revisions" => [
           %{
+            adjustment_kind: nil,
             disruption_id: 8338,
             description: "this is a disruption",
             end_date: ~D[2020-01-15],

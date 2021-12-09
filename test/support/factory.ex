@@ -17,16 +17,23 @@ defmodule Arrow.Factory do
     }
   end
 
-  def disruption_revision_factory do
+  def disruption_revision_factory(attrs) do
     %Arrow.DisruptionRevision{
       start_date: Date.utc_today(),
       end_date: Date.utc_today() |> Date.add(6),
       description: sequence("Description"),
+      adjustment_kind: :bus,
       disruption: build(:disruption),
       days_of_week: [build(:day_of_week)],
-      adjustments: [build(:adjustment)],
       trip_short_names: [build(:trip_short_name)]
     }
+    |> merge_attributes(attrs)
+    |> evaluate_lazy_attributes()
+    |> then(fn
+      # Prevent setting both an adjustment kind and non-empty adjustments
+      %{adjustments: [_ | _]} = revision -> %{revision | adjustment_kind: nil}
+      revision -> revision
+    end)
   end
 
   def day_of_week_factory do

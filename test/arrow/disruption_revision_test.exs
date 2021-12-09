@@ -3,6 +3,26 @@ defmodule Arrow.DisruptionRevisionTest do
   use Arrow.DataCase
   alias Arrow.DisruptionRevision
 
+  describe "adjustment_kinds/1" do
+    test "returns just the revision's `adjustment_kind` if not nil" do
+      revision = build(:disruption_revision, adjustment_kind: :red_line)
+      assert DisruptionRevision.adjustment_kinds(revision) == [:red_line]
+    end
+
+    test "returns the distinct kinds of the revision's adjustments" do
+      revision =
+        build(:disruption_revision,
+          adjustments: [
+            build(:adjustment, route_id: "Green-D"),
+            build(:adjustment, route_id: "CR-Franklin"),
+            build(:adjustment, route_id: "CR-Fitchburg")
+          ]
+        )
+
+      assert DisruptionRevision.adjustment_kinds(revision) == ~w(green_line_d commuter_rail)a
+    end
+  end
+
   describe "publish!/1" do
     test "updates published revision ID" do
       d = insert(:disruption, last_published_at: nil)

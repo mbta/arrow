@@ -1,13 +1,42 @@
 defmodule ArrowWeb.DisruptionView do
   use ArrowWeb, :view
 
-  alias Arrow.Permissions
+  alias Arrow.{Adjustment, DisruptionRevision, Permissions}
   alias __MODULE__.{DaysOfWeek, Form}
   alias __MODULE__.Calendar, as: DCalendar
   alias ArrowWeb.DisruptionController.Filters
   alias Phoenix.Controller
 
-  defp filter_routes, do: ~w(Blue Orange Red Mattapan Green-B Green-C Green-D Green-E Commuter)
+  @adjustment_kind_icon_names %{
+    blue_line: "blue-line",
+    bus: "mode-bus",
+    commuter_rail: "mode-commuter-rail",
+    green_line: "green-line",
+    green_line_b: "green-line-b",
+    green_line_c: "green-line-c",
+    green_line_d: "green-line-d",
+    green_line_e: "green-line-e",
+    mattapan_line: "mattapan-line",
+    orange_line: "orange-line",
+    red_line: "red-line",
+    silver_line: "silver-line"
+  }
+
+  @spec adjustment_kind_icon_path(Plug.Conn.t(), atom()) :: String.t()
+  def adjustment_kind_icon_path(conn, kind) do
+    Routes.static_path(conn, "/images/icon-#{@adjustment_kind_icon_names[kind]}-small.svg")
+  end
+
+  defp adjustment_kinds, do: Adjustment.kinds()
+
+  defp adjustment_kinds(revision), do: DisruptionRevision.adjustment_kinds(revision)
+
+  defp adjustment_kind_icon(conn, kind, size, opts \\ []) when size in ~w(sm lg) do
+    content_tag(:span, "",
+      class: "m-icon m-icon-#{size} #{Keyword.get(opts, :class, "")}",
+      style: "background-image: url(#{adjustment_kind_icon_path(conn, kind)})"
+    )
+  end
 
   defp format_date(date, fallback \\ "❓")
   defp format_date(%Date{} = date, _fallback), do: Calendar.strftime(date, "%m/%d/%Y")
@@ -21,35 +50,6 @@ defmodule ArrowWeb.DisruptionView do
     |> Filters.to_flat_params()
     |> Enum.map(fn {key, value} -> tag(:input, type: "hidden", name: key, value: value) end)
   end
-
-  defp route_icon(conn, route, size, opts \\ []) when size in ~w(sm lg) do
-    class = Keyword.get(opts, :class, "")
-    icon_path = Routes.static_path(conn, "/images/icon-#{route_icon_name(route)}.svg")
-
-    content_tag(:span, "",
-      class: "m-icon m-icon-#{size} #{class}",
-      style: "background-image: url(#{icon_path})"
-    )
-  end
-
-  @route_icons %{
-    "Blue" => "blue-line-small",
-    "Commuter" => "mode-commuter-rail-small",
-    "Green-B" => "green-line-b-small",
-    "Green-C" => "green-line-c-small",
-    "Green-D" => "green-line-d-small",
-    "Green-E" => "green-line-e-small",
-    "Mattapan" => "mattapan-line-small",
-    "Orange" => "orange-line-small",
-    "Red" => "red-line-small"
-  }
-
-  for {name, icon} <- @route_icons do
-    defp route_icon_name(unquote(name)), do: unquote(icon)
-  end
-
-  defp route_icon_name("CR-" <> _), do: "mode-commuter-rail-small"
-  defp route_icon_name(_), do: "404"
 
   defp sort_link(conn, filters, field, label) do
     %{view: %{sort: {current_direction, current_field}}} = filters
@@ -73,7 +73,4 @@ defmodule ArrowWeb.DisruptionView do
   defp update_view_path(conn, %{view: view} = filters, key, value) do
     update_filters_path(conn, %{filters | view: %{view | key => value}})
   end
-
-  defp route_id_uniq("CR-" <> _), do: "CR"
-  defp route_id_uniq(route_id), do: route_id
 end

@@ -37,15 +37,15 @@
 <div class="row">
   <div class="col">
     <div class="my-3 d-flex align-items-center">
-      <%= for route <- filter_routes() do %>
-        <% show_as_active? = MapSet.size(@filters.routes) == 0 or route in @filters.routes %>
+      <%= for kind <- adjustment_kinds() do %>
+        <% show_as_active? = MapSet.size(@filters.kinds) == 0 or kind in @filters.kinds %>
         <% active_class = if(show_as_active?, do: "active", else: "") %>
 
         <%= link(
-              route_icon(@conn, route, "lg"),
+              adjustment_kind_icon(@conn, kind, "lg"),
               class: "d-flex mr-1 m-disruption-index__route_filter #{active_class}",
-              "aria-label": route,
-              to: update_filters_path(@conn, Filters.toggle_route(@filters, route))
+              "aria-label": kind |> to_string() |> String.replace("_", " "),
+              to: update_filters_path(@conn, Filters.toggle_kind(@filters, kind))
             ) %>
       <% end %>
 

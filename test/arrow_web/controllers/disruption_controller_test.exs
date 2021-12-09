@@ -81,6 +81,7 @@ defmodule ArrowWeb.DisruptionControllerTest do
           "start_date" => "2021-01-01",
           "end_date" => "2021-01-07",
           "row_approved" => "false",
+          "adjustment_kind" => "orange_line",
           "description" => "a testing disruption",
           "days_of_week" => %{
             "0" => %{"day_name" => "friday", "start_time" => "20:45:00"},
@@ -230,7 +231,6 @@ defmodule ArrowWeb.DisruptionControllerTest do
 
   defp insert_revision_with_everything do
     insert(:disruption_revision,
-      adjustments: [build(:adjustment)],
       days_of_week: [build(:day_of_week)],
       exceptions: [build(:exception)],
       trip_short_names: [build(:trip_short_name)]

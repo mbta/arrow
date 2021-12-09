@@ -29,10 +29,14 @@ defmodule ArrowWeb.DisruptionController.FiltersTest do
       assert to_params(%Filters{search: nil}) == %{}
     end
 
-    test "routes are indicated with a list param if not empty" do
-      assert_equivalent(%{"routes" => ["Blue", "Red"]}, %Filters{routes: set(~w(Red Blue))})
-      assert from_params(%{"routes" => []}) == %Filters{routes: set()}
-      assert to_params(%Filters{routes: set()}) == %{}
+    test "kinds are indicated with a list param if not empty" do
+      assert_equivalent(
+        %{"kinds" => ["blue_line", "red_line"]},
+        %Filters{kinds: set(~w(red_line blue_line)a)}
+      )
+
+      assert from_params(%{"kinds" => []}) == %Filters{kinds: set()}
+      assert to_params(%Filters{kinds: set()}) == %{}
     end
 
     test "table view: only_approved is indicated with a param if true" do
@@ -69,18 +73,18 @@ defmodule ArrowWeb.DisruptionController.FiltersTest do
 
   describe "flatten/1" do
     test "flattens base and view-specific filters into a map" do
-      routes = set(~w(Red Blue))
-      calendar_filters = %Filters{routes: routes, search: "test", view: %Calendar{}}
+      kinds = set(~w(commuter_rail silver_line))
+      calendar_filters = %Filters{kinds: kinds, search: "test", view: %Calendar{}}
       table_filters = %{calendar_filters | view: %Table{include_past?: true, sort: {:asc, :id}}}
 
       assert Filters.flatten(calendar_filters) == %{
-               routes: routes,
+               kinds: kinds,
                only_approved?: false,
                search: "test"
              }
 
       table_expected = %{
-        routes: routes,
+        kinds: kinds,
         search: "test",
         include_past?: true,
         only_approved?: false,
@@ -109,7 +113,7 @@ defmodule ArrowWeb.DisruptionController.FiltersTest do
     test "resets filters to their default values without changing the view" do
       filters = %Filters{
         search: "test",
-        routes: set(~w(Red)),
+        kinds: set(~w(red_line)),
         only_approved?: true,
         view: %Table{include_past?: true}
       }
@@ -124,15 +128,15 @@ defmodule ArrowWeb.DisruptionController.FiltersTest do
     end
   end
 
-  describe "toggle_route/2" do
-    test "adds the given route to the route filter if it is not present" do
-      filters = %Filters{routes: set(~w(Red))}
-      assert Filters.toggle_route(filters, "Blue") == %Filters{routes: set(~w(Red Blue))}
+  describe "toggle_kind/2" do
+    test "adds the given kind to the kinds filter if it is not present" do
+      filters = %Filters{kinds: set(~w(red_line)a)}
+      assert Filters.toggle_kind(filters, :bus) == %Filters{kinds: set(~w(red_line bus)a)}
     end
 
-    test "removes the given route from the route filter if it is present" do
-      filters = %Filters{routes: set(~w(Red Blue))}
-      assert Filters.toggle_route(filters, "Red") == %Filters{routes: set(~w(Blue))}
+    test "removes the given kind from the kinds filter if it is present" do
+      filters = %Filters{kinds: set(~w(red_line blue_line)a)}
+      assert Filters.toggle_kind(filters, :red_line) == %Filters{kinds: set(~w(blue_line)a)}
     end
   end
 
@@ -157,9 +161,9 @@ defmodule ArrowWeb.DisruptionController.FiltersTest do
 
   describe "to_flat_params/1" do
     test "functions as to_params/1 but flattens lists into query-param format" do
-      filters = %Filters{search: "test", routes: set(~w(Red Blue))}
+      filters = %Filters{search: "test", kinds: set(~w(red_line blue_line)a)}
 
-      expected = [{"routes[]", "Blue"}, {"routes[]", "Red"}, {"search", "test"}]
+      expected = [{"kinds[]", "blue_line"}, {"kinds[]", "red_line"}, {"search", "test"}]
       assert Filters.to_flat_params(filters) == expected
     end
   end

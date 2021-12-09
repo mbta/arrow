@@ -29,56 +29,56 @@ defmodule ArrowWeb.DisruptionView.CalendarTest do
       expected_events = [
         %{
           title: "Wonderland",
-          classNames: "status-approved route-Blue",
+          classNames: "kind-blue-line status-approved",
           start: ~D[2021-01-04],
           end: ~D[2021-01-06],
           url: "/disruptions/123"
         },
         %{
           title: "Wonderland",
-          classNames: "status-approved route-Blue",
+          classNames: "kind-blue-line status-approved",
           start: ~D[2021-01-12],
           end: ~D[2021-01-13],
           url: "/disruptions/123"
         },
         %{
           title: "Wonderland",
-          classNames: "status-approved route-Blue",
+          classNames: "kind-blue-line status-approved",
           start: ~D[2021-01-18],
           end: ~D[2021-01-20],
           url: "/disruptions/123"
         },
         %{
           title: "Wonderland",
-          classNames: "status-approved route-Blue",
+          classNames: "kind-blue-line status-approved",
           start: ~D[2021-01-25],
           end: ~D[2021-01-27],
           url: "/disruptions/123"
         },
         %{
           title: "Wellington",
-          classNames: "status-approved route-Orange",
+          classNames: "kind-orange-line status-approved",
           start: ~D[2021-01-04],
           end: ~D[2021-01-06],
           url: "/disruptions/123"
         },
         %{
           title: "Wellington",
-          classNames: "status-approved route-Orange",
+          classNames: "kind-orange-line status-approved",
           start: ~D[2021-01-12],
           end: ~D[2021-01-13],
           url: "/disruptions/123"
         },
         %{
           title: "Wellington",
-          classNames: "status-approved route-Orange",
+          classNames: "kind-orange-line status-approved",
           start: ~D[2021-01-18],
           end: ~D[2021-01-20],
           url: "/disruptions/123"
         },
         %{
           title: "Wellington",
-          classNames: "status-approved route-Orange",
+          classNames: "kind-orange-line status-approved",
           start: ~D[2021-01-25],
           end: ~D[2021-01-27],
           url: "/disruptions/123"
@@ -100,6 +100,7 @@ defmodule ArrowWeb.DisruptionView.CalendarTest do
             start_date: ~D[2021-01-04],
             end_date: ~D[2021-01-04],
             adjustments: [],
+            adjustment_kind: :commuter_rail,
             days_of_week: [%DayOfWeek{day_name: "monday", start_time: nil, end_time: nil}],
             exceptions: []
           }
@@ -109,7 +110,7 @@ defmodule ArrowWeb.DisruptionView.CalendarTest do
       expected_events = [
         %{
           title: "(disruption 123)",
-          classNames: "status-approved route-none",
+          classNames: "kind-commuter-rail status-approved",
           start: ~D[2021-01-04],
           end: ~D[2021-01-05],
           url: "/disruptions/123"
