@@ -9,8 +9,17 @@ defmodule ArrowWeb.DisruptionController do
   alias Plug.Conn
 
   plug(Authorize, :create_disruption when action in [:new, :create])
-  plug(Authorize, :update_disruption when action in [:edit, :update])
+  plug(Authorize, :update_disruption when action in [:edit, :update, :update_row_status])
   plug(Authorize, :delete_disruption when action in [:delete])
+
+  @spec update_row_status(Conn.t(), Conn.params()) :: Conn.t()
+  def update_row_status(conn, %{"id" => id, "revision" => attrs}) do
+    {:ok, _} = Disruption.update(id, attrs)
+
+    conn
+    |> put_flash(:info, "Disruption updated successfully.")
+    |> redirect(to: Routes.disruption_path(conn, :show, id))
+  end
 
   @spec index(Conn.t(), Conn.params()) :: Conn.t()
   def index(%{assigns: %{current_user: user}} = conn, params) do

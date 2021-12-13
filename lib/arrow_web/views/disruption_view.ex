@@ -73,4 +73,12 @@ defmodule ArrowWeb.DisruptionView do
   defp update_view_path(conn, %{view: view} = filters, key, value) do
     update_filters_path(conn, %{filters | view: %{view | key => value}})
   end
+
+  defp mark_as_approved_or_pending(true) do
+    "mark as pending"
+  end
+
+  defp mark_as_approved_or_pending(false) do
+    "mark as approved"
+  end
 end

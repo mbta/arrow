@@ -85,7 +85,15 @@
       </div>
 
       <%= if @revision.is_active and Permissions.authorize?(:update_disruption, @user) do %>
-        <div class="col-md-2">
+        <div class="col-md-4">
+          <%= form_tag Routes.disruption_path(@conn, :update_row_status, @revision.disruption_id), method: "put" do %>
+            <%= hidden_input :revision, :row_approved, value: !@revision.row_approved %>
+            <%= submit mark_as_approved_or_pending(@revision.row_approved), class: "btn btn-primary w-100"%>
+          <% end %>
+        </div>
+      <% end %>
+      <%= if @revision.is_active and Permissions.authorize?(:update_disruption, @user) do %>
+        <div class="col-md-3">
           <%= link("edit",
                 class: "btn btn-primary w-100",
                 to: Routes.disruption_path(@conn, :edit, @id)
