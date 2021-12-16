@@ -57,8 +57,7 @@ defmodule ArrowWeb.ErrorHelpers do
     field_description =
       [field | context]
       |> Enum.reverse()
-      |> Enum.map(&(&1 |> to_string() |> String.replace("_", " ")))
-      |> Enum.join(": ")
+      |> Enum.map_join(": ", &(&1 |> to_string() |> String.replace("_", " ")))
       |> String.capitalize()
 
     ["#{field_description} #{error}" | error_messages({field, rest}, context)]
