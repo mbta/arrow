@@ -10,6 +10,7 @@ defmodule Arrow.Disruption do
   import Ecto.Query
 
   alias Arrow.{DisruptionRevision, Repo}
+  alias Arrow.Disruption.Note
   alias Ecto.Changeset
 
   @type id :: integer
@@ -24,6 +25,7 @@ defmodule Arrow.Disruption do
   schema "disruptions" do
     belongs_to :published_revision, DisruptionRevision
     has_many :revisions, DisruptionRevision
+    has_many :notes, Note
 
     field(:last_published_at, :utc_datetime)
 
