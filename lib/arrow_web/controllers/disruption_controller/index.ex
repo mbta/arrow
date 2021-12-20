@@ -49,10 +49,6 @@ defmodule ArrowWeb.DisruptionController.Index do
     from [disruptions: d] in query, order_by: {^direction, d.id}
   end
 
-  defp apply_filter({:sort, {direction, :source_label}}, query) do
-    from [adjustments: a] in query, order_by: {^direction, a.source_label}
-  end
-
   defp apply_filter({:sort, {direction, :start_date}}, query) do
     from [revisions: r] in query, order_by: {^direction, r.start_date}
   end
