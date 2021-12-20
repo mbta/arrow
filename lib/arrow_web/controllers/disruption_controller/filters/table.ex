@@ -5,10 +5,10 @@ defmodule ArrowWeb.DisruptionController.Filters.Table do
 
   import ArrowWeb.DisruptionController.Filters.Helpers
 
-  @type sort :: :id | :source_label | :start_date
+  @type sort :: :id | :start_date
   @type t :: %__MODULE__{include_past?: boolean, sort: {:asc | :desc, sort}}
 
-  defstruct include_past?: false, sort: {:asc, :source_label}
+  defstruct include_past?: false, sort: {:asc, :start_date}
 
   @impl true
   def from_params(params) when is_map(params) do

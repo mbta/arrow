@@ -140,16 +140,6 @@ defmodule ArrowWeb.DisruptionController.IndexTest do
       assert [%{id: ^id2}, %{id: ^id1}] = filtered(sort: {:desc, :id})
     end
 
-    test "sorts by adjustment labels" do
-      adj1 = insert(:adjustment, source_label: "Adj1")
-      adj2 = insert(:adjustment, source_label: "Adj2")
-      adj3 = insert(:adjustment, source_label: "Adj3")
-      %{disruption_id: id1} = insert(:disruption_revision, adjustments: [adj2, adj3])
-      %{disruption_id: id2} = insert(:disruption_revision, adjustments: [adj1, adj3])
-
-      assert [%{id: ^id2}, %{id: ^id1}] = filtered(sort: {:asc, :source_label})
-    end
-
     test "sorts by disruption start date" do
       %{disruption_id: id2} = insert(:disruption_revision, start_date: ~D[2021-01-02])
       %{disruption_id: id1} = insert(:disruption_revision, start_date: ~D[2021-01-01])

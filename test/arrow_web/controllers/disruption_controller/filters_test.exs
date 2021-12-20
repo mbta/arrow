@@ -58,7 +58,7 @@ defmodule ArrowWeb.DisruptionController.FiltersTest do
     end
 
     test "table view: sort has a default and can be expressed as ascending or descending" do
-      assert_equivalent(%{}, %Filters{view: %Table{sort: {:asc, :source_label}}})
+      assert_equivalent(%{}, %Filters{view: %Table{sort: {:asc, :start_date}}})
       assert_equivalent(%{"sort" => "id"}, %Filters{view: %Table{sort: {:asc, :id}}})
       assert_equivalent(%{"sort" => "-id"}, %Filters{view: %Table{sort: {:desc, :id}}})
     end
