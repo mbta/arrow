@@ -90,13 +90,15 @@ defmodule ArrowWeb.DisruptionController.IndexTest do
       assert [%{id: ^new_id}, %{id: ^old_id}] = filtered(include_past?: true)
     end
 
-    test "filters by a case-insensitive search term in adjustment labels" do
-      adj1 = build(:adjustment, source_label: "SomethingNewer")
-      %{disruption_id: id} = insert(:disruption_revision, adjustments: [adj1])
-      adj2 = build(:adjustment, source_label: "SomethingOlder")
+    test "filters by a case-insensitive search term in descriptions and adjustment labels" do
+      adj1 = build(:adjustment, source_label: "TrackChange")
+      %{disruption_id: id1} = insert(:disruption_revision, adjustments: [adj1])
+      adj2 = build(:adjustment, source_label: "StationClosed")
       insert(:disruption_revision, adjustments: [adj2])
+      %{disruption_id: id2} = insert(:disruption_revision, description: "Track change")
+      insert(:disruption_revision, description: "Station closed")
 
-      assert [%{id: ^id}] = filtered(search: "new")
+      assert [%{id: ^id1}, %{id: ^id2}] = filtered(search: "track")
     end
 
     test "filters by kind with existing adjustments" do

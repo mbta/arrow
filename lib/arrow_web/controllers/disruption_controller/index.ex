@@ -40,7 +40,8 @@ defmodule ArrowWeb.DisruptionController.Index do
   defp apply_filter({:only_approved?, false}, query), do: query
 
   defp apply_filter({:search, search}, query) when is_binary(search) do
-    from [adjustments: a] in query, where: ilike(a.source_label, ^"%#{search}%")
+    from [revisions: r, adjustments: a] in query,
+      where: ilike(r.description, ^"%#{search}%") or ilike(a.source_label, ^"%#{search}%")
   end
 
   defp apply_filter({:search, nil}, query), do: query
