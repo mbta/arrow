@@ -42,30 +42,6 @@ defmodule ArrowWeb.DisruptionController.IndexTest do
              ] = Index.all()
     end
 
-    test "sorts preloaded adjustments by label" do
-      insert(:disruption_revision,
-        adjustments: [
-          build(:adjustment, source_label: "Second"),
-          build(:adjustment, source_label: "First"),
-          build(:adjustment, source_label: "Third")
-        ]
-      )
-
-      assert [
-               %{
-                 revisions: [
-                   %{
-                     adjustments: [
-                       %{source_label: "First"},
-                       %{source_label: "Second"},
-                       %{source_label: "Third"}
-                     ]
-                   }
-                 ]
-               }
-             ] = Index.all()
-    end
-
     test "includes disruptions with no adjustments" do
       %{disruption_id: id} = insert(:disruption_revision, adjustments: [])
 

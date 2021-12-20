@@ -5,6 +5,7 @@ import { CalendarOptions } from "@fullcalendar/common"
 
 const DisruptionCalendar = (props: CalendarOptions) => (
   <FullCalendar
+    eventOrder="statusOrder,kindOrder,title"
     initialView="dayGridMonth"
     plugins={[dayGridPlugin]}
     {...props}

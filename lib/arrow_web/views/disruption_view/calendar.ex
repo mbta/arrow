@@ -57,7 +57,11 @@ defmodule ArrowWeb.DisruptionView.Calendar do
         start: event_start,
         # end date is treated as exclusive
         end: Date.add(event_end, 1),
-        url: Routes.disruption_path(Endpoint, :show, disruption_id)
+        url: Routes.disruption_path(Endpoint, :show, disruption_id),
+        extendedProps: %{
+          statusOrder: if(row_approved, do: 0, else: 1),
+          kindOrder: Adjustment.kind_order(adjustment_kind)
+        }
       }
     end)
   end

@@ -65,15 +65,7 @@ defmodule ArrowWeb.DisruptionController.Index do
       where: r.is_active == true,
       left_join: a in assoc(r, :adjustments),
       as: :adjustments,
-      preload: [
-        revisions:
-          {r,
-           [
-             {:adjustments, ^from(a in Adjustment, order_by: :source_label)},
-             :days_of_week,
-             :exceptions
-           ]}
-      ]
+      preload: [revisions: {r, [:adjustments, :days_of_week, :exceptions]}]
   end
 
   @green_line_branch_kinds ~w(green_line_b green_line_c green_line_d green_line_e)a
