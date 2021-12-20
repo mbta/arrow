@@ -29,7 +29,11 @@ defmodule ArrowWeb.DisruptionView do
 
   defp adjustment_kinds, do: Adjustment.kinds()
 
-  defp adjustment_kinds(revision), do: DisruptionRevision.adjustment_kinds(revision)
+  defp adjustment_kinds(revision) do
+    revision
+    |> DisruptionRevision.adjustment_kinds()
+    |> Enum.sort_by(&Adjustment.kind_order(&1))
+  end
 
   defp adjustment_kind_icon(conn, kind, size, opts \\ []) when size in ~w(sm lg) do
     content_tag(:span, "",

@@ -108,4 +108,10 @@ defmodule Arrow.Adjustment do
   def kind_is(:commuter_rail), do: dynamic([adjustments: a], like(a.route_id, "CR-%"))
   def kind_is(:silver_line), do: dynamic([adjustments: a], a.route_id in @silver_line_routes)
   def kind_is(:bus), do: dynamic(false)
+
+  @doc "Returns the index of the given adjustment kind in `kinds/0`, used for sorting kinds."
+  @spec kind_order(atom()) :: non_neg_integer()
+  for {kind, index} <- Enum.with_index(@kinds) do
+    def kind_order(unquote(kind)), do: unquote(index)
+  end
 end

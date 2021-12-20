@@ -467,7 +467,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="margin-top: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past route-Red"
+                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past kind-red-line"
                                       href="/disruptions/1"
                                     >
                                       <div
@@ -483,7 +483,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                             <div
                                               class="fc-event-title fc-sticky"
                                             >
-                                              AlewifeHarvard
+                                              Alewife Harvard
                                             </div>
                                           </div>
                                         </div>
@@ -532,7 +532,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="margin-top: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past route-Red"
+                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past kind-red-line"
                                       href="/disruptions/1"
                                     >
                                       <div
@@ -548,7 +548,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                             <div
                                               class="fc-event-title fc-sticky"
                                             >
-                                              AlewifeHarvard
+                                              Alewife Harvard
                                             </div>
                                           </div>
                                         </div>
@@ -725,7 +725,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="top: 0px; left: 0px; right: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past route-Red"
+                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past kind-red-line"
                                       href="/disruptions/1"
                                     >
                                       <div
@@ -741,7 +741,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                             <div
                                               class="fc-event-title fc-sticky"
                                             >
-                                              AlewifeHarvard
+                                              Alewife Harvard
                                             </div>
                                           </div>
                                         </div>
@@ -823,7 +823,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="margin-top: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past route-Red"
+                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past kind-red-line"
                                       href="/disruptions/1"
                                     >
                                       <div
@@ -839,7 +839,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                             <div
                                               class="fc-event-title fc-sticky"
                                             >
-                                              AlewifeHarvard
+                                              Alewife Harvard
                                             </div>
                                           </div>
                                         </div>
@@ -1016,7 +1016,35 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="margin-top: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past route-Red"
+                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past kind-blue-line"
+                                      href="/disruptions/5"
+                                    >
+                                      <div
+                                        class="fc-event-main"
+                                      >
+                                        <div
+                                          class="fc-event-main-frame"
+                                        >
+                                          
+                                          <div
+                                            class="fc-event-title-container"
+                                          >
+                                            <div
+                                              class="fc-event-title fc-sticky"
+                                            >
+                                              Airport Wonderland
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </a>
+                                  </div>
+                                  <div
+                                    class="fc-daygrid-event-harness"
+                                    style="margin-top: 0px;"
+                                  >
+                                    <a
+                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past kind-red-line"
                                       href="/disruptions/1"
                                     >
                                       <div
@@ -1032,7 +1060,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                             <div
                                               class="fc-event-title fc-sticky"
                                             >
-                                              AlewifeHarvard
+                                              Alewife Harvard
                                             </div>
                                           </div>
                                         </div>
@@ -1044,7 +1072,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="top: 0px; left: 0px; right: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past route-Green-D"
+                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past kind-green-line-d"
                                       href="/disruptions/3"
                                     >
                                       <div
@@ -1060,7 +1088,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                             <div
                                               class="fc-event-title fc-sticky"
                                             >
-                                              Kenmore-Newton Highlands
+                                              Kenmore Newton Highlands
                                             </div>
                                           </div>
                                         </div>
@@ -1142,7 +1170,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="margin-top: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past route-Green-D"
+                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past kind-green-line-d"
                                       href="/disruptions/3"
                                     >
                                       <div
@@ -1158,7 +1186,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                             <div
                                               class="fc-event-title fc-sticky"
                                             >
-                                              Kenmore-Newton Highlands
+                                              Kenmore Newton Highlands
                                             </div>
                                           </div>
                                         </div>
@@ -1335,7 +1363,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="top: 0px; left: 0px; right: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past route-Green-D"
+                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past kind-green-line-d"
                                       href="/disruptions/3"
                                     >
                                       <div
@@ -1351,7 +1379,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                             <div
                                               class="fc-event-title fc-sticky"
                                             >
-                                              Kenmore-Newton Highlands
+                                              Kenmore Newton Highlands
                                             </div>
                                           </div>
                                         </div>
@@ -1433,7 +1461,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="margin-top: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past route-Green-D"
+                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past kind-green-line-d"
                                       href="/disruptions/3"
                                     >
                                       <div
@@ -1449,7 +1477,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                             <div
                                               class="fc-event-title fc-sticky"
                                             >
-                                              Kenmore-Newton Highlands
+                                              Kenmore Newton Highlands
                                             </div>
                                           </div>
                                         </div>
@@ -1626,7 +1654,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="top: 0px; left: 0px; right: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past route-Green-D"
+                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past kind-green-line-d"
                                       href="/disruptions/3"
                                     >
                                       <div
@@ -1642,7 +1670,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                             <div
                                               class="fc-event-title fc-sticky"
                                             >
-                                              Kenmore-Newton Highlands
+                                              Kenmore Newton Highlands
                                             </div>
                                           </div>
                                         </div>
