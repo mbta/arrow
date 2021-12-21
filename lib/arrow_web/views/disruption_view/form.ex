@@ -59,7 +59,7 @@ defmodule ArrowWeb.DisruptionView.Form do
 
   defp icon_paths(conn) do
     Adjustment.kinds()
-    |> Stream.map(&{&1, DisruptionView.adjustment_kind_icon_path(conn, &1)})
+    |> Enum.map(&{&1, DisruptionView.adjustment_kind_icon_path(conn, &1)})
     |> Enum.into(%{})
     |> Map.put(:subway, Routes.static_path(conn, "/images/icon-mode-subway-small.svg"))
   end

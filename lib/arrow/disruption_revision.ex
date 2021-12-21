@@ -60,7 +60,7 @@ defmodule Arrow.DisruptionRevision do
   def adjustment_kinds(%__MODULE__{adjustment_kind: kind}) when not is_nil(kind), do: [kind]
 
   def adjustment_kinds(%__MODULE__{adjustments: adjustments}) when is_list(adjustments),
-    do: adjustments |> Stream.map(&Adjustment.kind/1) |> Enum.uniq()
+    do: adjustments |> Enum.map(&Adjustment.kind/1) |> Enum.uniq()
 
   @spec associations() :: [atom()]
   def associations, do: ~w(adjustments days_of_week exceptions trip_short_names)a
