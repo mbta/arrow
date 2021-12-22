@@ -99,7 +99,7 @@ defmodule ArrowWeb.DisruptionController.IndexTest do
       assert [%{id: ^id}] = filtered(search: "new")
     end
 
-    test "filters by adjustment route ID" do
+    test "filters by kind with existing adjustments" do
       red = insert(:adjustment, route_id: "Red")
       blue = insert(:adjustment, route_id: "Blue")
       orange = insert(:adjustment, route_id: "Orange")
@@ -107,17 +107,29 @@ defmodule ArrowWeb.DisruptionController.IndexTest do
       %{disruption_id: id2} = insert(:disruption_revision, adjustments: [orange])
       insert(:disruption_revision, adjustments: [red])
 
-      assert [%{id: ^id1}, %{id: ^id2}] = filtered(routes: MapSet.new(~w(Blue Orange)))
+      assert [%{id: ^id1}, %{id: ^id2}] = filtered(kinds: MapSet.new(~w(blue_line orange_line)a))
     end
 
-    test "interprets the route ID 'Commuter' as matching all 'CR' routes" do
-      cr1 = insert(:adjustment, route_id: "CR-Fitchburg")
-      cr2 = insert(:adjustment, route_id: "CR-Providence")
-      %{disruption_id: id1} = insert(:disruption_revision, adjustments: [cr1])
-      %{disruption_id: id2} = insert(:disruption_revision, adjustments: [cr2])
-      insert(:disruption_revision, adjustments: [build(:adjustment, route_id: "Red")])
+    test "filters by kind using the adjustment_kind of disruptions" do
+      %{disruption_id: id} = insert(:disruption_revision, adjustment_kind: :red_line)
 
-      assert [%{id: ^id1}, %{id: ^id2}] = filtered(routes: MapSet.new(~w(Commuter)))
+      insert(:disruption_revision, adjustment_kind: :blue_line)
+
+      assert [%{id: ^id}] = filtered(kinds: MapSet.new(~w(red_line)a))
+    end
+
+    test "filters by kind using all Green Line routes for green_line" do
+      glb = insert(:adjustment, route_id: "Green-B")
+      gld = insert(:adjustment, route_id: "Green-D")
+      %{disruption_id: id1} = insert(:disruption_revision, adjustments: [glb])
+      %{disruption_id: id2} = insert(:disruption_revision, adjustments: [gld])
+      %{disruption_id: id3} = insert(:disruption_revision, adjustment_kind: :green_line)
+      %{disruption_id: id4} = insert(:disruption_revision, adjustment_kind: :green_line_c)
+
+      insert(:disruption_revision, adjustment_kind: :red_line, adjustments: [])
+
+      assert [%{id: ^id1}, %{id: ^id2}, %{id: ^id3}, %{id: ^id4}] =
+               filtered(kinds: MapSet.new(~w(green_line)a))
     end
 
     test "sorts by disruption ID" do

@@ -22,7 +22,7 @@ defmodule Arrow.Integration.DisruptionsTest do
   end
 
   feature "can create a disruption", %{session: session} do
-    adjustment = insert(:adjustment)
+    adjustment = insert(:adjustment, route_id: "Green-B", source_label: "KendallPackardsCorner")
     now = DateTime.now!("America/New_York")
 
     [date, day] =
@@ -36,9 +36,10 @@ defmodule Arrow.Integration.DisruptionsTest do
       |> click(link("create new"))
       |> assert_text("create new disruption")
       |> click(text("Pending"))
+      |> click(text("Subway"))
       |> fill_in(css("[aria-label='description']"), with: "a test description")
       |> click(text("Select..."))
-      |> click(text(adjustment.source_label))
+      |> click(text("Kendall Packards Corner"))
       |> fill_in(text_field("start"), with: date)
       |> send_keys([:enter])
       |> fill_in(text_field("end"), with: date)
@@ -73,12 +74,12 @@ defmodule Arrow.Integration.DisruptionsTest do
   end
 
   feature "can filter disruptions by route", %{session: session} do
-    revision = insert(create_disruption_revision())
+    revision = insert(:disruption_revision, adjustment_kind: :red_line)
 
     session
     |> visit("/")
     |> assert_text(revision.description)
-    |> click(xpath("//a[@aria-label='Blue']"))
+    |> click(xpath("//a[@aria-label='blue line']"))
     |> refute_has(text(revision.description))
   end
 
@@ -109,7 +110,7 @@ defmodule Arrow.Integration.DisruptionsTest do
   end
 
   feature "can view disruption on calendar", %{session: session} do
-    revision = insert(create_disruption_revision())
+    revision = insert(build_today_revision())
     adjustment = Enum.at(revision.adjustments, 0)
     disruption = Arrow.Repo.get!(Arrow.Disruption, revision.disruption_id)
     Arrow.Repo.update!(Ecto.Changeset.change(disruption, published_revision_id: revision.id))
@@ -120,7 +121,7 @@ defmodule Arrow.Integration.DisruptionsTest do
     |> assert_text(adjustment.source_label)
   end
 
-  defp create_disruption_revision do
+  defp build_today_revision do
     date = DateTime.now!("America/New_York") |> DateTime.to_date()
     day_name = date |> Calendar.strftime("%A") |> String.downcase()
     day_of_week = build(:day_of_week, %{day_name: day_name})
@@ -130,7 +131,8 @@ defmodule Arrow.Integration.DisruptionsTest do
       %{
         start_date: date,
         end_date: date,
-        days_of_week: [day_of_week]
+        days_of_week: [day_of_week],
+        adjustments: [build(:adjustment)]
       }
     )
   end

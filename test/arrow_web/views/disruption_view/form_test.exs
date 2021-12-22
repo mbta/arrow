@@ -1,5 +1,5 @@
 defmodule ArrowWeb.DisruptionView.FormTest do
-  use ExUnit.Case, async: true
+  use ArrowWeb.ConnCase, async: true
 
   alias Arrow.{Adjustment, DisruptionRevision}
   alias Arrow.Disruption.{DayOfWeek, Exception, TripShortName}
@@ -7,7 +7,11 @@ defmodule ArrowWeb.DisruptionView.FormTest do
   alias Ecto.Changeset
 
   describe "props/2" do
-    test "converts a DisruptionRevision changeset and adjustments to DisruptionForm props" do
+    setup %{conn: conn} do
+      {:ok, conn: conn |> bypass_through(ArrowWeb.Router) |> get("/")}
+    end
+
+    test "converts a DisruptionRevision changeset to DisruptionForm props", %{conn: conn} do
       adjustments = [
         %Adjustment{id: 1, route_id: "Red", source_label: "Kendall"},
         %Adjustment{id: 2, route_id: "Orange", source_label: "Wellington"}
@@ -29,24 +33,28 @@ defmodule ArrowWeb.DisruptionView.FormTest do
         }
         |> Changeset.change(%{end_date: ~D[2021-02-28]})
 
-      expected = %{
-        "allAdjustments" => [
-          %{"id" => 1, "label" => "Kendall", "routeId" => "Red"},
-          %{"id" => 2, "label" => "Wellington", "routeId" => "Orange"}
-        ],
-        "disruptionRevision" => %{
-          "startDate" => ~D[2021-01-01],
-          "endDate" => ~D[2021-02-28],
-          "rowApproved" => true,
-          "adjustments" => [%{"id" => 1, "label" => "Kendall", "routeId" => "Red"}],
-          "daysOfWeek" => %{"monday" => %{"start" => ~T[21:15:00], "end" => nil}},
-          "exceptions" => [~D[2021-01-11]],
-          "tripShortNames" => "one,two",
-          "description" => "a disruption for testing"
-        }
+      expected_adjustments = [
+        %{"id" => 1, "label" => "Kendall", "kind" => "red_line"},
+        %{"id" => 2, "label" => "Wellington", "kind" => "orange_line"}
+      ]
+
+      expected_revision = %{
+        "startDate" => ~D[2021-01-01],
+        "endDate" => ~D[2021-02-28],
+        "rowApproved" => true,
+        "adjustmentKind" => nil,
+        "adjustments" => [%{"id" => 1, "label" => "Kendall", "kind" => "red_line"}],
+        "daysOfWeek" => %{"monday" => %{"start" => ~T[21:15:00], "end" => nil}},
+        "exceptions" => [~D[2021-01-11]],
+        "tripShortNames" => "one,two",
+        "description" => "a disruption for testing"
       }
 
-      assert Form.props(changeset, adjustments) == expected
+      props = Form.props(conn, changeset, adjustments)
+
+      assert props["allAdjustments"] == expected_adjustments
+      assert props["disruptionRevision"] == expected_revision
+      assert get_in(props, ["iconPaths", :subway]) =~ ~r(^/images/)
     end
   end
 end

@@ -17,12 +17,17 @@ defmodule ArrowWeb.DisruptionView.Calendar do
     Enum.flat_map(disruptions, &events/1)
   end
 
-  defp events(%Disruption{id: id, revisions: [%{adjustments: []} = revision]}) do
-    events(id, revision, %Adjustment{route_id: "none", source_label: "(disruption #{id})"})
+  defp events(%Disruption{
+         id: id,
+         revisions: [%{adjustments: [], adjustment_kind: kind} = revision]
+       }) do
+    events(id, revision, kind, "(disruption #{id})")
   end
 
   defp events(%Disruption{id: id, revisions: [%{adjustments: adjustments} = revision]}) do
-    Enum.flat_map(adjustments, &events(id, revision, &1))
+    Enum.flat_map(adjustments, fn adjustment ->
+      events(id, revision, Adjustment.kind(adjustment), Adjustment.display_label(adjustment))
+    end)
   end
 
   defp events(
@@ -34,7 +39,8 @@ defmodule ArrowWeb.DisruptionView.Calendar do
            exceptions: exceptions,
            row_approved: row_approved
          },
-         %Adjustment{route_id: route_id, source_label: source_label}
+         adjustment_kind,
+         event_title
        ) do
     day_numbers = MapSet.new(days_of_week, &DayOfWeek.day_number/1)
     excluded_dates = MapSet.new(exceptions, & &1.excluded_date)
@@ -46,8 +52,8 @@ defmodule ArrowWeb.DisruptionView.Calendar do
     |> Enum.map(&{List.last(&1), hd(&1)})
     |> Enum.map(fn {event_start, event_end} ->
       %{
-        title: source_label,
-        classNames: "#{row_status_class(row_approved)} route-#{route_id}",
+        title: event_title,
+        classNames: "kind-#{kind_class(adjustment_kind)} status-#{status_class(row_approved)}",
         start: event_start,
         # end date is treated as exclusive
         end: Date.add(event_end, 1),
@@ -55,9 +61,6 @@ defmodule ArrowWeb.DisruptionView.Calendar do
       }
     end)
   end
-
-  defp row_status_class(true), do: "status-approved"
-  defp row_status_class(false), do: "status-pending"
 
   # Starting a new chunk
   defp chunk_dates(date, []), do: {:cont, [date]}
@@ -73,4 +76,10 @@ defmodule ArrowWeb.DisruptionView.Calendar do
 
   # Receives the leftover accumulator at the end, which is the last chunk, so emit it
   defp chunk_dates(dates), do: {:cont, dates, []}
+
+  defp kind_class(nil), do: "none"
+  defp kind_class(kind), do: kind |> to_string() |> String.replace("_", "-")
+
+  defp status_class(true), do: "approved"
+  defp status_class(false), do: "pending"
 end

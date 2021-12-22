@@ -171,6 +171,19 @@ defmodule Arrow.DisruptionTest do
 
       assert "must be selected" in errors_on(changeset).days_of_week
     end
+
+    test "requires exactly one of adjustment kind or non-empty adjustments" do
+      {:error, changeset} = Disruption.create(%{"adjustment_kind" => nil, "adjustments" => []})
+      assert "is required without adjustments" in errors_on(changeset).adjustment_kind
+
+      {:error, changeset} =
+        Disruption.create(%{
+          "adjustment_kind" => "red_line",
+          "adjustments" => [%{"id" => insert(:adjustment).id}]
+        })
+
+      assert "cannot be set with adjustments" in errors_on(changeset).adjustment_kind
+    end
   end
 
   describe "update/2" do
@@ -345,6 +358,24 @@ defmodule Arrow.DisruptionTest do
       {:error, changeset} = Disruption.update(id, attrs)
 
       assert "must be selected" in errors_on(changeset).days_of_week
+    end
+
+    test "requires exactly one of adjustment kind or non-empty adjustments" do
+      %{disruption_id: kind_id} = insert(:disruption_revision, adjustment_kind: :bus)
+      %{disruption_id: adj_id} = insert(:disruption_revision, adjustments: [build(:adjustment)])
+
+      {:error, changeset} = Disruption.update(kind_id, %{"adjustment_kind" => nil})
+      assert "is required without adjustments" in errors_on(changeset).adjustment_kind
+
+      {:error, changeset} = Disruption.update(adj_id, %{"adjustments" => []})
+      assert "is required without adjustments" in errors_on(changeset).adjustment_kind
+
+      %{id: id} = insert(:adjustment)
+      {:error, changeset} = Disruption.update(kind_id, %{"adjustments" => [%{"id" => id}]})
+      assert "cannot be set with adjustments" in errors_on(changeset).adjustment_kind
+
+      {:error, changeset} = Disruption.update(adj_id, %{"adjustment_kind" => "bus"})
+      assert "cannot be set with adjustments" in errors_on(changeset).adjustment_kind
     end
   end
 

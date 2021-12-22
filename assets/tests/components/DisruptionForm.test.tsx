@@ -6,10 +6,11 @@ import { pickDate } from "../testHelpers"
 
 describe("DisruptionForm", () => {
   const adjustments = [
-    { id: 1, label: "Alewife", routeId: "Red" },
-    { id: 2, label: "Bowdoin", routeId: "Blue" },
-    { id: 3, label: "Lowell", routeId: "CR-Lowell" },
-    { id: 4, label: "Worcester", routeId: "CR-Worcester" },
+    { id: 1, label: "Alewife", kind: "red_line" as const },
+    { id: 2, label: "Bowdoin", kind: "blue_line" as const },
+    { id: 3, label: "Lowell", kind: "commuter_rail" as const },
+    { id: 4, label: "Worcester", kind: "commuter_rail" as const },
+    { id: 5, label: "Nubian", kind: "silver_line" as const },
   ]
 
   const blankRevision = {
@@ -17,6 +18,7 @@ describe("DisruptionForm", () => {
     endDate: null,
     rowApproved: true,
     description: "",
+    adjustmentKind: null,
     adjustments: [],
     daysOfWeek: {},
     exceptions: [],
@@ -36,7 +38,8 @@ describe("DisruptionForm", () => {
             startDate: "2021-01-01",
             endDate: "2021-01-31",
             rowApproved: true,
-            adjustments: [{ id: 3, label: "Lowell", routeId: "CR-Lowell" }],
+            adjustmentKind: null,
+            adjustments: [{ id: 3, label: "Lowell", kind: "commuter_rail" }],
             daysOfWeek: {
               monday: { start: null, end: null },
               tuesday: { start: "20:00:00", end: null },
@@ -44,6 +47,7 @@ describe("DisruptionForm", () => {
             exceptions: ["2021-01-11", "2021-01-12"],
             tripShortNames: "trip1,trip2",
           }}
+          iconPaths={{}}
         />
       </form>
     )
@@ -52,9 +56,9 @@ describe("DisruptionForm", () => {
       withinFieldset("description").getByRole("textbox"),
       "Worcester test disruption"
     )
-    const adjusts = withinFieldset("adjustment location")
-    userEvent.click(adjusts.getByRole("textbox"))
-    userEvent.click(adjusts.getByText("Worcester"))
+    const limits = withinFieldset("limits")
+    userEvent.click(limits.getByRole("textbox"))
+    userEvent.click(limits.getByText("Worcester"))
     userEvent.type(screen.getByLabelText("Trip short names"), "{backspace}3")
     pickDate(screen.getByLabelText("start"), "01/04/2021")
     pickDate(screen.getByLabelText("end"), "01/29/2021")
@@ -76,6 +80,7 @@ describe("DisruptionForm", () => {
       "revision[start_date]": "2021-01-04",
       "revision[end_date]": "2021-01-29",
       "revision[description]": "Worcester test disruption",
+      "revision[adjustment_kind]": "",
       "revision[days_of_week][0][day_name]": "tuesday",
       "revision[days_of_week][0][start_time]": "20:00:00",
       "revision[days_of_week][0][end_time]": "",
@@ -92,23 +97,75 @@ describe("DisruptionForm", () => {
       <DisruptionForm
         allAdjustments={adjustments}
         disruptionRevision={blankRevision}
+        iconPaths={{}}
       />
     )
 
-    const adjusts = withinFieldset("adjustment location")
     userEvent.click(screen.getByLabelText("Subway"))
-    userEvent.click(adjusts.getByRole("textbox"))
-    expect(adjusts.queryByText("Alewife")).toBeInTheDocument()
-    expect(adjusts.queryByText("Bowdoin")).toBeInTheDocument()
-    expect(adjusts.queryByText("Lowell")).not.toBeInTheDocument()
-    expect(adjusts.queryByText("Worcester")).not.toBeInTheDocument()
+    const limits = withinFieldset("limits")
+    userEvent.click(limits.getByRole("textbox"))
+    expect(limits.queryByText("Alewife")).toBeInTheDocument()
+    expect(limits.queryByText("Lowell")).not.toBeInTheDocument()
+    expect(limits.queryByText("Nubian")).not.toBeInTheDocument()
 
     userEvent.click(screen.getByLabelText("Commuter Rail"))
-    userEvent.click(adjusts.getByRole("textbox"))
-    expect(adjusts.queryByText("Alewife")).not.toBeInTheDocument()
-    expect(adjusts.queryByText("Bowdoin")).not.toBeInTheDocument()
-    expect(adjusts.queryByText("Lowell")).toBeInTheDocument()
-    expect(adjusts.queryByText("Worcester")).toBeInTheDocument()
+    userEvent.click(limits.getByRole("textbox"))
+    expect(limits.queryByText("Alewife")).not.toBeInTheDocument()
+    expect(limits.queryByText("Lowell")).toBeInTheDocument()
+    expect(limits.queryByText("Nubian")).not.toBeInTheDocument()
+
+    userEvent.click(screen.getByLabelText("Silver Line"))
+    userEvent.click(limits.getByRole("textbox"))
+    expect(limits.queryByText("Alewife")).not.toBeInTheDocument()
+    expect(limits.queryByText("Lowell")).not.toBeInTheDocument()
+    expect(limits.queryByText("Nubian")).toBeInTheDocument()
+
+    // limits cannot be set for bus
+    userEvent.click(screen.getByLabelText("Bus"))
+    expect(
+      screen.queryByRole("group", { name: "limits" })
+    ).not.toBeInTheDocument()
+  })
+
+  test("can indicate a new adjustment is being requested", () => {
+    render(
+      <form aria-label="test">
+        <DisruptionForm
+          allAdjustments={adjustments}
+          disruptionRevision={blankRevision}
+          iconPaths={{}}
+        />
+      </form>
+    )
+
+    userEvent.click(screen.getByLabelText("Silver Line"))
+    const limits = withinFieldset("limits")
+    userEvent.click(limits.getByLabelText("request a new diverted route"))
+
+    expect(screen.getByRole("form")).toHaveFormValues({
+      "revision[adjustment_kind]": "silver_line",
+    })
+  })
+
+  test("can request an adjustment for a specific subway line", () => {
+    render(
+      <form aria-label="test">
+        <DisruptionForm
+          allAdjustments={adjustments}
+          disruptionRevision={blankRevision}
+          iconPaths={{}}
+        />
+      </form>
+    )
+
+    userEvent.click(screen.getByLabelText("Subway"))
+    const limits = withinFieldset("limits")
+    userEvent.click(limits.getByLabelText("request a new diverted route"))
+    userEvent.click(limits.getByLabelText("Blue Line"))
+
+    expect(screen.getByRole("form")).toHaveFormValues({
+      "revision[adjustment_kind]": "blue_line",
+    })
   })
 
   test("defaults subway disruptions to start at 8:45PM on weekdays", () => {
@@ -116,6 +173,7 @@ describe("DisruptionForm", () => {
       <DisruptionForm
         allAdjustments={adjustments}
         disruptionRevision={blankRevision}
+        iconPaths={{}}
       />
     )
 

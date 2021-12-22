@@ -4,64 +4,70 @@
   padding: 2px;
 }
 
-.fc-event.route-none {
-  background-color: #fff;
-  border: 2px dashed #ccc;
-  padding: 0;
-}
-
-.fc-event.route-none .fc-event-title {
-  color: #aaa;
-}
-
 .fc-event.status-pending .fc-event-title {
   color: #1e2127;
 }
 
-.fc-event.status-approved.route-Red {
-  background-color: #da291c;
-}
-
-.fc-event.status-pending.route-Red {
-  background-color: #f4bfbb;
-}
-
-.fc-event.status-approved.route-Blue {
+.fc-event.status-approved.kind-blue-line {
   background-color: #003da5;
 }
 
-.fc-event.status-pending.route-Blue {
+.fc-event.status-pending.kind-blue-line {
   background-color: #b3c5e4;
 }
 
-.fc-event.status-approved.route-Orange {
+.fc-event.status-approved.kind-orange-line {
   background-color: #ed8b00;
 }
 
-.fc-event.status-pending.route-Orange {
+.fc-event.status-pending.kind-orange-line {
   background-color: #f9d6a6;
 }
 
-.fc-event.status-approved.route-Mattapan {
+.fc-event.status-approved.kind-red-line {
   background-color: #da291c;
 }
 
-.fc-event.status-pending.route-Mattapan {
+.fc-event.status-pending.kind-red-line {
   background-color: #f4bfbb;
 }
 
-.fc-event.status-approved[class*="route-Green"] {
+.fc-event.status-approved.kind-mattapan-line {
+  background-color: #da291c;
+}
+
+.fc-event.status-pending.kind-mattapan-line {
+  background-color: #f4bfbb;
+}
+
+.fc-event.status-approved[class*="kind-green-line"] {
   background-color: #00843d;
 }
 
-.fc-event.status-pending[class*="route-Green"] {
+.fc-event.status-pending[class*="kind-green-line"] {
   background-color: #cce6d8;
 }
 
-.fc-event.status-approved[class*="route-CR"] {
+.fc-event.status-approved.kind-commuter-rail {
   background-color: #80276c;
 }
 
-.fc-event.status-pending[class*="route-CR"] {
+.fc-event.status-pending.kind-commuter-rail {
   background-color: #d98fd3;
+}
+
+.fc-event.status-approved.kind-silver-line {
+  background-color: #7c878e;
+}
+
+.fc-event.status-pending.kind-silver-line {
+  background-color: #d8dbdd;
+}
+
+.fc-event.status-approved.kind-bus {
+  background-color: #ffc72c;
+}
+
+.fc-event.status-pending.kind-bus {
+  background-color: #fff1cb;
 }
