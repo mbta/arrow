@@ -80,8 +80,16 @@ const whichTripsLabels: ["all" | "some", string][] = [
 const adjustmentKindForMode = (mode: Mode | null): AdjustmentKind | null =>
   mode === "subway" ? null : mode
 
-const adjustmentKindsForMode = (mode: Mode | null): readonly AdjustmentKind[] =>
-  mode === "subway" ? subwayLineAdjustmentKinds : mode === null ? [] : [mode]
+const adjustmentMatchesMode = (
+  { kind }: Adjustment,
+  mode: Mode | null
+): boolean => {
+  if (mode === "subway") {
+    return (subwayLineAdjustmentKinds as readonly string[]).includes(kind)
+  } else {
+    return kind === mode
+  }
+}
 
 const adjustmentSelectOption = (adjustment: Adjustment) => {
   return {
@@ -164,7 +172,7 @@ const DisruptionForm = ({
 
   const adjustmentSelectOptions = useMemo(() => {
     return allAdjustments
-      .filter(({ kind }) => adjustmentKindsForMode(mode).includes(kind))
+      .filter((adjustment) => adjustmentMatchesMode(adjustment, mode))
       .map(adjustmentSelectOption)
   }, [allAdjustments, mode])
   const adjustmentSelectValues = useMemo(
