@@ -4,23 +4,19 @@ import DatePicker from "./DatePicker"
 import TimePicker from "./TimePicker"
 
 // See also the `Adjustment` Elixir module
-const modeAdjustmentKinds = ["bus", "commuter_rail", "silver_line"] as const
-
-const subwayLineAdjustmentKinds = [
-  "blue_line",
-  "green_line",
-  "green_line_b",
-  "green_line_c",
-  "green_line_d",
-  "green_line_e",
-  "mattapan_line",
-  "orange_line",
-  "red_line",
-] as const
-
-type Mode = typeof modeAdjustmentKinds[number] | "subway"
-type SubwayLine = typeof subwayLineAdjustmentKinds[number]
-type AdjustmentKind = typeof modeAdjustmentKinds[number] | SubwayLine
+type AdjustmentKind =
+  | "blue_line"
+  | "bus"
+  | "commuter_rail"
+  | "green_line"
+  | "green_line_b"
+  | "green_line_c"
+  | "green_line_d"
+  | "green_line_e"
+  | "mattapan_line"
+  | "orange_line"
+  | "red_line"
+  | "silver_line"
 
 type Adjustment = { id: number; label: string; kind: AdjustmentKind }
 type TimeRange = { start: string | null; end: string | null }
@@ -38,6 +34,23 @@ type DisruptionRevision = {
   tripShortNames: string
 }
 
+const modeAdjustmentKinds = ["bus", "commuter_rail", "silver_line"] as const
+
+const subwayLineAdjustmentKinds = [
+  "blue_line",
+  "green_line",
+  "green_line_b",
+  "green_line_c",
+  "green_line_d",
+  "green_line_e",
+  "mattapan_line",
+  "orange_line",
+  "red_line",
+] as const
+
+type Mode = typeof modeAdjustmentKinds[number] | "subway"
+type SubwayLine = typeof subwayLineAdjustmentKinds[number]
+
 const days = [
   "monday",
   "tuesday",
@@ -48,16 +61,16 @@ const days = [
   "sunday",
 ]
 
-const rowStatusLabels: [boolean, string][] = [
-  [true, "Approved"],
-  [false, "Pending"],
-]
-
 const modeLabels: [Mode, string][] = [
   ["subway", "Subway"],
   ["commuter_rail", "Commuter Rail"],
   ["bus", "Bus"],
   ["silver_line", "Silver Line"],
+]
+
+const rowStatusLabels: [boolean, string][] = [
+  [true, "Approved"],
+  [false, "Pending"],
 ]
 
 const subwayLineLabels: [SubwayLine, string][] = [
