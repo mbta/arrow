@@ -229,6 +229,27 @@ defmodule ArrowWeb.DisruptionControllerTest do
     end
   end
 
+  describe "update_row_status/2" do
+    @tag :authenticated_admin
+    test "admin can update a disruption row status", %{conn: conn} do
+      %{disruption_id: id} = insert(:disruption_revision, row_approved: false)
+
+      params = %{
+        "revision" => string_params_for(:disruption_revision, row_approved: "true")
+      }
+
+      location =
+        conn
+        |> put(Routes.disruption_path(conn, :update_row_status, id), params)
+        |> redirected_to()
+
+      assert %{row_approved: true} =
+               Repo.get!(DisruptionRevision, Disruption.latest_revision_id(id))
+
+      assert location == Routes.disruption_path(conn, :show, id)
+    end
+  end
+
   defp insert_revision_with_everything do
     insert(:disruption_revision,
       days_of_week: [build(:day_of_week)],
