@@ -54,31 +54,47 @@ defmodule Arrow.Disruption do
   end
 
   @doc "Creates a new disruption, with its first revision having the given attributes."
-  @spec create(map) ::
+  @spec create(String.t(), map, map | nil) ::
           {:ok, DisruptionRevision.t()} | {:error, Changeset.t(DisruptionRevision.t())}
-  def create(attrs) do
-    Repo.transaction(fn ->
-      %{id: id} = Repo.insert!(%__MODULE__{})
-
-      case DisruptionRevision.new(disruption_id: id)
-           |> DisruptionRevision.changeset(attrs)
-           |> Repo.insert() do
-        {:ok, revision} -> revision
-        {:error, changeset} -> Repo.rollback(changeset)
+  def create(author_id, attrs, note_attrs \\ nil) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:disruption, %__MODULE__{})
+    |> Ecto.Multi.insert(:revision, fn %{disruption: %{id: id}} ->
+      DisruptionRevision.new(disruption_id: id)
+      |> DisruptionRevision.changeset(attrs)
+    end)
+    |> Ecto.Multi.run(:note, fn _repo, %{revision: revision} ->
+      if note_attrs do
+        add_note(revision.disruption_id, author_id, note_attrs)
+      else
+        {:ok, nil}
       end
     end)
+    |> Repo.transaction()
   end
 
   @doc "Creates a new revision, with given attributes, of the given disruption ID."
-  @spec update(id, map) ::
+  @spec update(id, String.t(), map, map | nil) ::
           {:ok, DisruptionRevision.t()} | {:error, Changeset.t(DisruptionRevision.t())}
-  def update(id, attrs) do
+  def update(id, author_id, attrs, note_attrs \\ nil) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:revision, update_revision_changeset(id, attrs))
+    |> Ecto.Multi.run(:note, fn _repo, %{revision: revision} ->
+      if note_attrs do
+        add_note(revision.disruption_id, author_id, note_attrs)
+      else
+        {:ok, nil}
+      end
+    end)
+    |> Repo.transaction()
+  end
+
+  def update_revision_changeset(id, attrs) do
     id
     |> latest_revision_id()
     |> DisruptionRevision.get!()
     |> DisruptionRevision.clone()
     |> DisruptionRevision.changeset(attrs)
-    |> Repo.insert()
   end
 
   @doc "Creates a new revision of the given disruption ID with `is_active` set to false."
@@ -90,6 +106,12 @@ defmodule Arrow.Disruption do
     |> DisruptionRevision.clone()
     |> Changeset.change(%{is_active: false})
     |> Repo.insert!()
+  end
+
+  def add_note(disruption_id, author, params) do
+    disruption_id
+    |> Note.changeset(author, params)
+    |> Repo.insert()
   end
 
   @spec latest_revision_id(id) :: DisruptionRevision.id()

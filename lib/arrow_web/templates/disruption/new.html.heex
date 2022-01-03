@@ -7,6 +7,7 @@
     cancel_confirmation: "Discard all entered data?",
     cancel_path: Routes.disruption_path(@conn, :index),
     changeset: @changeset,
-    conn: @conn
+    conn: @conn,
+    note_body: @note_body
   ) %>
 <% end %>

@@ -9,12 +9,20 @@ defmodule ArrowWeb.DisruptionController do
   alias Plug.Conn
 
   plug(Authorize, :create_disruption when action in [:new, :create])
-  plug(Authorize, :update_disruption when action in [:edit, :update, :update_row_status])
+
+  plug(
+    Authorize,
+    :update_disruption when action in [:edit, :update, :update_row_status, :create_note]
+  )
+
   plug(Authorize, :delete_disruption when action in [:delete])
 
   @spec update_row_status(Conn.t(), Conn.params()) :: Conn.t()
-  def update_row_status(conn, %{"id" => id, "revision" => attrs}) do
-    {:ok, _} = Disruption.update(id, attrs)
+  def update_row_status(%{assigns: %{current_user: user}} = conn, %{
+        "id" => id,
+        "revision" => attrs
+      }) do
+    {:ok, _} = Disruption.update(id, user.id, attrs)
 
     conn
     |> put_flash(:info, "Disruption updated successfully.")
@@ -30,54 +38,82 @@ defmodule ArrowWeb.DisruptionController do
 
   @spec show(Conn.t(), Conn.params()) :: Conn.t()
   def show(%{assigns: %{current_user: user}} = conn, %{"id" => id}) do
-    %{id: id, revisions: [revision]} = Disruption.get!(id)
-    render(conn, "show.html", id: id, revision: revision, user: user)
+    render(conn, "show.html", show_data(id, user))
+  end
+
+  defp show_data(id, user) do
+    %{id: id, revisions: [revision], notes: notes} =
+      Disruption.get!(id)
+      |> Arrow.Repo.preload([:notes])
+
+    [id: id, revision: revision, notes: notes, user: user]
   end
 
   @spec new(Conn.t(), Conn.params()) :: Conn.t()
   def new(conn, _params) do
     changeset = DisruptionRevision.new() |> Changeset.change()
-    render(conn, "new.html", adjustments: Adjustment.all(), changeset: changeset)
+    render(conn, "new.html", adjustments: Adjustment.all(), changeset: changeset, note_body: "")
   end
 
   @spec edit(Conn.t(), Conn.params()) :: Conn.t()
   def edit(conn, %{"id" => id}) do
-    %{revisions: [revision]} = Disruption.get!(id)
+    %{revisions: [revision], notes: notes} =
+      Disruption.get!(id)
+      |> Arrow.Repo.preload([:notes])
 
     render(conn, "edit.html",
       id: id,
       adjustments: Adjustment.all(),
-      changeset: Changeset.change(revision)
+      changeset: Changeset.change(revision),
+      notes: notes,
+      note_body: ""
     )
   end
 
   @spec create(Conn.t(), Conn.params()) :: Conn.t()
-  def create(conn, %{"revision" => attrs}) do
-    case Disruption.create(attrs) do
-      {:ok, %{disruption_id: id}} ->
+  def create(%{assigns: %{current_user: user}} = conn, %{"revision" => attrs} = params) do
+    case Disruption.create(user.id, attrs, note_params(params)) do
+      {:ok, %{disruption: %{id: id}}} ->
         conn
         |> put_flash(:info, "Disruption created successfully.")
         |> redirect(to: Routes.disruption_path(conn, :show, id))
 
-      {:error, changeset} ->
+      {:error, :revision, changeset, _changes_so_far} ->
+        note_body = get_in(params, ["note", "body"])
+
         conn
         |> put_flash(:errors, {"Disruption could not be created:", errors(changeset)})
-        |> render("new.html", adjustments: Adjustment.all(), changeset: changeset)
+        |> render("new.html",
+          adjustments: Adjustment.all(),
+          changeset: changeset,
+          note_body: note_body
+        )
     end
   end
 
   @spec update(Conn.t(), Conn.params()) :: Conn.t()
-  def update(conn, %{"id" => id, "revision" => attrs}) do
-    case Disruption.update(id, put_new_assocs(attrs)) do
+  def update(
+        %{assigns: %{current_user: user}} = conn,
+        %{"id" => id, "revision" => attrs} = params
+      ) do
+    case Disruption.update(id, user.id, put_new_assocs(attrs), note_params(params)) do
       {:ok, _revision} ->
         conn
         |> put_flash(:info, "Disruption updated successfully.")
         |> redirect(to: Routes.disruption_path(conn, :show, id))
 
-      {:error, changeset} ->
+      {:error, :revision, changeset, _changes_so_far} ->
+        note_body = get_in(params, ["note", "body"])
+
         conn
         |> put_flash(:errors, {"Disruption could not be updated:", errors(changeset)})
-        |> render("edit.html", adjustments: Adjustment.all(), changeset: changeset, id: id)
+        |> render("edit.html",
+          adjustments: Adjustment.all(),
+          changeset: changeset,
+          id: id,
+          note_body: note_body,
+          notes: []
+        )
     end
   end
 
@@ -85,6 +121,21 @@ defmodule ArrowWeb.DisruptionController do
   def delete(conn, %{"id" => id}) do
     _revision = Disruption.delete!(id)
     redirect(conn, to: Routes.disruption_path(conn, :show, id))
+  end
+
+  def create_note(%{assigns: %{current_user: user}} = conn, %{
+        "disruption_id" => disruption_id,
+        "note" => note_attrs
+      }) do
+    case Disruption.add_note(String.to_integer(disruption_id), user.id, note_attrs) do
+      {:ok, _} ->
+        redirect(conn, to: Routes.disruption_path(conn, :show, disruption_id))
+
+      {:error, changeset} ->
+        conn
+        |> put_flash(:errors, {"Note could not be created", errors(changeset)})
+        |> render("show.html", show_data(disruption_id, user))
+    end
   end
 
   @spec errors(Changeset.t()) :: [String.t()]
@@ -104,4 +155,10 @@ defmodule ArrowWeb.DisruptionController do
     |> Map.put_new("exceptions", [])
     |> Map.put_new("trip_short_names", [])
   end
+
+  defp note_params(%{"note" => %{"body" => body} = params}) when byte_size(body) > 0 do
+    params
+  end
+
+  defp note_params(_), do: nil
 end

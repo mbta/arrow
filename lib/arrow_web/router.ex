@@ -48,6 +48,10 @@ defmodule ArrowWeb.Router do
     get("/", DisruptionController, :index)
     resources("/disruptions", DisruptionController, except: [:index])
     put("/disruptions/:id/row_status", DisruptionController, :update_row_status)
+
+    post("/disruptions/:disruption_id/notes", DisruptionController, :create_note,
+      as: :disruption_note
+    )
   end
 
   scope "/", ArrowWeb do

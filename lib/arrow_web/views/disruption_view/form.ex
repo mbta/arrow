@@ -8,10 +8,11 @@ defmodule ArrowWeb.DisruptionView.Form do
   alias Ecto.Changeset
 
   @doc "Encodes the required props passed to the `DisruptionForm` component."
-  @spec props(Plug.Conn.t(), Changeset.t(DisruptionRevision.t()), [Adjustment.t()]) :: %{
-          String.t() => any
-        }
-  def props(conn, changeset, all_adjustments) do
+  @spec props(Plug.Conn.t(), Changeset.t(DisruptionRevision.t()), [Adjustment.t()], String.t()) ::
+          %{
+            String.t() => any
+          }
+  def props(conn, changeset, all_adjustments, note_body) do
     %DisruptionRevision{
       start_date: start_date,
       end_date: end_date,
@@ -37,7 +38,8 @@ defmodule ArrowWeb.DisruptionView.Form do
         "exceptions" => Enum.map(exceptions, & &1.excluded_date),
         "tripShortNames" => trip_short_names |> Enum.map(& &1.trip_short_name) |> Enum.join(",")
       },
-      "iconPaths" => icon_paths(conn)
+      "iconPaths" => icon_paths(conn),
+      "noteBody" => note_body
     }
   end
 

@@ -1,16 +1,27 @@
-<%= form_tag Routes.disruption_path(@conn, :update, @id), method: "put", class: "col-lg-8" do %>
-  <hr />
-  <h1>
-    edit disruption
-    <span class="m-disruption-form__header-id">ID</span>
-    <span class="m-disruption-form__header-num"><%= @id %></span>
-  </h1>
+<div class="row">
+  <div class="col-lg-8">
+    <%= form_tag Routes.disruption_path(@conn, :update, @id), method: "put" do %>
+      <hr />
+      <h1>
+        edit disruption
+        <span class="m-disruption-form__header-id">ID</span>
+        <span class="m-disruption-form__header-num"><%= @id %></span>
+      </h1>
 
-  <%= render("_form.html",
-    adjustments: @adjustments,
-    cancel_confirmation: "Discard all changes to this disruption?",
-    cancel_path: Routes.disruption_path(@conn, :show, @id),
-    changeset: @changeset,
-    conn: @conn
-  ) %>
-<% end %>
+      <%= render("_form.html",
+        adjustments: @adjustments,
+        cancel_confirmation: "Discard all changes to this disruption?",
+        cancel_path: Routes.disruption_path(@conn, :show, @id),
+        changeset: @changeset,
+        note_body: @note_body,
+        conn: @conn
+      ) %>
+    <% end %>
+  </div>
+  <section class="col-lg-4">
+    <h3>notes</h3>
+    <%= for note <- @notes do %>
+      <div>Note: <%= note.body %></div>
+    <% end %>
+  </section>
+</div>

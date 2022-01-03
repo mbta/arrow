@@ -102,4 +102,21 @@
       <% end %>
     </div>
   </div>
+
+  <section class="col-lg-5">
+    <h3>Notes</h3>
+
+    <%= form_tag Routes.disruption_note_path(@conn, :create_note, @id), method: "post" do %>
+      <%= textarea(:note, :body) %>
+      <%= submit "save", class: "btn btn-primary" %>
+    <% end %>
+
+    <%= for note <- @notes do %>
+      <div class="mb-4">
+        <%= note.author %> on <%= note.inserted_at %>
+        <br/>
+        <%= note.body %>
+      </div>
+    <% end %>
+  </section>
 </div>

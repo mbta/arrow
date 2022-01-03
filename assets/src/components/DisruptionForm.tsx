@@ -149,6 +149,7 @@ interface DisruptionFormProps {
   allAdjustments: Adjustment[]
   disruptionRevision: DisruptionRevision
   iconPaths: { [icon: string]: string }
+  noteBody: string
 }
 
 /**
@@ -172,12 +173,14 @@ const DisruptionForm = ({
     tripShortNames: initialTripShortNames,
   },
   iconPaths,
+  noteBody: initialNoteBody,
 }: DisruptionFormProps) => {
   const [isRowApproved, setIsRowApproved] = useState(initialRowApproved)
   const [description, setDescription] = useState(initialDescription)
   const [adjustmentKind, setAdjustmentKind] = useState(initialAdjustmentKind)
   const [hasAdjustments, setHasAdjustments] = useState(adjustmentKind === null)
   const [adjustments, setAdjustments] = useState(initialAdjustments)
+  const [noteBody, setNoteBody] = useState(initialNoteBody)
 
   const [mode, setMode] = useState<Mode | null>(
     initialMode(adjustments, adjustmentKind)
@@ -550,6 +553,15 @@ const DisruptionForm = ({
             </button>
           </div>
         )}
+      </fieldset>
+
+      <fieldset>
+        <legend>notes</legend>
+        <textarea
+          name="note[body]"
+          value={noteBody}
+          onChange={(evt) => setNoteBody(evt.target.value)}
+        />
       </fieldset>
     </>
   )
