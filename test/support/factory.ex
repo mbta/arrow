@@ -51,4 +51,8 @@ defmodule Arrow.Factory do
   def trip_short_name_factory do
     %Arrow.Disruption.TripShortName{trip_short_name: "1234"}
   end
+
+  def note_factory do
+    %Arrow.Disruption.Note{author: "An author", body: "This is the body."}
+  end
 end

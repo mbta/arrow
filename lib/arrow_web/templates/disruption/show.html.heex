@@ -1,5 +1,5 @@
 <div class="row">
-  <div class="col-lg-7">
+  <section class="col-lg-7">
     <div class="m-disruption-details__header">
       <div class="d-flex align-items-end">
         <h2 class="mb-0">disruption</h2>
@@ -101,5 +101,22 @@
         </div>
       <% end %>
     </div>
-  </div>
+  </section>
+
+  <section class="col-lg-4">
+    <h3>notes</h3>
+
+    <%= if Permissions.authorize?(:create_note, @user) do %>
+      <%= form_tag Routes.note_path(@conn, :create, @id), method: "post", class: "mb-4" do %>
+        <%= textarea(:note, :body, class: "w-100") %>
+        <div>
+          <%= submit "save", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    <% end %>
+
+    <%= for note <- @notes do %>
+      <%= render "_note.html", note: note %>
+    <% end %>
+  </section>
 </div>

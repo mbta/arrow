@@ -1,0 +1,18 @@
+.m-note__header {
+  color: #666;
+  display: flex;
+  justify-content: space-between;
+}
+
+.m-note__author {
+  align-self: flex-start;
+  font-size: 1rem;
+  font-weight: 200;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+.m-note__timestamp {
+  align-self: flex-end;
+  font-size: 1rem;
+}

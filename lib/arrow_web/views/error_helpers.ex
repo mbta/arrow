@@ -15,6 +15,17 @@ defmodule ArrowWeb.ErrorHelpers do
   end
 
   @doc """
+  Takes a changeset and returns a list of all its error messages.
+  """
+  @spec changeset_error_messages(Ecto.Changeset.t()) :: [String.t()]
+  def changeset_error_messages(changeset) do
+    changeset
+    |> Ecto.Changeset.traverse_errors(&translate_error/1)
+    |> flatten_errors()
+  end
+
+  @spec flatten_errors(map) :: list
+  @doc """
   Converts a nested error map as returned from `Ecto.Changeset.traverse_errors/1` into a flat list
   of error messages.
   """

@@ -44,6 +44,14 @@ defmodule ArrowWeb.DisruptionView do
 
   defp format_date(date, fallback \\ "❓")
   defp format_date(%Date{} = date, _fallback), do: Calendar.strftime(date, "%m/%d/%Y")
+
+  defp format_date(%DateTime{} = dt, fallback) do
+    dt
+    |> DateTime.shift_zone!("America/New_York")
+    |> DateTime.to_date()
+    |> format_date(fallback)
+  end
+
   defp format_date(nil, fallback), do: fallback
 
   # Browsers strip any query params in a form's `action` before submitting, so to retain all the
@@ -84,5 +92,9 @@ defmodule ArrowWeb.DisruptionView do
 
   defp mark_as_approved_or_pending(false) do
     "mark as approved"
+  end
+
+  def date(dt) do
+    DateTime.shift_zone!(dt, "America/New_York") |> Calendar.strftime("%m/%d/%y")
   end
 end
