@@ -9,8 +9,8 @@ defmodule Arrow.Disruption do
   use Ecto.Schema
   import Ecto.Query
 
-  alias Arrow.{DisruptionRevision, Repo}
   alias Arrow.Disruption.Note
+  alias Arrow.{DisruptionRevision, Repo}
   alias Ecto.Changeset
 
   @type id :: integer
@@ -52,6 +52,7 @@ defmodule Arrow.Disruption do
       ]
     )
     |> Repo.one!()
+    |> Repo.preload([:notes])
   end
 
   @doc "Creates a new disruption, with its first revision having the given attributes."
@@ -150,5 +151,15 @@ defmodule Arrow.Disruption do
       preload: [revisions: {r, ^DisruptionRevision.associations()}]
     )
     |> Arrow.Repo.all()
+  end
+
+  @doc """
+  Inserts a new note associated with the given disruption_id.
+  """
+  @spec add_note(id, String.t(), map) :: {:ok, Note.t()} | {:error, Changeset.t(Note.t())}
+  def add_note(disruption_id, author, params) do
+    disruption_id
+    |> Note.changeset(author, params)
+    |> Repo.insert()
   end
 end

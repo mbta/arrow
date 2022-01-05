@@ -23,6 +23,7 @@ config :arrow,
     create_disruption: [:admin],
     update_disruption: [:admin],
     delete_disruption: [:admin],
+    create_note: [:admin],
     use_api: [:admin],
     view_change_feed: [:admin]
   },
