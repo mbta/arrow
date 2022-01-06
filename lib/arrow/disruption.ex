@@ -12,6 +12,7 @@ defmodule Arrow.Disruption do
   alias Arrow.Disruption.Note
   alias Arrow.{DisruptionRevision, Repo}
   alias Ecto.Changeset
+  alias Ecto.Multi
 
   @type id :: integer
   @type t :: %__MODULE__{
@@ -57,30 +58,35 @@ defmodule Arrow.Disruption do
 
   @doc "Creates a new disruption, with its first revision having the given attributes."
   @spec create(map) ::
-          {:ok, DisruptionRevision.t()} | {:error, Changeset.t(DisruptionRevision.t())}
+          {:ok, %{disruption: t(), revision: DisruptionRevision.t()}}
+          | {:error, :revision, Changeset.t(DisruptionRevision.t()), map()}
   def create(attrs) do
-    Repo.transaction(fn ->
-      %{id: id} = Repo.insert!(%__MODULE__{})
-
-      case DisruptionRevision.new(disruption_id: id)
-           |> DisruptionRevision.changeset(attrs)
-           |> Repo.insert() do
-        {:ok, revision} -> revision
-        {:error, changeset} -> Repo.rollback(changeset)
-      end
+    Multi.new()
+    |> Multi.insert(:disruption, %__MODULE__{})
+    |> Multi.insert(:revision, fn %{disruption: %{id: id}} ->
+      DisruptionRevision.new(disruption_id: id)
+      |> DisruptionRevision.changeset(attrs)
     end)
+    |> Repo.transaction()
   end
 
   @doc "Creates a new revision, with given attributes, of the given disruption ID."
   @spec update(id, map) ::
-          {:ok, DisruptionRevision.t()} | {:error, Changeset.t(DisruptionRevision.t())}
+          {:ok, %{revision: DisruptionRevision.t()}}
+          | {:error, :revision, Changeset.t(DisruptionRevision.t()), map()}
   def update(id, attrs) do
+    Multi.new()
+    |> Multi.insert(:revision, update_revision_changeset(id, attrs))
+    |> Repo.transaction()
+  end
+
+  @spec update_revision_changeset(id, map) :: Changeset.t(DisruptionRevision.t())
+  defp update_revision_changeset(id, attrs) do
     id
     |> latest_revision_id()
     |> DisruptionRevision.get!()
     |> DisruptionRevision.clone()
     |> DisruptionRevision.changeset(attrs)
-    |> Repo.insert()
   end
 
   @doc "Creates a new revision of the given disruption ID with `is_active` set to false."

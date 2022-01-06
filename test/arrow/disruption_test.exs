@@ -79,7 +79,7 @@ defmodule Arrow.DisruptionTest do
         "description" => "a testing disruption"
       }
 
-      {:ok, _id} = Disruption.create(attrs)
+      {:ok, _multi} = Disruption.create(attrs)
 
       [d] = Repo.all(Disruption)
 
@@ -108,7 +108,7 @@ defmodule Arrow.DisruptionTest do
         "days_of_week" => [%{"day_name" => "monday"}]
       }
 
-      {:error, changeset} = Disruption.create(attrs)
+      {:error, :revision, changeset, _} = Disruption.create(attrs)
 
       assert "can't be after end date" in errors_on(changeset).start_date
     end
@@ -120,7 +120,7 @@ defmodule Arrow.DisruptionTest do
         "days_of_week" => [%{"day_name" => "sunday"}]
       }
 
-      {:error, changeset} = Disruption.create(attrs)
+      {:error, :revision, changeset, _} = Disruption.create(attrs)
 
       assert "should fall between start and end dates" in errors_on(changeset).days_of_week
     end
@@ -133,7 +133,7 @@ defmodule Arrow.DisruptionTest do
         "exceptions" => [%{"excluded_date" => "2020-09-01"}]
       }
 
-      {:error, changeset} = Disruption.create(attrs)
+      {:error, :revision, changeset, _} = Disruption.create(attrs)
 
       assert "should fall between start and end dates" in errors_on(changeset).exceptions
     end
@@ -146,7 +146,7 @@ defmodule Arrow.DisruptionTest do
         "exceptions" => [%{"excluded_date" => "2020-08-18"}, %{"excluded_date" => "2020-08-18"}]
       }
 
-      {:error, changeset} = Disruption.create(attrs)
+      {:error, :revision, changeset, _} = Disruption.create(attrs)
 
       assert "should be unique" in errors_on(changeset).exceptions
     end
@@ -159,7 +159,7 @@ defmodule Arrow.DisruptionTest do
         "exceptions" => [%{"excluded_date" => "2020-08-19"}]
       }
 
-      {:error, changeset} = Disruption.create(attrs)
+      {:error, :revision, changeset, _} = Disruption.create(attrs)
 
       assert "should be applicable to days of week" in errors_on(changeset).exceptions
     end
@@ -167,16 +167,18 @@ defmodule Arrow.DisruptionTest do
     test "can't create disruption without days of week" do
       attrs = %{"start_date" => "2020-08-17", "end_date" => "2020-08-21"}
 
-      {:error, changeset} = Disruption.create(attrs)
+      {:error, :revision, changeset, _} = Disruption.create(attrs)
 
       assert "must be selected" in errors_on(changeset).days_of_week
     end
 
     test "requires exactly one of adjustment kind or non-empty adjustments" do
-      {:error, changeset} = Disruption.create(%{"adjustment_kind" => nil, "adjustments" => []})
+      {:error, :revision, changeset, _} =
+        Disruption.create(%{"adjustment_kind" => nil, "adjustments" => []})
+
       assert "is required without adjustments" in errors_on(changeset).adjustment_kind
 
-      {:error, changeset} =
+      {:error, :revision, changeset, _} =
         Disruption.create(%{
           "adjustment_kind" => "red_line",
           "adjustments" => [%{"id" => insert(:adjustment).id}]
@@ -209,7 +211,7 @@ defmodule Arrow.DisruptionTest do
         "trip_short_names" => [%{"trip_short_name" => "777"}, %{"trip_short_name" => "888"}]
       }
 
-      {:ok, _id} = Disruption.update(id, attrs)
+      {:ok, _multi} = Disruption.update(id, attrs)
 
       dr_ids = Repo.all(from(dr in DisruptionRevision, select: dr.id))
       assert length(dr_ids) == 2
@@ -238,7 +240,7 @@ defmodule Arrow.DisruptionTest do
     test "doesn't create a new revision if there is a validation error" do
       %{disruption_id: id} = insert(:disruption_revision)
 
-      {:error, _} = Disruption.update(id, %{start_date: nil})
+      {:error, _, _, _} = Disruption.update(id, %{start_date: nil})
 
       assert Repo.one!(DisruptionRevision)
     end
@@ -257,7 +259,7 @@ defmodule Arrow.DisruptionTest do
         "days_of_week" => [%{"day_name" => "tuesday"}]
       }
 
-      {:error, changeset} = Disruption.update(id, attrs)
+      {:error, :revision, changeset, _} = Disruption.update(id, attrs)
 
       assert "can't be after end date" in errors_on(changeset).start_date
     end
@@ -276,7 +278,7 @@ defmodule Arrow.DisruptionTest do
         "days_of_week" => [%{"day_name" => "sunday"}]
       }
 
-      {:error, changeset} = Disruption.update(id, attrs)
+      {:error, :revision, changeset, _} = Disruption.update(id, attrs)
 
       assert "should fall between start and end dates" in errors_on(changeset).days_of_week
     end
@@ -296,7 +298,7 @@ defmodule Arrow.DisruptionTest do
         "exceptions" => [%{"excluded_date" => "2020-09-01"}]
       }
 
-      {:error, changeset} = Disruption.update(id, attrs)
+      {:error, :revision, changeset, _} = Disruption.update(id, attrs)
 
       assert "should fall between start and end dates" in errors_on(changeset).exceptions
     end
@@ -316,7 +318,7 @@ defmodule Arrow.DisruptionTest do
         "exceptions" => [%{"excluded_date" => "2020-08-18"}, %{"excluded_date" => "2020-08-18"}]
       }
 
-      {:error, changeset} = Disruption.update(id, attrs)
+      {:error, :revision, changeset, _} = Disruption.update(id, attrs)
 
       assert "should be unique" in errors_on(changeset).exceptions
     end
@@ -336,7 +338,7 @@ defmodule Arrow.DisruptionTest do
         "exceptions" => [%{"excluded_date" => "2020-08-19"}]
       }
 
-      {:error, changeset} = Disruption.update(id, attrs)
+      {:error, :revision, changeset, _} = Disruption.update(id, attrs)
 
       assert "should be applicable to days of week" in errors_on(changeset).exceptions
     end
@@ -355,7 +357,7 @@ defmodule Arrow.DisruptionTest do
         "days_of_week" => []
       }
 
-      {:error, changeset} = Disruption.update(id, attrs)
+      {:error, :revision, changeset, _} = Disruption.update(id, attrs)
 
       assert "must be selected" in errors_on(changeset).days_of_week
     end
@@ -364,17 +366,20 @@ defmodule Arrow.DisruptionTest do
       %{disruption_id: kind_id} = insert(:disruption_revision, adjustment_kind: :bus)
       %{disruption_id: adj_id} = insert(:disruption_revision, adjustments: [build(:adjustment)])
 
-      {:error, changeset} = Disruption.update(kind_id, %{"adjustment_kind" => nil})
+      {:error, :revision, changeset, _} = Disruption.update(kind_id, %{"adjustment_kind" => nil})
       assert "is required without adjustments" in errors_on(changeset).adjustment_kind
 
-      {:error, changeset} = Disruption.update(adj_id, %{"adjustments" => []})
+      {:error, :revision, changeset, _} = Disruption.update(adj_id, %{"adjustments" => []})
       assert "is required without adjustments" in errors_on(changeset).adjustment_kind
 
       %{id: id} = insert(:adjustment)
-      {:error, changeset} = Disruption.update(kind_id, %{"adjustments" => [%{"id" => id}]})
+
+      {:error, :revision, changeset, _} =
+        Disruption.update(kind_id, %{"adjustments" => [%{"id" => id}]})
+
       assert "cannot be set with adjustments" in errors_on(changeset).adjustment_kind
 
-      {:error, changeset} = Disruption.update(adj_id, %{"adjustment_kind" => "bus"})
+      {:error, :revision, changeset, _} = Disruption.update(adj_id, %{"adjustment_kind" => "bus"})
       assert "cannot be set with adjustments" in errors_on(changeset).adjustment_kind
     end
   end
