@@ -35,7 +35,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
           end_date: ~D[2019-11-01]
         )
 
-      {:ok, _revision} = Disruption.update(d1.id, %{end_date: ~D[2019-12-01]})
+      {:ok, _multi} = Disruption.update(d1.id, "author", %{end_date: ~D[2019-12-01]})
 
       new_d1 =
         Disruption
@@ -46,7 +46,7 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
       |> Changeset.change(%{published_revision_id: Enum.at(new_d1.revisions, -1).id})
       |> Repo.update!()
 
-      {:ok, _revision} = Disruption.update(d1.id, %{end_date: ~D[2020-01-01]})
+      {:ok, _multi} = Disruption.update(d1.id, "author", %{end_date: ~D[2020-01-01]})
 
       res = json_response(get(conn, "/api/disruptions"), 200)
 

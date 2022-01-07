@@ -23,6 +23,7 @@ defmodule ArrowWeb.DisruptionView.FormTest do
           end_date: ~D[2021-01-31],
           row_approved: true,
           description: "a disruption for testing",
+          note_body: "some note",
           adjustments: [hd(adjustments)],
           days_of_week: [%DayOfWeek{day_name: "monday", start_time: ~T[21:15:00], end_time: nil}],
           exceptions: [%Exception{excluded_date: ~D[2021-01-11]}],
@@ -55,6 +56,7 @@ defmodule ArrowWeb.DisruptionView.FormTest do
       assert props["allAdjustments"] == expected_adjustments
       assert props["disruptionRevision"] == expected_revision
       assert get_in(props, ["iconPaths", :subway]) =~ ~r(^/images/)
+      assert props["noteBody"] == "some note"
     end
   end
 end

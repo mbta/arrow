@@ -18,6 +18,7 @@ defmodule ArrowWeb.DisruptionView.Form do
       row_approved: row_approved,
       description: description,
       adjustment_kind: adjustment_kind,
+      note_body: note_body,
       adjustments: adjustments,
       days_of_week: days_of_week,
       exceptions: exceptions,
@@ -37,7 +38,8 @@ defmodule ArrowWeb.DisruptionView.Form do
         "exceptions" => Enum.map(exceptions, & &1.excluded_date),
         "tripShortNames" => trip_short_names |> Enum.map(& &1.trip_short_name) |> Enum.join(",")
       },
-      "iconPaths" => icon_paths(conn)
+      "iconPaths" => icon_paths(conn),
+      "noteBody" => note_body
     }
   end
 
