@@ -19,6 +19,7 @@ defmodule Arrow.DisruptionRevision do
           is_active: boolean(),
           description: String.t(),
           adjustment_kind: atom() | nil,
+          note_body: String.t() | nil,
           disruption: Disruption.t() | Ecto.Association.NotLoaded.t(),
           days_of_week: [DayOfWeek.t()] | Ecto.Association.NotLoaded.t(),
           exceptions: [Exception.t()] | Ecto.Association.NotLoaded.t(),
@@ -35,6 +36,7 @@ defmodule Arrow.DisruptionRevision do
     field(:row_approved, :boolean, default: true)
     field(:description, :string)
     field(:adjustment_kind, Ecto.Enum, values: Adjustment.kinds())
+    field(:note_body, :string, virtual: true)
 
     belongs_to(:disruption, Disruption)
     has_many(:days_of_week, DayOfWeek, on_replace: :delete)
@@ -50,7 +52,7 @@ defmodule Arrow.DisruptionRevision do
   end
 
   @required_fields [:start_date, :end_date, :row_approved, :description]
-  @permitted_fields @required_fields ++ [:adjustment_kind]
+  @permitted_fields @required_fields ++ [:adjustment_kind, :note_body]
 
   @doc """
   Returns a list of either the revision's `adjustment_kind` if it has one, or the distinct kinds

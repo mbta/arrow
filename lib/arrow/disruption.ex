@@ -57,37 +57,54 @@ defmodule Arrow.Disruption do
   end
 
   @doc "Creates a new disruption, with its first revision having the given attributes."
-  @spec create(map) ::
-          {:ok, %{disruption: t(), revision: DisruptionRevision.t()}}
+  @spec create(String.t(), map) ::
+          {:ok, %{disruption: t(), revision: DisruptionRevision.t(), note: Note.t() | nil}}
           | {:error, :revision, Changeset.t(DisruptionRevision.t()), map()}
-  def create(attrs) do
+  def create(author_id, attrs) do
     Multi.new()
     |> Multi.insert(:disruption, %__MODULE__{})
     |> Multi.insert(:revision, fn %{disruption: %{id: id}} ->
       DisruptionRevision.new(disruption_id: id)
       |> DisruptionRevision.changeset(attrs)
     end)
+    |> maybe_add_note(author_id, note_params(attrs))
     |> Repo.transaction()
   end
 
   @doc "Creates a new revision, with given attributes, of the given disruption ID."
-  @spec update(id, map) ::
-          {:ok, %{revision: DisruptionRevision.t()}}
+  @spec update(id, String.t(), map) ::
+          {:ok, %{revision: DisruptionRevision.t(), note: Note.t() | nil}}
           | {:error, :revision, Changeset.t(DisruptionRevision.t()), map()}
-  def update(id, attrs) do
+  def update(id, author_id, attrs) do
     Multi.new()
-    |> Multi.insert(:revision, update_revision_changeset(id, attrs))
+    |> Multi.insert(:revision, fn _ ->
+      id
+      |> latest_revision_id()
+      |> DisruptionRevision.get!()
+      |> DisruptionRevision.clone()
+      |> DisruptionRevision.changeset(attrs)
+    end)
+    |> maybe_add_note(author_id, note_params(attrs))
     |> Repo.transaction()
   end
 
-  @spec update_revision_changeset(id, map) :: Changeset.t(DisruptionRevision.t())
-  defp update_revision_changeset(id, attrs) do
-    id
-    |> latest_revision_id()
-    |> DisruptionRevision.get!()
-    |> DisruptionRevision.clone()
-    |> DisruptionRevision.changeset(attrs)
+  @spec maybe_add_note(Multi.t(), String.t(), map | nil) :: Multi.t()
+  defp maybe_add_note(multi, _author, nil) do
+    Multi.put(multi, :note, nil)
   end
+
+  defp maybe_add_note(multi, author, params) do
+    Multi.insert(multi, :note, fn %{revision: %{disruption_id: id}} ->
+      Note.changeset(id, author, params)
+    end)
+  end
+
+  @spec note_params(map) :: map | nil
+  defp note_params(%{"note_body" => body}) when byte_size(body) > 0 do
+    %{body: body}
+  end
+
+  defp note_params(_), do: nil
 
   @doc "Creates a new revision of the given disruption ID with `is_active` set to false."
   @spec delete!(id) :: DisruptionRevision.t()

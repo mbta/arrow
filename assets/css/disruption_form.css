@@ -27,3 +27,8 @@
   font-size: large;
   font-weight: 200;
 }
+
+.m-disruption-form__legend-optional {
+  color: #888;
+  font-size: medium;
+}

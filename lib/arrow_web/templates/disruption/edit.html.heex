@@ -11,6 +11,7 @@
     cancel_confirmation: "Discard all changes to this disruption?",
     cancel_path: Routes.disruption_path(@conn, :show, @id),
     changeset: @changeset,
-    conn: @conn
+    conn: @conn,
+    note_body: "",
   ) %>
 <% end %>

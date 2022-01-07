@@ -13,8 +13,11 @@ defmodule ArrowWeb.DisruptionController do
   plug(Authorize, :delete_disruption when action in [:delete])
 
   @spec update_row_status(Conn.t(), Conn.params()) :: Conn.t()
-  def update_row_status(conn, %{"id" => id, "revision" => attrs}) do
-    {:ok, _} = Disruption.update(id, attrs)
+  def update_row_status(%{assigns: %{current_user: user}} = conn, %{
+        "id" => id,
+        "revision" => attrs
+      }) do
+    {:ok, _} = Disruption.update(id, user.id, attrs)
 
     conn
     |> put_flash(:info, "Disruption updated successfully.")
@@ -37,7 +40,7 @@ defmodule ArrowWeb.DisruptionController do
   @spec new(Conn.t(), Conn.params()) :: Conn.t()
   def new(conn, _params) do
     changeset = DisruptionRevision.new() |> Changeset.change()
-    render(conn, "new.html", adjustments: Adjustment.all(), changeset: changeset)
+    render(conn, "new.html", adjustments: Adjustment.all(), changeset: changeset, note_body: "")
   end
 
   @spec edit(Conn.t(), Conn.params()) :: Conn.t()
@@ -47,14 +50,15 @@ defmodule ArrowWeb.DisruptionController do
     render(conn, "edit.html",
       id: id,
       adjustments: Adjustment.all(),
-      changeset: Changeset.change(revision)
+      changeset: Changeset.change(revision),
+      note_body: ""
     )
   end
 
   @spec create(Conn.t(), Conn.params()) :: Conn.t()
-  def create(conn, %{"revision" => attrs}) do
-    case Disruption.create(attrs) do
-      {:ok, %{revision: %{disruption_id: id}}} ->
+  def create(%{assigns: %{current_user: user}} = conn, %{"revision" => attrs}) do
+    case Disruption.create(user.id, attrs) do
+      {:ok, %{disruption: %{id: id}}} ->
         conn
         |> put_flash(:info, "Disruption created successfully.")
         |> redirect(to: Routes.disruption_path(conn, :show, id))
@@ -70,8 +74,8 @@ defmodule ArrowWeb.DisruptionController do
   end
 
   @spec update(Conn.t(), Conn.params()) :: Conn.t()
-  def update(conn, %{"id" => id, "revision" => attrs}) do
-    case Disruption.update(id, put_new_assocs(attrs)) do
+  def update(%{assigns: %{current_user: user}} = conn, %{"id" => id, "revision" => attrs}) do
+    case Disruption.update(id, user.id, put_new_assocs(attrs)) do
       {:ok, _multi} ->
         conn
         |> put_flash(:info, "Disruption updated successfully.")
