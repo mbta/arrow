@@ -16,7 +16,7 @@
     "phoenix": "file:../deps/phoenix",
     "phoenix_html": "file:../deps/phoenix_html",
     "react": "^17.0.2",
-    "react-datepicker": "^3.8.0",
+    "react-datepicker": "^4.6.0",
     "react-dom": "^17.0.2",
     "react-select": "^4.3.1"
   },
