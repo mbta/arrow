@@ -29,138 +29,183 @@ This doc outlines how file attachments to disruptions will be handled. 📎
 
 ## Proposal
 
-[Waffle] appears to be the most widely used off-the-shelf solution for handling
-file uploads and downloads in Elixir. On investigation of this library and its
-[Ecto support module][Waffle.Ecto], it appears to offer everything we need for
-this feature, and also checks off some nice-to-haves.
+Since `Plug.Upload` and `ExAws.S3` already handle most of the "hard parts" of
+accepting file uploads, storing them in S3, and generating URLs for them, it's
+an entirely reasonable option for us to glue them together ourselves, without a
+third-party library. Libraries are, however, explored in the **Alternatives**.
 
-The docs have a [complete example module][example] which includes dynamic
-storage paths, validation, and producing multiple "versions" using ImageMagick,
-which might be useful to refer to. This does not include Ecto integration.
+### Relevant APIs
 
-[Waffle]: https://hexdocs.pm/waffle/Waffle.html
-[Waffle.Ecto]: https://hexdocs.pm/waffle_ecto/Waffle.Ecto.html
-[example]: https://hexdocs.pm/waffle/s3.html
+* When a file is uploaded from a `Phoenix.HTML.Form.file_input/3`, Phoenix
+  automatically receives and stores the file in a temporary location on disk
+  that is deleted when the request process dies, and generates a `Plug.Upload`
+  struct for it in the request's `params`. This has `filename`, `content_type`,
+  and `path` fields.
 
-### Terminology
+* `ExAws.S3.put_object/4` allows uploading a binary to a specified path.
+  Initially this might be the simplest way to handle uploads, but if we need to
+  account for very large files, there is also `ExAws.S3.upload/4` which allows
+  streaming data directly from disk (instead of reading the whole file into a
+  binary in memory first).
 
-**"Definition module"** is a module which uses `Waffle.Definition` and
-conceptually represents a "kind of upload" (an "avatar" is the example used in
-the docs). Such modules gain an API to `store`, `delete`, and retrieve the `url`
-of a file, and can override several callbacks to control how those things happen
-or add validations, transformations, or "versions" (variants, e.g. thumbnails).
+* `ExAws.S3.delete_object/3` can delete the objects we `put`.
 
-Filename is the primary identifier used by Waffle. **"Scope"** refers to any
-Elixir term passed, together with a filename, to one of the definition module's
-functions. The filename-plus-scope then flows through to the callbacks. For
-example, if an Ecto "user" struct were used as the scope, this would allow
-storing avatars under different paths per user by incorporating the user ID,
-instead of all avatars occupying a single global namespace.
+* `ExAws.S3.presigned_url/5` generates a pre-signed URL for an object (enabling
+  it to be accessed without authentication for a limited time).
 
-### Storage
+### Variants
 
-Waffle has a first-party S3 storage adapter which uses ExAws for configuration,
-the same AWS library we already use. Storage can be configured per environment,
-allowing us to use local storage for testing and S3 storage when deployed:
-
-```elixir
-# config/config.exs
-config :waffle, storage: Waffle.Storage.Local
-
-# config/prod.exs
-config :waffle, storage: Waffle.Storage.S3, bucket: {:system, "S3_BUCKET"}
-```
-
-Most storage parameters (path, ACLs, HTTP headers) can be set either globally in
-the app config or per-attachment using callbacks.
+For generating "variants" of image attachments, such as thumbnails, we can use
+the [Mogrify](https://hexdocs.pm/mogrify/) library, a convenient wrapper around
+the ImageMagick command-line tool. This would require adding a new system-level
+dependency both for developers and in the production images, but it doesn't seem
+like there are any good pure-Elixir options for this.
 
 ### Data Model
 
 Since the "types" of attachments we want to support have a lot of behavior in
 common, and easily extending the system to support new types is desired, we can
-use a single Ecto schema and definition module for all of them. In principle it
-even appears possible for both of these to be the same module — the docs use
-separate modules since their example of a "user" who has an "avatar" involves
-two separate concepts.
+use a single Ecto schema for all of them. Below is a sketch of this approach.
 
-Here is what a combined approach might look like:
+In this sketch, full storage paths for an attachment are generated when needed,
+and only the original filename is stored in our database — this allows handling
+variants without much extra effort, since the desired variant can be part of the
+call to generate the path (this mirrors how Waffle works).
+
+Comments tagged with `[v]` indicate logic that would only be needed once we
+implement support for image variants.
 
 ```elixir
 defmodule Arrow.Disruption.Attachment do
   use Ecto.Schema
-  use Waffle.Definition
-  use Waffle.Ecto.Definition
-  use Waffle.Ecto.Schema
 
   @kinds ~w(miscellaneous cr_schedule shuttle_diagram signage_plan)
-  @versions ~w(original preview)a
+
+  # Module that implements a common storage adapter behaviour, using `ExAws.S3`
+  # in production and the local file system in dev/test. The callbacks could be
+  # `put`, `delete`, and `url`, each accepting a file path.
+  @storage Application.compile_env(:arrow, :attachment_storage)
 
   schema "disruption_attachments" do
     belongs_to :disruption, Arrow.Disruption
 
     field :kind, :string
-    field :file, __MODULE__.Type
+    field :filename, :string
+
+    # actual type is a Plug.Upload struct
+    field :upload, :any, virtual: true
 
     timestamps(type: :utc_datetime)
   end
 
   def changeset(data, params \\ %{}) do
-    cast_attachments(data, params, [:file])
+    # Accept an "upload" param that is the Plug.Upload and apply validations
+    # (e.g. if the `kind` is `shuttle_diagram`, validate that the file is a PNG,
+    # based on name or `content_type`), then assign it to the `upload` field.
   end
 
-  # derive path from disruption ID
-  def storage_dir(version, {_file, %__MODULE__{disruption_id: id}}) do
-    "attachments/#{id}/#{version}"
+  def insert(%__MODULE__{}) do
+    # Return a `Multi` with an `insert` step that sets the `filename` from the
+    # `upload` field and inserts the Attachment, and a `run` step that uploads
+    # the file itself to the `path/2`, using `@storage.put`.
+    #
+    # [v] Instead of the single upload step, generate a step for each of the
+    #     `variants`, using `convert` to produce them. Suggestion: identifiers
+    #     for the steps could be `{:upload, variant}`.
   end
 
-  # example of validation per kind of attachment
-  def validate({%{file_name: name}, %__MODULE__{kind: "cr_schedule"}}) do
-    case name |> Path.extname() |> String.downcase() in ~w(pdf xlsx) do
-      true -> :ok
-      false -> {:error, "must be a PDF or Excel sheet"}
-    end
+  def delete(%__MODULE__{}) do
+    # Return a `Multi` that includes a `run` step to delete the Attachment's
+    # file, using `path/2` and `@storage.delete`, and a `delete` step to delete
+    # the Attachment itself.
+    #
+    # [v] This would also include a `run` to delete each variant from storage.
   end
 
-  # example of transforming specific kinds of attachment
-  def transform(:original, _), do: :noaction
+  # Function that accepts and returns (unchanged) a transaction result. If the
+  # result is a Multi error, and the changes that succeeded include any of the
+  # `run` steps we generate in `insert` to upload files, use `@storage.delete`
+  # to clean them up. This implies those steps need to return a value that tells
+  # us where the file is.
+  #
+  # TBD: What to do if the cleanup deletion fails? Ignore it?
+  #
+  # TBD: Do we need to handle a `delete` multi that failed? The file is already
+  #      deleted... could move it to a "trash" prefix we periodically clean out,
+  #      and restore it to original location on error, but maybe too much work
 
-  def transform(:preview, {_file, %__MODULE__{kind: "shuttle_diagram"}}) do
-    {:convert, "-strip -thumbnail x200 -limit area 10MB -limit disk 100MB"}
+  def cleanup({:ok, _} = result), do: result
+  def cleanup({:error, _} = result), do: result
+  def cleanup({:error, _operation, _result, changes}) do
+    # ...
   end
 
-  def transform(:preview, _), do: :skip
+  def url(%__MODULE__{}, variant \\ :original) do
+    # Call `path/2` and pass the result to `@storage.url`.
+  end
+
+  defp path(%__MODULE__{}, variant \\ :original) do
+    # Generate a storage path for the file. This could be in the form:
+    #   /<disruption ID>/<variant>/<filename>
+    # To be able to use the disruption ID, a new disruption would need to have
+    # already been inserted before `Attachment.insert` is called (probably in a
+    # multi of its own, to which the Attachment multi is appended).
+    #
+    # [v] The `variant` argument would only have to exist once we add variants.
+    #     Before that, we can just hard-code that path segment as `original`.
+  end
+
+  defp variants(%__MODULE__{}) do
+    # [v] Determine what variants the Attachment should have based on `kind`.
+  end
+
+  # [v] Given a local file path and a variant, perform any required transforms
+  #     for the variant and return a path where the transformed file is saved.
+  #     In this example we assume `:original` and `:preview` variants exist.
+
+  defp convert(path, :original), do: path
+  defp convert(path, :preview) do
+    # Use Mogrify to open the file path, convert it, and save it under a new
+    # temp file path, which we return
+  end
 end
 ```
 
-Note using a record ID as part of the storage path requires that the record be
-persisted before the attachment is casted/saved. In the above example the
-disruption ID is used rather than the attachment ID, so this would only come
-into play when a disruption is newly created. The recommended solution is to
-use `Multi`, which does mean we can't use `cast_assoc` directly.
 
+## Alternatives
 
-## Drawbacks
+### Waffle
 
-* With the `Waffle.Ecto` integration, `cast_attachments` immediately stores the
-  file data to S3 if it is valid. If something goes wrong later in the process
-  and the Attachment record is not persisted, there is now a "disconnected"
-  file in S3, and we need to account for this and do the cleanup ourselves.
-  This is in contrast to alternatives (see below), in which casting/validation
-  is not necessarily coupled to uploading.
+[Waffle] appears to be the most widely used off-the-shelf solution for handling
+file uploads in Elixir.
 
-* The general quality of Waffle's code, APIs, and documentation seems a bit
-  uneven. For example, there are no typespecs; there are no behaviours for the
-  callbacks; the `File` struct passed to callbacks is [undocumented][q1];
-  variants are defined using an also-undocumented [magic module attribute][q2];
-  deleting a file [always returns `:ok`][q3] even if it fails. Individually
-  these are minor papercuts, but they add up to a slightly shaky foundation.
+Points in its favor include a first-party [Ecto support module][Waffle.Ecto], an
+S3 storage adapter which uses ExAws for configuration (the same AWS library we
+already use), and ImageMagick support for producing multiple variants of image
+uploads. The docs have a [complete example module][example] which uses most
+features of the library, other than the Ecto integration.
+
+[Waffle]: https://hexdocs.pm/waffle/Waffle.html
+[Waffle.Ecto]: https://hexdocs.pm/waffle_ecto/Waffle.Ecto.html
+[example]: https://hexdocs.pm/waffle/s3.html
+
+The main point against it is the general uneven quality of its code, APIs, and
+documentation. For example, there are no typespecs; there are no behaviours for
+callbacks; the `File` struct passed to callbacks is [undocumented][q1]; variants
+are defined using an also-undocumented [magic module attribute][q2]; deleting a
+file [always returns `:ok`][q3] even if it fails. Individually these are minor
+papercuts, but they add up to a slightly shaky foundation.
 
 [q1]: https://github.com/elixir-waffle/waffle/blob/master/lib/waffle/file.ex#L2
 [q2]: https://github.com/elixir-waffle/waffle/blob/master/lib/waffle/definition/versioning.ex#L48
 [q3]: https://github.com/elixir-waffle/waffle/issues/86
 
-
-## Alternatives
+Another downside is that the Ecto integration immediately uploads the file to
+storage upon casting (if it passes validation), and has no built-in mechanism
+to clean up "disconnected" files in S3 if saving the record fails later on.
+Although with the proposed solution we have to implement the upload/cleanup
+lifecycle ourselves anyway, it means the existence of the Ecto integration
+isn't as much of a time-saver as it seems.
 
 ### Capsule
 
@@ -171,72 +216,7 @@ active development ... Use at your own risk." Despite this, it seems to have a
 more well-thought-out architecture than Waffle, focused on small composable
 primitives. It also has first-party Ecto and S3 storage integrations.
 
-For us, since our use case aligns so well with what Waffle does out of the box,
-Capsule almost looks like a kit for building our own version of Waffle. Notably,
-it'd be on us to implement image variants and conversions (the [Mogrify] library
-at least provides a nice wrapper around the ImageMagick command line).
-
-[Mogrify]: https://hexdocs.pm/mogrify/readme.html
-
-### Roll our own
-
-Since `Plug.Upload` and `ExAws.S3` already handle most of the "hard parts" of
-accepting file uploads, storing them in S3, and generating URLs for them, it
-doesn't seem out of the question for us to write all the glue code ourselves.
-
-Below is a sketch of this approach, taking cues from Waffle. For error handling,
-`insert` and `delete` could wrap their operations in `Multi` steps; the module
-could then provide a `cleanup` function that accepts and "passes through" a
-transaction result and, if the result was failure, uses the Multi data to "roll
-back" the upload steps by deleting the objects from S3.
-
-In some ways, this approach appears cleaner than either Waffle or Capsule,
-though of course high-level sketches always _appear_ clean. In any case it is
-an intriguing option.
-
-```elixir
-defmodule Arrow.Disruption.Attachment do
-  use Ecto.Schema
-
-  @kinds ~w(miscellaneous cr_schedule shuttle_diagram signage_plan)
-  @variants ~w(original preview)a
-
-  # this would be a module that implements a common storage adapter behaviour,
-  # using `ExAws.S3` in production and the local file system in dev/test
-  @storage Application.compile_env(:arrow, :attachment_storage)
-
-  schema "disruption_attachments" do
-    belongs_to :disruption, Arrow.Disruption
-
-    field :kind, :string
-    field :filename, :string
-    field :upload, :any, virtual: true
-
-    timestamps(type: :utc_datetime)
-  end
-
-  def changeset(data, %{"upload" => %Plug.Upload{...}}) do
-    # validate the upload as needed and store it on the virtual `upload` field
-  end
-
-  def insert(%__MODULE__{...}) do
-    # get file contents from the `upload` field
-    # use Mogrify to generate variants if applicable
-    # use `@storage` to upload them to the `path`
-    # insert the record
-  end
-
-  def delete(%__MODULE__{...}) do
-    # use `@storage` to delete the objects for all variants
-    # delete the record
-  end
-
-  def url(%__MODULE__{...}, variant \\ :original) do
-    # use `@storage` to get a signed URL using the `path`
-  end
-
-  defp path(%__MODULE__{...}, variant \\ :original) do
-    # generate the path using the disruption ID and variant
-  end
-end
-```
+The main strike against Capsule other than its immaturity is that because it's
+relatively low-level, it doesn't seem to get us much _beyond_ the roll-our-own
+approach. Notably, we'd still have to implement variants and ImageMagick
+conversions from scratch.
