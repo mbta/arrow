@@ -63,9 +63,17 @@ like there are any good pure-Elixir options for this.
 
 ### Data Model
 
-Since the "types" of attachments we want to support have a lot of behavior in
+Since the "kinds" of attachments we want to support have a lot of behavior in
 common, and easily extending the system to support new types is desired, we can
-use a single Ecto schema for all of them. Below is a sketch of this approach.
+use a single Ecto schema for all of them. This would need only an enum field to
+distinguish between different kinds of attachments.
+
+### Code Sketch
+
+Below is a sketch of the `Attachment` schema module, which also includes the
+logic that would be needed to handle the file storage itself. This specific
+module structure and API is not prescriptive; it's only here to prove the basic
+elements are feasible and give an idea of how much work will be involved.
 
 In this sketch, full storage paths for an attachment are generated when needed,
 and only the original filename is stored in our database — this allows handling
@@ -146,7 +154,7 @@ defmodule Arrow.Disruption.Attachment do
 
   defp path(%__MODULE__{}, variant \\ :original) do
     # Generate a storage path for the file. This could be in the form:
-    #   /<disruption ID>/<variant>/<filename>
+    #   /<env-specific prefix>/<disruption ID>/<variant>/<filename>
     # To be able to use the disruption ID, a new disruption would need to have
     # already been inserted before `Attachment.insert` is called (probably in a
     # multi of its own, to which the Attachment multi is appended).
@@ -167,6 +175,41 @@ defmodule Arrow.Disruption.Attachment do
   defp convert(path, :preview) do
     # Use Mogrify to open the file path, convert it, and save it under a new
     # temp file path, which we return
+  end
+end
+```
+
+Currently the specs for this feature only include being able to upload files
+using a single static file input on the disruption show page, which is not part
+of the disruption edit form. The template code for this could look like:
+
+```eex
+<%= form_for @conn, Routes.attachment_path(@conn, :create, @id),
+      [method: "post", multipart: true], fn f -> %>
+  <%= file_input f, :upload %>
+  <%= hidden_input f, :kind, "miscellaneous" %>
+  <%= submit "upload", class: "btn btn-primary" %>
+<% end %>
+```
+
+With a corresponding AttachmentController having code like this (assuming the
+attachment route is nested under the disruption route):
+
+```elixir
+def create(conn, %{"disruption_id" => id} = params) do
+  result =
+    %Attachment{disruption_id: id}
+    |> Attachment.changeset(params)
+    |> Attachment.insert()
+    |> Attachment.cleanup()
+
+  case result do
+    {:ok, _} ->
+      redirect(conn, to: Routes.disruption_path(conn, :show, id))
+
+    {:error, _operation, _result, _changes} ->
+      # same redirect as above but show an appropriate error flash based on the
+      # operation and/or result
   end
 end
 ```
