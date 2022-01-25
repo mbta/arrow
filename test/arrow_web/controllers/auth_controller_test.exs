@@ -6,10 +6,13 @@ defmodule ArrowWeb.Controllers.AuthControllerTest do
       current_time = System.system_time(:second)
 
       auth = %Ueberauth.Auth{
-        uid: "foo@mbta.com",
+        uid: "ActiveDirectory_MBTA\\foo",
         credentials: %Ueberauth.Auth.Credentials{
           expires_at: current_time + 1_000,
           other: %{groups: ["test1"]}
+        },
+        info: %Ueberauth.Auth.Info{
+          email: "foo@mbta.com"
         }
       }
 

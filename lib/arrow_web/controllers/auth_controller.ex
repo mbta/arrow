@@ -4,7 +4,7 @@ defmodule ArrowWeb.AuthController do
 
   @spec callback(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
-    username = auth.uid
+    username = auth.info.email
     expiration = auth.credentials.expires_at
     credentials = conn.assigns.ueberauth_auth.credentials
 
