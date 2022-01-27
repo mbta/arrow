@@ -5,15 +5,6 @@
         <h2 class="mb-0">disruption</h2>
         <h5>ID <span class="ml-2 font-weight-normal"><%= @id %></span></h5>
       </div>
-
-      <%= if Permissions.authorize?(:delete_disruption, @user) and @revision.is_active do %>
-        <%= button("delete",
-              class: "btn btn-link",
-              method: :delete,
-              to: Routes.disruption_path(@conn, :delete, @id),
-              data: [confirm: "Permanently delete this disruption?"]
-            ) %>
-      <% end %>
     </div>
 
     <%= render("_description.html", conn: @conn, revision: @revision) %>
@@ -31,12 +22,13 @@
 
       <% inactive_class = if(@revision.is_active, do: "", else: "text-muted") %>
 
-      <div class={"col-md-10 " <> inactive_class}>
+      <div class={"col-md-12 " <> inactive_class}>
         <div class="mb-3">
-          <h4>approval status</h4>
-
-          <div class="pl-3">
-            <%= if @revision.row_approved, do: "Approved", else: "Pending" %>
+          <div class="m-disruption-details_flex align-items-center">
+            <div class="w-50"><h4>approval status</h4></div>
+            <span role="approval" class={"m-disruption-details_approval-status m-disruption-details_approval-status-info w-75 " <> inactive_class}>
+              <%= if @revision.row_approved, do: "approved", else: "pending" %>
+            </span>
           </div>
         </div>
 
@@ -83,40 +75,46 @@
           </div>
         <% end %>
       </div>
-
-      <%= if @revision.is_active and Permissions.authorize?(:update_disruption, @user) do %>
-        <div class="col-md-4">
-          <%= form_tag Routes.disruption_path(@conn, :update_row_status, @revision.disruption_id), method: "put" do %>
-            <%= hidden_input :revision, :row_approved, value: !@revision.row_approved %>
-            <%= submit mark_as_approved_or_pending(@revision.row_approved), class: "btn btn-primary w-100"%>
-          <% end %>
-        </div>
-      <% end %>
-      <%= if @revision.is_active and Permissions.authorize?(:update_disruption, @user) do %>
-        <div class="col-md-3">
-          <%= link("edit",
-                class: "btn btn-primary w-100",
-                to: Routes.disruption_path(@conn, :edit, @id)
-              ) %>
-        </div>
-      <% end %>
     </div>
   </section>
 
-  <section class="col-lg-4">
-    <h3>notes</h3>
+  <section class="col-lg-5">
+    <%= if @revision.is_active do %>
+      <h3>notes</h3>
 
-    <%= if Permissions.authorize?(:create_note, @user) do %>
-      <%= form_tag Routes.note_path(@conn, :create, @id), method: "post", class: "mb-4" do %>
-        <%= textarea(:note, :body, class: "w-100") %>
-        <div>
-          <%= submit "save", class: "btn btn-primary" %>
-        </div>
+      <%= if Permissions.authorize?(:create_note, @user) do %>
+        <%= form_tag Routes.note_path(@conn, :create, @id), method: "post", class: "mb-4" do %>
+          <%= textarea(:note, :body, class: "w-100") %>
+          <div>
+            <%= submit "save", class: "btn btn-primary" %>
+          </div>
+        <% end %>
       <% end %>
-    <% end %>
 
-    <%= for note <- @notes do %>
-      <%= render "_note.html", note: note %>
+      <%= for note <- @notes do %>
+        <%= render "_note.html", note: note %>
+      <% end %>
+    
+      <div class="m-disruption-details_flex align-items-center">
+        <%= if Permissions.authorize?(:update_disruption, @user) do %>
+          <%= form_tag Routes.disruption_path(@conn, :update_row_status, @revision.disruption_id), method: "put" do %>
+            <%= hidden_input :revision, :row_approved, value: !@revision.row_approved %>
+            <%= submit mark_as_approved_or_pending(@revision.row_approved), class: "btn btn-primary"%>
+          <% end %>
+          <%= link(render("_button_description.html", conn: @conn, kind: :edit),
+              class: "btn btn-tertiary",
+              to: Routes.disruption_path(@conn, :edit, @id)
+            ) %>
+        <% end %>
+        <%= if Permissions.authorize?(:delete_disruption, @user) do %>
+          <%= button(render("_button_description.html", conn: @conn, kind: :delete),
+              class: "btn btn-tertiary",
+              method: :delete,
+              to: Routes.disruption_path(@conn, :delete, @id),
+              data: [confirm: "Permanently delete this disruption?"]
+            ) %>
+        <% end %>
+      </div>
     <% end %>
   </section>
 </div>

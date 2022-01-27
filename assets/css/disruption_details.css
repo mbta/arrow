@@ -18,3 +18,22 @@
   padding: 1rem;
   margin: 1rem 0;
 }
+
+.m-disruption-details_flex {
+  display: flex !important;
+  gap: 1rem;
+}
+
+.m-disruption-details_approval-status {
+  position: relative;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 0.1rem solid transparent;
+  border-radius: 0.25rem;
+}
+
+.m-disruption-details_approval-status-info {
+  color: #dd3159;
+  background-color: #fbeaee;
+  border-color: #dd3159;
+}
