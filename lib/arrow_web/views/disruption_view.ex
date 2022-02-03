@@ -22,6 +22,11 @@ defmodule ArrowWeb.DisruptionView do
     silver_line: "silver-line"
   }
 
+  @button_icon_names %{
+    edit: "edit",
+    delete: "delete"
+  }
+
   @spec adjustment_kind_icon_path(Plug.Conn.t(), atom()) :: String.t()
   def adjustment_kind_icon_path(conn, kind) do
     Routes.static_path(conn, "/images/icon-#{@adjustment_kind_icon_names[kind]}-small.svg")
@@ -40,6 +45,23 @@ defmodule ArrowWeb.DisruptionView do
       class: "m-icon m-icon-#{size} #{Keyword.get(opts, :class, "")}",
       style: "background-image: url(#{adjustment_kind_icon_path(conn, kind)})"
     )
+  end
+
+  @spec button_icon_path(Plug.Conn.t(), atom()) :: String.t()
+  def button_icon_path(conn, kind) do
+    Routes.static_path(conn, "/icons/#{get_button_icon(kind)}-soft-icons.png")
+  end
+
+  defp button_icon(conn, kind, size, opts) when size in ~w(sm lg) do
+    content_tag(:span, "",
+      class: "m-icon m-icon-#{size} #{Keyword.get(opts, :class, "")}",
+      style: "background-image: url(#{button_icon_path(conn, kind)})"
+    )
+  end
+
+  @spec get_button_icon(atom()) :: String.t()
+  defp get_button_icon(kind) do
+    Map.fetch!(@button_icon_names, kind)
   end
 
   defp format_date(date, fallback \\ "❓")
