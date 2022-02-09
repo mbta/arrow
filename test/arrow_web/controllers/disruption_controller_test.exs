@@ -29,32 +29,6 @@ defmodule ArrowWeb.DisruptionControllerTest do
 
       assert resp =~ "#{id}"
     end
-
-    @tag :authenticated
-    test "anyone can see notes, but not create new ones", %{conn: conn} do
-      %{disruption_id: id} = insert_revision_with_everything()
-      insert(:note, disruption_id: id, body: "This is the body")
-
-      resp =
-        conn
-        |> get(Routes.disruption_path(conn, :show, id))
-        |> html_response(200)
-
-      assert resp =~ "This is the body"
-      refute resp =~ "save"
-    end
-
-    @tag :authenticated_admin
-    test "admins see form to save new notes", %{conn: conn} do
-      %{disruption_id: id} = insert_revision_with_everything()
-
-      resp =
-        conn
-        |> get(Routes.disruption_path(conn, :show, id))
-        |> html_response(200)
-
-      assert resp =~ "save"
-    end
   end
 
   describe "new/2" do

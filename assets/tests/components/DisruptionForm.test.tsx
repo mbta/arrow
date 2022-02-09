@@ -48,7 +48,6 @@ describe("DisruptionForm", () => {
             tripShortNames: "trip1,trip2",
           }}
           iconPaths={{}}
-          noteBody=""
         />
       </form>
     )
@@ -99,7 +98,6 @@ describe("DisruptionForm", () => {
         allAdjustments={adjustments}
         disruptionRevision={blankRevision}
         iconPaths={{}}
-        noteBody=""
       />
     )
 
@@ -136,7 +134,6 @@ describe("DisruptionForm", () => {
           allAdjustments={adjustments}
           disruptionRevision={blankRevision}
           iconPaths={{}}
-          noteBody=""
         />
       </form>
     )
@@ -157,7 +154,6 @@ describe("DisruptionForm", () => {
           allAdjustments={adjustments}
           disruptionRevision={blankRevision}
           iconPaths={{}}
-          noteBody=""
         />
       </form>
     )
@@ -178,7 +174,6 @@ describe("DisruptionForm", () => {
         allAdjustments={adjustments}
         disruptionRevision={blankRevision}
         iconPaths={{}}
-        noteBody=""
       />
     )
 
