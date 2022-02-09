@@ -80,21 +80,6 @@
 
   <section class="col-lg-5">
     <%= if @revision.is_active do %>
-      <h3>notes</h3>
-
-      <%= if Permissions.authorize?(:create_note, @user) do %>
-        <%= form_tag Routes.note_path(@conn, :create, @id), method: "post", class: "mb-4" do %>
-          <%= textarea(:note, :body, class: "w-100") %>
-          <div>
-            <%= submit "save", class: "btn btn-primary" %>
-          </div>
-        <% end %>
-      <% end %>
-
-      <%= for note <- @notes do %>
-        <%= render "_note.html", note: note %>
-      <% end %>
-    
       <div class="m-disruption-details_flex align-items-center">
         <%= if Permissions.authorize?(:update_disruption, @user) do %>
           <%= form_tag Routes.disruption_path(@conn, :update_row_status, @revision.disruption_id), method: "put" do %>

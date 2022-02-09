@@ -121,35 +121,6 @@ defmodule Arrow.Integration.DisruptionsTest do
     |> assert_text(adjustment.source_label)
   end
 
-  feature "note is preserved upon disruption validation errors", %{session: session} do
-    insert(:adjustment, route_id: "Green-B", source_label: "KendallPackardsCorner")
-    now = DateTime.now!("America/New_York")
-
-    # start date after end date to trigger validation failure.
-    start_date = now |> DateTime.add(7 * 24 * 60 * 60) |> Calendar.strftime("%m/%d/%Y")
-    end_date = now |> DateTime.add(-7 * 24 * 60 * 60) |> Calendar.strftime("%m/%d/%Y")
-
-    session
-    |> visit("/")
-    |> click(link("create"))
-    |> assert_text("create new disruption")
-    |> click(text("Pending"))
-    |> click(text("Subway"))
-    |> fill_in(css("[aria-label='description']"), with: "a test description")
-    |> click(text("Select..."))
-    |> click(text("Kendall Packards Corner"))
-    |> fill_in(text_field("start"), with: start_date)
-    |> send_keys([:enter])
-    |> fill_in(text_field("end"), with: end_date)
-    |> send_keys([:enter])
-    |> click(css("label", text: "Mon"))
-    |> assert_text("Start of service")
-    |> fill_in(css("[aria-label='note']"), with: "this is a note")
-    |> click(button("save"))
-    |> assert_text("Disruption could not be created")
-    |> assert_text("this is a note")
-  end
-
   defp build_today_revision do
     date = DateTime.now!("America/New_York") |> DateTime.to_date()
     day_name = date |> Calendar.strftime("%A") |> String.downcase()
