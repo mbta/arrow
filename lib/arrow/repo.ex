@@ -17,7 +17,7 @@ defmodule Arrow.Repo do
     port = Keyword.fetch!(config, :port)
 
     mod = Application.get_env(:arrow, :aws_rds_mod)
-    token = apply(mod, :generate_db_auth_token, [hostname, username, port, %{}])
+    token = mod.generate_db_auth_token(hostname, username, port, %{})
     :ok = Logger.info("generated_aws_rds_iam_auth_token")
 
     Keyword.put(config, :password, token)
