@@ -95,6 +95,7 @@ defmodule Arrow.Adjustment do
   binding `adjustments`. Bus adjustments are not yet supported in general, so we assume there are
   none in the database.
   """
+  # credo:disable-for-next-line
   @spec kind_is(atom()) :: %Ecto.Query.DynamicExpr{}
   def kind_is(:blue_line), do: dynamic([adjustments: a], a.route_id == "Blue")
   def kind_is(:orange_line), do: dynamic([adjustments: a], a.route_id == "Orange")
