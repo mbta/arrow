@@ -78,7 +78,7 @@ defmodule Arrow.MixProject do
       {:tzdata, "~> 1.1"},
       {:ueberauth_cognito, "0.2.0"},
       {:ueberauth, "0.6.3"},
-      {:wallaby, "~> 0.28.1", runtime: false, only: :test}
+      {:wallaby, "~> 0.29.1", runtime: false, only: :test}
     ]
   end
 
