@@ -77,7 +77,7 @@ defmodule Arrow.MixProject do
       {:telemetry_poller, "~> 0.5"},
       {:tzdata, "~> 1.1"},
       {:ueberauth_cognito, "0.2.0"},
-      {:ueberauth, "0.6.3"},
+      {:ueberauth, "0.10.0"},
       {:wallaby, "~> 0.28.1", runtime: false, only: :test}
     ]
   end
