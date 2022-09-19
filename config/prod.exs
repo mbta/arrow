@@ -12,10 +12,9 @@ use Mix.Config
 config :arrow, ArrowWeb.Endpoint,
   http: [:inet6, port: 4000],
   url: [host: "example.com", port: 80],
+  secret_key_base: System.fetch_env!("SECRET_KEY_BASE"),
   cache_static_manifest: "priv/static/cache_manifest.json",
   server: true
-
-config :arrow, ArrowWeb.AuthManager, secret_key: {System, :get_env, ["ARROW_AUTH_SECRET"]}
 
 # Do not print debug messages in production
 config :logger, level: :info
