@@ -11,7 +11,6 @@ defmodule Arrow.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
-      releases: releases(),
       dialyzer: [
         plt_add_apps: [:mix],
         plt_add_deps: :transitive,
@@ -101,15 +100,6 @@ defmodule Arrow.MixProject do
         "ecto.create --quiet",
         "ecto.migrate --quiet",
         "test --only integration"
-      ]
-    ]
-  end
-
-  defp releases do
-    [
-      arrow: [
-        include_executables_for: [:unix],
-        config_providers: [{Arrow.SecretsProvider, []}]
       ]
     ]
   end
