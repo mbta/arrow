@@ -53,15 +53,7 @@ config :esbuild,
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
   ]
 
-config :arrow, ArrowWeb.AuthManager,
-  issuer: "arrow",
-  secret_key: System.get_env("ARROW_AUTH_SECRET", "test key")
-
-config :ueberauth, Ueberauth,
-  providers: [
-    cognito:
-      {Ueberauth.Strategy.Cognito, [client_secret: System.get_env("COGNITO_CLIENT_SECRET")]}
-  ]
+config :arrow, ArrowWeb.AuthManager, issuer: "arrow"
 
 config :ueberauth, Ueberauth.Strategy.Cognito,
   auth_domain: {System, :get_env, ["COGNITO_DOMAIN"]},
