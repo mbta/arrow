@@ -13,6 +13,8 @@ config :arrow, ArrowWeb.Endpoint,
   secret_key_base: "local_secret_key_base_at_least_64_bytes_________________________________",
   server: true
 
+config :arrow, ArrowWeb.AuthManager, secret_key: "test key"
+
 config :ueberauth, Ueberauth,
   providers: [
     cognito: {Arrow.Ueberauth.Strategy.Fake, []}
