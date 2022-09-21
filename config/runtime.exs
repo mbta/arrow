@@ -7,5 +7,5 @@ end
 config :ueberauth, Ueberauth,
   providers: [
     cognito:
-      {Ueberauth.Strategy.Cognito, [client_secret: System.fetch_env!("COGNITO_CLIENT_SECRET")]}
+      {Ueberauth.Strategy.Cognito, [client_secret: System.get_env("COGNITO_CLIENT_SECRET")]}
   ]
