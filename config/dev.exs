@@ -26,7 +26,7 @@ config :arrow, ArrowWeb.Endpoint,
     node: ~w(assets/node_modules/.bin/tsc --project assets --noEmit --watch --preserveWatchOutput)
   ]
 
-  config :arrow, ArrowWeb.AuthManager, secret_key: "test key"
+config :arrow, ArrowWeb.AuthManager, secret_key: "test key"
 
 # ## SSL Support
 #
