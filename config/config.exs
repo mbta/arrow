@@ -55,6 +55,11 @@ config :esbuild,
 
 config :arrow, ArrowWeb.AuthManager, issuer: "arrow"
 
+config :ueberauth, Ueberauth,
+  providers: [
+    cognito: {Ueberauth.Strategy.Cognito, []}
+  ]
+
 config :ueberauth, Ueberauth.Strategy.Cognito,
   auth_domain: {System, :get_env, ["COGNITO_DOMAIN"]},
   client_id: {System, :get_env, ["COGNITO_CLIENT_ID"]},
