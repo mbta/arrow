@@ -1,7 +1,7 @@
 defmodule Arrow.Ueberauth.Strategy.Fake do
   @moduledoc false
 
-  use Ueberauth.Strategy
+  use Ueberauth.Strategy, ignores_csrf_attack: true
   alias Arrow.Accounts.Group
 
   @impl Ueberauth.Strategy
