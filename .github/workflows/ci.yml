@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   asdf:
     name: ASDF
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
@@ -22,7 +22,7 @@ jobs:
 
   build:
     name: Build Elixir
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: asdf
     steps:
       - uses: actions/checkout@v2
@@ -48,7 +48,7 @@ jobs:
 
   elixir:
     name: Test Elixir
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: build
     env:
       DATABASE_POSTGRESQL_PASSWORD: postgres
@@ -107,7 +107,7 @@ jobs:
 
   elixir-integration:
     name: Elixir integration tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: build
     env:
       DATABASE_POSTGRESQL_PASSWORD: postgres
@@ -152,7 +152,7 @@ jobs:
 
   nodejs:
     name: Test Node
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: build
     steps:
       - uses: actions/checkout@v2
