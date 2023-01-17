@@ -31,7 +31,7 @@ defmodule Arrow.Repo.Migrator do
   end
 
   defp migrate!(module) do
-    for repo <- repos() do
+    _repos = for repo <- repos() do
       _ = Logger.info(fn -> "Migrating repo=#{repo}" end)
 
       {time_usec, {:ok, _, _}} =

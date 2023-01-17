@@ -16,7 +16,6 @@ defmodule Arrow.MixProject do
         plt_add_apps: [:mix],
         plt_add_deps: :transitive,
         flags: [
-          :race_conditions,
           :unmatched_returns
         ],
         ignore_warnings: ".dialyzer.ignore-warnings"
