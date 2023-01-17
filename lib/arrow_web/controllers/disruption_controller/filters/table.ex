@@ -1,8 +1,6 @@
 defmodule ArrowWeb.DisruptionController.Filters.Table do
   @moduledoc "Handles filters unique to the table view."
 
-  @behaviour ArrowWeb.DisruptionController.Filters.Behaviour
-
   import ArrowWeb.DisruptionController.Filters.Helpers
 
   @type sort :: :id | :start_date
@@ -10,7 +8,6 @@ defmodule ArrowWeb.DisruptionController.Filters.Table do
 
   defstruct include_past?: false, sort: {:asc, :start_date}
 
-  @impl true
   def from_params(params) when is_map(params) do
     %__MODULE__{
       include_past?: not is_nil(params["include_past"]),
@@ -18,14 +15,11 @@ defmodule ArrowWeb.DisruptionController.Filters.Table do
     }
   end
 
-  @impl true
   def resettable?(%__MODULE__{include_past?: true}), do: true
   def resettable?(_), do: false
 
-  @impl true
   def reset(%__MODULE__{} = table), do: %{table | include_past?: false}
 
-  @impl true
   def to_params(%__MODULE__{include_past?: include_past, sort: sort}) do
     %{}
     |> put_if(include_past, "include_past", "true")
