@@ -31,15 +31,16 @@ defmodule Arrow.Repo.Migrator do
   end
 
   defp migrate!(module) do
-    _repos = for repo <- repos() do
-      _ = Logger.info(fn -> "Migrating repo=#{repo}" end)
+    _repos =
+      for repo <- repos() do
+        _ = Logger.info(fn -> "Migrating repo=#{repo}" end)
 
-      {time_usec, {:ok, _, _}} =
-        :timer.tc(module, :with_repo, [repo, &module.run(&1, :up, all: true)])
+        {time_usec, {:ok, _, _}} =
+          :timer.tc(module, :with_repo, [repo, &module.run(&1, :up, all: true)])
 
-      time_msec = System.convert_time_unit(time_usec, :microsecond, :millisecond)
-      _ = Logger.info(fn -> "Migration finished repo=#{repo} time=#{time_msec}" end)
-    end
+        time_msec = System.convert_time_unit(time_usec, :microsecond, :millisecond)
+        _ = Logger.info(fn -> "Migration finished repo=#{repo} time=#{time_msec}" end)
+      end
 
     :ok
   end

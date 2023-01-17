@@ -94,9 +94,10 @@ defmodule Arrow.SecretsProvider do
   end
 
   defp ensure_all_started! do
-    _child_apps = for app <- @application_requirements do
-      {:ok, _} = Application.ensure_all_started(app)
-    end
+    _child_apps =
+      for app <- @application_requirements do
+        {:ok, _} = Application.ensure_all_started(app)
+      end
 
     :ok
   end
