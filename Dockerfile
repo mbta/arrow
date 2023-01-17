@@ -1,4 +1,4 @@
-FROM hexpm/elixir:1.12.3-erlang-24.1.5-debian-buster-20210902 as builder
+FROM hexpm/elixir:1.14.2-erlang-25.2-debian-bullseye-20221004 as builder
 
 ENV LANG=C.UTF-8 \
   MIX_ENV=prod
@@ -23,7 +23,7 @@ RUN mix local.hex --force && \
   mix assets.deploy && \
   mix release
 
-FROM debian:buster
+FROM debian:bullseye-20221004
 
 RUN apt-get update --allow-releaseinfo-change && \
   apt-get install -y --no-install-recommends libssl1.1 libsctp1 curl && \
