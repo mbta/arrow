@@ -65,7 +65,7 @@ defmodule Arrow.MixProject do
       # https://github.com/geolessel/react-phoenix/pull/58
       {:phoenix_html, "~> 3.0", override: true},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 0.16.4"},
+      {:phoenix_live_view, "~> 0.18.11"},
       {:phoenix_pubsub, "~> 2.0"},
       {:phoenix, "~> 1.6.0"},
       {:plug_cowboy, "~> 2.1"},
