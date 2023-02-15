@@ -103,4 +103,12 @@ defmodule Arrow.MixProject do
       ]
     ]
   end
+
+  defp releases do
+    [
+      arrow: [
+        include_executables_for: [:unix]
+      ]
+    ]
+  end
 end
