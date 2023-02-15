@@ -11,6 +11,7 @@ defmodule Arrow.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
+      releases: releases(),
       dialyzer: [
         plt_add_apps: [:mix],
         plt_add_deps: :transitive,
