@@ -23,14 +23,6 @@ if config_env() == :prod do
     hostname: System.get_env("DATABASE_HOST"),
     port: port,
     pool_size: pool_size,
-    ssl_opts: [
-      verify: :verify_peer,
-      cacertfile: "/usr/local/share/amazon-certs.pem",
-      server_name_indication: String.to_charlist(System.get_env("DATABASE_HOST")),
-      verify_fun:
-        {&:ssl_verify_hostname.verify_fun/3,
-         [check_hostname: String.to_charlist(System.get_env("DATABASE_HOST"))]}
-    ],
     # password set by `configure` callback below
     configure: {Arrow.Repo, :before_connect, []}
 end
