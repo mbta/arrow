@@ -108,8 +108,7 @@ defmodule Arrow.MixProject do
   defp releases do
     [
       arrow: [
-        include_executables_for: [:unix],
-        config_providers: [{Arrow.SecretsProvider, []}]
+        include_executables_for: [:unix]
       ]
     ]
   end
