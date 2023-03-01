@@ -35,6 +35,9 @@ defmodule ArrowWeb.Endpoint do
     pass: ["*/*"],
     json_decoder: Phoenix.json_library()
 
+  # Sentry must be invoked after Plug.Parsers:
+  plug(Sentry.PlugContext)
+
   plug Plug.MethodOverride
   plug Plug.Head
 
