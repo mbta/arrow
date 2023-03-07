@@ -1,4 +1,5 @@
 defmodule ArrowWeb.Endpoint do
+  use Sentry.PlugCapture
   use Phoenix.Endpoint, otp_app: :arrow
 
   if Application.compile_env(:arrow, :env) == :test do
