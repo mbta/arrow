@@ -6,9 +6,6 @@ defmodule Arrow.Application do
   use Application
 
   def start(_type, _args) do
-    # Invoke Sentry logger:
-    _ = Logger.add_backend(Sentry.LoggerBackend)
-
     run_adjustment_fetcher? = Application.get_env(:arrow, :fetch_adjustments?)
     run_migrations_at_startup? = Application.get_env(:arrow, :run_migrations_at_startup?)
 
