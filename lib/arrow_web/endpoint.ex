@@ -1,4 +1,5 @@
 defmodule ArrowWeb.Endpoint do
+  use Sentry.PlugCapture
   use Phoenix.Endpoint, otp_app: :arrow
 
   if Application.compile_env(:arrow, :env) == :test do
@@ -34,6 +35,9 @@ defmodule ArrowWeb.Endpoint do
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
     json_decoder: Phoenix.json_library()
+
+  # Sentry must be invoked after Plug.Parsers:
+  plug(Sentry.PlugContext)
 
   plug Plug.MethodOverride
   plug Plug.Head

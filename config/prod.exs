@@ -18,7 +18,9 @@ config :arrow, ArrowWeb.Endpoint,
 config :arrow, ArrowWeb.AuthManager, secret_key: {System, :get_env, ["ARROW_AUTH_SECRET"]}
 
 # Do not print debug messages in production
-config :logger, level: :info
+config :logger,
+  backends: [:console, Sentry.LoggerBackend],
+  level: :info
 
 config :arrow,
   run_migrations_at_startup?: true,
