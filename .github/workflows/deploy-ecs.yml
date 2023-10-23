@@ -19,6 +19,6 @@ jobs:
       app-name: arrow
       environment: ${{ github.event.inputs.environment || 'dev' }}
     secrets:
-      role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+      aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
       docker-repo: ${{ secrets.DOCKER_REPO }}
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
