@@ -1,38 +1,67 @@
-FROM hexpm/elixir:1.14.2-erlang-25.2-debian-bullseye-20221004 as builder
+ARG ELIXIR_VERSION=1.14.5
+ARG ERLANG_VERSION=25.3.2.7
+ARG DEBIAN_VERSION=bullseye-20230612
+
+FROM hexpm/elixir:$ELIXIR_VERSION-erlang-$ERLANG_VERSION-debian-$DEBIAN_VERSION as elixir-builder
 
 ENV LANG=C.UTF-8 \
   MIX_ENV=prod
 
 RUN apt-get update --allow-releaseinfo-change && \
-  apt-get install -y --no-install-recommends ca-certificates curl git
-
-# Instructions from:
-# https://github.com/nodesource/distributions/blob/master/README.md
-RUN  curl -sL https://deb.nodesource.com/setup_14.x | bash - \
-  && apt-get install -y nodejs \
-  && npm install -g npm@latest
-
-WORKDIR /root
-ADD . .
+  apt-get install -y --no-install-recommends ca-certificates curl git gnupg
 
 RUN mix local.hex --force && \
-  mix local.rebar --force && \
-  mix do deps.get --only prod, compile --force && \
-  mix esbuild.install && \
-  npm --prefix assets ci && \
-  mix assets.deploy && \
-  mix release
+  mix local.rebar --force
 
-FROM debian:bullseye-20221004
+# Instructions from:
+# https://github.com/nodesource/distributions#debian-versions
+
+ARG NODE_MAJOR=20
+
+RUN mkdir -p /etc/apt/keyrings && \
+  curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" >> /etc/apt/sources.list.d/nodesource.list
+RUN apt-get update && \
+  apt-get install nodejs -y
+
+WORKDIR /app
+
+COPY mix.exs mix.exs
+COPY mix.lock mix.lock
+
+RUN mix do deps.get --only prod
+
+COPY config/config.exs config/
+COPY config/prod.exs config/
+
+RUN mix deps.compile
+
+COPY assets assets
+RUN npm ci --prefix assets
+RUN mix assets.deploy
+
+COPY lib lib
+COPY priv priv
+
+RUN mix phx.digest
+RUN mix compile
+
+COPY config/runtime.exs config
+
+RUN mix release
+
+FROM debian:$DEBIAN_VERSION
 
 RUN apt-get update --allow-releaseinfo-change && \
   apt-get install -y --no-install-recommends libssl1.1 libsctp1 curl && \
   rm -rf /var/lib/apt/lists/*
 
-WORKDIR /root
+WORKDIR /app
+RUN chown nobody /app
+
 EXPOSE 4000
-ENV MIX_ENV=prod TERM=xterm LANG="C.UTF-8" PORT=4000
+ENV MIX_ENV=prod TERM=xterm LANG="C.UTF-8" PORT=4000 PHX_SERVER=true
 
-COPY --from=builder /root/_build/prod/rel/arrow .
+COPY --from=elixir-builder --chown=nobody:root /app/_build/prod/rel/arrow .
 
-CMD ["bin/arrow", "start"]
+CMD ["/app/bin/arrow", "start"]
