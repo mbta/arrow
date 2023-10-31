@@ -6,7 +6,7 @@ defmodule ArrowWeb.MyTokenController do
 
   @spec show(Plug.Conn.t(), Plug.Conn.params()) :: Plug.Conn.t()
   def show(conn, _params) do
-    token = conn |> get_session(:arrow_username) |> AuthToken.get_or_create_token_for_user()
+    token = conn |> Guardian.Plug.current_resource() |> AuthToken.get_or_create_token_for_user()
 
     render(conn, "index.html", token: token)
   end

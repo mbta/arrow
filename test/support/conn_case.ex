@@ -39,10 +39,13 @@ defmodule ArrowWeb.ConnCase do
 
     cond do
       tags[:authenticated] ->
-        {:ok, conn: build_conn("test_user")}
+        {:ok, conn: build_conn("test_user", ["read-only"])}
 
       tags[:authenticated_admin] ->
         {:ok, conn: build_conn("test_user", ["admin"])}
+
+      tags[:authenticated_empty] ->
+        {:ok, conn: build_conn("test_user", [])}
 
       true ->
         {:ok,
@@ -53,10 +56,10 @@ defmodule ArrowWeb.ConnCase do
   end
 
   @spec build_conn(String.t(), [String.t()] | []) :: Plug.Conn.t()
-  defp build_conn(user, roles \\ []) do
+  defp build_conn(user, roles) do
     Phoenix.ConnTest.build_conn()
     |> Plug.Conn.put_req_header("x-forwarded-proto", "https")
-    |> init_test_session(%{arrow_username: user})
+    |> init_test_session(%{})
     |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{roles: roles})
   end
 end

@@ -53,7 +53,7 @@ defmodule ArrowWeb.TryApiTokenAuthTest do
       assert claims["sub"] == "foo@mbta.com"
       assert claims["typ"] == "access"
       assert claims["roles"] == ["admin"]
-      assert get_session(conn, :arrow_username) == "foo@mbta.com"
+      assert Guardian.Plug.current_resource(conn) == "foo@mbta.com"
     end
 
     test "handles unexpected response from Cognito API", %{conn: conn} do

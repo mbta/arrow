@@ -7,7 +7,8 @@ defmodule Arrow.Permissions do
   @required_roles Application.compile_env!(:arrow, :required_roles)
 
   @type action() ::
-          :create_disruption
+          :view_disruption
+          | :create_disruption
           | :update_disruption
           | :delete_disruption
           | :use_api

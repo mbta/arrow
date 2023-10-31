@@ -18,9 +18,9 @@ defmodule ArrowWeb.Plug.AssignUserTest do
     end
 
     @tag :authenticated
-    test "loads a non-admin into the connection when user has no roles", %{conn: conn} do
+    test "loads a non-admin into the connection when user is not an admin", %{conn: conn} do
       assert AssignUser.call(conn, []).assigns == %{
-               current_user: %User{id: "test_user", roles: MapSet.new()}
+               current_user: %User{id: "test_user", roles: MapSet.new(["read-only"])}
              }
     end
   end

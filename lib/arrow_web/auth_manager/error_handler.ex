@@ -10,6 +10,7 @@ defmodule ArrowWeb.AuthManager.ErrorHandler do
 
   @impl Guardian.Plug.ErrorHandler
   def auth_error(conn, {_type, _reason}, _opts) do
-    Controller.redirect(conn, to: Routes.auth_path(conn, :request, "cognito"))
+    provider = Application.get_env(:arrow, :ueberauth_provider)
+    Controller.redirect(conn, to: Routes.auth_path(conn, :request, "#{provider}"))
   end
 end
