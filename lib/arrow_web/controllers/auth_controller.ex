@@ -1,18 +1,16 @@
 defmodule ArrowWeb.AuthController do
   use ArrowWeb, :controller
-  plug Ueberauth
+  plug(Ueberauth)
 
   @cognito_groups Application.compile_env!(:arrow, :cognito_groups)
 
   @spec callback(Plug.Conn.t(), map()) :: Plug.Conn.t()
-  def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
+  def callback(%{assigns: %{ueberauth_auth: %{provider: :cognito} = auth}} = conn, _params) do
     username = auth.uid
     expiration = auth.credentials.expires_at
-    credentials = conn.assigns.ueberauth_auth.credentials
-
     current_time = System.system_time(:second)
 
-    groups = credentials.other[:groups] || []
+    groups = Map.get(auth.credentials.other, :groups, [])
 
     roles =
       Enum.flat_map(groups, fn group ->
@@ -26,10 +24,12 @@ defmodule ArrowWeb.AuthController do
     |> Guardian.Plug.sign_in(
       ArrowWeb.AuthManager,
       username,
-      %{roles: roles},
+      %{
+        # all cognito users have read-only access
+        roles: roles ++ ["read-only"]
+      },
       ttl: {expiration - current_time, :seconds}
     )
-    |> put_session(:arrow_username, username)
     |> redirect(to: Routes.disruption_path(conn, :index))
   end
 

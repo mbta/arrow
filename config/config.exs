@@ -20,7 +20,10 @@ config :arrow,
     # map cognito groups to roles
     "arrow-admin" => "admin"
   },
+  ueberauth_provider: :cognito,
+  api_login_module: ArrowWeb.TryApiTokenAuth.Cognito,
   required_roles: %{
+    view_disruption: ["read-only", "admin"],
     create_disruption: ["admin"],
     update_disruption: ["admin"],
     delete_disruption: ["admin"],

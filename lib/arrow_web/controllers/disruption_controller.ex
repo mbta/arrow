@@ -8,6 +8,7 @@ defmodule ArrowWeb.DisruptionController do
   alias Ecto.Changeset
   alias Plug.Conn
 
+  plug(Authorize, :view_disruption when action in [:index, :show])
   plug(Authorize, :create_disruption when action in [:new, :create])
   plug(Authorize, :update_disruption when action in [:edit, :update, :update_row_status])
   plug(Authorize, :delete_disruption when action in [:delete])
