@@ -8,3 +8,6 @@ updates:
   directory: "/assets"
   schedule:
     interval: daily
+  ignore:
+    - dependency-name: "phoenix"
+    - dependency-name: "phoenix_html"
