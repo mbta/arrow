@@ -52,7 +52,7 @@ defmodule ArrowWeb.TryApiTokenAuthTest do
 
       assert claims["sub"] == "foo@mbta.com"
       assert claims["typ"] == "access"
-      assert claims["groups"] == ["arrow-admin"]
+      assert claims["roles"] == ["admin"]
       assert get_session(conn, :arrow_username) == "foo@mbta.com"
     end
 
@@ -71,7 +71,7 @@ defmodule ArrowWeb.TryApiTokenAuthTest do
 
           claims = Guardian.Plug.current_claims(conn)
 
-          assert claims["groups"] == []
+          assert claims["roles"] == []
         end)
 
       assert log =~ "unexpected_aws_api_response"

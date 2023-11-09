@@ -2,7 +2,6 @@ defmodule Arrow.Ueberauth.Strategy.Fake do
   @moduledoc false
 
   use Ueberauth.Strategy, ignores_csrf_attack: true
-  alias Arrow.Accounts.Group
 
   @impl Ueberauth.Strategy
   def handle_request!(conn) do
@@ -28,7 +27,7 @@ defmodule Arrow.Ueberauth.Strategy.Fake do
       refresh_token: "fake_refresh_token",
       expires: true,
       expires_at: System.system_time(:second) + 60 * 60,
-      other: %{groups: [Group.admin()]}
+      other: %{groups: ["arrow-admin"]}
     }
   end
 

@@ -2,14 +2,14 @@ defmodule ArrowWeb.Controllers.AuthControllerTest do
   use ArrowWeb.ConnCase
 
   describe "callback" do
-    test "redirects on success and saves refresh token", %{conn: conn} do
+    test "redirects on success", %{conn: conn} do
       current_time = System.system_time(:second)
 
       auth = %Ueberauth.Auth{
         uid: "foo@mbta.com",
         credentials: %Ueberauth.Auth.Credentials{
           expires_at: current_time + 1_000,
-          other: %{groups: ["test1"]}
+          other: %{groups: ["arrow-admin"]}
         }
       }
 
@@ -21,7 +21,7 @@ defmodule ArrowWeb.Controllers.AuthControllerTest do
       response = html_response(conn, 302)
 
       assert response =~ Routes.disruption_path(conn, :index)
-      assert Guardian.Plug.current_claims(conn)["groups"] == ["test1"]
+      assert Guardian.Plug.current_claims(conn)["roles"] == ["admin"]
       assert get_session(conn, :arrow_username) == "foo@mbta.com"
     end
 

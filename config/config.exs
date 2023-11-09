@@ -17,15 +17,16 @@ config :arrow,
   migrate_synchronously?: true,
   redirect_http?: true,
   cognito_groups: %{
-    "arrow-admin" => :admin
+    # map cognito groups to roles
+    "arrow-admin" => "admin"
   },
-  required_groups: %{
-    create_disruption: [:admin],
-    update_disruption: [:admin],
-    delete_disruption: [:admin],
-    create_note: [:admin],
-    use_api: [:admin],
-    view_change_feed: [:admin]
+  required_roles: %{
+    create_disruption: ["admin"],
+    update_disruption: ["admin"],
+    delete_disruption: ["admin"],
+    create_note: ["admin"],
+    use_api: ["admin"],
+    view_change_feed: ["admin"]
   },
   time_zone: "America/New_York",
   ex_aws_requester: {Fake.ExAws, :admin_group_request},
