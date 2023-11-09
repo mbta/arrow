@@ -17,7 +17,6 @@ defmodule ArrowWeb.ConnCase do
 
   use ExUnit.CaseTemplate
   import Plug.Test
-  alias Arrow.Accounts.Group
 
   using do
     quote do
@@ -43,7 +42,7 @@ defmodule ArrowWeb.ConnCase do
         {:ok, conn: build_conn("test_user")}
 
       tags[:authenticated_admin] ->
-        {:ok, conn: build_conn("test_user", [Group.admin()])}
+        {:ok, conn: build_conn("test_user", ["admin"])}
 
       true ->
         {:ok,
@@ -54,10 +53,10 @@ defmodule ArrowWeb.ConnCase do
   end
 
   @spec build_conn(String.t(), [String.t()] | []) :: Plug.Conn.t()
-  defp build_conn(user, groups \\ []) do
+  defp build_conn(user, roles \\ []) do
     Phoenix.ConnTest.build_conn()
     |> Plug.Conn.put_req_header("x-forwarded-proto", "https")
     |> init_test_session(%{arrow_username: user})
-    |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{groups: groups})
+    |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{roles: roles})
   end
 end

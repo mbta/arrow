@@ -7,6 +7,7 @@ defmodule ArrowWeb.TryApiTokenAuth do
   require Logger
 
   @aws_cognito_target "AWSCognitoIdentityProviderService"
+  @cognito_groups Application.compile_env!(:arrow, :cognito_groups)
 
   def init(options), do: options
 
@@ -44,10 +45,15 @@ defmodule ArrowWeb.TryApiTokenAuth do
 
         {module, function} = Application.get_env(:arrow, :ex_aws_requester)
 
-        group_names =
+        roles =
           case apply(module, function, [operation]) do
             {:ok, %{"Groups" => groups}} ->
-              Enum.map(groups, & &1["GroupName"])
+              Enum.flat_map(groups, fn %{"GroupName" => group} ->
+                case @cognito_groups[group] do
+                  role when is_binary(role) -> [role]
+                  _ -> []
+                end
+              end)
 
             response ->
               :ok = Logger.warn("unexpected_aws_api_response: #{inspect(response)}")
@@ -58,7 +64,7 @@ defmodule ArrowWeb.TryApiTokenAuth do
         |> Guardian.Plug.sign_in(
           ArrowWeb.AuthManager,
           auth_token.username,
-          %{groups: group_names}
+          %{roles: roles}
         )
         |> put_session(:arrow_username, auth_token.username)
       end
