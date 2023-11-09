@@ -17,7 +17,23 @@ config :arrow, ArrowWeb.AuthManager, secret_key: "test key"
 
 config :ueberauth, Ueberauth,
   providers: [
-    cognito: {Arrow.Ueberauth.Strategy.Fake, []}
+    cognito: {Arrow.Ueberauth.Strategy.Fake, []},
+    keycloak: {Ueberauth.Strategy.Oidcc, []}
+  ]
+
+# Configure Keycloak
+config :arrow,
+  keycloak_api_base: "https://keycloak.example/auth/realm/",
+  keycloak_client_uuid: "UUID"
+
+config :ueberauth_oidcc,
+  providers: [
+    keycloak: [
+      issuer: :fake_issuer,
+      client_id: "fake_client",
+      client_secret: "fake_client_secret",
+      module: Arrow.FakeOidcc
+    ]
   ]
 
 config :arrow,
