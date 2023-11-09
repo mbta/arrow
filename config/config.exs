@@ -61,7 +61,10 @@ config :arrow, ArrowWeb.AuthManager, issuer: "arrow"
 
 config :ueberauth, Ueberauth,
   providers: [
-    cognito: {Ueberauth.Strategy.Cognito, []}
+    cognito: {Ueberauth.Strategy.Cognito, []},
+    keycloak:
+      {Ueberauth.Strategy.Oidcc,
+       issuer: :keycloak_issuer, userinfo: true, uid_field: "email", scopes: ~w"openid email"}
   ]
 
 config :ueberauth, Ueberauth.Strategy.Cognito,

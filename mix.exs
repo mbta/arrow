@@ -75,7 +75,8 @@ defmodule Arrow.MixProject do
       {:react_phoenix, "1.2.0"},
       {:tzdata, "~> 1.1"},
       {:ueberauth_cognito, "0.4.0"},
-      {:ueberauth, "~> 0.9"},
+      {:ueberauth_oidcc, "~> 0.2.0"},
+      {:ueberauth, "~> 0.10"},
       {:wallaby, "~> 0.30.6", runtime: false, only: :test},
       {:sentry, "~> 8.0"}
     ]

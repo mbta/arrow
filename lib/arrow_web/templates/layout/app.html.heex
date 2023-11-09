@@ -27,6 +27,11 @@
 
         <div class="m-header__long-name navbar-text justify-content-end navbar-collapse collapse">
           Adjustments to the Regular Right of Way
+          <%= if Map.has_key?(Guardian.Plug.current_claims(@conn), "logout_url"), do:
+            link("logout",
+              to: Routes.auth_path(@conn, :logout),
+              class: "ml-2 btn btn-outline-danger"
+          ) %>
         </div>
       </nav>
     </header>

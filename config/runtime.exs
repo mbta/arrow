@@ -1,5 +1,50 @@
 import Config
 
+is_test? = config_env() == :test
+
+keycloak_issuer =
+  case System.get_env() do
+    %{"KEYCLOAK_ISSUER" => issuer} when issuer != "" ->
+      issuer
+
+    %{"KEYCLOAK_DISCOVERY_URI" => well_known} when well_known != "" ->
+      String.replace_trailing(well_known, "/.well-known/openid-configuration", "")
+
+    _ ->
+      nil
+  end
+
+if is_binary(keycloak_issuer) and not is_test? do
+  config :arrow,
+    ueberauth_provider: :keycloak,
+    api_login_module: ArrowWeb.TryApiTokenAuth.Keycloak,
+    keycloak_client_uuid: System.fetch_env!("KEYCLOAK_CLIENT_UUID"),
+    keycloak_api_base: System.fetch_env!("KEYCLOAK_API_BASE")
+
+  keycloak_opts = [
+    client_id: System.fetch_env!("KEYCLOAK_CLIENT_ID"),
+    client_secret: System.fetch_env!("KEYCLOAK_CLIENT_SECRET")
+  ]
+
+  keycloak_opts =
+    if keycloak_idp = System.get_env("KEYCLOAK_IDP_HINT") do
+      Keyword.put(keycloak_opts, :authorization_params, %{kc_idp_hint: keycloak_idp})
+    else
+      keycloak_opts
+    end
+
+  config :ueberauth_oidcc,
+    issuers: [
+      %{
+        name: :keycloak_issuer,
+        issuer: keycloak_issuer
+      }
+    ],
+    providers: [
+      keycloak: keycloak_opts
+    ]
+end
+
 if config_env() == :prod do
   sentry_env = System.get_env("SENTRY_ENV")
 

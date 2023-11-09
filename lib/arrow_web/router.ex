@@ -11,7 +11,6 @@ defmodule ArrowWeb.Router do
 
   pipeline :json_api do
     plug(:accepts, ["json-api"])
-    plug(:fetch_session)
     plug(JaSerializer.ContentTypeNegotiation)
   end
 
@@ -42,6 +41,7 @@ defmodule ArrowWeb.Router do
   scope "/", ArrowWeb do
     pipe_through([:redirect_prod_http, :browser, :authenticate])
 
+    get("/logout", AuthController, :logout)
     get("/unauthorized", UnauthorizedController, :index)
     get("/feed", FeedController, :index)
     get("/mytoken", MyTokenController, :show)
@@ -56,7 +56,7 @@ defmodule ArrowWeb.Router do
   end
 
   scope "/auth", ArrowWeb do
-    pipe_through([:browser])
+    pipe_through([:redirect_prod_http, :browser])
 
     get("/:provider", AuthController, :request)
     get("/:provider/callback", AuthController, :callback)

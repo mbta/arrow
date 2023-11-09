@@ -44,7 +44,6 @@ defmodule ArrowWeb.TryApiTokenAuthTest do
 
       conn =
         conn
-        |> init_test_session([])
         |> put_req_header("x-api-key", token)
         |> ArrowWeb.TryApiTokenAuth.call([])
 
@@ -65,7 +64,6 @@ defmodule ArrowWeb.TryApiTokenAuthTest do
         capture_log([level: :warn], fn ->
           conn =
             conn
-            |> init_test_session([])
             |> put_req_header("x-api-key", token)
             |> ArrowWeb.TryApiTokenAuth.call([])
 
