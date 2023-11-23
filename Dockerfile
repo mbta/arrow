@@ -1,5 +1,5 @@
 ARG ELIXIR_VERSION=1.14.5
-ARG ERLANG_VERSION=25.3.2.7
+ARG ERLANG_VERSION=26.1.2
 ARG DEBIAN_VERSION=bullseye-20230612
 
 FROM hexpm/elixir:$ELIXIR_VERSION-erlang-$ERLANG_VERSION-debian-$DEBIAN_VERSION as elixir-builder
@@ -53,7 +53,8 @@ RUN mix release
 FROM debian:$DEBIAN_VERSION
 
 RUN apt-get update --allow-releaseinfo-change && \
-  apt-get install -y --no-install-recommends libssl1.1 libsctp1 curl && \
+  apt-get install -y --no-install-recommends \
+    libssl1.1 libsctp1 curl ca-certificates && \
   rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -63,5 +64,11 @@ EXPOSE 4000
 ENV MIX_ENV=prod TERM=xterm LANG="C.UTF-8" PORT=4000 PHX_SERVER=true
 
 COPY --from=elixir-builder --chown=nobody:root /app/_build/prod/rel/arrow .
+
+# Ensure SSL support is enabled
+RUN env SECRET_KEY_BASE=fake COGNITO_CLIENT_SECRET=fake DATABASE_PORT=0 \
+  sh -c ' \
+     /app/bin/arrow eval ":crypto.supports()" && \
+     /app/bin/arrow eval ":ok = :public_key.cacerts_load"'
 
 CMD ["/app/bin/arrow", "start"]
