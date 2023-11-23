@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 # Configure your database
 config :arrow, Arrow.Repo,
@@ -25,7 +25,7 @@ config :arrow,
   http_client: Arrow.HTTPMock
 
 # Print only warnings and errors during test
-config :logger, level: :warn
+config :logger, level: :warning
 
 config :arrow, env: :test
 

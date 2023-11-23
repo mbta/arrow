@@ -5,7 +5,7 @@ defmodule Arrow.MixProject do
     [
       app: :arrow,
       version: "0.1.0",
-      elixir: "~> 1.5",
+      elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
@@ -46,7 +46,7 @@ defmodule Arrow.MixProject do
     [
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
-      {:ecto_sql, "~> 3.1"},
+      {:ecto_sql, "~> 3.11"},
       {:esbuild, "~> 0.2", runtime: Mix.env() == :dev},
       {:ex_aws_rds, "~> 2.0"},
       {:ex_aws_secretsmanager, "~> 2.0"},
@@ -63,21 +63,20 @@ defmodule Arrow.MixProject do
       {:phoenix_ecto, "~> 4.0"},
       # override for react_phoenix, pending
       # https://github.com/geolessel/react-phoenix/pull/58
-      {:phoenix_html, "~> 3.0", override: true},
+      {:phoenix_html, "~> 3.2.0", override: true},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 0.20.1"},
+      {:phoenix_live_view, "~> 0.16.4"},
       {:phoenix_pubsub, "~> 2.0"},
       {:phoenix, "~> 1.6.0"},
       {:plug_cowboy, "~> 2.1"},
+      {:telemetry, "~> 1.2", override: true},
       {:postgrex, ">= 0.0.0"},
       # If react_phoenix changes, check assets/src/ReactPhoenix.js, too
       {:react_phoenix, "1.2.0"},
-      {:telemetry_metrics, "~> 0.6"},
-      {:telemetry_poller, "~> 0.5"},
       {:tzdata, "~> 1.1"},
       {:ueberauth_cognito, "0.4.0"},
       {:ueberauth, "~> 0.9"},
-      {:wallaby, "~> 0.28.1", runtime: false, only: :test},
+      {:wallaby, "~> 0.30.6", runtime: false, only: :test},
       {:sentry, "~> 8.0"}
     ]
   end
