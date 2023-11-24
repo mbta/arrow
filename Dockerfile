@@ -13,6 +13,10 @@ RUN apt-get update --allow-releaseinfo-change && \
 RUN mix local.hex --force && \
   mix local.rebar --force
 
+RUN curl https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
+  -o /root/aws-cert-bundle.pem
+RUN echo "2c151768edd48e9ef6719de74fdcbdebe290d1e87bc02ce9014ea6eea557d2a0 /root/aws-cert-bundle.pem" | sha256sum -c -
+
 # Instructions from:
 # https://github.com/nodesource/distributions#debian-versions
 
@@ -47,6 +51,7 @@ RUN mix phx.digest
 RUN mix compile
 
 COPY config/runtime.exs config
+RUN cp /root/aws-cert-bundle.pem priv/
 
 RUN mix release
 
