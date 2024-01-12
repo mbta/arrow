@@ -147,7 +147,7 @@ defmodule Arrow.DisruptionRevision do
   # records in the target table (adjustments), not the records in the join table, so we have to
   # implement this cast ourselves
   defp cast_adjustments(data, %{"adjustments" => attrs}) do
-    ids = attrs |> Enum.map(& &1["id"]) |> Enum.reject(&(&1 in [nil, ""]))
+    ids = attrs |> Map.get("id", []) |> Enum.reject(&(&1 in [nil, ""]))
     adjustments = Repo.all(from a in Adjustment, where: a.id in ^ids)
     Changeset.put_assoc(data, :adjustments, adjustments)
   end

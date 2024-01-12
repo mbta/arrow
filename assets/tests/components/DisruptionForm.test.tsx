@@ -76,7 +76,7 @@ describe("DisruptionForm", () => {
     pickDate(exceptions[exceptions.length - 1], "01/13/2021")
 
     expect(screen.getByRole("form")).toHaveFormValues({
-      "revision[adjustments][][id]": ["3", "4"],
+      "revision[adjustments][id]": ["3", "4"],
       "revision[start_date]": "2021-01-04",
       "revision[end_date]": "2021-01-29",
       "revision[description]": "Worcester test disruption",
@@ -87,8 +87,10 @@ describe("DisruptionForm", () => {
       "revision[days_of_week][1][day_name]": "wednesday",
       "revision[days_of_week][1][start_time]": "16:30:00",
       "revision[days_of_week][1][end_time]": "",
-      "revision[exceptions][][excluded_date]": ["2021-01-12", "2021-01-13"],
-      "revision[trip_short_names][][trip_short_name]": ["trip1", "trip3"],
+      "revision[exceptions][0][excluded_date]": "2021-01-12",
+      "revision[exceptions][1][excluded_date]": "2021-01-13",
+      "revision[trip_short_names][0][trip_short_name]": "trip1",
+      "revision[trip_short_names][1][trip_short_name]": "trip3",
     })
   })
 

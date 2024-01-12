@@ -316,7 +316,7 @@ const DisruptionForm = ({
             <Select
               className="ml-4 mb-4"
               classNamePrefix="adjustment-select"
-              name="revision[adjustments][][id]"
+              name="revision[adjustments][id][]"
               isMulti={true}
               options={adjustmentSelectOptions}
               value={adjustmentSelectValues}
@@ -403,7 +403,7 @@ const DisruptionForm = ({
                 <input
                   key={index}
                   type="hidden"
-                  name="revision[trip_short_names][][trip_short_name]"
+                  name={`revision[trip_short_names][${index}][trip_short_name]`}
                   value={name}
                 />
               ))}
@@ -517,7 +517,7 @@ const DisruptionForm = ({
         {exceptions.map((exception, index) => (
           <div key={index} className="row mb-2 ml-0">
             <DatePicker
-              name="revision[exceptions][][excluded_date]"
+              name={`revision[exceptions][${index}][excluded_date]`}
               required={true}
               selected={exception}
               excludeDates={exceptions.filter((e) => e !== null) as string[]}
