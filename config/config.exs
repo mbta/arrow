@@ -28,7 +28,6 @@ config :arrow,
     update_disruption: ["admin"],
     delete_disruption: ["admin"],
     create_note: ["admin"],
-    use_api: ["admin"],
     view_change_feed: ["admin"]
   },
   time_zone: "America/New_York",
