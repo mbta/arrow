@@ -20,9 +20,9 @@
 - `mix deps.get`
 - `mix esbuild.install`
 - `npm install --prefix assets`
+- `direnv allow`
 - `cp .envrc.example .envrc`
 - Update `.envrc` with your local Postgres username and password
-- `direnv allow`
 - `mix ecto.setup`
 - `brew install chromedriver`
 - Add your Arrow API key from https://arrow.mbta.com/mytoken to `.envrc`
