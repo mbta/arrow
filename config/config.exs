@@ -28,7 +28,9 @@ config :arrow,
     update_disruption: ["admin"],
     delete_disruption: ["admin"],
     create_note: ["admin"],
-    view_change_feed: ["admin"]
+    view_change_feed: ["admin"],
+    publish_notice: ["admin"],
+    db_dump: ["admin"]
   },
   time_zone: "America/New_York",
   ex_aws_requester: {Fake.ExAws, :admin_group_request},
