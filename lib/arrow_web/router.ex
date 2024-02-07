@@ -35,7 +35,6 @@ defmodule ArrowWeb.Router do
     plug(ArrowWeb.TryApiTokenAuth)
     plug(Guardian.Plug.EnsureAuthenticated)
     plug(ArrowWeb.Plug.AssignUser)
-    plug(ArrowWeb.Plug.Authorize, :use_api)
   end
 
   scope "/", ArrowWeb do
