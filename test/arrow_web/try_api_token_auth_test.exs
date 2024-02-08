@@ -55,6 +55,20 @@ defmodule ArrowWeb.TryApiTokenAuthTest do
       assert Guardian.Plug.current_resource(conn) == "foo@mbta.com"
     end
 
+    test "handles API token with local database token from gtfs_creator user", %{conn: conn} do
+      token = Arrow.AuthToken.get_or_create_token_for_user("gtfs_creator_ci@mbta.com")
+
+      conn =
+        conn
+        |> put_req_header("x-api-key", token)
+        |> ArrowWeb.TryApiTokenAuth.call([])
+
+      claims = Guardian.Plug.current_claims(conn)
+
+      assert claims["roles"] == ["read-only"]
+      assert Guardian.Plug.current_resource(conn) == "gtfs_creator_ci@mbta.com"
+    end
+
     test "handles unexpected response from Cognito API", %{conn: conn} do
       reassign_env(:ex_aws_requester, {Fake.ExAws, :unexpected_response})
 
