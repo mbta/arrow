@@ -13,7 +13,6 @@ jobs:
       development-section: "In Development"
       review-section: "Pending Review"
       merged-section: "Merged / Not Deployed"
-      approved-section: "Approved / Not Merged"
       trigger-phrase: "\\*\\*Asana Ticket:\\*\\*"
       attach-pr: true
     secrets:
