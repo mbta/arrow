@@ -22,6 +22,7 @@ config :arrow,
   },
   ueberauth_provider: :cognito,
   api_login_module: ArrowWeb.TryApiTokenAuth.Cognito,
+  local_token_allowed_domain: "@mbta.com",
   required_roles: %{
     view_disruption: ["read-only", "admin"],
     create_disruption: ["admin"],
