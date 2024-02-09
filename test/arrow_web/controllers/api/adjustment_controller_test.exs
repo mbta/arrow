@@ -4,8 +4,8 @@ defmodule ArrowWeb.API.AdjustmentControllerTest do
 
   describe "index/2" do
     @tag :authenticated
-    test "non-admin user can't access the adjustments API", %{conn: conn} do
-      assert conn |> get("/api/adjustments") |> redirected_to() == "/unauthorized"
+    test "non-admin user can access the adjustments API", %{conn: conn} do
+      assert %{status: 200} = get(conn, "/api/adjustments")
     end
 
     @tag :authenticated_admin

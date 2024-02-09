@@ -11,8 +11,9 @@ defmodule Arrow.Permissions do
           | :create_disruption
           | :update_disruption
           | :delete_disruption
-          | :use_api
           | :view_change_feed
+          | :publish_notice
+          | :db_dump
 
   @spec authorize(action(), User.t()) :: :ok | {:error, :unauthorized}
   def authorize(action, user) do
