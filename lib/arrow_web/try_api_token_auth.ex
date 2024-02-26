@@ -40,6 +40,10 @@ defmodule ArrowWeb.TryApiTokenAuth do
     ArrowWeb.TryApiTokenAuth.Cognito
   end
 
+  defp api_login_module_for_token(%Arrow.AuthToken{username: "gtfs_creator_ci@mbta.com"}) do
+    ArrowWeb.TryApiTokenAuth.Local
+  end
+
   defp api_login_module_for_token(_token) do
     Application.get_env(:arrow, :api_login_module)
   end
