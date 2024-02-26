@@ -8,9 +8,8 @@ defmodule ArrowWeb.MyTokenControllerTest do
   end
 
   @tag :authenticated
-  test "non-admin user cannot get their API token", %{conn: conn} do
-    assert conn
-           |> get(Routes.my_token_path(conn, :show))
-           |> redirected_to() == "/unauthorized"
+  test "non-admin user can get their API token", %{conn: conn} do
+    conn = get(conn, Routes.my_token_path(conn, :show))
+    assert html_response(conn, 200) =~ "Your token is"
   end
 end
