@@ -73,6 +73,59 @@ defmodule Arrow.Integration.DisruptionsTest do
     assert Enum.at(revision.adjustments, 0).source_label == adjustment.source_label
   end
 
+  feature "can update a disruption", %{session: session} do
+    revision = insert(build_today_revision())
+    original_adjustment = Enum.at(revision.adjustments, 0)
+
+    added_adjustment =
+      insert(:adjustment, route_id: "Green-B", source_label: "KendallPackardsCorner")
+
+    id = revision.disruption_id
+    description = revision.description
+    now = DateTime.now!("America/New_York")
+
+    disruption_id =
+      session
+      |> visit("/")
+      |> click(link(id))
+      |> assert_text(description)
+      |> assert_text(Calendar.strftime(revision.start_date, "%m/%d/%Y"))
+      |> assert_text(Calendar.strftime(revision.end_date, "%m/%d/%Y"))
+      |> click(link("edit"))
+      |> assert_text("edit disruption")
+      |> assert_text(description)
+      |> fill_in(css("[aria-label='description']"), with: "an updated description")
+      |> send_keys([:tab])
+      |> send_keys([:tab])
+      |> send_keys([:down_arrow])
+      |> click(text("Kendall Packards Corner"))
+      |> click(button("save"))
+      |> click(link("edit"))
+      |> assert_text("an updated description")
+      |> assert_text("Kendall Packards Corner")
+      |> assert_text(original_adjustment.source_label)
+      |> click(button("save"))
+      |> Browser.text(css("h5 span"))
+      |> String.to_integer()
+
+    revisions =
+      Arrow.Repo.all(
+        from d in Arrow.DisruptionRevision,
+          preload: [:days_of_week, :adjustments],
+          where: d.disruption_id == ^disruption_id
+      )
+
+    assert length(revisions) == 3
+    revision = Enum.at(revisions, 2)
+    
+    assert revision.start_date == now |> DateTime.to_date()
+    assert revision.end_date == now |> DateTime.to_date()
+    assert revision.row_approved == true
+    assert revision.description == "an updated description"
+    assert Enum.at(revision.adjustments, 0).source_label == original_adjustment.source_label
+    assert Enum.at(revision.adjustments, 1).source_label == added_adjustment.source_label
+  end
+
   feature "can filter disruptions by route", %{session: session} do
     revision = insert(:disruption_revision, adjustment_kind: :red_line)
 
@@ -121,6 +174,7 @@ defmodule Arrow.Integration.DisruptionsTest do
     |> assert_text(adjustment.source_label)
   end
 
+  @spec build_today_revision() :: Arrow.DisruptionRevision.t()
   defp build_today_revision do
     date = DateTime.now!("America/New_York") |> DateTime.to_date()
     day_name = date |> Calendar.strftime("%A") |> String.downcase()
