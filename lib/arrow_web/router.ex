@@ -57,6 +57,7 @@ defmodule ArrowWeb.Router do
   scope "/auth", ArrowWeb do
     pipe_through([:redirect_prod_http, :browser])
 
+    get("/session_state", AuthController, :session_state)
     get("/:provider", AuthController, :request)
     get("/:provider/callback", AuthController, :callback)
   end

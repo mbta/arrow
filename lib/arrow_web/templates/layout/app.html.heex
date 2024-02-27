@@ -27,7 +27,7 @@
 
         <div class="m-header__long-name navbar-text justify-content-end navbar-collapse collapse">
           Adjustments to the Regular Right of Way
-          <%= if Map.has_key?(Guardian.Plug.current_claims(@conn), "logout_url"), do:
+          <%= if Plug.Conn.get_session(@conn, :logout_url), do:
             link("logout",
               to: Routes.auth_path(@conn, :logout),
               class: "ml-2 btn btn-outline-danger"
@@ -57,6 +57,13 @@
         </div>
       </div>
     </footer>
+
+    <%= if iframe = Plug.Conn.get_session(@conn, :check_session_iframe) do %>
+         <%= content_tag(:iframe, "", id: "check_session", src: iframe,
+         allow: "storage-access"
+         ) %>
+         <%= content_tag(:iframe, "", src: Routes.auth_path(@conn, :session_state)) %>
+         <% end %>
 
     <%= content_tag(:script, "", type: "text/javascript", src: Routes.static_path(@conn, "/assets/app.js")) %>
   </body>

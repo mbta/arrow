@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+    <head></head>
+    <body>
+    <%= if @session_state do %>
+        <script type="text/javascript">
+         const clientId = "<%= Phoenix.HTML.javascript_escape(@client_id)%>";
+         const targetOrigin = "<%= Phoenix.HTML.javascript_escape(@target_origin) %>"; // Validates origin
+         var sessionState = "<%= Phoenix.HTML.javascript_escape(@session_state) %>";
+         var stat = "unchanged";
+         var mes = clientId + " " + sessionState;
+         var opFrameId = "check_session";
+         var timerID;
+
+         function checkSession()   {
+             console.log("checking session");
+             var win = window.parent.frames[opFrameId].contentWindow
+             console.log(win);
+             console.log(`posting ${mes}`);
+             win.postMessage(mes, targetOrigin);
+         }
+
+         function setTimer() {
+             checkSession();
+             timerID = setInterval(checkSession, 5 * 1000);
+         }
+
+         window.addEventListener("message", receiveMessage, false);
+
+         function receiveMessage(e) {
+             console.log(e);
+             if (e.origin !== targetOrigin) {
+                 return;
+             }
+             stat = e.data;
+
+             if (stat === "changed") {
+                 clearInterval(timerID);
+                 console.log("changed");
+             } else if (stat == "error") {
+                 clearInterval(timerID);
+             }
+         }
+
+         setTimer();
+        </script>
+    <% end %>
+    </body>
+</html>
