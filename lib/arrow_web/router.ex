@@ -41,13 +41,17 @@ defmodule ArrowWeb.Router do
     pipe_through([:redirect_prod_http, :browser, :authenticate])
 
     get("/logout", AuthController, :logout)
-    get("/unauthorized", UnauthorizedController, :index)
     get("/feed", FeedController, :index)
     get("/mytoken", MyTokenController, :show)
     get("/", DisruptionController, :index)
     resources("/disruptions", DisruptionController, except: [:index])
     put("/disruptions/:id/row_status", DisruptionController, :update_row_status)
     post("/disruptions/:id/notes", NoteController, :create)
+  end
+
+  scope "/", ArrowWeb do
+    pipe_through([:redirect_prod_http, :browser])
+    get("/unauthorized", UnauthorizedController, :index)
   end
 
   scope "/", ArrowWeb do

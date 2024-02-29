@@ -41,7 +41,8 @@ if is_binary(keycloak_issuer) and not is_test? do
       }
     ],
     providers: [
-      keycloak: keycloak_opts
+      keycloak: keycloak_opts,
+      keycloak_prompt_none: keycloak_opts
     ]
 end
 

@@ -59,5 +59,6 @@
     </footer>
 
     <%= content_tag(:script, "", type: "text/javascript", src: Routes.static_path(@conn, "/assets/app.js")) %>
+    <%= content_tag(:iframe, "", src: Routes.auth_path(@conn, :request, :keycloak_prompt_none), style: "display: none") %>
   </body>
 </html>

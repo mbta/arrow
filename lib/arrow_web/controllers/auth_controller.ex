@@ -3,6 +3,7 @@ defmodule ArrowWeb.AuthController do
   require Logger
 
   plug(Ueberauth)
+  plug(:put_layout, false)
 
   @spec logout(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def logout(conn, _params) do
@@ -47,7 +48,46 @@ defmodule ArrowWeb.AuthController do
     |> redirect(to: Routes.disruption_path(conn, :index))
   end
 
-  def callback(%{assigns: %{ueberauth_auth: %{provider: :keycloak} = auth}} = conn, _params) do
+  def callback(%{assigns: %{ueberauth_auth: %{provider: :keycloak}}} = conn, _params) do
+    conn
+    |> keycloak_signin()
+    |> redirect(to: Routes.disruption_path(conn, :index))
+  end
+
+  def callback(conn, %{"provider" => "keycloak_prompt_none"}) do
+    session_state = get_session(conn, :session_state)
+
+    conn =
+      case conn.assigns do
+        %{ueberauth_auth: _} ->
+          keycloak_signin(conn)
+
+        %{ueberauth_failure: _} ->
+          configure_session(conn, drop: true)
+      end
+
+    changed? = session_state != get_session(conn, :session_state)
+    # slighly less than 5 minutes
+    refresh_after = 270
+
+    render(conn, :prompt_none,
+      changed?: changed?,
+      refresh_after: refresh_after,
+      provider: :keycloak_prompt_none
+    )
+  end
+
+  def callback(
+        %{assigns: %{ueberauth_failure: %Ueberauth.Failure{errors: errors}}} = conn,
+        _params
+      ) do
+    Logger.warning("failed to authenticate errors=#{inspect(errors)}")
+
+    send_resp(conn, 401, "unauthenticated")
+  end
+
+  defp keycloak_signin(conn) do
+    auth = conn.assigns.ueberauth_auth
     username = auth.uid
     expiration = auth.credentials.expires_at
     current_time = System.system_time(:second)
@@ -67,6 +107,7 @@ defmodule ArrowWeb.AuthController do
 
     conn
     |> put_session(:logout_url, logout_url)
+    |> put_session(:session_state, auth.extra.raw_info.claims["session_state"])
     |> Guardian.Plug.sign_in(
       ArrowWeb.AuthManager,
       username,
@@ -75,15 +116,5 @@ defmodule ArrowWeb.AuthController do
       },
       ttl: {expiration - current_time, :seconds}
     )
-    |> redirect(to: Routes.disruption_path(conn, :index))
-  end
-
-  def callback(
-        %{assigns: %{ueberauth_failure: %Ueberauth.Failure{errors: errors}}} = conn,
-        _params
-      ) do
-    Logger.warning("failed to authenticate errors=#{inspect(errors)}")
-
-    send_resp(conn, 401, "unauthenticated")
   end
 end

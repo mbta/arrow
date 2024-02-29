@@ -65,7 +65,14 @@ config :ueberauth, Ueberauth,
     cognito: {Ueberauth.Strategy.Cognito, []},
     keycloak:
       {Ueberauth.Strategy.Oidcc,
-       issuer: :keycloak_issuer, userinfo: true, uid_field: "email", scopes: ~w"openid email"}
+       issuer: :keycloak_issuer, userinfo: true, uid_field: "email", scopes: ~w"openid email"},
+    keycloak_prompt_none:
+      {Ueberauth.Strategy.Oidcc,
+       issuer: :keycloak_issuer,
+       userinfo: true,
+       uid_field: "email",
+       scopes: ~w"openid email",
+       authorization_params: %{prompt: "none"}}
   ]
 
 config :ueberauth, Ueberauth.Strategy.Cognito,
