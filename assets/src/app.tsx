@@ -23,14 +23,3 @@ declare global {
 window.Components = { DisruptionCalendar, DisruptionForm }
 
 ReactPhoenix.init()
-
-// listen for a "changed" auth message and reload
-window.addEventListener("message", (e) => {
-  if (e.origin !== window.location.origin) {
-    return;
-  }
-
-  if (e.data === "changed") {
-    window.location.reload();
-  }
-}, false);

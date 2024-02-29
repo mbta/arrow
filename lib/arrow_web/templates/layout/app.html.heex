@@ -59,6 +59,10 @@
     </footer>
 
     <%= content_tag(:script, "", type: "text/javascript", src: Routes.static_path(@conn, "/assets/app.js")) %>
-    <%= if Guardian.Plug.authenticated?(@conn), do: content_tag(:iframe, "", src: Routes.auth_path(@conn, :request, :keycloak_prompt_none), style: "display: none") %>
+    <%= if Guardian.Plug.authenticated?(@conn), do:
+      content_tag(:iframe, "",
+        src: Routes.auth_path(@conn, :request, :keycloak_prompt_none),
+        style: "display: none")
+    %>
   </body>
 </html>

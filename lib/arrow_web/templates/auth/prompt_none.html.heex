@@ -9,7 +9,9 @@
      (function() {
        const changed = "<%= if @changed?, do: "changed", else: "unchanged" %>";
        console.log(changed);
-       window.parent.postMessage(changed, window.location.origin);
+       <%= if @changed? do %>
+       window.parent.location.reload()
+       <% end %>
      })();
     </script>
   </body>

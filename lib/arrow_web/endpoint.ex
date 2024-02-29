@@ -48,7 +48,9 @@ defmodule ArrowWeb.Endpoint do
   plug Plug.Session,
     store: :cookie,
     key: "_arrow_key",
-    signing_salt: "35DDvOCJ"
+    signing_salt: "35DDvOCJ",
+    # needs to be available when redirecting
+    same_site: "Lax"
 
   plug ArrowWeb.Router
 end
