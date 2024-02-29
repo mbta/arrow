@@ -55,7 +55,7 @@ defmodule ArrowWeb.Controllers.AuthControllerTest do
       response = html_response(conn, 302)
 
       assert response =~ Routes.disruption_path(conn, :index)
-      assert get_session(conn, :session_state) == "session state"
+      assert get_session(conn, :session_state) == {"session state", ["admin"]}
       assert Guardian.Plug.current_claims(conn)["roles"] == ["admin"]
       assert Guardian.Plug.current_resource(conn) == "foo@mbta.com"
     end

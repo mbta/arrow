@@ -107,7 +107,7 @@ defmodule ArrowWeb.AuthController do
 
     conn
     |> put_session(:logout_url, logout_url)
-    |> put_session(:session_state, auth.extra.raw_info.claims["session_state"])
+    |> put_session(:session_state, {auth.extra.raw_info.claims["session_state"], roles})
     |> Guardian.Plug.sign_in(
       ArrowWeb.AuthManager,
       username,
