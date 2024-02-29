@@ -66,7 +66,10 @@ defmodule ArrowWeb.AuthController do
           configure_session(conn, drop: true)
       end
 
-    changed? = session_state != get_session(conn, :session_state)
+    # ensure that being logged out is always treated as a change
+    new_session_state = get_session(conn, :session_state, :new)
+
+    changed? = session_state != new_session_state
     # slighly less than 5 minutes
     refresh_after = 270
 
