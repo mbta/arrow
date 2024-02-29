@@ -31,7 +31,6 @@ window.addEventListener("message", (e) => {
   }
 
   if (e.data === "changed") {
-    // reload
-    window.location.href = "/";
+    window.location.reload();
   }
 }, false);
