@@ -6,7 +6,11 @@
   </head>
   <body>
     <script type="text/javascript">
-     window.parent.postMessage("<%= if @changed?, do: "changed", else: "unchanged" %>", window.location.origin);
+     (function() {
+       const changed = "<%= if @changed?, do: "changed", else: "unchanged" %>";
+       console.log(changed);
+       window.parent.postMessage(changed, window.location.origin);
+     })();
     </script>
   </body>
 </html>
