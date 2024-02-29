@@ -62,7 +62,8 @@ defmodule ArrowWeb.AuthController do
         %{ueberauth_auth: _} ->
           keycloak_signin(conn)
 
-        %{ueberauth_failure: _} ->
+        %{ueberauth_failure: %Ueberauth.Failure{errors: errors}} ->
+          Logger.info("user logged out errors=#{inspect(errors)}")
           configure_session(conn, drop: true)
       end
 
