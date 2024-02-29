@@ -6,7 +6,7 @@ defmodule ArrowWeb.AuthController do
 
   @spec logout(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def logout(conn, _params) do
-    logout_url = Map.get(Guardian.Plug.current_claims(conn), "logout_url")
+    logout_url = get_session(conn, :logout_url)
     conn = configure_session(conn, drop: true)
 
     if logout_url do
@@ -66,12 +66,12 @@ defmodule ArrowWeb.AuthController do
       end
 
     conn
+    |> put_session(:logout_url, logout_url)
     |> Guardian.Plug.sign_in(
       ArrowWeb.AuthManager,
       username,
       %{
-        roles: roles,
-        logout_url: logout_url
+        roles: roles
       },
       ttl: {expiration - current_time, :seconds}
     )
