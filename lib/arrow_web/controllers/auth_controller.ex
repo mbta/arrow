@@ -64,7 +64,9 @@ defmodule ArrowWeb.AuthController do
 
         %{ueberauth_failure: %Ueberauth.Failure{errors: errors}} ->
           Logger.info("user logged out errors=#{inspect(errors)}")
-          configure_session(conn, drop: true)
+          conn
+          |> put_session(:session_state, nil)
+          |> Guardian.Plug.sign_out(ArrowWeb.AuthManager)
       end
 
     # ensure that being logged out is always treated as a change
