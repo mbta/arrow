@@ -27,9 +27,10 @@ defmodule ArrowWeb.AuthController do
     conn =
       case conn.assigns do
         %{ueberauth_auth: _} ->
+          # user can silently re-auth: ensure they do every 5 minutes
           conn
           |> put_session(:prompt_none_success?, true)
-          |> keycloak_signin()
+          |> keycloak_signin({5, :minutes})
 
         %{ueberauth_failure: %Ueberauth.Failure{errors: errors}} when seen_success? ->
           Logger.info("user logged out errors=#{inspect(errors)}")
@@ -92,7 +93,7 @@ defmodule ArrowWeb.AuthController do
 
   def callback(%{assigns: %{ueberauth_auth: %{provider: :keycloak}}} = conn, _params) do
     conn
-    |> keycloak_signin()
+    |> keycloak_signin({30, :minutes})
     |> redirect(to: Routes.disruption_path(conn, :index))
   end
 
@@ -105,11 +106,9 @@ defmodule ArrowWeb.AuthController do
     send_resp(conn, 401, "unauthenticated")
   end
 
-  defp keycloak_signin(conn) do
+  defp keycloak_signin(conn, ttl) do
     auth = conn.assigns.ueberauth_auth
     username = auth.uid
-    expiration = auth.credentials.expires_at
-    current_time = System.system_time(:second)
 
     roles = auth.extra.raw_info.userinfo["roles"] || []
 
@@ -133,7 +132,7 @@ defmodule ArrowWeb.AuthController do
       %{
         roles: roles
       },
-      ttl: {expiration - current_time, :seconds}
+      ttl: ttl
     )
   end
 end
