@@ -72,6 +72,7 @@ config :ueberauth, Ueberauth,
        userinfo: true,
        uid_field: "email",
        scopes: ~w"openid email",
+       callback_path: "/silent-sso.html",
        authorization_params: %{prompt: "none"}}
   ]
 

@@ -18,7 +18,7 @@ defmodule ArrowWeb.Endpoint do
     at: "/",
     from: :arrow,
     gzip: false,
-    only: ~w(assets fonts images icons favicon.ico robots.txt)
+    only: ~w(assets fonts images icons favicon.ico robots.txt silent-sso.html)
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
@@ -48,9 +48,7 @@ defmodule ArrowWeb.Endpoint do
   plug Plug.Session,
     store: :cookie,
     key: "_arrow_key",
-    signing_salt: "35DDvOCJ",
-    # needs to be available when redirecting
-    same_site: "Lax"
+    signing_salt: "35DDvOCJ"
 
   plug ArrowWeb.Router
 end

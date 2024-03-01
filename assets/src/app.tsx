@@ -23,3 +23,25 @@ declare global {
 window.Components = { DisruptionCalendar, DisruptionForm }
 
 ReactPhoenix.init()
+
+window.addEventListener("message", async (e) => {
+  if (e.origin !== location.origin) {
+    return;
+  }
+  if (typeof e.data !== "string") {
+    return
+  };
+  console.log(e);
+  if (e.data.slice(0, location.origin.length) !== location.origin) {
+    return;
+  }
+
+  const query = e.data.slice(e.data.indexOf("?"));
+  console.log(query);
+
+  try {
+    await fetch("/auth/keycloak_prompt_none/callback" + query)
+  } catch (e) {
+    console.log(e);
+  }
+}, false);

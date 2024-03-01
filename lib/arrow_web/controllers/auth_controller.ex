@@ -62,8 +62,8 @@ defmodule ArrowWeb.AuthController do
         %{ueberauth_auth: _} ->
           keycloak_signin(conn)
 
-        %{ueberauth_failure: %Ueberauth.Failure{errors: errors}} ->
-          Logger.info("user logged out errors=#{inspect(errors)}")
+        assigns ->
+          Logger.info("user logged out errors=#{inspect(assigns[:ueberauth_failure])}")
 
           conn
           |> put_session(:session_state, nil)
@@ -73,15 +73,14 @@ defmodule ArrowWeb.AuthController do
     # ensure that being logged out is always treated as a change
     new_session_state = get_session(conn, :session_state, :new)
 
-    changed? = session_state != new_session_state
-    # slighly less than 5 minutes
-    refresh_after = 270
+    conn =
+      if session_state != new_session_state do
+        send_resp(conn, :ok, "")
+      else
+        send_resp(conn, :unauthorized, "")
+      end
 
-    render(conn, :prompt_none,
-      changed?: changed?,
-      refresh_after: refresh_after,
-      provider: :keycloak_prompt_none
-    )
+    halt(conn)
   end
 
   def callback(
