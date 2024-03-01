@@ -62,19 +62,23 @@ defmodule ArrowWeb.AuthController do
         %{ueberauth_auth: _} ->
           keycloak_signin(conn)
 
-        assigns ->
-          Logger.info("user logged out errors=#{inspect(assigns[:ueberauth_failure])}")
+        %{ueberauth_failure: %Ueberauth.Failure{errors: errors}} ->
+          Logger.info("user logged out errors=#{inspect(errors)}")
 
           conn
           |> put_session(:session_state, nil)
           |> Guardian.Plug.sign_out(ArrowWeb.AuthManager)
+
+        %{} ->
+          Logger.info("no user information; not changing state")
+          conn
       end
 
     # ensure that being logged out is always treated as a change
     new_session_state = get_session(conn, :session_state, :new)
 
     conn =
-      if session_state != new_session_state do
+      if session_state == new_session_state do
         send_resp(conn, :ok, "")
       else
         send_resp(conn, :unauthorized, "")
