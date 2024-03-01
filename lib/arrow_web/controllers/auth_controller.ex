@@ -20,7 +20,17 @@ defmodule ArrowWeb.AuthController do
   def silent_sso_callback(conn, _params) do
     provider_name = :keycloak_prompt_none
     provider_config = Application.get_env(:ueberauth, Ueberauth)[:providers][provider_name]
-    conn = Ueberauth.run_callback(conn, provider_name, provider_config)
+
+    # pretend that the callback came from the original path. this does eliminate
+    # one level of security (ensuring that the callback URL is correct), but we
+    # still have all the others (PKCE, state, response_code).
+    conn =
+      Ueberauth.run_callback(
+        %{conn | request_path: "/silent-sso.html"},
+        provider_name,
+        provider_config
+      )
+
     session_state = get_session(conn, :session_state)
     seen_success? = get_session(conn, :prompt_none_success?, false)
 
