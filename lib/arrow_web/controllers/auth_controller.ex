@@ -17,6 +17,48 @@ defmodule ArrowWeb.AuthController do
     end
   end
 
+  def silent_sso_callback(conn, _params) do
+    provider_name = :keycloak_prompt_none
+    provider_config = Application.get_env(:ueberauth, Ueberauth)[:providers][provider_name]
+    conn = Ueberauth.run_callback(conn, provider_name, provider_config)
+    session_state = get_session(conn, :session_state)
+    seen_success? = get_session(conn, :prompt_none_success?, false)
+
+    conn =
+      case conn.assigns do
+        %{ueberauth_auth: _} ->
+          conn
+          |> put_session(:prompt_none_success?, true)
+          |> keycloak_signin()
+
+        %{ueberauth_failure: %Ueberauth.Failure{errors: errors}} when seen_success? ->
+          Logger.info("user logged out errors=#{inspect(errors)}")
+
+          conn
+          |> put_session(:session_state, nil)
+          |> Guardian.Plug.sign_out(ArrowWeb.AuthManager)
+
+        %{} ->
+          # if we haven't seen a successful silent login, assume that the
+          # cookies are being blocked. don't log the user out, but also don't
+          # extend the session.
+          Logger.info("not changing state")
+          conn
+      end
+
+    # ensure that being logged out is always treated as a change
+    new_session_state = get_session(conn, :session_state, :new)
+
+    conn =
+      if session_state == new_session_state or not seen_success? do
+        send_resp(conn, :ok, "")
+      else
+        send_resp(conn, :unauthorized, "")
+      end
+
+    halt(conn)
+  end
+
   @cognito_groups Application.compile_env!(:arrow, :cognito_groups)
 
   @spec callback(Plug.Conn.t(), map()) :: Plug.Conn.t()
@@ -52,39 +94,6 @@ defmodule ArrowWeb.AuthController do
     conn
     |> keycloak_signin()
     |> redirect(to: Routes.disruption_path(conn, :index))
-  end
-
-  def callback(conn, %{"provider" => "keycloak_prompt_none"}) do
-    session_state = get_session(conn, :session_state)
-
-    conn =
-      case conn.assigns do
-        %{ueberauth_auth: _} ->
-          keycloak_signin(conn)
-
-        %{ueberauth_failure: %Ueberauth.Failure{errors: errors}} ->
-          Logger.info("user logged out errors=#{inspect(errors)}")
-
-          conn
-          |> put_session(:session_state, nil)
-          |> Guardian.Plug.sign_out(ArrowWeb.AuthManager)
-
-        %{} ->
-          Logger.info("no user information; not changing state")
-          conn
-      end
-
-    # ensure that being logged out is always treated as a change
-    new_session_state = get_session(conn, :session_state, :new)
-
-    conn =
-      if session_state == new_session_state do
-        send_resp(conn, :ok, "")
-      else
-        send_resp(conn, :unauthorized, "")
-      end
-
-    halt(conn)
   end
 
   def callback(
