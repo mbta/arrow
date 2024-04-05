@@ -26,13 +26,6 @@ if is_binary(keycloak_issuer) and not is_test? do
     client_secret: System.fetch_env!("KEYCLOAK_CLIENT_SECRET")
   ]
 
-  keycloak_opts =
-    if keycloak_idp = System.get_env("KEYCLOAK_IDP_HINT") do
-      Keyword.put(keycloak_opts, :authorization_params, %{kc_idp_hint: keycloak_idp})
-    else
-      keycloak_opts
-    end
-
   config :ueberauth_oidcc,
     issuers: [
       %{
