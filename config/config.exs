@@ -103,14 +103,26 @@ config :tailwind,
     cd: Path.expand("../assets", __DIR__)
   ]
 
-config :arrow, ArrowWeb.AuthManager, issuer: "arrow"
+# 12 hours in seconds
+max_session_time = 12 * 60 * 60
+
+config :arrow, ArrowWeb.AuthManager,
+  issuer: "arrow",
+  max_session_time: max_session_time,
+  # 30 minutes
+  idle_time: 30 * 60
 
 config :ueberauth, Ueberauth,
   providers: [
     cognito: {Ueberauth.Strategy.Cognito, []},
     keycloak:
       {Ueberauth.Strategy.Oidcc,
-       issuer: :keycloak_issuer, userinfo: true, uid_field: "email", scopes: ~w"openid email"}
+       issuer: :keycloak_issuer,
+       userinfo: true,
+       uid_field: "email",
+       scopes: ~w"openid email",
+       authorization_params: %{max_age: "#{max_session_time}"},
+       authorization_params_passthrough: ~w"prompt login_hint"}
   ]
 
 config :ueberauth, Ueberauth.Strategy.Cognito,
