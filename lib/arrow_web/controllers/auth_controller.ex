@@ -26,6 +26,8 @@ defmodule ArrowWeb.AuthController do
 
     groups = Map.get(auth.credentials.other, :groups, [])
 
+    auth_time = Map.get(auth.extra.raw_info, "auth_time", auth.extra.raw_info["iat"])
+
     roles =
       Enum.flat_map(groups, fn group ->
         case @cognito_groups[group] do
@@ -39,6 +41,7 @@ defmodule ArrowWeb.AuthController do
       ArrowWeb.AuthManager,
       username,
       %{
+        auth_time: auth_time,
         # all cognito users have read-only access
         roles: roles ++ ["read-only"]
       },
@@ -49,8 +52,13 @@ defmodule ArrowWeb.AuthController do
 
   def callback(%{assigns: %{ueberauth_auth: %{provider: :keycloak} = auth}} = conn, _params) do
     username = auth.uid
-    expiration = auth.credentials.expires_at
-    current_time = System.system_time(:second)
+
+    auth_time =
+      Map.get(
+        auth.extra.raw_info.claims,
+        "auth_time",
+        auth.extra.raw_info.claims["iat"]
+      )
 
     roles = auth.extra.raw_info.userinfo["roles"] || []
 
@@ -66,14 +74,16 @@ defmodule ArrowWeb.AuthController do
       end
 
     conn
+    |> configure_session(drop: true)
     |> put_session(:logout_url, logout_url)
     |> Guardian.Plug.sign_in(
       ArrowWeb.AuthManager,
       username,
       %{
+        auth_time: auth_time,
         roles: roles
       },
-      ttl: {expiration - current_time, :seconds}
+      ttl: {1, :minute}
     )
     |> redirect(to: Routes.disruption_path(conn, :index))
   end
