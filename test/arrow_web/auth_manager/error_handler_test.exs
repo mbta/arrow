@@ -10,7 +10,7 @@ defmodule ArrowWeb.AuthManager.ErrorHandlerTest do
         |> init_test_session(%{})
         |> ArrowWeb.AuthManager.ErrorHandler.auth_error({:some_type, :reason}, [])
 
-      assert html_response(conn, 302) =~ "\"/auth/#{provider}\""
+      assert html_response(conn, 302) =~ "\"/auth/#{provider}?prompt=login\""
     end
   end
 end

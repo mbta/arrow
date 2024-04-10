@@ -1,6 +1,5 @@
 defmodule ArrowWeb.TryApiTokenAuth.LocalTest do
   use ArrowWeb.ConnCase
-  import ExUnit.CaptureLog
 
   alias ArrowWeb.TryApiTokenAuth.Local
 

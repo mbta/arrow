@@ -38,7 +38,7 @@ defmodule ArrowWeb.Controllers.AuthControllerTest do
           other: %{id_token: "id_token"}
         },
         extra: %{
-          raw_info: %{
+          raw_info: %UeberauthOidcc.RawInfo{
             userinfo: %{
               "roles" => ["admin"]
             }
@@ -69,9 +69,7 @@ defmodule ArrowWeb.Controllers.AuthControllerTest do
           other: %{id_token: "id_token"}
         },
         extra: %{
-          raw_info: %{
-            userinfo: %{}
-          }
+          raw_info: %UeberauthOidcc.RawInfo{}
         }
       }
 

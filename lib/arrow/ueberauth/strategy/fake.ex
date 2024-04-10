@@ -38,7 +38,11 @@ defmodule Arrow.Ueberauth.Strategy.Fake do
 
   @impl Ueberauth.Strategy
   def extra(_conn) do
-    %Ueberauth.Auth.Extra{raw_info: %{}}
+    %Ueberauth.Auth.Extra{
+      raw_info: %{
+        "iat" => System.system_time(:second)
+      }
+    }
   end
 
   @impl Ueberauth.Strategy
