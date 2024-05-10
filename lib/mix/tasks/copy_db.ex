@@ -46,25 +46,24 @@ defmodule Mix.Tasks.CopyDb do
 
   @spec parse_json_value(any()) :: any()
   defp parse_json_value(value) do
-    if is_binary(value) do
-      case DateTime.from_iso8601(value) do
-        {:ok, dt, _} ->
-          dt
+    cond do
+      not is_binary(value) ->
+        value
 
-        {:error, _} ->
-          case Date.from_iso8601(value) do
-            {:ok, d} ->
-              d
+      match?({:ok, _, _}, DateTime.from_iso8601(value)) ->
+        {:ok, dt, _} = DateTime.from_iso8601(value)
+        dt
 
-            {:error, _} ->
-              case Time.from_iso8601(value) do
-                {:ok, t} -> t
-                {:error, _} -> value
-              end
-          end
-      end
-    else
-      value
+      match?({:ok, _}, Date.from_iso8601(value)) ->
+        {:ok, d} = Date.from_iso8601(value)
+        d
+
+      match?({:ok, _}, Time.from_iso8601(value)) ->
+        {:ok, t} = Time.from_iso8601(value)
+        t
+
+      true ->
+        value
     end
   end
 end
