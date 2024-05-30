@@ -26,7 +26,8 @@ defmodule Arrow.DisruptionRevision do
           trip_short_names: [TripShortName.t()] | Ecto.Association.NotLoaded.t(),
           adjustments: [Adjustment.t()] | Ecto.Association.NotLoaded.t(),
           inserted_at: DateTime.t() | nil,
-          updated_at: DateTime.t() | nil
+          updated_at: DateTime.t() | nil,
+          title: String.t()
         }
 
   schema "disruption_revisions" do
@@ -37,6 +38,7 @@ defmodule Arrow.DisruptionRevision do
     field(:description, :string)
     field(:adjustment_kind, Ecto.Enum, values: Adjustment.kinds())
     field(:note_body, :string, virtual: true)
+    field(:title, :string)
 
     belongs_to(:disruption, Disruption)
     has_many(:days_of_week, DayOfWeek, on_replace: :delete)
@@ -51,7 +53,7 @@ defmodule Arrow.DisruptionRevision do
     timestamps(type: :utc_datetime)
   end
 
-  @required_fields [:start_date, :end_date, :row_approved, :description]
+  @required_fields [:start_date, :end_date, :row_approved, :description, :title]
   @permitted_fields @required_fields ++ [:adjustment_kind, :note_body]
 
   @doc """
