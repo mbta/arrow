@@ -61,9 +61,6 @@ defmodule Arrow.MixProject do
       {:lcov_ex, "~> 0.2", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.0.0", only: :test},
       {:phoenix_ecto, "~> 4.0"},
-      # # override for react_phoenix, pending
-      # # https://github.com/geolessel/react-phoenix/pull/58
-      # {:phoenix_html, "~> 3.2.0", override: true},
       {:phoenix_live_reload, "~> 1.5", only: :dev},
       {:phoenix_live_view, "~> 0.20.14"},
       {:phoenix_pubsub, "~> 2.0"},
