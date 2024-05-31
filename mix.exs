@@ -44,7 +44,7 @@ defmodule Arrow.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
       {:ecto_sql, "~> 3.11"},
       {:esbuild, "~> 0.2", runtime: Mix.env() == :dev},
@@ -61,18 +61,18 @@ defmodule Arrow.MixProject do
       {:lcov_ex, "~> 0.2", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.0.0", only: :test},
       {:phoenix_ecto, "~> 4.0"},
-      # override for react_phoenix, pending
-      # https://github.com/geolessel/react-phoenix/pull/58
-      {:phoenix_html, "~> 3.2.0", override: true},
-      {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 0.16.4"},
+      # # override for react_phoenix, pending
+      # # https://github.com/geolessel/react-phoenix/pull/58
+      # {:phoenix_html, "~> 3.2.0", override: true},
+      {:phoenix_live_reload, "~> 1.5", only: :dev},
+      {:phoenix_live_view, "~> 0.20.14"},
       {:phoenix_pubsub, "~> 2.0"},
-      {:phoenix, "~> 1.6.0"},
+      {:phoenix, "~> 1.7.12"},
       {:plug_cowboy, "~> 2.1"},
       {:telemetry, "~> 1.2", override: true},
       {:postgrex, ">= 0.0.0"},
       # If react_phoenix changes, check assets/src/ReactPhoenix.js, too
-      {:react_phoenix, "1.2.0"},
+      {:react_phoenix, "1.3.1"},
       {:tzdata, "~> 1.1"},
       {:ueberauth_cognito, "0.4.0"},
       {:ueberauth_oidcc, "~> 0.4.0"},
