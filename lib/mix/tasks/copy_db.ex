@@ -57,6 +57,7 @@ defmodule Mix.Tasks.CopyDb do
               d
 
             {:error, _} ->
+              # credo:disable-for-next-line Credo.Check.Refactor.Nesting
               case Time.from_iso8601(value) do
                 {:ok, t} -> t
                 {:error, _} -> value
