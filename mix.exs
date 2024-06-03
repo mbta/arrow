@@ -64,7 +64,6 @@ defmodule Arrow.MixProject do
       {:phoenix_live_reload, "~> 1.5", only: :dev},
       {:phoenix_live_view, "~> 0.20.14"},
       {:phoenix_pubsub, "~> 2.0"},
-      {:phoenix_view, "~> 2.0"},
       {:phoenix, "~> 1.7.12"},
       {:plug_cowboy, "~> 2.1"},
       {:telemetry, "~> 1.2", override: true},
