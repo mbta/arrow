@@ -68,6 +68,7 @@ defmodule Arrow.MixProject do
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_react, "~> 0.4"},
       {:phoenix_live_view, "~> 0.20.14"},
+      {:phoenix_live_dashboard, "~> 0.7"},
       {:phoenix_pubsub, "~> 2.0"},
       {:phoenix, "~> 1.7.12"},
       {:plug_cowboy, "~> 2.1"},
