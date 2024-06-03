@@ -72,7 +72,7 @@ defmodule Arrow.MixProject do
       {:telemetry, "~> 1.2", override: true},
       {:postgrex, ">= 0.0.0"},
       # If react_phoenix changes, check assets/src/ReactPhoenix.js, too
-      {:react_phoenix, "1.2.0"},
+      {:react_phoenix, "1.3.1"},
       {:tzdata, "~> 1.1"},
       {:ueberauth_cognito, "0.4.0"},
       {:ueberauth_oidcc, "~> 0.4.0"},
