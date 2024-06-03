@@ -1,5 +1,5 @@
 defmodule ArrowWeb.API.DisruptionRevisionView do
-  use ArrowWeb, :view
+  use ArrowWeb, :html
   use JaSerializer.PhoenixView
 
   attributes([:start_date, :end_date, :row_approved, :is_active, :inserted_at])

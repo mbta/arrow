@@ -1,5 +1,5 @@
 defmodule ArrowWeb.ErrorView do
-  use ArrowWeb, :view
+  use ArrowWeb, :html
   alias JaSerializer.ErrorSerializer
 
   # If you want to customize a particular status code
