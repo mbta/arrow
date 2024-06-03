@@ -40,7 +40,8 @@ config :arrow,
 config :arrow, ArrowWeb.Endpoint,
   url: [host: "localhost"],
   render_errors: [view: ArrowWeb.ErrorView, accepts: ~w(html json)],
-  pubsub_server: Arrow.PubSub
+  pubsub_server: Arrow.PubSub,
+  live_view: [signing_salt: "ohv1l0qtqf289vTQRY1C8eSDmSE5v/j5"]
 
 config :esbuild,
   version: "0.12.18",
