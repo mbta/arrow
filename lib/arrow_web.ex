@@ -6,7 +6,9 @@ defmodule ArrowWeb do
   This can be used in your application as:
 
       use ArrowWeb, :controller
-      use ArrowWeb, :view
+
+      https://hexdocs.pm/phoenix_view/Phoenix.View.html#module-replaced-by-phoenix-component
+      use ArrowWeb, :html
 
   The definitions below will be executed for every view,
   controller, etc, so keep them short and clean, focused
@@ -27,16 +29,11 @@ defmodule ArrowWeb do
     end
   end
 
-  def view do
+  def html do
     quote do
-      use Phoenix.View,
-        root: "lib/arrow_web/templates",
-        namespace: ArrowWeb
-
-      # Import convenience functions from controllers
-      import Phoenix.Controller, only: [get_flash: 1, get_flash: 2, view_module: 1]
-
+      use Phoenix.Component
       # Use all HTML functionality (forms, tags, etc)
+      # Still needed for old style Phoenix HTML like <link>, <content_tag>
       use Phoenix.HTML
 
       import ArrowWeb.ErrorHelpers

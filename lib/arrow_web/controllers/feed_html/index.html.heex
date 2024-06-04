@@ -18,16 +18,16 @@
 
         <%= case d.revisions do %>
           <% [_, _] = revisions -> %>
-            <% [published, latest] = Enum.sort(revisions, & &1.id <= &2.id) %>
+            <% [published, latest] = Enum.sort(revisions, &(&1.id <= &2.id)) %>
             <em>A disruption was updated to the latest version:</em>
-            <%= render "disruption_summary.html", revision: latest %>
+            <.disruption_summary revision={latest} />
             <em>from the published version:</em>
-            <%= render "disruption_summary.html", revision: published %>
-
+            <.disruption_summary revision={published} />
+          
           <% [revision] -> %>
             <div>
               <em>A new, unpublished disruption:</em>
-              <%= render "disruption_summary.html", revision: revision %>
+              <.disruption_summary revision={revision} />
             </div>
         <% end %>
       </div>

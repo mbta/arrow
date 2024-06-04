@@ -87,7 +87,7 @@
         <%= react_component("Components.DisruptionCalendar", DCalendar.props(@disruptions)) %>
       </div>
     <% else %>
-      <%= render("_table.html", conn: @conn, disruptions: @disruptions, filters: @filters) %>
+      <._table conn={@conn} disruptions={@disruptions} filters={@filters} />
     <% end %>
   </div>
 </div>

@@ -37,7 +37,7 @@
     </header>
 
     <main class="container">
-      <%= render "_flash.html", flash: @flash %>
+      <._flash flash={@flash} />
       <%= @inner_content %>
     </main>
 

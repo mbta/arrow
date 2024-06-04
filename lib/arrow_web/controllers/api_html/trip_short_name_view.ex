@@ -1,5 +1,5 @@
 defmodule ArrowWeb.API.TripShortNameView do
-  use ArrowWeb, :view
+  use ArrowWeb, :html
   use JaSerializer.PhoenixView
 
   attributes([:trip_short_name])

@@ -1,5 +1,5 @@
 defmodule ArrowWeb.API.DisruptionView do
-  use ArrowWeb, :view
+  use ArrowWeb, :html
   use JaSerializer.PhoenixView
 
   attributes([:last_published_at])

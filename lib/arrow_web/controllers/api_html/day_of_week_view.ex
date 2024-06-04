@@ -1,5 +1,5 @@
 defmodule ArrowWeb.API.DayOfWeekView do
-  use ArrowWeb, :view
+  use ArrowWeb, :html
   use JaSerializer.PhoenixView
 
   attributes([

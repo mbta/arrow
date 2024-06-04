@@ -7,7 +7,7 @@
       </div>
     </div>
 
-    <%= render("_description.html", conn: @conn, revision: @revision) %>
+    <._description conn={@conn} revision={@revision} />
 
     <hr class="my-3" />
 
@@ -86,18 +86,18 @@
             <%= hidden_input :revision, :row_approved, value: !@revision.row_approved %>
             <%= submit mark_as_approved_or_pending(@revision.row_approved), class: "btn btn-primary"%>
           <% end %>
-          <%= link(render("_button_description.html", conn: @conn, kind: :edit),
-              class: "btn btn-tertiary",
-              to: Routes.disruption_path(@conn, :edit, @id)
-            ) %>
+          <.link class="btn btn-tertiary" navigate={Routes.disruption_path(@conn, :edit, @id)}>
+            <._button_description conn={@conn} kind={:edit} />
+          </.link>
         <% end %>
         <%= if Permissions.authorize?(:delete_disruption, @user) do %>
-          <%= button(render("_button_description.html", conn: @conn, kind: :delete),
-              class: "btn btn-tertiary",
-              method: :delete,
-              to: Routes.disruption_path(@conn, :delete, @id),
-              data: [confirm: "Permanently delete this disruption?"]
-            ) %>
+          <%= button class: "btn btn-tertiary",
+            method: :delete,
+            to: Routes.disruption_path(@conn, :delete, @id),
+            data: [confirm: "Permanently delete this disruption?"]
+            do %>
+            <._button_description conn={@conn} kind={:delete} />
+          <% end %>
         <% end %>
       </div>
     <% end %>
