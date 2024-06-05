@@ -65,5 +65,5 @@ defmodule ArrowWeb.ConnCase do
     |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{roles: roles})
   end
 
-  def authenticated_admin(), do: build_conn("test_user", ["admin"])
+  def authenticated_admin, do: build_conn("test_user", ["admin"])
 end

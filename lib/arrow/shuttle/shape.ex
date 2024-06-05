@@ -1,4 +1,5 @@
 defmodule Arrow.Shuttle.Shape do
+  @moduledoc "schema for shuttle shapes"
   use Ecto.Schema
   import Ecto.Changeset
 
