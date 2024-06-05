@@ -3,6 +3,12 @@ defmodule ArrowWeb.ShapeController do
 
   alias Arrow.Shuttle
   alias Arrow.Shuttle.Shape
+  alias ArrowWeb.Plug.Authorize
+
+  plug(Authorize, :view_disruption when action in [:index, :show])
+  plug(Authorize, :create_disruption when action in [:new, :create])
+  plug(Authorize, :update_disruption when action in [:edit, :update, :update_row_status])
+  plug(Authorize, :delete_disruption when action in [:delete])
 
   def index(conn, _params) do
     shapes = Shuttle.list_shapes()

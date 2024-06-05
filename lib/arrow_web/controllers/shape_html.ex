@@ -1,4 +1,4 @@
-defmodule ArrowWeb.Shape do
+defmodule ArrowWeb.ShapeView do
   use ArrowWeb, :html
 
   embed_templates "shape_html/*"
