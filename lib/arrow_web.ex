@@ -18,7 +18,7 @@ defmodule ArrowWeb do
   below. Instead, define any helper function in modules
   and import those modules here.
   """
-  def static_paths, do: ~w(assets fonts images favicon.ico robots.txt)
+  def static_paths, do: ~w(assets fonts images icons favicon.ico robots.txt)
 
   def router do
     quote do
