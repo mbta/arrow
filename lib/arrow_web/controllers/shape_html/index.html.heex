@@ -9,11 +9,15 @@
 
 <.table id="shapes" rows={@shapes} row_click={&JS.navigate(~p"/shapes/#{&1}")}>
   <:col :let={shape} label="Name"><%= shape.name %></:col>
+  <:col :let={shape} label="File"><%= shape.path %></:col>
   <:action :let={shape}>
     <div class="sr-only">
       <.link navigate={~p"/shapes/#{shape}"}>Show</.link>
     </div>
     <.link navigate={~p"/shapes/#{shape}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={shape}>
+    <.link navigate={~p"/shapes/#{shape}/download"}>Download</.link>
   </:action>
   <:action :let={shape}>
     <.link href={~p"/shapes/#{shape}"} method="delete" data-confirm="Are you sure?">
