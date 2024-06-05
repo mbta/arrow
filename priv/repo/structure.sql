@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 11.14
--- Dumped by pg_dump version 14.1
+-- Dumped from database version 14.12 (Homebrew)
+-- Dumped by pg_dump version 14.12 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -32,6 +32,8 @@ CREATE TYPE public.day_name AS ENUM (
 
 
 SET default_tablespace = '';
+
+SET default_table_access_method = heap;
 
 --
 -- Name: adjustments; Type: TABLE; Schema: public; Owner: -
@@ -338,6 +340,37 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: shapes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.shapes (
+    id bigint NOT NULL,
+    name character varying(255),
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
+-- Name: shapes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.shapes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: shapes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.shapes_id_seq OWNED BY public.shapes.id;
+
+
+--
 -- Name: adjustments id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -398,6 +431,13 @@ ALTER TABLE ONLY public.disruption_trip_short_names ALTER COLUMN id SET DEFAULT 
 --
 
 ALTER TABLE ONLY public.disruptions ALTER COLUMN id SET DEFAULT nextval('public.disruptions_id_seq1'::regclass);
+
+
+--
+-- Name: shapes id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shapes ALTER COLUMN id SET DEFAULT nextval('public.shapes_id_seq'::regclass);
 
 
 --
@@ -481,6 +521,14 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
+-- Name: shapes shapes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shapes
+    ADD CONSTRAINT shapes_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: adjustments_source_label_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -541,6 +589,13 @@ CREATE INDEX disruption_notes_disruption_id_index ON public.disruption_notes USI
 --
 
 CREATE INDEX disruption_trip_short_names_disruption_id_index ON public.disruption_trip_short_names USING btree (disruption_revision_id);
+
+
+--
+-- Name: shapes_name_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX shapes_name_index ON public.shapes USING btree (name);
 
 
 --
@@ -637,3 +692,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20210924180538);
 INSERT INTO public."schema_migrations" (version) VALUES (20211209185029);
 INSERT INTO public."schema_migrations" (version) VALUES (20220105203850);
 INSERT INTO public."schema_migrations" (version) VALUES (20240207224211);
+INSERT INTO public."schema_migrations" (version) VALUES (20240605185923);
