@@ -1,11 +1,13 @@
 defmodule ArrowWeb.DisruptionView do
-  use ArrowWeb, :view
+  use ArrowWeb, :html
 
   alias Arrow.{Adjustment, DisruptionRevision, Permissions}
   alias __MODULE__.{DaysOfWeek, Form}
   alias __MODULE__.Calendar, as: DCalendar
   alias ArrowWeb.DisruptionController.Filters
   alias Phoenix.Controller
+
+  embed_templates "disruption_html/*"
 
   @adjustment_kind_icon_names %{
     blue_line: "blue-line",
