@@ -45,9 +45,6 @@
   "jest": {
     "testEnvironment": "jsdom",
     "clearMocks": true,
-    "transformIgnorePatterns": [
-      "node_modules/(?!@fullcalendar).+"
-    ],
     "transform": {
       "^.+\\.(j|t)sx?$": "ts-jest"
     },
@@ -63,9 +60,6 @@
       "json",
       "node"
     ],
-    "moduleNameMapper": {
-      "\\.(css)$": "identity-obj-proxy"
-    },
     "setupFilesAfterEnv": [
       "<rootDir>/jest-setup.ts"
     ],

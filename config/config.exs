@@ -43,15 +43,17 @@ config :arrow, ArrowWeb.Endpoint,
   pubsub_server: Arrow.PubSub
 
 config :esbuild,
-  version: "0.12.18",
+  version: "0.17.11",
   default: [
     args: ~w(
       src/app.tsx
       --bundle
       --target=es2015
+      --loader:.css=empty
       --outdir=../priv/static/assets
       --external:/fonts/*
       --external:/images/*
+      --external:/css/*
       #{if(Mix.env() == :test, do: "--define:__REACT_DEVTOOLS_GLOBAL_HOOK__={'isDisabled':true}")}
     ),
     cd: Path.expand("../assets", __DIR__),
