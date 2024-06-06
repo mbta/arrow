@@ -101,7 +101,7 @@ defmodule Arrow.MixProject do
       "ecto.rollback": ["ecto.rollback", "ecto.dump --quiet"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
-      "assets.build": ["tailwind default", "esbuild default --sourcemap=inline"],
+      "assets.build": ["esbuild default --sourcemap=inline", "tailwind default"],
       "assets.deploy": ["esbuild default --minify", "tailwind default --minify", "phx.digest"],
       "test.integration": [
         "assets.build",

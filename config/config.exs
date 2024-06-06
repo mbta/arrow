@@ -49,9 +49,9 @@ config :esbuild,
       src/app.tsx
       --bundle
       --target=es2015
-      --loader:.png=file
-      --loader:.woff=file
       --outdir=../priv/static/assets
+      --external:/fonts/*
+      --external:/images/*
       #{if(Mix.env() == :test, do: "--define:__REACT_DEVTOOLS_GLOBAL_HOOK__={'isDisabled':true}")}
     ),
     cd: Path.expand("../assets", __DIR__),
@@ -64,8 +64,8 @@ config :tailwind,
   default: [
     args: ~w(
     --config=tailwind.config.js
-    --input=css/tailwind.css
-    --output=../priv/static/assets/tailwind.css
+    --input=css/app.css
+    --output=../priv/static/assets/app.css
   ),
     cd: Path.expand("../assets", __DIR__)
   ]
