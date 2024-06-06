@@ -61,7 +61,7 @@ config :esbuild,
 # Configure tailwind (the version is required)
 config :tailwind,
   version: "3.4.0",
-  arrow: [
+  default: [
     args: ~w(
     --config=tailwind.config.js
     --input=css/tailwind.css
