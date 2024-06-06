@@ -25,7 +25,7 @@ config :arrow, ArrowWeb.Endpoint,
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
     node:
       ~w(assets/node_modules/.bin/tsc --project assets --noEmit --watch --preserveWatchOutput),
-    tailwind: {Tailwind, :install_and_run, [:arrow, ~w(--watch)]}
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
   ]
 
 config :arrow, ArrowWeb.AuthManager, secret_key: "test key"
