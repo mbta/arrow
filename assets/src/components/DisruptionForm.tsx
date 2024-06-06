@@ -282,9 +282,9 @@ const DisruptionForm = ({
 
       <fieldset>
         <legend>title</legend>
-        <input
+        <textarea
           className="form-control"
-          type="text"
+          cols={30}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           name="revision[title]"
