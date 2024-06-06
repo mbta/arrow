@@ -31,7 +31,7 @@ type DisruptionRevision = {
   adjustments: Adjustment[]
   daysOfWeek: DaysOfWeek
   exceptions: string[]
-  tripShortNames: string,
+  tripShortNames: string
   title: string
 }
 
