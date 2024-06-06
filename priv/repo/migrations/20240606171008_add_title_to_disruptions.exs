@@ -9,7 +9,9 @@ defmodule Arrow.Repo.Migrations.AddTitleToDisruptions do
 
     flush()
 
-    from(d in Arrow.DisruptionRevision, update: [set: [title: fragment("substring(?, 1, 40)", d.description)]])
+    from(d in Arrow.DisruptionRevision,
+      update: [set: [title: fragment("substring(?, 1, 40)", d.description)]]
+    )
     |> Arrow.Repo.update_all([])
 
     alter table(:disruption_revisions) do
