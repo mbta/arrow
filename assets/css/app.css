@@ -1,8 +1,13 @@
 /* This file is for your main application css. */
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 @import "./variables.css";
 @import "./bootstrap.css";
 @import "../node_modules/react-datepicker/dist/react-datepicker.css";
+@import "../node_modules/@fullcalendar/daygrid/main.css";
+@import "../node_modules/@fullcalendar/common/main.css";
 
 @import "./base.css";
 @import "./checkbox.css";
