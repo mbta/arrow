@@ -37,6 +37,7 @@ defmodule Arrow.Integration.DisruptionsTest do
       |> assert_text("create new disruption")
       |> click(text("Pending"))
       |> click(text("Subway"))
+      |> fill_in(css("[aria-label='title']"), with: "a test title")
       |> fill_in(css("[aria-label='description']"), with: "a test description")
       |> click(text("Select..."))
       |> click(text("Kendall Packards Corner"))

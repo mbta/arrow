@@ -14,6 +14,7 @@ describe("DisruptionForm", () => {
   ]
 
   const blankRevision = {
+    title: "",
     startDate: null,
     endDate: null,
     rowApproved: true,
