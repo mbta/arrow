@@ -24,7 +24,10 @@ defmodule ArrowWeb.ShapeController do
     case Shuttle.create_shape(shape_params) do
       {:ok, shape} ->
         conn
-        |> put_flash(:info, "Shape created successfully.")
+        |> put_flash(
+          :info,
+          "Shape created successfully from #{shape_params["filename"].filename}"
+        )
         |> redirect(to: ~p"/shapes/#{shape}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -49,7 +52,10 @@ defmodule ArrowWeb.ShapeController do
     case Shuttle.update_shape(shape, shape_params) do
       {:ok, shape} ->
         conn
-        |> put_flash(:info, "Shape updated successfully.")
+        |> put_flash(
+          :info,
+          "Shape updated successfully from #{shape_params["filename"].filename}"
+        )
         |> redirect(to: ~p"/shapes/#{shape}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
