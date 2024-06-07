@@ -285,6 +285,7 @@ const DisruptionForm = ({
         <textarea
           className="form-control"
           cols={30}
+          maxLength={40}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           name="revision[title]"
