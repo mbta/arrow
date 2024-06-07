@@ -87,6 +87,7 @@ defmodule Arrow.DisruptionRevision do
     |> Changeset.cast_assoc(:trip_short_names, with: &TripShortName.changeset/2)
     |> Changeset.validate_required(@required_fields)
     |> Changeset.validate_length(:days_of_week, min: 1)
+    |> Changeset.validate_length(:title, min: 1, max: 40)
     |> validate_adjustments_or_adjustment_kind()
     |> validate_days_of_week_between_start_and_end_date()
     |> validate_exceptions_are_applicable()
