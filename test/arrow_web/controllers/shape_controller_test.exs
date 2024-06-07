@@ -3,8 +3,8 @@ defmodule ArrowWeb.ShapeControllerTest do
 
   import Arrow.ShuttleFixtures
 
-  @create_attrs %{name: "some name"}
-  @update_attrs %{name: "some updated name"}
+  @create_attrs %{name: "some name", filename: %Plug.Upload{filename: "some filename"}}
+  @update_attrs %{name: "some updated name", filename: %Plug.Upload{filename: "some filename"}}
   @invalid_attrs %{name: nil}
 
   describe "index" do
