@@ -1,1 +1,3 @@
 webpack.config.js
+src/ReactPhoenix.js
+src/socket.js

@@ -29,7 +29,7 @@ describe("DisruptionForm", () => {
   const withinFieldset = (name: string) =>
     within(screen.getByRole("group", { name }))
 
-  test("allows editing the attributes of a disruption revision", () => {
+  test("allows editing the attributes of a disruption revision", async () => {
     render(
       <form aria-label="test">
         <DisruptionForm
@@ -53,30 +53,30 @@ describe("DisruptionForm", () => {
       </form>
     )
 
-    userEvent.type(
+    await userEvent.type(
       withinFieldset("description").getByRole("textbox"),
       "Worcester test disruption"
     )
-    userEvent.type(
+    await userEvent.type(
       withinFieldset("title").getByRole("textbox"),
       "Worcester test disruption title"
     )
     const limits = withinFieldset("limits")
-    userEvent.click(limits.getByRole("textbox"))
-    userEvent.click(limits.getByText("Worcester"))
-    userEvent.type(screen.getByLabelText("Trip short names"), "{backspace}3")
+    await userEvent.click(limits.getByRole("textbox"))
+    await userEvent.click(limits.getByText("Worcester"))
+    await userEvent.type(screen.getByLabelText("Trip short names"), "{backspace}3")
     pickDate(screen.getByLabelText("start"), "01/04/2021")
     pickDate(screen.getByLabelText("end"), "01/29/2021")
     const days = withinFieldset("Choose days of week")
-    userEvent.click(days.getByText("Mon"))
-    userEvent.click(days.getByText("Wed"))
+    await userEvent.click(days.getByText("Mon"))
+    await userEvent.click(days.getByText("Wed"))
     const wednesday = withinFieldset("Wednesday")
-    userEvent.click(wednesday.getByLabelText("Start of service"))
-    userEvent.selectOptions(wednesday.getByLabelText("start hour"), "4")
-    userEvent.selectOptions(wednesday.getByLabelText("start minute"), "30")
-    userEvent.selectOptions(wednesday.getByLabelText("start meridiem"), "PM")
-    userEvent.click(screen.getAllByLabelText("remove")[0])
-    userEvent.click(screen.getByRole("button", { name: /add an exception/ }))
+    await userEvent.click(wednesday.getByLabelText("Start of service"))
+    await userEvent.selectOptions(wednesday.getByLabelText("start hour"), "4")
+    await userEvent.selectOptions(wednesday.getByLabelText("start minute"), "30")
+    await userEvent.selectOptions(wednesday.getByLabelText("start meridiem"), "PM")
+    await userEvent.click(screen.getAllByLabelText("remove")[0])
+    await userEvent.click(screen.getByRole("button", { name: /add an exception/ }))
     const exceptions = withinFieldset("exceptions").getAllByRole("textbox")
     pickDate(exceptions[exceptions.length - 1], "01/13/2021")
 
@@ -100,7 +100,7 @@ describe("DisruptionForm", () => {
     })
   })
 
-  test("changes the available adjustments based on the selected mode", () => {
+  test("changes the available adjustments based on the selected mode", async () => {
     render(
       <DisruptionForm
         allAdjustments={adjustments}
@@ -109,33 +109,33 @@ describe("DisruptionForm", () => {
       />
     )
 
-    userEvent.click(screen.getByLabelText("Subway"))
+    await userEvent.click(screen.getByLabelText("Subway"))
     const limits = withinFieldset("limits")
-    userEvent.click(limits.getByRole("textbox"))
+    await userEvent.click(limits.getByRole("textbox"))
     expect(limits.queryByText("Alewife")).toBeInTheDocument()
     expect(limits.queryByText("Lowell")).not.toBeInTheDocument()
     expect(limits.queryByText("Nubian")).not.toBeInTheDocument()
 
-    userEvent.click(screen.getByLabelText("Commuter Rail"))
-    userEvent.click(limits.getByRole("textbox"))
+    await userEvent.click(screen.getByLabelText("Commuter Rail"))
+    await userEvent.click(limits.getByRole("textbox"))
     expect(limits.queryByText("Alewife")).not.toBeInTheDocument()
     expect(limits.queryByText("Lowell")).toBeInTheDocument()
     expect(limits.queryByText("Nubian")).not.toBeInTheDocument()
 
-    userEvent.click(screen.getByLabelText("Silver Line"))
-    userEvent.click(limits.getByRole("textbox"))
+    await userEvent.click(screen.getByLabelText("Silver Line"))
+    await userEvent.click(limits.getByRole("textbox"))
     expect(limits.queryByText("Alewife")).not.toBeInTheDocument()
     expect(limits.queryByText("Lowell")).not.toBeInTheDocument()
     expect(limits.queryByText("Nubian")).toBeInTheDocument()
 
     // limits cannot be set for bus
-    userEvent.click(screen.getByLabelText("Bus"))
+    await userEvent.click(screen.getByLabelText("Bus"))
     expect(
       screen.queryByRole("group", { name: "limits" })
     ).not.toBeInTheDocument()
   })
 
-  test("can indicate a new adjustment is being requested", () => {
+  test("can indicate a new adjustment is being requested", async () => {
     render(
       <form aria-label="test">
         <DisruptionForm
@@ -146,16 +146,16 @@ describe("DisruptionForm", () => {
       </form>
     )
 
-    userEvent.click(screen.getByLabelText("Silver Line"))
+    await userEvent.click(screen.getByLabelText("Silver Line"))
     const limits = withinFieldset("limits")
-    userEvent.click(limits.getByLabelText("request a new diverted route"))
+    await userEvent.click(limits.getByLabelText("request a new diverted route"))
 
     expect(screen.getByRole("form")).toHaveFormValues({
       "revision[adjustment_kind]": "silver_line",
     })
   })
 
-  test("can request an adjustment for a specific subway line", () => {
+  test("can request an adjustment for a specific subway line", async () => {
     render(
       <form aria-label="test">
         <DisruptionForm
@@ -166,17 +166,17 @@ describe("DisruptionForm", () => {
       </form>
     )
 
-    userEvent.click(screen.getByLabelText("Subway"))
+    await userEvent.click(screen.getByLabelText("Subway"))
     const limits = withinFieldset("limits")
-    userEvent.click(limits.getByLabelText("request a new diverted route"))
-    userEvent.click(limits.getByLabelText("Blue Line"))
+    await userEvent.click(limits.getByLabelText("request a new diverted route"))
+    await userEvent.click(limits.getByLabelText("Blue Line"))
 
     expect(screen.getByRole("form")).toHaveFormValues({
       "revision[adjustment_kind]": "blue_line",
     })
   })
 
-  test("defaults subway disruptions to start at 8:45PM on weekdays", () => {
+  test("defaults subway disruptions to start at 8:45PM on weekdays", async () => {
     render(
       <DisruptionForm
         allAdjustments={adjustments}
@@ -185,15 +185,15 @@ describe("DisruptionForm", () => {
       />
     )
 
-    userEvent.click(screen.getByLabelText("Subway"))
-    userEvent.click(withinFieldset("Choose days of week").getByText("Mon"))
+    await userEvent.click(screen.getByLabelText("Subway"))
+    await userEvent.click(withinFieldset("Choose days of week").getByText("Mon"))
     const monday = withinFieldset("Monday")
     expect(monday.getByLabelText("start hour")).toHaveValue("8")
     expect(monday.getByLabelText("start minute")).toHaveValue("45")
     expect(monday.getByLabelText("start meridiem")).toHaveValue("PM")
 
-    userEvent.click(screen.getByLabelText("Commuter Rail"))
-    userEvent.click(withinFieldset("Choose days of week").getByText("Tue"))
+    await userEvent.click(screen.getByLabelText("Commuter Rail"))
+    await userEvent.click(withinFieldset("Choose days of week").getByText("Tue"))
     const tuesday = withinFieldset("Tuesday")
     expect(tuesday.getByLabelText("Start of service")).toBeChecked()
   })

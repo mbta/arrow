@@ -26,6 +26,7 @@
     "@testing-library/jest-dom": "^6.4.0",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.5.2",
+    "@types/jest": "^29.5.12",
     "@types/react": "^18.3.0",
     "@types/react-datepicker": "^6.2.0",
     "@types/react-select": "^5.0.1",
@@ -38,6 +39,7 @@
     "eslint-plugin-react": "^7.27.0",
     "eslint-plugin-react-hooks": "^4.3.0",
     "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "prettier": "^3.3.1",
     "ts-jest": "^29.1.4",
     "typescript": "^5.4.5"
@@ -48,20 +50,17 @@
     "transformIgnorePatterns": [
       "node_modules/(?!@fullcalendar).+"
     ],
-    "transform": {
-      "^.+\\.(j|t)sx?$": "ts-jest"
-    },
     "testRegex": "(src|tests)/.*\\.test\\.tsx?$",
     "modulePaths": [
       "<rootDir>/src"
     ],
     "moduleFileExtensions": [
-      "ts",
-      "tsx",
       "js",
-      "jsx",
       "json",
-      "node"
+      "jsx",
+      "node",
+      "ts",
+      "tsx"
     ],
     "moduleNameMapper": {
       "\\.(css)$": "identity-obj-proxy"
@@ -70,10 +69,6 @@
       "<rootDir>/jest-setup.ts"
     ],
     "collectCoverage": true,
-    "globals": {
-      "ts-jest": {
-        "tsConfig": "./tsconfig.test.json"
-      }
-    }
+    "preset": "ts-jest/presets/js-with-ts"
   }
 }
