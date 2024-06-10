@@ -4,7 +4,7 @@ defmodule ArrowWeb.ShuttleStopController do
   alias Plug.Conn
 
   @spec index(Conn.t(), Conn.params()) :: Conn.t()
-  def index(%{assigns: %{current_user: user}} = conn, _params) do
+  def index(conn, _params) do
     render(conn, "index.html", [])
   end
 
