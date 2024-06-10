@@ -8,8 +8,8 @@ defmodule Arrow.Repo.Migrations.CreateShuttleStopsTable do
       add :stop_desc, :string, null: false
       add :platform_code, :string
       add :platform_name, :string
-      add :stop_lat, :string, null: false
-      add :stop_long, :string, null: false
+      add :stop_lat, :float, null: false
+      add :stop_long, :float, null: false
       add :stop_address, :string
       add :zone_id, :string
       add :level_id, :string

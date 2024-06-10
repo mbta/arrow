@@ -2,7 +2,6 @@ defmodule Arrow.ShuttleStop do
   @moduledoc false
 
   use Ecto.Schema
-  import Ecto.Query
 
   @type id :: integer
   @type t :: %__MODULE__{
@@ -31,8 +30,8 @@ defmodule Arrow.ShuttleStop do
     field(:stop_desc, :string)
     field(:platform_code, :string)
     field(:platform_name, :string)
-    field(:stop_lat, :string)
-    field(:stop_long, :string)
+    field(:stop_lat, :float)
+    field(:stop_long, :float)
     field(:stop_address, :string)
     field(:zone_id, :string)
     field(:level_id, :string)
@@ -43,17 +42,4 @@ defmodule Arrow.ShuttleStop do
 
     timestamps(type: :utc_datetime)
   end
-
-  @required_fields [:stop_id, :stop_name, :stop_desc, :stop_lat, :stop_long, :municipality]
-  @permitted_fields @required_fields ++
-                      [
-                        :platform_code,
-                        :platform_name,
-                        :stop_address,
-                        :zone_id,
-                        :level_id,
-                        :parent_station,
-                        :on_street,
-                        :at_street
-                      ]
 end

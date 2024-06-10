@@ -2,6 +2,8 @@
 -- PostgreSQL database dump
 --
 
+-- Dumped from database version 11.14
+-- Dumped by pg_dump version 14.1
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -347,8 +349,8 @@ CREATE TABLE public.shuttle_stops (
     stop_desc character varying(255) NOT NULL,
     platform_code character varying(255),
     platform_name character varying(255),
-    stop_lat character varying(255) NOT NULL,
-    stop_long character varying(255) NOT NULL,
+    stop_lat double precision NOT NULL,
+    stop_long double precision NOT NULL,
     stop_address character varying(255),
     zone_id character varying(255),
     level_id character varying(255),
