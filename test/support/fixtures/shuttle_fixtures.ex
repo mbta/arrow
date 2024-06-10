@@ -5,6 +5,12 @@ defmodule Arrow.ShuttleFixtures do
   """
 
   @doc """
+  Generate valid coords
+  """
+  def coords,
+    do: ["-71.14163,42.39551", "-71.14209,42.39643", "-71.14285,42.39624", "-71.14292,42.39623"]
+
+  @doc """
   Generate a unique shape name.
   """
   def unique_shape_name, do: "some name#{System.unique_integer([:positive])}"
@@ -16,7 +22,8 @@ defmodule Arrow.ShuttleFixtures do
     {:ok, shape} =
       attrs
       |> Enum.into(%{
-        name: unique_shape_name()
+        name: unique_shape_name(),
+        coordinates: coords()
       })
       |> Arrow.Shuttle.create_shape()
 
