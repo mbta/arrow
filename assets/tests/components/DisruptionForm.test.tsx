@@ -14,6 +14,7 @@ describe("DisruptionForm", () => {
   ]
 
   const blankRevision = {
+    title: "",
     startDate: null,
     endDate: null,
     rowApproved: true,
@@ -56,6 +57,10 @@ describe("DisruptionForm", () => {
       withinFieldset("description").getByRole("textbox"),
       "Worcester test disruption"
     )
+    userEvent.type(
+      withinFieldset("title").getByRole("textbox"),
+      "Worcester test disruption title"
+    )
     const limits = withinFieldset("limits")
     userEvent.click(limits.getByRole("textbox"))
     userEvent.click(limits.getByText("Worcester"))
@@ -91,6 +96,7 @@ describe("DisruptionForm", () => {
       "revision[exceptions][1][excluded_date]": "2021-01-13",
       "revision[trip_short_names][0][trip_short_name]": "trip1",
       "revision[trip_short_names][1][trip_short_name]": "trip3",
+      "revision[title]": "Worcester test disruption title",
     })
   })
 

@@ -77,7 +77,8 @@ defmodule Arrow.DisruptionTest do
         "days_of_week" => [%{"day_name" => "monday", "start_time" => "20:00:00"}],
         "exceptions" => [%{"excluded_date" => "2021-01-11"}],
         "trip_short_names" => [%{"trip_short_name" => "777"}],
-        "description" => "a testing disruption"
+        "description" => "a testing disruption",
+        "title" => "a testing disruption title"
       }
 
       {:ok, _multi} = Disruption.create("author", attrs)
@@ -198,7 +199,8 @@ defmodule Arrow.DisruptionTest do
         "exceptions" => [%{"excluded_date" => "2021-01-11"}],
         "trip_short_names" => [%{"trip_short_name" => "777"}],
         "description" => "a testing disruption",
-        "note_body" => "This is a note."
+        "note_body" => "This is a note.",
+        "title" => "a testing disruption title"
       }
 
       {:ok, %{disruption: %{id: id}}} = Disruption.create("author", revision_attrs)

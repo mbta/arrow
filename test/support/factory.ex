@@ -25,7 +25,8 @@ defmodule Arrow.Factory do
       adjustment_kind: :bus,
       disruption: build(:disruption),
       days_of_week: [build(:day_of_week)],
-      trip_short_names: [build(:trip_short_name)]
+      trip_short_names: [build(:trip_short_name)],
+      title: sequence("Title")
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()

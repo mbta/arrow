@@ -37,6 +37,7 @@ defmodule Arrow.Integration.DisruptionsTest do
       |> assert_text("create new disruption")
       |> click(text("Pending"))
       |> click(text("Subway"))
+      |> fill_in(css("[aria-label='title']"), with: "a test title")
       |> fill_in(css("[aria-label='description']"), with: "a test description")
       |> click(text("Select..."))
       |> click(text("Kendall Packards Corner"))
@@ -62,6 +63,7 @@ defmodule Arrow.Integration.DisruptionsTest do
     assert revision.end_date == now |> DateTime.to_date()
     assert revision.row_approved == false
     assert revision.description == "a test description"
+    assert revision.title == "a test title"
     assert Enum.count(revision.days_of_week) == 1
     revision_day = Enum.at(revision.days_of_week, 0)
 
@@ -82,6 +84,7 @@ defmodule Arrow.Integration.DisruptionsTest do
 
     id = revision.disruption_id
     description = revision.description
+    title = revision.title
     now = DateTime.now!("America/New_York")
 
     disruption_id =
@@ -89,10 +92,13 @@ defmodule Arrow.Integration.DisruptionsTest do
       |> visit("/")
       |> click(link(id))
       |> assert_text(description)
+      |> assert_text(title)
       |> assert_text(Calendar.strftime(revision.start_date, "%m/%d/%Y"))
       |> assert_text(Calendar.strftime(revision.end_date, "%m/%d/%Y"))
       |> click(link("edit"))
       |> assert_text("edit disruption")
+      |> assert_text(title)
+      |> fill_in(css("[aria-label='title']"), with: "an updated title")
       |> assert_text(description)
       |> fill_in(css("[aria-label='description']"), with: "an updated description")
       |> send_keys([:tab])
@@ -101,6 +107,7 @@ defmodule Arrow.Integration.DisruptionsTest do
       |> click(text("Kendall Packards Corner"))
       |> click(button("save"))
       |> click(link("edit"))
+      |> assert_text("an updated title")
       |> assert_text("an updated description")
       |> assert_text("Kendall Packards Corner")
       |> assert_text(original_adjustment.source_label)

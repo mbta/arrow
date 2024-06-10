@@ -240,7 +240,8 @@ CREATE TABLE public.disruption_revisions (
     is_active boolean DEFAULT true,
     row_approved boolean DEFAULT true NOT NULL,
     description text NOT NULL,
-    adjustment_kind character varying(255)
+    adjustment_kind character varying(255),
+    title character varying(40) NOT NULL
 );
 
 
@@ -637,3 +638,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20210924180538);
 INSERT INTO public."schema_migrations" (version) VALUES (20211209185029);
 INSERT INTO public."schema_migrations" (version) VALUES (20220105203850);
 INSERT INTO public."schema_migrations" (version) VALUES (20240207224211);
+INSERT INTO public."schema_migrations" (version) VALUES (20240606171008);
