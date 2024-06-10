@@ -2,8 +2,6 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 11.14
--- Dumped by pg_dump version 14.1
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -339,6 +337,50 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: shuttle_stops; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.shuttle_stops (
+    id bigint NOT NULL,
+    stop_id character varying(255) NOT NULL,
+    stop_name character varying(255) NOT NULL,
+    stop_desc character varying(255) NOT NULL,
+    platform_code character varying(255),
+    platform_name character varying(255),
+    stop_lat character varying(255) NOT NULL,
+    stop_long character varying(255) NOT NULL,
+    stop_address character varying(255),
+    zone_id character varying(255),
+    level_id character varying(255),
+    parent_station character varying(255),
+    municipality character varying(255) NOT NULL,
+    on_street character varying(255),
+    at_street character varying(255),
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: shuttle_stops_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.shuttle_stops_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: shuttle_stops_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.shuttle_stops_id_seq OWNED BY public.shuttle_stops.id;
+
+
+--
 -- Name: adjustments id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -399,6 +441,13 @@ ALTER TABLE ONLY public.disruption_trip_short_names ALTER COLUMN id SET DEFAULT 
 --
 
 ALTER TABLE ONLY public.disruptions ALTER COLUMN id SET DEFAULT nextval('public.disruptions_id_seq1'::regclass);
+
+
+--
+-- Name: shuttle_stops id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shuttle_stops ALTER COLUMN id SET DEFAULT nextval('public.shuttle_stops_id_seq'::regclass);
 
 
 --
@@ -479,6 +528,14 @@ ALTER TABLE ONLY public.disruptions
 
 ALTER TABLE ONLY public.schema_migrations
     ADD CONSTRAINT schema_migrations_pkey PRIMARY KEY (version);
+
+
+--
+-- Name: shuttle_stops shuttle_stops_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shuttle_stops
+    ADD CONSTRAINT shuttle_stops_pkey PRIMARY KEY (id);
 
 
 --
@@ -639,3 +696,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20211209185029);
 INSERT INTO public."schema_migrations" (version) VALUES (20220105203850);
 INSERT INTO public."schema_migrations" (version) VALUES (20240207224211);
 INSERT INTO public."schema_migrations" (version) VALUES (20240606171008);
+INSERT INTO public."schema_migrations" (version) VALUES (20240610185146);
