@@ -49,8 +49,8 @@ const subwayLineAdjustmentKinds = [
   "red_line",
 ] as const
 
-type Mode = typeof modeAdjustmentKinds[number] | "subway"
-type SubwayLine = typeof subwayLineAdjustmentKinds[number]
+type Mode = (typeof modeAdjustmentKinds)[number] | "subway"
+type SubwayLine = (typeof subwayLineAdjustmentKinds)[number]
 
 const days = [
   "monday",
