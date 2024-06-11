@@ -5,7 +5,7 @@ defmodule ArrowWeb.ShapeController do
   alias Arrow.Shuttle.Shape
   alias ArrowWeb.Plug.Authorize
 
-  plug(Authorize, :view_disruption when action in [:index, :show])
+  plug(Authorize, :view_disruption when action in [:index, :show, :download])
   plug(Authorize, :create_disruption when action in [:new, :create])
   plug(Authorize, :update_disruption when action in [:edit, :update, :update_row_status])
   plug(Authorize, :delete_disruption when action in [:delete])
@@ -32,6 +32,14 @@ defmodule ArrowWeb.ShapeController do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, :new, changeset: changeset)
+
+      {:error, :already_exists} ->
+        conn
+        |> put_flash(
+          :error,
+          "#{shape_params["filename"].filename} already exists on the server."
+        )
+        |> redirect(to: ~p"/shapes/new")
     end
   end
 
@@ -44,6 +52,17 @@ defmodule ArrowWeb.ShapeController do
     shape = Shuttle.get_shape!(id)
     changeset = Shuttle.change_shape(shape)
     render(conn, :edit, shape: shape, changeset: changeset)
+  end
+
+  def download(conn, %{"id" => id}) do
+    shape = Shuttle.get_shape!(id)
+
+    conn
+    |> Plug.Conn.resp(:found, "")
+    |> Plug.Conn.put_resp_header(
+      "location",
+      "https://#{shape.bucket}.s3.amazonaws.com/#{shape.path}"
+    )
   end
 
   def update(conn, %{"id" => id, "shape" => shape_params}) do
@@ -60,6 +79,14 @@ defmodule ArrowWeb.ShapeController do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, :edit, shape: shape, changeset: changeset)
+
+      {:error, :already_exists} ->
+        conn
+        |> put_flash(
+          :error,
+          "#{shape_params["filename"].filename} already exists on the server."
+        )
+        |> redirect(to: ~p"/shapes/#{shape}")
     end
   end
 

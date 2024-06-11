@@ -4,6 +4,7 @@ defmodule Arrow.Shuttle do
   """
 
   import Ecto.Query, warn: false
+
   alias Arrow.Repo
 
   alias Arrow.Shuttle.Shape
@@ -50,9 +51,40 @@ defmodule Arrow.Shuttle do
 
   """
   def create_shape(attrs \\ %{}) do
-    %Shape{}
-    |> Shape.changeset(attrs)
-    |> Repo.insert()
+    case upload_shape(attrs["filename"]) do
+      {:ok, new_attrs} ->
+        %Shape{}
+        |> Shape.changeset(Enum.into(new_attrs, attrs))
+        |> Repo.insert()
+
+      {:error, e} ->
+        {:error, e}
+    end
+  end
+
+  defp upload_shape(%Plug.Upload{} = upload) do
+    %{bucket: bucket, prefix: prefix} = Application.get_env(:arrow, :shape_storage)
+    filename = upload.filename
+    path = "#{prefix}#{filename}"
+
+    # Check if file exists already:
+    {:ok, check} = ExAws.S3.list_objects_v2(bucket, prefix: path) |> ExAws.request()
+
+    if length(check.body.contents) > 0 do
+      {:error, :already_exists}
+    else
+      {:ok, _} =
+        upload.path
+        |> ExAws.S3.Upload.stream_file()
+        |> ExAws.S3.upload(bucket, path)
+        |> ExAws.request()
+
+      {:ok, %{"bucket" => bucket, "prefix" => prefix, "path" => path}}
+    end
+  end
+
+  defp delete_shape_file(shape) do
+    ExAws.S3.delete_object(shape.bucket, shape.path) |> ExAws.request()
   end
 
   @doc """
@@ -68,9 +100,18 @@ defmodule Arrow.Shuttle do
 
   """
   def update_shape(%Shape{} = shape, attrs) do
-    shape
-    |> Shape.changeset(attrs)
-    |> Repo.update()
+    case upload_shape(attrs["filename"]) do
+      {:ok, new_attrs} ->
+        # Delete old file:
+        {:ok, _} = delete_shape_file(shape)
+
+        shape
+        |> Shape.changeset(Enum.into(new_attrs, attrs))
+        |> Repo.update()
+
+      {:error, e} ->
+        {:error, e}
+    end
   end
 
   @doc """
@@ -87,6 +128,7 @@ defmodule Arrow.Shuttle do
   """
   def delete_shape(%Shape{} = shape) do
     Repo.delete(shape)
+    delete_shape_file(shape)
   end
 
   @doc """
