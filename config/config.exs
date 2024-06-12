@@ -35,12 +35,10 @@ config :arrow,
   time_zone: "America/New_York",
   ex_aws_requester: {Fake.ExAws, :admin_group_request},
   http_client: HTTPoison,
-  shape_storage: %{
-    enabled?: false,
-    prefix_env: "arrow-dev-local",
-    bucket: "mbta-gtfs-s3-sandbox",
-    prefix: "shapes-tmp/"
-  }
+  shape_storage_enabled?: false,
+  shape_storage_prefix_env: "arrow-dev-local",
+  shape_storage_bucket: "mbta-gtfs-s3-sandbox",
+  shape_storage_prefix: "shapes-tmp/"
 
 # Configures the endpoint
 config :arrow, ArrowWeb.Endpoint,

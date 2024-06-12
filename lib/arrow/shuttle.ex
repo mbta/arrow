@@ -71,8 +71,10 @@ defmodule Arrow.Shuttle do
   end
 
   defp upload_shape(%Plug.Upload{} = upload) do
-    %{bucket: bucket, prefix: prefix, enabled?: enabled?, prefix_env: prefix_env} =
-      Application.get_env(:arrow, :shape_storage)
+    prefix = Application.get_env(:arrow, :shape_storage_prefix)
+    bucket = Application.get_env(:arrow, :shape_storage_bucket)
+    enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
+    prefix_env = Application.get_env(:arrow, :shape_storage_prefix_env)
 
     if enabled? do
       prefix_env_value = System.get_env(prefix_env)
@@ -108,7 +110,7 @@ defmodule Arrow.Shuttle do
   end
 
   defp delete_shape_file(shape) do
-    %{enabled?: enabled?} = Application.get_env(:arrow, :shape_storage)
+    enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
 
     if enabled? do
       ExAws.S3.delete_object(shape.bucket, shape.path) |> ExAws.request()

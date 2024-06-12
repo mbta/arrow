@@ -11,12 +11,8 @@ import Config
 # before starting your production server.
 
 config :arrow,
-  shape_storage: %{
-    enabled?: true,
-    prefix_env: System.get_env("AWS_SECRET_PREFIX") || "arrow-prod-unknown",
-    bucket: "mbta-gtfs-s3-sandbox",
-    prefix: "shapes-tmp/"
-  }
+  shape_storage_enabled?: true,
+  shape_storage_prefix_env: System.get_env("AWS_SECRET_PREFIX") || "arrow-prod-unknown"
 
 config :arrow, ArrowWeb.Endpoint,
   http: [:inet6, port: 4000],

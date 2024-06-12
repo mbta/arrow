@@ -1,13 +1,5 @@
 import Config
 
-config :arrow,
-  shape_storage: %{
-    enabled?: false,
-    prefix_env: "arrow-dev-local",
-    bucket: "mbta-gtfs-s3-sandbox",
-    prefix: "shapes-tmp/"
-  }
-
 # Configure your database
 config :arrow, Arrow.Repo,
   username: System.get_env("DATABASE_USERNAME") || "postgres",

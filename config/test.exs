@@ -9,12 +9,7 @@ config :arrow, Arrow.Repo,
   pool: Ecto.Adapters.SQL.Sandbox
 
 config :arrow,
-  shape_storage: %{
-    enabled?: false,
-    prefix_env: "arrow-test",
-    bucket: "mbta-gtfs-s3-sandbox",
-    prefix: "shapes-tmp/"
-  }
+  shape_storage_enabled?: false
 
 config :arrow, ArrowWeb.Endpoint,
   http: [port: 4002],
