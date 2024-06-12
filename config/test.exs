@@ -8,9 +8,6 @@ config :arrow, Arrow.Repo,
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
 
-config :arrow,
-  shape_storage_enabled?: false
-
 config :arrow, ArrowWeb.Endpoint,
   http: [port: 4002],
   secret_key_base: "local_secret_key_base_at_least_64_bytes_________________________________",
