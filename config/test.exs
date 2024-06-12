@@ -8,6 +8,14 @@ config :arrow, Arrow.Repo,
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
 
+config :arrow,
+  shape_storage: %{
+    enabled?: false,
+    prefix_env: "arrow-test",
+    bucket: "mbta-gtfs-s3-sandbox",
+    prefix: "shapes-tmp/"
+  }
+
 config :arrow, ArrowWeb.Endpoint,
   http: [port: 4002],
   secret_key_base: "local_secret_key_base_at_least_64_bytes_________________________________",
@@ -41,7 +49,7 @@ config :arrow,
   http_client: Arrow.HTTPMock
 
 # Print only warnings and errors during test
-config :logger, level: :warning
+config :logger, level: :info
 
 config :arrow, env: :test
 

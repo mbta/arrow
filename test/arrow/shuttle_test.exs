@@ -21,7 +21,13 @@ defmodule Arrow.ShuttleTest do
     end
 
     test "create_shape/1 with valid data creates a shape" do
-      valid_attrs = %{name: "some name"}
+      valid_attrs = %{
+        name: "some name",
+        path: "some/path/to/file.kml",
+        prefix: "some/path/to",
+        bucket: "some-mbta-bucket",
+        filename: %Plug.Upload{filename: "file.kml"}
+      }
 
       assert {:ok, %Shape{} = shape} = Shuttle.create_shape(valid_attrs)
       assert shape.name == "some name"

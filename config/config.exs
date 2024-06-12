@@ -36,6 +36,8 @@ config :arrow,
   ex_aws_requester: {Fake.ExAws, :admin_group_request},
   http_client: HTTPoison,
   shape_storage: %{
+    enabled?: false,
+    prefix_env: "arrow-dev-local",
     bucket: "mbta-gtfs-s3-sandbox",
     prefix: "shapes-tmp/"
   }
