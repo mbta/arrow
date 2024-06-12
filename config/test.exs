@@ -44,7 +44,7 @@ config :arrow,
   http_client: Arrow.HTTPMock
 
 # Print only warnings and errors during test
-config :logger, level: :info
+config :logger, level: :warning
 
 config :arrow, env: :test
 
