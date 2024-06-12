@@ -7,7 +7,7 @@ defmodule ArrowWeb.ShapeControllerTest do
     "name" => "some name",
     "path" => "some/path/to/sample.kml",
     "prefix" => "",
-    "bucket" => Application.get_env(:arrow, :shape_storage_bucket),
+    "bucket" => "",
     "filename" => %Plug.Upload{filename: "sample.kml", path: "test_files/sample.kml"}
   }
   @create_attrs %{name: "some name", filename: %Plug.Upload{filename: "some filename"}}
@@ -38,9 +38,14 @@ defmodule ArrowWeb.ShapeControllerTest do
       uuid = Ecto.UUID.generate()
       prefix = "arrow/test-runner/#{uuid}/"
       Application.put_env(:arrow, :shape_storage_prefix, prefix)
+      bucket = Application.get_env(:arrow, :shape_storage_bucket)
 
       # Create valid shape:
-      conn = post(conn, ~p"/shapes", shape: %{@create_s3_attrs | "prefix" => prefix})
+      conn =
+        post(conn, ~p"/shapes",
+          shape: %{@create_s3_attrs | "prefix" => prefix, "bucket" => bucket}
+        )
+
       assert %{id: id} = redirected_params(conn)
       assert redirected_to(conn) == ~p"/shapes/#{id}"
 
