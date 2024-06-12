@@ -5,7 +5,7 @@ defmodule Arrow.Repo.Migrations.CreateShapes do
     create table(:shapes) do
       add :name, :string
 
-      timestamps()
+      timestamps(type: :timestamptz)
     end
 
     create unique_index(:shapes, [:name])

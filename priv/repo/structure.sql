@@ -345,8 +345,8 @@ CREATE TABLE public.schema_migrations (
 CREATE TABLE public.shapes (
     id bigint NOT NULL,
     name character varying(255),
-    inserted_at timestamp(0) without time zone NOT NULL,
-    updated_at timestamp(0) without time zone NOT NULL,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
     coordinates character varying(255)[]
 );
 
