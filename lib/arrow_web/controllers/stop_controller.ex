@@ -1,4 +1,4 @@
-defmodule ArrowWeb.ShuttleStopController do
+defmodule ArrowWeb.StopController do
   use ArrowWeb, :controller
 
   alias Plug.Conn

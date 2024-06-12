@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 11.14
--- Dumped by pg_dump version 14.1
+-- Dumped from database version 11.17
+-- Dumped by pg_dump version 14.5
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -339,10 +339,10 @@ CREATE TABLE public.schema_migrations (
 
 
 --
--- Name: shuttle_stops; Type: TABLE; Schema: public; Owner: -
+-- Name: stops; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.shuttle_stops (
+CREATE TABLE public.stops (
     id bigint NOT NULL,
     stop_id character varying(255) NOT NULL,
     stop_name character varying(255) NOT NULL,
@@ -350,7 +350,7 @@ CREATE TABLE public.shuttle_stops (
     platform_code character varying(255),
     platform_name character varying(255),
     stop_lat double precision NOT NULL,
-    stop_long double precision NOT NULL,
+    stop_lon double precision NOT NULL,
     stop_address character varying(255),
     zone_id character varying(255),
     level_id character varying(255),
@@ -364,10 +364,10 @@ CREATE TABLE public.shuttle_stops (
 
 
 --
--- Name: shuttle_stops_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: stops_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE public.shuttle_stops_id_seq
+CREATE SEQUENCE public.stops_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -376,10 +376,10 @@ CREATE SEQUENCE public.shuttle_stops_id_seq
 
 
 --
--- Name: shuttle_stops_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: stops_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE public.shuttle_stops_id_seq OWNED BY public.shuttle_stops.id;
+ALTER SEQUENCE public.stops_id_seq OWNED BY public.stops.id;
 
 
 --
@@ -446,10 +446,10 @@ ALTER TABLE ONLY public.disruptions ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
--- Name: shuttle_stops id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: stops id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.shuttle_stops ALTER COLUMN id SET DEFAULT nextval('public.shuttle_stops_id_seq'::regclass);
+ALTER TABLE ONLY public.stops ALTER COLUMN id SET DEFAULT nextval('public.stops_id_seq'::regclass);
 
 
 --
@@ -533,11 +533,11 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
--- Name: shuttle_stops shuttle_stops_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: stops stops_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.shuttle_stops
-    ADD CONSTRAINT shuttle_stops_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.stops
+    ADD CONSTRAINT stops_pkey PRIMARY KEY (id);
 
 
 --

@@ -48,7 +48,7 @@ defmodule ArrowWeb.Router do
     resources("/disruptions", DisruptionController, except: [:index])
     put("/disruptions/:id/row_status", DisruptionController, :update_row_status)
     post("/disruptions/:id/notes", NoteController, :create)
-    resources("/shuttle_stops", ShuttleStopController, except: [:show, :delete])
+    resources("/stops", StopController, except: [:show, :delete])
   end
 
   scope "/", ArrowWeb do

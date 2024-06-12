@@ -1,4 +1,4 @@
-defmodule ArrowWeb.ShuttleStopControllerTest do
+defmodule ArrowWeb.StopControllerTest do
   use ArrowWeb.ConnCase, async: true
 
   describe "index/2" do
@@ -6,10 +6,10 @@ defmodule ArrowWeb.ShuttleStopControllerTest do
     test "renders successfully", %{conn: conn} do
       response =
         conn
-        |> get(Routes.shuttle_stop_path(conn, :index))
+        |> get(Routes.stop_path(conn, :index))
         |> html_response(200)
 
-      assert response =~ "shuttle_stop_html/index.html.heex"
+      assert response =~ "stop_html/index.html.heex"
     end
   end
 
@@ -18,11 +18,11 @@ defmodule ArrowWeb.ShuttleStopControllerTest do
     test "renders successfully", %{conn: conn} do
       response =
         conn
-        |> get(Routes.shuttle_stop_path(conn, :new))
+        |> get(Routes.stop_path(conn, :new))
         |> html_response(200)
 
-      assert response =~ "shuttle_stop_html/new.html.heex"
-      assert response =~ "shuttle_stop_html/_form.html.heex"
+      assert response =~ "stop_html/new.html.heex"
+      assert response =~ "stop_html/_form.html.heex"
     end
   end
 
@@ -31,11 +31,11 @@ defmodule ArrowWeb.ShuttleStopControllerTest do
     test "renders successfully", %{conn: conn} do
       response =
         conn
-        |> get(Routes.shuttle_stop_path(conn, :edit, 1))
+        |> get(Routes.stop_path(conn, :edit, 1))
         |> html_response(200)
 
-      assert response =~ "shuttle_stop_html/edit.html.heex"
-      assert response =~ "shuttle_stop_html/_form.html.heex"
+      assert response =~ "stop_html/edit.html.heex"
+      assert response =~ "stop_html/_form.html.heex"
     end
   end
 end
