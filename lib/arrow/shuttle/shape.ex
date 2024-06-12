@@ -6,7 +6,7 @@ defmodule Arrow.Shuttle.Shape do
   schema "shapes" do
     field :name, :string
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc false
