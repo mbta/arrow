@@ -37,8 +37,8 @@ config :arrow,
   http_client: HTTPoison,
   shape_storage_enabled?: false,
   shape_storage_prefix_env: "arrow-dev-local",
-  shape_storage_bucket: "mbta-gtfs-s3-sandbox",
-  shape_storage_prefix: "shapes-tmp/"
+  shape_storage_bucket: "mbta-arrow",
+  shape_storage_prefix: "shape-uploads/"
 
 # Configures the endpoint
 config :arrow, ArrowWeb.Endpoint,
