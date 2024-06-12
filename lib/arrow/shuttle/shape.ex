@@ -5,12 +5,12 @@ defmodule Arrow.Shuttle.Shape do
 
   @type id :: integer
   @type t :: %__MODULE__{
-    id: id,
-    name: String.t(),
-    coordinates: list(String.t()),
-    inserted_at: DateTime.t(),
-    updated_at: DateTime.t()
-  }
+          id: id,
+          name: String.t(),
+          coordinates: list(String.t()),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
 
   schema "shapes" do
     field :name, :string

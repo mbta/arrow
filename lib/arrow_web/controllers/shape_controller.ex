@@ -4,7 +4,6 @@ defmodule ArrowWeb.ShapeController do
   use ArrowWeb, :controller
 
   alias Arrow.Shuttle
-  alias Arrow.Shuttle.Shape
   alias ArrowWeb.Plug.Authorize
 
   plug(Authorize, :view_disruption when action in [:index, :show])

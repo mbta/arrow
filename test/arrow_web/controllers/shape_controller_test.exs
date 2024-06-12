@@ -3,9 +3,21 @@ defmodule ArrowWeb.ShapeControllerTest do
 
   import Arrow.ShuttleFixtures
 
-  @create_attrs %{name: "some name", filename: %Plug.Upload{path: "test/support/fixtures/kml/one_shape.kml", filename: "some filename"}}
+  @create_attrs %{
+    name: "some name",
+    filename: %Plug.Upload{
+      path: "test/support/fixtures/kml/one_shape.kml",
+      filename: "some filename"
+    }
+  }
   @update_attrs %{name: "some updated name"}
-  @invalid_attrs %{name: nil, filename:  %Plug.Upload{path: "test/support/fixtures/kml/invalid_file.kml", filename: "invalid_file.kml"}}
+  @invalid_attrs %{
+    name: nil,
+    filename: %Plug.Upload{
+      path: "test/support/fixtures/kml/invalid_file.kml",
+      filename: "invalid_file.kml"
+    }
+  }
 
   describe "index" do
     @tag :authenticated_admin

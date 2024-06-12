@@ -29,7 +29,10 @@ defmodule Arrow.Shuttle.ShapeUpload do
       {:ok, shapes}
     else
       {:error, exception} ->
-        message = if is_atom(exception), do: :file.format_error(exception), else: Exception.message(exception)
+        message =
+          if is_atom(exception),
+            do: :file.format_error(exception),
+            else: Exception.message(exception)
 
         {:error,
          {"Failed to upload shapes from #{filename} because the provided xml was invalid",
