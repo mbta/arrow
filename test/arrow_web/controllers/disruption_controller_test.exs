@@ -87,7 +87,8 @@ defmodule ArrowWeb.DisruptionControllerTest do
             "0" => %{"day_name" => "friday", "start_time" => "20:45:00"},
             "1" => %{"day_name" => "saturday"}
           },
-          "exceptions" => [%{"excluded_date" => "2021-01-02"}]
+          "exceptions" => [%{"excluded_date" => "2021-01-02"}],
+          "title" => "disruption title"
         }
       }
 

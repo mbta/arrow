@@ -22,7 +22,8 @@ defmodule ArrowWeb.DisruptionView.Form do
       adjustments: adjustments,
       days_of_week: days_of_week,
       exceptions: exceptions,
-      trip_short_names: trip_short_names
+      trip_short_names: trip_short_names,
+      title: title
     } = Changeset.apply_changes(changeset)
 
     %{
@@ -36,7 +37,8 @@ defmodule ArrowWeb.DisruptionView.Form do
         "adjustments" => Enum.map(adjustments, &encode_adjustment/1),
         "daysOfWeek" => days_of_week |> Enum.map(&encode_day_of_week/1) |> Enum.into(%{}),
         "exceptions" => Enum.map(exceptions, & &1.excluded_date),
-        "tripShortNames" => trip_short_names |> Enum.map_join(",", & &1.trip_short_name)
+        "tripShortNames" => trip_short_names |> Enum.map_join(",", & &1.trip_short_name),
+        "title" => title
       },
       "iconPaths" => icon_paths(conn),
       "noteBody" => note_body

@@ -32,6 +32,7 @@ type DisruptionRevision = {
   daysOfWeek: DaysOfWeek
   exceptions: string[]
   tripShortNames: string
+  title: string
 }
 
 const modeAdjustmentKinds = ["bus", "commuter_rail", "silver_line"] as const
@@ -161,6 +162,7 @@ interface DisruptionFormProps {
 const DisruptionForm = ({
   allAdjustments,
   disruptionRevision: {
+    title: initialTitle,
     description: initialDescription,
     startDate: initialStartDate,
     endDate: initialEndDate,
@@ -174,6 +176,7 @@ const DisruptionForm = ({
   iconPaths,
 }: DisruptionFormProps) => {
   const [isRowApproved, setIsRowApproved] = useState(initialRowApproved)
+  const [title, setTitle] = useState(initialTitle)
   const [description, setDescription] = useState(initialDescription)
   const [adjustmentKind, setAdjustmentKind] = useState(initialAdjustmentKind)
   const [hasAdjustments, setHasAdjustments] = useState(adjustmentKind === null)
@@ -275,6 +278,21 @@ const DisruptionForm = ({
             {label}
           </label>
         ))}
+      </fieldset>
+
+      <fieldset>
+        <legend>title</legend>
+        <textarea
+          className="form-control"
+          cols={30}
+          maxLength={40}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          name="revision[title]"
+          aria-describedby="titleHelp"
+          aria-label="title"
+          required
+        />
       </fieldset>
 
       <fieldset>

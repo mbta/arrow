@@ -53,7 +53,8 @@ defmodule Arrow.DBStructure do
           :is_active,
           :disruption_id,
           :inserted_at,
-          :updated_at
+          :updated_at,
+          :title
         ],
         sequences: [{:id, "disruptions_id_seq"}]
       },
