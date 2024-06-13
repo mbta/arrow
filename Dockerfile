@@ -42,9 +42,10 @@ RUN mix deps.compile
 
 COPY assets assets
 RUN npm ci --prefix assets
-RUN mix assets.deploy
 
 COPY lib lib
+RUN mix assets.deploy
+
 COPY priv priv
 
 RUN mix phx.digest

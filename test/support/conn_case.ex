@@ -20,13 +20,15 @@ defmodule ArrowWeb.ConnCase do
 
   using do
     quote do
+      # The default endpoint for testing
+      @endpoint ArrowWeb.Endpoint
+
+      use ArrowWeb, :verified_routes
+
       # Import conveniences for testing with connections
       import Plug.Conn
       import Phoenix.ConnTest
       alias ArrowWeb.Router.Helpers, as: Routes
-
-      # The default endpoint for testing
-      @endpoint ArrowWeb.Endpoint
     end
   end
 
