@@ -1,0 +1,8 @@
+<.header>
+  Edit Shape <%= @shape.id %>
+  <:subtitle>Use this form to manage shape records in your database.</:subtitle>
+</.header>
+
+<.shape_form changeset={@changeset} action={~p"/shapes/#{@shape}"} />
+
+<.back navigate={~p"/shapes"}>Back to shapes</.back>

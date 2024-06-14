@@ -20,13 +20,15 @@ defmodule ArrowWeb.ConnCase do
 
   using do
     quote do
+      # The default endpoint for testing
+      @endpoint ArrowWeb.Endpoint
+
+      use ArrowWeb, :verified_routes
+
       # Import conveniences for testing with connections
       import Plug.Conn
       import Phoenix.ConnTest
       alias ArrowWeb.Router.Helpers, as: Routes
-
-      # The default endpoint for testing
-      @endpoint ArrowWeb.Endpoint
     end
   end
 
@@ -42,7 +44,7 @@ defmodule ArrowWeb.ConnCase do
         {:ok, conn: build_conn("test_user", ["read-only"])}
 
       tags[:authenticated_admin] ->
-        {:ok, conn: build_conn("test_user", ["admin"])}
+        {:ok, conn: authenticated_admin()}
 
       tags[:authenticated_empty] ->
         {:ok, conn: build_conn("test_user", [])}
@@ -62,4 +64,6 @@ defmodule ArrowWeb.ConnCase do
     |> init_test_session(%{})
     |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{roles: roles})
   end
+
+  def authenticated_admin, do: build_conn("test_user", ["admin"])
 end

@@ -43,19 +43,33 @@ config :arrow, ArrowWeb.Endpoint,
   pubsub_server: Arrow.PubSub
 
 config :esbuild,
-  version: "0.12.18",
+  version: "0.17.11",
   default: [
     args: ~w(
       src/app.tsx
       --bundle
       --target=es2015
-      --loader:.png=file
-      --loader:.woff=file
+      --loader:.css=empty
       --outdir=../priv/static/assets
+      --external:/fonts/*
+      --external:/images/*
+      --external:/css/*
       #{if(Mix.env() == :test, do: "--define:__REACT_DEVTOOLS_GLOBAL_HOOK__={'isDisabled':true}")}
     ),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+  ]
+
+# Configure tailwind (the version is required)
+config :tailwind,
+  version: "3.4.0",
+  default: [
+    args: ~w(
+    --config=tailwind.config.js
+    --input=css/app.css
+    --output=../priv/static/assets/app.css
+  ),
+    cd: Path.expand("../assets", __DIR__)
   ]
 
 config :arrow, ArrowWeb.AuthManager, issuer: "arrow"
@@ -98,4 +112,4 @@ config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
-import_config "#{Mix.env()}.exs"
+import_config "#{config_env()}.exs"

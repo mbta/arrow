@@ -75,7 +75,15 @@ defmodule Arrow.MixProject do
       {:ueberauth_oidcc, "~> 0.4.0"},
       {:ueberauth, "~> 0.10"},
       {:wallaby, "~> 0.30.6", runtime: false, only: :test},
-      {:sentry, "~> 8.0"}
+      {:sentry, "~> 8.0"},
+      {:tailwind, "~> 0.2", runtime: Mix.env() == :dev},
+      {:heroicons,
+       github: "tailwindlabs/heroicons",
+       tag: "v2.1.1",
+       sparse: "optimized",
+       app: false,
+       compile: false,
+       depth: 1}
     ]
   end
 
@@ -92,8 +100,9 @@ defmodule Arrow.MixProject do
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       "ecto.rollback": ["ecto.rollback", "ecto.dump --quiet"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
-      "assets.build": ["esbuild default --sourcemap=inline"],
-      "assets.deploy": ["esbuild default --minify", "phx.digest"],
+      "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
+      "assets.build": ["esbuild default --sourcemap=inline", "tailwind default"],
+      "assets.deploy": ["esbuild default --minify", "tailwind default --minify", "phx.digest"],
       "test.integration": [
         "assets.build",
         "ecto.create --quiet",
