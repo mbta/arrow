@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 14.12 (Homebrew)
--- Dumped by pg_dump version 14.12 (Homebrew)
+-- Dumped from database version 11.17
+-- Dumped by pg_dump version 14.5
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -32,8 +32,6 @@ CREATE TYPE public.day_name AS ENUM (
 
 
 SET default_tablespace = '';
-
-SET default_table_access_method = heap;
 
 --
 -- Name: adjustments; Type: TABLE; Schema: public; Owner: -
@@ -372,6 +370,50 @@ ALTER SEQUENCE public.shapes_id_seq OWNED BY public.shapes.id;
 
 
 --
+-- Name: stops; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.stops (
+    id bigint NOT NULL,
+    stop_id character varying(255) NOT NULL,
+    stop_name character varying(255) NOT NULL,
+    stop_desc character varying(255) NOT NULL,
+    platform_code character varying(255),
+    platform_name character varying(255),
+    stop_lat double precision NOT NULL,
+    stop_lon double precision NOT NULL,
+    stop_address character varying(255),
+    zone_id character varying(255),
+    level_id character varying(255),
+    parent_station character varying(255),
+    municipality character varying(255) NOT NULL,
+    on_street character varying(255),
+    at_street character varying(255),
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: stops_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.stops_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: stops_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.stops_id_seq OWNED BY public.stops.id;
+
+
+--
 -- Name: adjustments id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -439,6 +481,13 @@ ALTER TABLE ONLY public.disruptions ALTER COLUMN id SET DEFAULT nextval('public.
 --
 
 ALTER TABLE ONLY public.shapes ALTER COLUMN id SET DEFAULT nextval('public.shapes_id_seq'::regclass);
+
+
+--
+-- Name: stops id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stops ALTER COLUMN id SET DEFAULT nextval('public.stops_id_seq'::regclass);
 
 
 --
@@ -527,6 +576,14 @@ ALTER TABLE ONLY public.schema_migrations
 
 ALTER TABLE ONLY public.shapes
     ADD CONSTRAINT shapes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: stops stops_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.stops
+    ADD CONSTRAINT stops_pkey PRIMARY KEY (id);
 
 
 --
@@ -693,6 +750,6 @@ INSERT INTO public."schema_migrations" (version) VALUES (20210924180538);
 INSERT INTO public."schema_migrations" (version) VALUES (20211209185029);
 INSERT INTO public."schema_migrations" (version) VALUES (20220105203850);
 INSERT INTO public."schema_migrations" (version) VALUES (20240207224211);
+INSERT INTO public."schema_migrations" (version) VALUES (20240605185923);
 INSERT INTO public."schema_migrations" (version) VALUES (20240606171008);
 INSERT INTO public."schema_migrations" (version) VALUES (20240610185146);
-INSERT INTO public."schema_migrations" (version) VALUES (20240605185923);
