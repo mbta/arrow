@@ -51,6 +51,8 @@ defmodule Arrow.MixProject do
       {:ex_aws_rds, "~> 2.0"},
       {:ex_aws_secretsmanager, "~> 2.0"},
       {:ex_aws, "~> 2.1"},
+      {:ex_aws_s3, "~> 2.1"},
+      {:sweet_xml, "~> 0.7.4"},
       {:ex_machina, "~> 2.3", only: :test},
       {:gettext, "~> 0.11"},
       {:guardian, "~> 2.0"},
