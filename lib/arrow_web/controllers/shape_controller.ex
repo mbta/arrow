@@ -55,13 +55,20 @@ defmodule ArrowWeb.ShapeController do
   end
 
   def download(conn, %{"id" => id}) do
+    enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
     shape = Shuttle.get_shape!(id)
+    basic_url = "https://#{shape.bucket}.s3.amazonaws.com/#{shape.path}"
+
+    {:ok, url} =
+      if enabled?,
+        do: ExAws.S3.presigned_url(ExAws.Config.new(:s3), :get, shape.bucket, shape.path, []),
+        else: {:ok, basic_url}
 
     conn
     |> Plug.Conn.resp(:found, "")
     |> Plug.Conn.put_resp_header(
       "location",
-      "https://#{shape.bucket}.s3.amazonaws.com/#{shape.path}"
+      url
     )
   end
 
