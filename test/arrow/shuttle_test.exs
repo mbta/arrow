@@ -3,21 +3,16 @@ defmodule Arrow.ShuttleTest do
 
   alias Arrow.Shuttle
 
-  describe "shapes" do
+  describe "shapes with s3 functionality enabled (mocked)" do
     alias Arrow.Shuttle.Shape
 
     import Arrow.ShuttleFixtures
     import Ecto
     @invalid_attrs %{name: nil}
 
-    test "list_shapes/0 returns all shapes" do
-      shape = shape_fixture()
-      assert Shuttle.list_shapes() == [shape]
-    end
-
-    test "get_shape!/1 returns the shape with given id" do
-      shape = shape_fixture()
-      assert Shuttle.get_shape!(shape.id) == shape
+    setup do
+      Application.put_env(:arrow, :shape_storage_enabled?, true)
+      on_exit(fn -> Application.put_env(:arrow, :shape_storage_enabled?, false) end)
     end
 
     test "create_shape/1 with valid data creates a shape and uploads to s3" do
@@ -38,6 +33,24 @@ defmodule Arrow.ShuttleTest do
       assert {:ok, %Shape{} = shape} = Shuttle.create_shape(valid_attrs)
       assert shape.name == "some name"
       Application.put_env(:arrow, :shape_storage_enabled?, false)
+    end
+  end
+
+  describe "shapes" do
+    alias Arrow.Shuttle.Shape
+
+    import Arrow.ShuttleFixtures
+    import Ecto
+    @invalid_attrs %{name: nil}
+
+    test "list_shapes/0 returns all shapes" do
+      shape = shape_fixture()
+      assert Shuttle.list_shapes() == [shape]
+    end
+
+    test "get_shape!/1 returns the shape with given id" do
+      shape = shape_fixture()
+      assert Shuttle.get_shape!(shape.id) == shape
     end
 
     test "create_shape/1 with invalid data returns error changeset" do

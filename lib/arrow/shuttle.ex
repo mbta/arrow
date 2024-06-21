@@ -75,6 +75,7 @@ defmodule Arrow.Shuttle do
     bucket = Application.get_env(:arrow, :shape_storage_bucket)
     enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
     prefix_env = Application.get_env(:arrow, :shape_storage_prefix_env)
+    request_fn = Application.get_env(:arrow, :shape_storage_request_fn)
 
     if enabled? do
       prefix_env_value = System.get_env(prefix_env)
@@ -85,7 +86,7 @@ defmodule Arrow.Shuttle do
           do: "#{prefix}#{prefix_env_value}/#{filename}",
           else: "#{prefix}#{filename}"
 
-      case do_upload_shape(upload.path, bucket, path) do
+      case do_upload_shape(upload.path, bucket, path, request_fn) do
         error = {:error, _} -> error
         {:ok, _} -> {:ok, %{"bucket" => bucket, "prefix" => prefix, "path" => path}}
       end
@@ -94,18 +95,21 @@ defmodule Arrow.Shuttle do
     end
   end
 
-  defp do_upload_shape(local_path, bucket, remote_path) do
+  defp do_upload_shape(local_path, bucket, remote_path, request_fn) do
+    {request_module, request_func} = request_fn
     # Check if file exists already:
-    {:ok, check} = ExAws.S3.list_objects_v2(bucket, prefix: remote_path) |> ExAws.request()
+    check_request = ExAws.S3.list_objects_v2(bucket, prefix: remote_path)
+    {:ok, check} = apply(request_module, request_func, [check_request])
 
     if length(check.body.contents) > 0 do
       {:error, :already_exists}
     else
-      {:ok, _} =
+      upload_request =
         local_path
         |> ExAws.S3.Upload.stream_file()
         |> ExAws.S3.upload(bucket, remote_path)
-        |> ExAws.request()
+
+      {:ok, _} = apply(request_module, request_func, [upload_request])
     end
   end
 

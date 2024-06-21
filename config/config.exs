@@ -38,7 +38,8 @@ config :arrow,
   shape_storage_enabled?: false,
   shape_storage_prefix_env: "arrow-dev-local",
   shape_storage_bucket: "mbta-gtfs-s3-sandbox",
-  shape_storage_prefix: "shape-uploads/"
+  shape_storage_prefix: "shape-uploads/",
+  shape_storage_request_fn: {ExAws, :request}
 
 # Configures the endpoint
 config :arrow, ArrowWeb.Endpoint,
