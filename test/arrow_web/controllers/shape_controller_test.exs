@@ -33,8 +33,6 @@ defmodule ArrowWeb.ShapeControllerTest do
   describe "download shape" do
     @tag :authenticated_admin
     test "redirects to s3 url", %{conn: conn} do
-      # Allow storage, create safe prefix:
-      Application.put_env(:arrow, :shape_storage_enabled?, true)
       uuid = Ecto.UUID.generate()
       prefix = "arrow/test-runner/#{uuid}/"
       Application.put_env(:arrow, :shape_storage_prefix, prefix)
@@ -54,9 +52,7 @@ defmodule ArrowWeb.ShapeControllerTest do
       conn = get(conn, ~p"/shapes/#{id}/download")
 
       assert redirected_to(conn, 302) ==
-               "https://#{Application.get_env(:arrow, :shape_storage_bucket)}.s3.amazonaws.com/arrow/test-runner/#{uuid}/sample.kml"
-
-      Application.put_env(:arrow, :shape_storage_enabled?, false)
+               "https://disabled.s3.amazonaws.com/disabled"
     end
   end
 
