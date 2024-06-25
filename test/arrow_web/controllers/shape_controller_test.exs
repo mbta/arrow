@@ -3,13 +3,23 @@ defmodule ArrowWeb.ShapeControllerTest do
 
   import Arrow.ShuttleFixtures
 
-  @create_attrs %{
+  @upload_attrs %{
     name: "some name",
     filename: %Plug.Upload{
       path: "test/support/fixtures/kml/one_shape.kml",
       filename: "some filename"
     }
   }
+
+  @create_attrs [
+    {0,
+     %{
+       name: "some other name",
+       save: "false"
+     }},
+    {1, %{name: "some name", save: "true"}}
+  ]
+
   @update_attrs %{name: "some updated name"}
   @invalid_attrs %{
     name: nil,
@@ -44,15 +54,23 @@ defmodule ArrowWeb.ShapeControllerTest do
 
   describe "create shape" do
     @tag :authenticated_admin
+    test "redirects to select when upload file is valid", %{conn: conn} do
+      conn = post(conn, ~p"/shapes_upload", shape_upload: @upload_attrs)
+      assert html_response(conn, 200) =~ "Successfully parsed shapes"
+      assert html_response(conn, 200) =~ "RL: Alewife - Harvard - Via Brattle St - Harvard"
+      assert html_response(conn, 200) =~ "Shapes from File"
+    end
+
+    @tag :authenticated_admin
     test "redirects to show when data is valid", %{conn: conn} do
-      conn = post(conn, ~p"/shapes_upload", shape_upload: @create_attrs)
+      conn = post(conn, ~p"/shapes_upload", shapes: @create_attrs)
 
       assert redirected_to(conn) == ~p"/shapes/"
 
       conn = ArrowWeb.ConnCase.authenticated_admin()
       conn = get(conn, ~p"/shapes")
-      # Currently uses the name from the kml file
-      assert html_response(conn, 200) =~ "RL: Alewife - Harvard - Via Brattle St - Harvard"
+      assert html_response(conn, 200) =~ "some name"
+      refute html_response(conn, 200) =~ "some other name"
     end
 
     @tag :authenticated_admin

@@ -1,5 +1,6 @@
 defmodule ArrowWeb.ShapeController do
   require Logger
+  alias Ecto.Changeset
   alias Arrow.Shuttle.ShapeUpload
   use ArrowWeb, :controller
 
@@ -17,21 +18,65 @@ defmodule ArrowWeb.ShapeController do
   end
 
   def new(conn, %{}) do
-    changeset_map = ShapeUpload.changeset(%ShapeUpload{shapes: %{}}, %{})
+    changeset_map = ShapeUpload.changeset(%ShapeUpload{shapes: []}, %{})
     render(conn, :new_bulk, shape_upload: changeset_map)
   end
 
   def create(conn, %{"shape_upload" => shape_upload}) do
+    filename = shape_upload["filename"].filename
+
     with {:ok, saxy_shapes} <- ShapeUpload.parse_kml_from_file(shape_upload),
          {:ok, shapes} <- ShapeUpload.shapes_from_kml(saxy_shapes),
-         {:ok, changesets} <- Shuttle.create_shapes(shapes) do
+         %Changeset{valid?: true} = changeset <-
+           ShapeUpload.changeset(%ShapeUpload{}, %{filename: filename, shapes: shapes}) do
       conn
       |> put_flash(
         :info,
-        "Uploaded successfully #{inspect(changesets)}"
+        "Successfully parsed shapes #{inspect(shapes)} from file"
       )
-      |> redirect(to: ~p"/shapes/")
+      |> render(:select, form: changeset |> Phoenix.Component.to_form())
     else
+      {:error, reason} ->
+        conn
+        |> put_flash(:errors, reason)
+        |> render(:new_bulk, shape_upload: shape_upload, errors: reason)
+
+      error ->
+        conn
+        |> put_flash(:errors, error)
+        |> render(:new_bulk, shape_upload: shape_upload, errors: error)
+    end
+  end
+
+  def create(conn, %{"shapes" => shapes} = shape_upload) do
+    saved_shapes =
+      shapes
+      |> Enum.map(fn {_idx, shape} -> shape end)
+      |> Enum.filter(fn shape -> shape["save"] == "true" end)
+
+    case Shuttle.create_shapes(saved_shapes) do
+      {:ok, []} ->
+
+        conn
+        |> put_flash(
+          :info,
+          "No shapes were marked to be saved"
+        )
+        |> redirect(to: ~p"/shapes/")
+
+      {:ok, changesets} ->
+
+        saved_shape_names =
+          changesets
+          |> Enum.map(fn {:ok, changeset} -> changeset.name end)
+
+        conn
+        |> put_flash(
+          :info,
+          "Successfully saved shapes: #{inspect(saved_shape_names)}"
+        )
+        |> redirect(to: ~p"/shapes/")
+
       {:error, reason} ->
         conn
         |> put_flash(

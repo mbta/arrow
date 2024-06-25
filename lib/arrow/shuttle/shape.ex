@@ -23,7 +23,7 @@ defmodule Arrow.Shuttle.Shape do
   def changeset(shape, attrs) do
     shape
     |> cast(attrs, [:name, :coordinates])
-    |> validate_required([:name, :coordinates])
+    |> validate_required([:name])
     |> unique_constraint(:name)
   end
 end
