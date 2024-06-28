@@ -1,7 +1,7 @@
 defmodule ArrowWeb.ShapeController do
   require Logger
   alias Ecto.Changeset
-  alias Arrow.Shuttle.ShapeUpload
+  alias Arrow.Shuttle.ShapesUpload
   use ArrowWeb, :controller
 
   alias Arrow.Shuttle
@@ -18,17 +18,17 @@ defmodule ArrowWeb.ShapeController do
   end
 
   def new(conn, %{}) do
-    changeset_map = ShapeUpload.changeset(%ShapeUpload{shapes: []}, %{})
+    changeset_map = ShapesUpload.changeset(%ShapesUpload{shapes: []}, %{})
     render(conn, :new_bulk, shape_upload: changeset_map)
   end
 
   def create(conn, %{"shape_upload" => shape_upload}) do
     filename = shape_upload["filename"].filename
 
-    with {:ok, saxy_shapes} <- ShapeUpload.parse_kml_from_file(shape_upload),
-         {:ok, shapes} <- ShapeUpload.shapes_from_kml(saxy_shapes),
+    with {:ok, saxy_shapes} <- ShapesUpload.parse_kml_from_file(shape_upload),
+         {:ok, shapes} <- ShapesUpload.shapes_from_kml(saxy_shapes),
          %Changeset{valid?: true} = changeset <-
-           ShapeUpload.changeset(%ShapeUpload{}, %{filename: filename, shapes: shapes}) do
+           ShapesUpload.changeset(%ShapesUpload{}, %{filename: filename, shapes: shapes}) do
       conn
       |> put_flash(
         :info,
@@ -56,7 +56,6 @@ defmodule ArrowWeb.ShapeController do
 
     case Shuttle.create_shapes(saved_shapes) do
       {:ok, []} ->
-
         conn
         |> put_flash(
           :info,
@@ -65,7 +64,6 @@ defmodule ArrowWeb.ShapeController do
         |> redirect(to: ~p"/shapes/")
 
       {:ok, changesets} ->
-
         saved_shape_names =
           changesets
           |> Enum.map(fn {:ok, changeset} -> changeset.name end)
