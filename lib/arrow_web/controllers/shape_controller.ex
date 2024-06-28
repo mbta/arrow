@@ -19,13 +19,13 @@ defmodule ArrowWeb.ShapeController do
 
   def new(conn, %{}) do
     changeset_map = ShapesUpload.changeset(%ShapesUpload{shapes: []}, %{})
-    render(conn, :new_bulk, shape_upload: changeset_map)
+    render(conn, :new_bulk, shapes_upload: changeset_map)
   end
 
-  def create(conn, %{"shape_upload" => shape_upload}) do
-    filename = shape_upload["filename"].filename
+  def create(conn, %{"shapes_upload" => shapes_upload}) do
+    filename = shapes_upload["filename"].filename
 
-    with {:ok, saxy_shapes} <- ShapesUpload.parse_kml_from_file(shape_upload),
+    with {:ok, saxy_shapes} <- ShapesUpload.parse_kml_from_file(shapes_upload),
          {:ok, shapes} <- ShapesUpload.shapes_from_kml(saxy_shapes),
          %Changeset{valid?: true} = changeset <-
            ShapesUpload.changeset(%ShapesUpload{}, %{filename: filename, shapes: shapes}) do
@@ -39,12 +39,12 @@ defmodule ArrowWeb.ShapeController do
       {:error, reason} ->
         conn
         |> put_flash(:errors, reason)
-        |> render(:new_bulk, shape_upload: shape_upload, errors: reason)
+        |> render(:new_bulk, shapes_upload: shapes_upload, errors: reason)
 
       error ->
         conn
         |> put_flash(:errors, error)
-        |> render(:new_bulk, shape_upload: shape_upload, errors: error)
+        |> render(:new_bulk, shapes_upload: shapes_upload, errors: error)
     end
   end
 
