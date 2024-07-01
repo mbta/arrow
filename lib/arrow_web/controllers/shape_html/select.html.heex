@@ -1,0 +1,34 @@
+<.header>
+  Shapes from File
+  <:actions>
+    <.link href={~p"/shapes_upload"}>
+      <.button>New Upload</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<div class="container">
+<.simple_form :let={f} for={@form} action={~p"/shapes_upload"} multipart>
+  <.input label="File uploaded" field={f[:filename]} disabled="true" />
+  <.error :if={@form.action}>
+    Oops, something went wrong! Please check the errors below.
+  </.error>
+  <%= if f[:shapes] do %>
+    <div>Shapes</div>
+    <div class="grid grid-cols-3 gap-4">
+      <div class="block text-sm font-semibold leading-6 text-zinc-800">Uploaded Name</div>
+      <div class="block text-sm font-semibold leading-6 text-zinc-800">New Name</div>
+      <div class="block text-sm font-semibold leading-6 text-zinc-800">Save?</div>
+      <.inputs_for :let={f_nested} field={f[:shapes]} id="shapes" as={:shapes} skip_hidden={:true}>
+        <.input field={f_nested[:name]} disabled />
+        <.input field={f_nested[:name]} />
+        <.input field={f_nested[:save]} type="checkbox" />
+        <%= hidden_input f_nested, :coordinates %>
+      </.inputs_for>
+    </div>
+    <% end %>
+  <:actions>
+  <.button>Save Selected Shapes</.button>
+  </:actions>
+</.simple_form>
+</div>

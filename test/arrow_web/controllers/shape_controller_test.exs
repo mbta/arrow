@@ -3,13 +3,23 @@ defmodule ArrowWeb.ShapeControllerTest do
 
   import Arrow.ShuttleFixtures
 
-  @create_attrs %{
+  @upload_attrs %{
     name: "some name",
     filename: %Plug.Upload{
       path: "test/support/fixtures/kml/one_shape.kml",
       filename: "some filename"
     }
   }
+
+  @create_attrs [
+    {0,
+     %{
+       name: "some other name",
+       save: "false"
+     }},
+    {1, %{name: "some name", save: "true"}}
+  ]
+
   @update_attrs %{name: "some updated name"}
   @invalid_attrs %{
     name: nil,
@@ -44,20 +54,28 @@ defmodule ArrowWeb.ShapeControllerTest do
 
   describe "create shape" do
     @tag :authenticated_admin
+    test "redirects to select when upload file is valid", %{conn: conn} do
+      conn = post(conn, ~p"/shapes_upload", shapes_upload: @upload_attrs)
+      assert html_response(conn, 200) =~ "Successfully parsed shapes"
+      assert html_response(conn, 200) =~ "RL: Alewife - Harvard - Via Brattle St - Harvard"
+      assert html_response(conn, 200) =~ "Shapes from File"
+    end
+
+    @tag :authenticated_admin
     test "redirects to show when data is valid", %{conn: conn} do
-      conn = post(conn, ~p"/shapes_upload", shape_upload: @create_attrs)
+      conn = post(conn, ~p"/shapes_upload", shapes: @create_attrs)
 
       assert redirected_to(conn) == ~p"/shapes/"
 
       conn = ArrowWeb.ConnCase.authenticated_admin()
       conn = get(conn, ~p"/shapes")
-      # Currently uses the name from the kml file
-      assert html_response(conn, 200) =~ "RL: Alewife - Harvard - Via Brattle St - Harvard"
+      assert html_response(conn, 200) =~ "some name"
+      refute html_response(conn, 200) =~ "some other name"
     end
 
     @tag :authenticated_admin
     test "renders errors when data is invalid", %{conn: conn} do
-      conn = post(conn, ~p"/shapes_upload", shape_upload: @invalid_attrs)
+      conn = post(conn, ~p"/shapes_upload", shapes_upload: @invalid_attrs)
       assert html_response(conn, 200) =~ "Failed to upload shapes from invalid_file.kml"
       assert html_response(conn, 200) =~ "xml was invalid"
       assert html_response(conn, 200) =~ "unexpected end of input, expected token:"
@@ -66,7 +84,7 @@ defmodule ArrowWeb.ShapeControllerTest do
 
     @tag :authenticated_admin
     test "renders errors when file read fails", %{conn: conn} do
-      conn = post(conn, ~p"/shapes_upload", shape_upload: @file_read_fail_attrs)
+      conn = post(conn, ~p"/shapes_upload", shapes_upload: @file_read_fail_attrs)
       assert html_response(conn, 200) =~ "Failed to upload shapes from some_file.kml"
       assert html_response(conn, 200) =~ "no such file or directory"
       assert html_response(conn, 200) =~ "New Shapes"

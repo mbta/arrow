@@ -54,7 +54,7 @@ defmodule Arrow.Shuttle do
           changesets
           |> Enum.filter(fn changeset -> Kernel.match?({:error, _}, changeset) end)
           |> Enum.map(fn {_, changeset} ->
-            ErrorHelpers.changeset_error_messages(changeset)
+            "#{ErrorHelpers.changeset_error_messages(changeset)} for #{changeset.changes.name}"
           end)
 
         {:error, {"Failed to upload some shapes", errors}}
