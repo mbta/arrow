@@ -755,3 +755,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20240605185923);
 INSERT INTO public."schema_migrations" (version) VALUES (20240606171008);
 INSERT INTO public."schema_migrations" (version) VALUES (20240610185146);
 INSERT INTO public."schema_migrations" (version) VALUES (20240611001158);
+INSERT INTO public."schema_migrations" (version) VALUES (20240701173124);
