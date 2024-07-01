@@ -1,7 +1,7 @@
 defmodule ArrowWeb.ShapeController do
   require Logger
-  alias Ecto.Changeset
   alias Arrow.Shuttle.ShapesUpload
+  alias Ecto.Changeset
   use ArrowWeb, :controller
 
   alias Arrow.Shuttle
