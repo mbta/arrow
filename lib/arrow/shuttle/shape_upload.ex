@@ -24,28 +24,36 @@ defmodule Arrow.Shuttle.ShapeUpload do
     file = shape_upload["filename"]
     filename = file.filename
 
-    with {:ok, shapes_kml} <- File.read(file.path),
+    with {:ok, shapes_kml} <- read_file(file.path),
          {:ok, shapes} <- parse_kml(shapes_kml) do
       {:ok, shapes}
     else
-      {:error, exception} ->
-        message =
-          if is_atom(exception),
-            do: :file.format_error(exception),
-            else: Exception.message(exception)
-
+      {:error, reason} ->
         {:error,
          {"Failed to upload shapes from #{filename} because the provided xml was invalid",
-          [message]}}
+          [reason]}}
+    end
+  end
+
+  @doc """
+  Reads a file from a file input
+  """
+  def read_file(path) do
+    case File.read(path) do
+      {:ok, contents} -> {:ok, contents}
+      {:error, exception} -> {:error, :file.format_error(exception)}
     end
   end
 
   @doc """
   Parses a KML shape into a map
   """
-  @spec parse_kml(String.t()) :: {:ok, map} | {:error, any}
+  @spec parse_kml(String.t()) :: {:ok, map} | {:error, exception :: Saxy.ParseError.t()}
   def parse_kml(kml) do
-    SAXMap.from_string(kml)
+    case SAXMap.from_string(kml) do
+      {:ok, shapes} -> {:ok, shapes}
+      {:error, exception} -> {:error, Saxy.ParseError.message(exception)}
+    end
   end
 
   @doc """

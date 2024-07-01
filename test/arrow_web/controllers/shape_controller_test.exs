@@ -18,6 +18,13 @@ defmodule ArrowWeb.ShapeControllerTest do
       filename: "invalid_file.kml"
     }
   }
+  @file_read_fail_attrs %{
+    name: nil,
+    filename: %Plug.Upload{
+      path: "file_doesnt_exist_for_some_reason",
+      filename: "some_file.kml"
+    }
+  }
 
   describe "index" do
     @tag :authenticated_admin
@@ -51,6 +58,17 @@ defmodule ArrowWeb.ShapeControllerTest do
     @tag :authenticated_admin
     test "renders errors when data is invalid", %{conn: conn} do
       conn = post(conn, ~p"/shapes_upload", shape_upload: @invalid_attrs)
+      assert html_response(conn, 200) =~ "Failed to upload shapes from invalid_file.kml"
+      assert html_response(conn, 200) =~ "xml was invalid"
+      assert html_response(conn, 200) =~ "unexpected end of input, expected token:"
+      assert html_response(conn, 200) =~ "New Shapes"
+    end
+
+    @tag :authenticated_admin
+    test "renders errors when file read fails", %{conn: conn} do
+      conn = post(conn, ~p"/shapes_upload", shape_upload: @file_read_fail_attrs)
+      assert html_response(conn, 200) =~ "Failed to upload shapes from some_file.kml"
+      assert html_response(conn, 200) =~ "no such file or directory"
       assert html_response(conn, 200) =~ "New Shapes"
     end
   end
@@ -81,6 +99,7 @@ defmodule ArrowWeb.ShapeControllerTest do
     @tag :authenticated_admin
     test "renders errors when data is invalid", %{conn: conn, shape: shape} do
       conn = put(conn, ~p"/shapes/#{shape}", shape: @invalid_attrs)
+      assert html_response(conn, 200) =~ "Oops, something went wrong!"
       assert html_response(conn, 200) =~ "Edit Shape"
     end
   end
