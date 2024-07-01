@@ -1,8 +1,9 @@
 defmodule ArrowWeb.ShapeController do
+  require Logger
+  alias Arrow.Shuttle.ShapeUpload
   use ArrowWeb, :controller
 
   alias Arrow.Shuttle
-  alias Arrow.Shuttle.Shape
   alias ArrowWeb.Plug.Authorize
 
   plug(Authorize, :view_disruption when action in [:index, :show])
@@ -15,23 +16,29 @@ defmodule ArrowWeb.ShapeController do
     render(conn, :index, shapes: shapes)
   end
 
-  def new(conn, _params) do
-    changeset = Shuttle.change_shape(%Shape{})
-    render(conn, :new, changeset: changeset)
+  def new(conn, %{}) do
+    changeset_map = ShapeUpload.changeset(%ShapeUpload{shapes: %{}}, %{})
+    render(conn, :new_bulk, shape_upload: changeset_map)
   end
 
-  def create(conn, %{"shape" => shape_params}) do
-    case Shuttle.create_shape(shape_params) do
-      {:ok, shape} ->
+  def create(conn, %{"shape_upload" => shape_upload}) do
+    with {:ok, saxy_shapes} <- ShapeUpload.parse_kml_from_file(shape_upload),
+         {:ok, shapes} <- ShapeUpload.shapes_from_kml(saxy_shapes),
+         {:ok, changesets} <- Shuttle.create_shapes(shapes) do
+      conn
+      |> put_flash(
+        :info,
+        "Uploaded successfully #{inspect(changesets)}"
+      )
+      |> redirect(to: ~p"/shapes/")
+    else
+      {:error, reason} ->
         conn
         |> put_flash(
-          :info,
-          "Shape created successfully from #{shape_params["filename"].filename}"
+          :errors,
+          reason
         )
-        |> redirect(to: ~p"/shapes/#{shape}")
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :new, changeset: changeset)
+        |> render(:new_bulk, shape_upload: shape_upload, errors: reason)
     end
   end
 
@@ -54,7 +61,7 @@ defmodule ArrowWeb.ShapeController do
         conn
         |> put_flash(
           :info,
-          "Shape updated successfully from #{shape_params["filename"].filename}"
+          "Shape name updated successfully"
         )
         |> redirect(to: ~p"/shapes/#{shape}")
 

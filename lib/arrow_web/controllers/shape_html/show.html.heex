@@ -11,5 +11,12 @@
 <.list>
   <:item title="Name"><%= @shape.name %></:item>
 </.list>
+<.list>
+    <:item title="Coordinates">    
+    <%= for coord <- @shape.coordinates do %>
+       <div> <%= coord %> </div>
+    <% end %> 
+    </:item>
+</.list>
 
 <.back navigate={~p"/shapes"}>Back to shapes</.back>

@@ -5,6 +5,7 @@ defmodule Arrow.Shuttle do
 
   import Ecto.Query, warn: false
   alias Arrow.Repo
+  alias ArrowWeb.ErrorHelpers
 
   alias Arrow.Shuttle.Shape
 
@@ -36,6 +37,29 @@ defmodule Arrow.Shuttle do
 
   """
   def get_shape!(id), do: Repo.get!(Shape, id)
+
+  @doc """
+  Creates shapes.
+
+  """
+  def create_shapes(shapes) do
+    changesets = Enum.map(shapes, fn shape -> create_shape(shape) end)
+
+    case Enum.all?(changesets, fn changeset -> Kernel.match?({:ok, _shape}, changeset) end) do
+      true ->
+        {:ok, changesets}
+
+      _ ->
+        errors =
+          changesets
+          |> Enum.filter(fn changeset -> Kernel.match?({:error, _}, changeset) end)
+          |> Enum.map(fn {_, changeset} ->
+            ErrorHelpers.changeset_error_messages(changeset)
+          end)
+
+        {:error, {"Failed to upload some shapes", errors}}
+    end
+  end
 
   @doc """
   Creates a shape.
