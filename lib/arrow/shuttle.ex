@@ -77,7 +77,7 @@ defmodule Arrow.Shuttle do
     prefix_env = Application.get_env(:arrow, :shape_storage_prefix_env)
     request_fn = Application.get_env(:arrow, :shape_storage_request_fn)
 
-    if enabled? do
+    if enabled? and String.strip(prefix_env) != "" do
       prefix_env_value = System.get_env(prefix_env)
       filename = upload.filename
 

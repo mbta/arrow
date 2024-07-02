@@ -12,7 +12,7 @@ import Config
 
 config :arrow,
   shape_storage_enabled?: true,
-  shape_storage_prefix_env: System.get_env("AWS_SECRET_PREFIX") || "arrow-prod-unknown"
+  shape_storage_prefix_env: System.get_env("AWS_SECRET_PREFIX")
 
 config :arrow, ArrowWeb.Endpoint,
   http: [:inet6, port: 4000],
