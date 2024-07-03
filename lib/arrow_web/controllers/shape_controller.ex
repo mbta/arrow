@@ -24,6 +24,7 @@ defmodule ArrowWeb.ShapeController do
 
   def create(conn, %{"shapes_upload" => shapes_upload}) do
     filename = shapes_upload["filename"].filename
+    reset_upload = ShapesUpload.changeset(%ShapesUpload{shapes: []}, %{})
 
     with {:ok, saxy_shapes} <- ShapesUpload.parse_kml_from_file(shapes_upload),
          {:ok, shapes} <- ShapesUpload.shapes_from_kml(saxy_shapes),
@@ -39,16 +40,18 @@ defmodule ArrowWeb.ShapeController do
       {:error, reason} ->
         conn
         |> put_flash(:errors, reason)
-        |> render(:new_bulk, shapes_upload: shapes_upload, errors: reason)
+        |> render(:new_bulk, errors: reason, shapes_upload: reset_upload)
 
       error ->
         conn
         |> put_flash(:errors, error)
-        |> render(:new_bulk, shapes_upload: shapes_upload, errors: error)
+        |> render(:new_bulk, errors: error, shapes_upload: reset_upload)
     end
   end
 
-  def create(conn, %{"shapes" => shapes} = shape_upload) do
+  def create(conn, %{"shapes" => shapes}) do
+    reset_upload = ShapesUpload.changeset(%ShapesUpload{shapes: []}, %{})
+
     saved_shapes =
       shapes
       |> Enum.map(fn {_idx, shape} -> shape end)
@@ -81,7 +84,7 @@ defmodule ArrowWeb.ShapeController do
           :errors,
           reason
         )
-        |> render(:new_bulk, shape_upload: shape_upload, errors: reason)
+        |> render(:new_bulk, shapes_upload: reset_upload, errors: reason)
     end
   end
 
