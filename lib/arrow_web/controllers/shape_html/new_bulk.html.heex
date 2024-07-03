@@ -2,19 +2,10 @@
   New Shapes
   <:subtitle>Use this form to manage shape records in your database.</:subtitle>
 </.header>
-
-<%= if Map.get(@shape_upload, "filename") do %>
-  <.simple_form for={@shape_upload} action={~p"/shapes_upload"} multipart>
-    <:actions>
-      <.button>Back</.button>
-    </:actions>
-  </.simple_form>
-<% else %>
-  <.simple_form :let={f} for={@shape_upload} action={~p"/shapes_upload"} multipart>
-    <.input field={f[:filename]} type="file" label="Filename" required="true"/>
-    <:actions>
-      <.button>Upload File</.button>
-    </:actions>
-  </.simple_form>
-<% end %>
+<.simple_form :let={f} for={@shapes_upload} action={~p"/shapes_upload"} multipart>
+  <.input field={f[:filename]} type="file" label="Filename" required="true"/>
+  <:actions>
+    <.button>Upload File</.button>
+  </:actions>
+</.simple_form>
 <.back navigate={~p"/shapes"}>Back to shapes</.back>

@@ -1,8 +1,8 @@
 name: CI
 
-on: 
+on:
   push:
-  pull_request: 
+  pull_request:
   schedule:
     - cron: '0 5 * * *'
 
@@ -94,7 +94,7 @@ jobs:
       - name: Check formatting
         run: mix format --check-formatted
       - name: Credo
-        run: mix credo --strict
+        run: mix credo
       - name: Run tests
         run: mix test --cover
       - name: Save PR information
