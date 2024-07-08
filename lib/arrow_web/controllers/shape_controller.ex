@@ -1,8 +1,10 @@
 defmodule ArrowWeb.ShapeController do
+  require Logger
+  alias Arrow.Shuttle.ShapesUpload
+  alias Ecto.Changeset
   use ArrowWeb, :controller
 
   alias Arrow.Shuttle
-  alias Arrow.Shuttle.Shape
   alias ArrowWeb.Plug.Authorize
 
   plug(Authorize, :view_disruption when action in [:index, :show, :download])
@@ -15,31 +17,74 @@ defmodule ArrowWeb.ShapeController do
     render(conn, :index, shapes: shapes)
   end
 
-  def new(conn, _params) do
-    changeset = Shuttle.change_shape(%Shape{})
-    render(conn, :new, changeset: changeset)
+  def new(conn, %{}) do
+    changeset_map = ShapesUpload.changeset(%ShapesUpload{shapes: []}, %{})
+    render(conn, :new_bulk, shapes_upload: changeset_map)
   end
 
-  def create(conn, %{"shape" => shape_params}) do
-    case Shuttle.create_shape(shape_params) do
-      {:ok, shape} ->
+  def create(conn, %{"shapes_upload" => shapes_upload}) do
+    filename = shapes_upload["filename"].filename
+    reset_upload = ShapesUpload.changeset(%ShapesUpload{shapes: []}, %{})
+
+    with {:ok, saxy_shapes} <- ShapesUpload.parse_kml_from_file(shapes_upload),
+         {:ok, shapes} <- ShapesUpload.shapes_from_kml(saxy_shapes),
+         %Changeset{valid?: true} = changeset <-
+           ShapesUpload.changeset(%ShapesUpload{}, %{filename: filename, shapes: shapes}) do
+      conn
+      |> put_flash(
+        :info,
+        "Successfully parsed shapes #{inspect(shapes)} from file"
+      )
+      |> render(:select, form: changeset |> Phoenix.Component.to_form())
+    else
+      {:error, reason} ->
+        conn
+        |> put_flash(:errors, reason)
+        |> render(:new_bulk, errors: reason, shapes_upload: reset_upload)
+
+      error ->
+        conn
+        |> put_flash(:errors, error)
+        |> render(:new_bulk, errors: error, shapes_upload: reset_upload)
+    end
+  end
+
+  def create(conn, %{"shapes" => shapes}) do
+    reset_upload = ShapesUpload.changeset(%ShapesUpload{shapes: []}, %{})
+
+    saved_shapes =
+      shapes
+      |> Enum.map(fn {_idx, shape} -> shape end)
+      |> Enum.filter(fn shape -> shape["save"] == "true" end)
+
+    case Shuttle.create_shapes(saved_shapes) do
+      {:ok, []} ->
         conn
         |> put_flash(
           :info,
-          "Shape created successfully from #{shape_params["filename"].filename}"
+          "No shapes were marked to be saved"
         )
-        |> redirect(to: ~p"/shapes/#{shape}")
+        |> redirect(to: ~p"/shapes/")
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :new, changeset: changeset)
+      {:ok, changesets} ->
+        saved_shape_names =
+          changesets
+          |> Enum.map(fn {:ok, changeset} -> changeset.name end)
 
-      {:error, :already_exists} ->
         conn
         |> put_flash(
-          :error,
-          "#{shape_params["filename"].filename} already exists on the server."
+          :info,
+          "Successfully saved shapes: #{inspect(saved_shape_names)}"
         )
-        |> redirect(to: ~p"/shapes/new")
+        |> redirect(to: ~p"/shapes/")
+
+      {:error, reason} ->
+        conn
+        |> put_flash(
+          :errors,
+          reason
+        )
+        |> render(:new_bulk, shapes_upload: reset_upload, errors: reason)
     end
   end
 
@@ -80,7 +125,7 @@ defmodule ArrowWeb.ShapeController do
         conn
         |> put_flash(
           :info,
-          "Shape updated successfully from #{shape_params["filename"].filename}"
+          "Shape name updated successfully"
         )
         |> redirect(to: ~p"/shapes/#{shape}")
 

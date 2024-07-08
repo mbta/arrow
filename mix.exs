@@ -85,7 +85,8 @@ defmodule Arrow.MixProject do
        sparse: "optimized",
        app: false,
        compile: false,
-       depth: 1}
+       depth: 1},
+      {:sax_map, "~> 1.2"}
     ]
   end
 

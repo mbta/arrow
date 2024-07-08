@@ -1,7 +1,15 @@
 defmodule Arrow.Shuttle.Shape do
-  @moduledoc "schema for shuttle shapes"
+  @moduledoc "schema for shuttle shapes for the db"
   use Ecto.Schema
   import Ecto.Changeset
+
+  @type id :: integer
+  @type t :: %__MODULE__{
+          id: id,
+          name: String.t(),
+          inserted_at: DateTime.t(),
+          updated_at: DateTime.t()
+        }
 
   schema "shapes" do
     field :name, :string
@@ -9,7 +17,7 @@ defmodule Arrow.Shuttle.Shape do
     field :path, :string
     field :prefix, :string
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

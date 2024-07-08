@@ -53,6 +53,13 @@ defmodule Arrow.ShuttleTest do
       assert Shuttle.get_shape!(shape.id) == shape
     end
 
+    test "create_shape/1 with valid data creates a shape" do
+      valid_attrs = %{name: "some name", coordinates: coords()}
+
+      assert {:ok, %Shape{} = shape} = Shuttle.create_shape(valid_attrs)
+      assert shape.name == "some name"
+    end
+
     test "create_shape/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Shuttle.create_shape(@invalid_attrs)
     end

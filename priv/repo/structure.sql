@@ -347,8 +347,8 @@ CREATE TABLE public.schema_migrations (
 CREATE TABLE public.shapes (
     id bigint NOT NULL,
     name character varying(255),
-    inserted_at timestamp(0) without time zone NOT NULL,
-    updated_at timestamp(0) without time zone NOT NULL,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
     bucket text,
     path text,
     prefix text
@@ -758,4 +758,7 @@ INSERT INTO public."schema_migrations" (version) VALUES (20240207224211);
 INSERT INTO public."schema_migrations" (version) VALUES (20240605185923);
 INSERT INTO public."schema_migrations" (version) VALUES (20240606171008);
 INSERT INTO public."schema_migrations" (version) VALUES (20240610185146);
+INSERT INTO public."schema_migrations" (version) VALUES (20240611001158);
 INSERT INTO public."schema_migrations" (version) VALUES (20240611173539);
+INSERT INTO public."schema_migrations" (version) VALUES (20240628203237);
+INSERT INTO public."schema_migrations" (version) VALUES (20240701173124);
