@@ -94,6 +94,11 @@ defmodule ArrowWeb.ShapeController do
     render(conn, :show, shape: shape)
   end
 
+  def show_by_name(conn, %{"name" => name}) do
+    shape = Shuttle.get_shape!(%{name: name})
+    redirect(conn, to: ~p"/shapes/#{shape}")
+  end
+
   def edit(conn, %{"id" => id}) do
     shape = Shuttle.get_shape!(id)
     changeset = Shuttle.change_shape(shape)
