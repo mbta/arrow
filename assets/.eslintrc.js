@@ -127,7 +127,6 @@ module.exports = {
     "spaced-comment": "error",
     "use-isnan": "error",
     "valid-typeof": "off",
-    "@typescript-eslint/camelcase": ["error", { properties: "never" }],
   },
   settings: {
     react: {
