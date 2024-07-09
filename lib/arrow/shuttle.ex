@@ -8,8 +8,8 @@ defmodule Arrow.Shuttle do
   alias Arrow.Repo
   alias ArrowWeb.ErrorHelpers
 
-  alias Arrow.Shuttle.Shape
   alias Arrow.Shuttle.KML
+  alias Arrow.Shuttle.Shape
 
   @doc """
   Returns the list of shapes.
