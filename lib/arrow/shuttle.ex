@@ -9,6 +9,7 @@ defmodule Arrow.Shuttle do
   alias ArrowWeb.ErrorHelpers
 
   alias Arrow.Shuttle.Shape
+  alias Arrow.Shuttle.KML
 
   @doc """
   Returns the list of shapes.
@@ -75,10 +76,10 @@ defmodule Arrow.Shuttle do
 
   """
   def create_shape(attrs \\ %{}) do
-    case upload_shape_file(attrs) do
-      {:ok, new_attrs} ->
-        do_create_shape(Enum.into(new_attrs, attrs))
-
+    with {:ok, shape_with_kml} <- create_shape_kml(attrs),
+         {:ok, new_attrs} <- upload_shape_file(shape_with_kml) do
+      do_create_shape(Enum.into(new_attrs, attrs))
+    else
       {:error, e} ->
         {:error, e}
     end
@@ -90,8 +91,15 @@ defmodule Arrow.Shuttle do
     |> Repo.insert()
   end
 
-  defp upload_shape_file(%{"filename" => %Plug.Upload{} = upload}) do
-    upload_shape_file(%{name: upload.filename, content: File.read!(upload.path)})
+  def create_shape_kml(%{name: _name, coordinates: _coordinates} = attrs) do
+    kml = %KML{xmlns: "http://www.opengis.net/kml/2.2", Folder: attrs}
+    shape_kml = Saxy.Builder.build(kml)
+    content = Saxy.encode!(shape_kml, [])
+    {:ok, Enum.into(%{content: content}, attrs)}
+  end
+
+  def create_shape_kml(attrs) do
+    {:error, Shape.changeset(%Shape{}, attrs)}
   end
 
   defp upload_shape_file(%{name: name, coordinates: content}) do
