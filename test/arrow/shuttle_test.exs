@@ -7,7 +7,6 @@ defmodule Arrow.ShuttleTest do
     alias Arrow.Shuttle.Shape
 
     import Arrow.ShuttleFixtures
-    @invalid_attrs %{bucket: nil}
 
     setup do
       Application.put_env(:arrow, :shape_storage_enabled?, true)
@@ -39,7 +38,7 @@ defmodule Arrow.ShuttleTest do
     alias Arrow.Shuttle.Shape
 
     import Arrow.ShuttleFixtures
-    @invalid_attrs %{name: "some-name", coordinates: nil}
+    @invalid_attrs %{name: nil, coordinates: nil}
 
     test "list_shapes/0 returns all shapes" do
       shape = shape_fixture()
