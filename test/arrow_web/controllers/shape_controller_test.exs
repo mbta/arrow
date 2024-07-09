@@ -3,12 +3,6 @@ defmodule ArrowWeb.ShapeControllerTest do
 
   import Arrow.ShuttleFixtures
 
-  @create_s3_attrs %{
-    name: "some name",
-    path: "some/path/to/sample.kml",
-    prefix: "",
-    bucket: ""
-  }
   @upload_attrs %{
     name: "some name",
     filename: %Plug.Upload{
@@ -63,16 +57,19 @@ defmodule ArrowWeb.ShapeControllerTest do
       uuid = Ecto.UUID.generate()
       prefix = "arrow/test-runner/#{uuid}/"
       Application.put_env(:arrow, :shape_storage_prefix, prefix)
-      bucket = Application.get_env(:arrow, :shape_storage_bucket)
 
       # Create valid shape:
-      conn = post(conn, ~p"/shapes", shape: %{@create_s3_attrs | prefix: prefix, bucket: bucket})
+      conn = post(conn, ~p"/shapes_upload", shapes: @create_attrs)
+      assert redirected_to(conn) == ~p"/shapes/"
 
+      conn = ArrowWeb.ConnCase.authenticated_admin()
+      conn = get(conn, ~p"/shapes/by-name/?name=some name")
       assert %{id: id} = redirected_params(conn)
       assert redirected_to(conn) == ~p"/shapes/#{id}"
 
       # Attempt to download:
       conn = ArrowWeb.ConnCase.authenticated_admin()
+      conn = get(conn, ~p"/shapes/#{id}/download")
 
       assert redirected_to(conn, 302) ==
                "https://disabled.s3.amazonaws.com/disabled"
