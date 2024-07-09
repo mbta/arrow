@@ -17,18 +17,7 @@ defmodule ArrowWeb.ShapeControllerTest do
       filename: "some filename"
     }
   }
-
-  @create_attrs [
-    {0,
-     %{
-       name: "some other name",
-       save: "false"
-     }},
-    {1, %{name: "some name", save: "true"}}
-  ]
-
-  @update_attrs %{name: "some updated name"}
-  @invalid_attrs %{
+  @invalid_upload_attrs %{
     name: nil,
     filename: %Plug.Upload{
       path: "test/support/fixtures/kml/invalid_file.kml",
@@ -42,6 +31,16 @@ defmodule ArrowWeb.ShapeControllerTest do
       filename: "some_file.kml"
     }
   }
+
+  @create_attrs [
+    {0,
+     %{
+       name: "some other name",
+       save: "false",
+       coordinates: "-71.14163,42.39551 -71.14163,42.39551 -71.14163,42.39551"
+     }},
+    {1, %{name: "some name", save: "true", coordinates: "-71.14163,42.39551 -71.14163,42.39551 "}}
+  ]
 
   describe "index" do
     @tag :authenticated_admin
@@ -108,7 +107,7 @@ defmodule ArrowWeb.ShapeControllerTest do
 
     @tag :authenticated_admin
     test "renders errors when data is invalid", %{conn: conn} do
-      conn = post(conn, ~p"/shapes_upload", shapes_upload: @invalid_attrs)
+      conn = post(conn, ~p"/shapes_upload", shapes_upload: @invalid_upload_attrs)
       assert html_response(conn, 200) =~ "Failed to upload shapes from invalid_file.kml"
       assert html_response(conn, 200) =~ "xml was invalid"
       assert html_response(conn, 200) =~ "unexpected end of input, expected token:"

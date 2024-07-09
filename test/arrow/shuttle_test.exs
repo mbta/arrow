@@ -7,8 +7,7 @@ defmodule Arrow.ShuttleTest do
     alias Arrow.Shuttle.Shape
 
     import Arrow.ShuttleFixtures
-    import Ecto
-    @invalid_attrs %{name: nil}
+    @invalid_attrs %{bucket: nil}
 
     setup do
       Application.put_env(:arrow, :shape_storage_enabled?, true)
@@ -30,7 +29,7 @@ defmodule Arrow.ShuttleTest do
         "filename" => %Plug.Upload{filename: "sample.kml", path: "test_files/sample.kml"}
       }
 
-      assert {:ok, %Shape{} = shape} = Shuttle.create_shape(valid_attrs)
+      assert {:ok, %Shape{} = shape} = Shuttle.create_shape(valid_shape)
       assert shape.name == "some name"
       Application.put_env(:arrow, :shape_storage_enabled?, false)
     end
@@ -40,8 +39,7 @@ defmodule Arrow.ShuttleTest do
     alias Arrow.Shuttle.Shape
 
     import Arrow.ShuttleFixtures
-    import Ecto
-    @invalid_attrs %{name: nil}
+    @invalid_attrs %{name: "some-name", coordinates: nil}
 
     test "list_shapes/0 returns all shapes" do
       shape = shape_fixture()
@@ -54,9 +52,9 @@ defmodule Arrow.ShuttleTest do
     end
 
     test "create_shape/1 with valid data creates a shape" do
-      valid_attrs = %{name: "some name", coordinates: coords()}
+      valid_attrs = [%{name: "some name", coordinates: coords()}]
 
-      assert {:ok, %Shape{} = shape} = Shuttle.create_shape(valid_attrs)
+      assert {:ok, [{:ok, %Shape{} = shape}]} = Shuttle.create_shapes(valid_attrs)
       assert shape.name == "some name"
     end
 
