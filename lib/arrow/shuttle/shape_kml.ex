@@ -1,4 +1,7 @@
 defmodule Arrow.Shuttle.ShapeKML do
+  @moduledoc """
+  A struct for a shape representation to be used with Saxy.Builder
+  """
   defstruct [:name, :coordinates]
 end
 
