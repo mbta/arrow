@@ -11,10 +11,7 @@
   <:col :let={shape} label="Name"><%= shape.name %></:col>
   <:col :let={shape} label="File"><%= shape.path %></:col>
   <:action :let={shape}>
-    <div class="sr-only">
-      <.link navigate={~p"/shapes/#{shape}"}>Show</.link>
-    </div>
-    <.link navigate={~p"/shapes/#{shape}/edit"}>Edit</.link>
+    <.link navigate={~p"/shapes/#{shape}"}>Show</.link>
   </:action>
   <:action :let={shape}>
     <.link navigate={~p"/shapes/#{shape}/download"}>Download</.link>

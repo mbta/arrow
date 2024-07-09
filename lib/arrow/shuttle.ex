@@ -75,16 +75,12 @@ defmodule Arrow.Shuttle do
 
   """
   def create_shape(attrs \\ %{}) do
-    if Map.has_key?(attrs, "filename") do
-      case upload_shape(attrs["filename"]) do
-        {:ok, new_attrs} ->
-          do_create_shape(Enum.into(new_attrs, attrs))
+    case upload_shape_file(attrs) do
+      {:ok, new_attrs} ->
+        do_create_shape(Enum.into(new_attrs, attrs))
 
-        {:error, e} ->
-          {:error, e}
-      end
-    else
-      do_create_shape(attrs)
+      {:error, e} ->
+        {:error, e}
     end
   end
 
@@ -94,7 +90,15 @@ defmodule Arrow.Shuttle do
     |> Repo.insert()
   end
 
-  defp upload_shape(%Plug.Upload{} = upload) do
+  defp upload_shape_file(%{"filename" => %Plug.Upload{} = upload}) do
+    upload_shape_file(%{name: upload.filename, content: File.read!(upload.path)})
+  end
+
+  defp upload_shape_file(%{name: name, coordinates: content}) do
+    upload_shape_file(%{name: name, content: content})
+  end
+
+  defp upload_shape_file(%{name: name, content: content}) do
     prefix = Application.get_env(:arrow, :shape_storage_prefix)
     bucket = Application.get_env(:arrow, :shape_storage_bucket)
     enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
@@ -103,23 +107,23 @@ defmodule Arrow.Shuttle do
 
     if enabled? and prefix_env != nil do
       prefix_env_value = System.get_env(prefix_env)
-      filename = upload.filename
+      filename = "#{name}.kml"
 
       path =
         if prefix_env_value,
           do: "#{prefix}#{prefix_env_value}/#{filename}",
           else: "#{prefix}#{filename}"
 
-      case do_upload_shape(upload.path, bucket, path, request_fn) do
+      case do_upload_shape(content, bucket, path, request_fn) do
         error = {:error, _} -> error
-        {:ok, _} -> {:ok, %{"bucket" => bucket, "prefix" => prefix, "path" => path}}
+        {:ok, _} -> {:ok, %{bucket: bucket, prefix: prefix, path: path}}
       end
     else
-      {:ok, %{"bucket" => "disabled", "prefix" => "disabled", "path" => "disabled"}}
+      {:ok, %{bucket: "disabled", prefix: "disabled", path: "disabled"}}
     end
   end
 
-  defp do_upload_shape(local_path, bucket, remote_path, request_fn) do
+  defp do_upload_shape(content, bucket, remote_path, request_fn) do
     {request_module, request_func} = request_fn
     # Check if file exists already:
     check_request = ExAws.S3.list_objects_v2(bucket, prefix: remote_path)
@@ -129,9 +133,9 @@ defmodule Arrow.Shuttle do
       {:error, :already_exists}
     else
       upload_request =
-        local_path
-        |> ExAws.S3.Upload.stream_file()
-        |> ExAws.S3.upload(bucket, remote_path)
+        content
+        |> ExAws.S3.put_object(bucket, remote_path)
+        |> ExAws.request!()
 
       {:ok, _} = apply(request_module, request_func, [upload_request])
     end
@@ -145,40 +149,6 @@ defmodule Arrow.Shuttle do
     else
       {:ok, :disabled}
     end
-  end
-
-  @doc """
-  Updates a shape.
-
-  ## Examples
-
-      iex> update_shape(shape, %{field: new_value})
-      {:ok, %Shape{}}
-
-      iex> update_shape(shape, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_shape(%Shape{} = shape, attrs) do
-    if Map.has_key?(attrs, "filename") do
-      case upload_shape(attrs["filename"]) do
-        {:ok, new_attrs} ->
-          # Delete old file:
-          {:ok, _} = delete_shape_file(shape)
-          do_shape_update(shape, Enum.into(new_attrs, attrs))
-
-        {:error, e} ->
-          {:error, e}
-      end
-    else
-      do_shape_update(shape, attrs)
-    end
-  end
-
-  defp do_shape_update(shape, attrs) do
-    shape
-    |> Shape.changeset(attrs)
-    |> Repo.update()
   end
 
   @doc """

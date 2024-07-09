@@ -21,12 +21,12 @@ defmodule Arrow.ShuttleTest do
       prefix = "arrow/test-runner/#{uuid}/"
       Application.put_env(:arrow, :shape_storage_prefix, prefix)
 
-      valid_attrs = %{
-        "name" => "some name",
-        "path" => "some/path/to/sample.kml",
-        "prefix" => prefix,
-        "bucket" => Application.get_env(:arrow, :shape_storage_bucket),
-        "filename" => %Plug.Upload{filename: "sample.kml", path: "test_files/sample.kml"}
+      valid_shape = %{
+        name: "some name",
+        coordinates: "-71.14163,42.39551 -71.14163,42.39551 -71.14163,42.39551",
+        path: "some/path/to/sample.kml",
+        prefix: prefix,
+        bucket: Application.get_env(:arrow, :shape_storage_bucket)
       }
 
       assert {:ok, %Shape{} = shape} = Shuttle.create_shape(valid_shape)
@@ -60,20 +60,6 @@ defmodule Arrow.ShuttleTest do
 
     test "create_shape/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Shuttle.create_shape(@invalid_attrs)
-    end
-
-    test "update_shape/2 with valid data updates the shape" do
-      shape = shape_fixture()
-      update_attrs = %{name: "some updated name"}
-
-      assert {:ok, %Shape{} = shape} = Shuttle.update_shape(shape, update_attrs)
-      assert shape.name == "some updated name"
-    end
-
-    test "update_shape/2 with invalid data returns error changeset" do
-      shape = shape_fixture()
-      assert {:error, %Ecto.Changeset{}} = Shuttle.update_shape(shape, @invalid_attrs)
-      assert shape == Shuttle.get_shape!(shape.id)
     end
 
     test "delete_shape/1 deletes the shape" do

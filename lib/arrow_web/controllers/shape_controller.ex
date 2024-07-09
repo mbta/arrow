@@ -56,6 +56,7 @@ defmodule ArrowWeb.ShapeController do
       shapes
       |> Enum.map(fn {_idx, shape} -> shape end)
       |> Enum.filter(fn shape -> shape["save"] == "true" end)
+      |> Enum.map(fn shape -> %{name: shape["name"], coordinates: shape["coordinates"]} end)
 
     case Shuttle.create_shapes(saved_shapes) do
       {:ok, []} ->
@@ -115,31 +116,6 @@ defmodule ArrowWeb.ShapeController do
       "location",
       url
     )
-  end
-
-  def update(conn, %{"id" => id, "shape" => shape_params}) do
-    shape = Shuttle.get_shape!(id)
-
-    case Shuttle.update_shape(shape, shape_params) do
-      {:ok, shape} ->
-        conn
-        |> put_flash(
-          :info,
-          "Shape name updated successfully"
-        )
-        |> redirect(to: ~p"/shapes/#{shape}")
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :edit, shape: shape, changeset: changeset)
-
-      {:error, :already_exists} ->
-        conn
-        |> put_flash(
-          :error,
-          "#{shape_params["filename"].filename} already exists on the server."
-        )
-        |> redirect(to: ~p"/shapes/#{shape}")
-    end
   end
 
   def delete(conn, %{"id" => id}) do

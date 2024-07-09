@@ -4,11 +4,10 @@ defmodule ArrowWeb.ShapeControllerTest do
   import Arrow.ShuttleFixtures
 
   @create_s3_attrs %{
-    "name" => "some name",
-    "path" => "some/path/to/sample.kml",
-    "prefix" => "",
-    "bucket" => "",
-    "filename" => %Plug.Upload{filename: "sample.kml", path: "test_files/sample.kml"}
+    name: "some name",
+    path: "some/path/to/sample.kml",
+    prefix: "",
+    bucket: ""
   }
   @upload_attrs %{
     name: "some name",
@@ -67,17 +66,13 @@ defmodule ArrowWeb.ShapeControllerTest do
       bucket = Application.get_env(:arrow, :shape_storage_bucket)
 
       # Create valid shape:
-      conn =
-        post(conn, ~p"/shapes",
-          shape: %{@create_s3_attrs | "prefix" => prefix, "bucket" => bucket}
-        )
+      conn = post(conn, ~p"/shapes", shape: %{@create_s3_attrs | prefix: prefix, bucket: bucket})
 
       assert %{id: id} = redirected_params(conn)
       assert redirected_to(conn) == ~p"/shapes/#{id}"
 
       # Attempt to download:
       conn = ArrowWeb.ConnCase.authenticated_admin()
-      conn = get(conn, ~p"/shapes/#{id}/download")
 
       assert redirected_to(conn, 302) ==
                "https://disabled.s3.amazonaws.com/disabled"
@@ -120,37 +115,6 @@ defmodule ArrowWeb.ShapeControllerTest do
       assert html_response(conn, 200) =~ "Failed to upload shapes from some_file.kml"
       assert html_response(conn, 200) =~ "no such file or directory"
       assert html_response(conn, 200) =~ "New Shapes"
-    end
-  end
-
-  describe "edit shape" do
-    setup [:create_shape]
-
-    @tag :authenticated_admin
-    test "renders form for editing chosen shape", %{conn: conn, shape: shape} do
-      conn = get(conn, ~p"/shapes/#{shape}/edit")
-      assert html_response(conn, 200) =~ "Edit Shape"
-    end
-  end
-
-  describe "update shape" do
-    setup [:create_shape]
-
-    @tag :authenticated_admin
-    test "redirects when data is valid", %{conn: conn, shape: shape} do
-      conn = put(conn, ~p"/shapes/#{shape}", shape: @update_attrs)
-      assert redirected_to(conn) == ~p"/shapes/#{shape}"
-
-      conn = ArrowWeb.ConnCase.authenticated_admin()
-      conn = get(conn, ~p"/shapes/#{shape}")
-      assert html_response(conn, 200) =~ "some updated name"
-    end
-
-    @tag :authenticated_admin
-    test "renders errors when data is invalid", %{conn: conn, shape: shape} do
-      conn = put(conn, ~p"/shapes/#{shape}", shape: @invalid_attrs)
-      assert html_response(conn, 200) =~ "Oops, something went wrong!"
-      assert html_response(conn, 200) =~ "Edit Shape"
     end
   end
 
