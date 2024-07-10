@@ -27,7 +27,7 @@ export default class ReactPhoenix {
         JSON.parse(reactProps)
       )
 
-      const root = createRoot(targetDiv) // createRoot(container!) if you use TypeScript
+      const root = createRoot(targetDiv)
       root.render(reactElement)
     })
   }
