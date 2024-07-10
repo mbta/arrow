@@ -2,6 +2,9 @@
   New Shapes
   <:subtitle>Use this form to manage shape records in your database.</:subtitle>
 </.header>
+
+<%= react_component("Components.ShapeViewMap", %{}) %>
+
 <.simple_form :let={f} for={@shapes_upload} action={~p"/shapes_upload"} multipart>
   <.input field={f[:filename]} type="file" label="Filename" required="true"/>
   <:actions>

@@ -13,11 +13,13 @@
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.0",
     "@fullcalendar/react": "^6.1.0",
+    "leaflet": "^1.9.4",
     "phoenix": "file:../deps/phoenix",
     "phoenix_html": "file:../deps/phoenix_html",
     "react": "^18.3.0",
     "react-datepicker": "^6.2.0",
     "react-dom": "^18.3.0",
+    "react-leaflet": "^4.2.1",
     "react-phoenix": "file:../deps/react_phoenix",
     "react-select": "^5.8.0"
   },
@@ -28,6 +30,7 @@
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.5.2",
     "@types/jest": "^29.5.12",
+    "@types/leaflet": "^1.9.12",
     "@types/react": "^18.3.0",
     "@types/react-datepicker": "^6.2.0",
     "@types/react-select": "^5.0.1",
@@ -55,12 +58,12 @@
       "^.+\\.(j|t)sx?$": [
         "ts-jest",
         {
-          "tsConfig": "./tsconfig.test.json"
+          "tsconfig": "./tsconfig.test.json"
         }
       ]
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!@fullcalendar).+"
+      "node_modules/(?!(@fullcalendar|@react-leaflet|react-leaflet)).+"
     ],
     "testRegex": "(src|tests)/.*\\.test\\.tsx?$",
     "modulePaths": [
