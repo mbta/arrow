@@ -13,19 +13,13 @@ defmodule Arrow.ShuttleTest do
       on_exit(fn -> Application.put_env(:arrow, :shape_storage_enabled?, false) end)
     end
 
-    test "create_shape/1 with valid data creates a shape and uploads to s3" do
+    test "create_shape/1 with valid data creates a shape when shape storage is enabled" do
       Application.put_env(:arrow, :shape_storage_enabled?, true)
-
-      uuid = Ecto.UUID.generate()
-      prefix = "arrow/test-runner/#{uuid}/"
-      Application.put_env(:arrow, :shape_storage_prefix, prefix)
+      Application.put_env(:arrow, :shape_storage_prefix, "prefix/#{Ecto.UUID.generate()}/")
 
       valid_shape = %{
         name: "some name",
-        coordinates: "-71.14163,42.39551 -71.14163,42.39551 -71.14163,42.39551",
-        path: "some/path/to/sample.kml",
-        prefix: prefix,
-        bucket: Application.get_env(:arrow, :shape_storage_bucket)
+        coordinates: "-71.14163,42.39551 -71.14163,42.39551 -71.14163,42.39551"
       }
 
       assert {:ok, %Shape{} = shape} = Shuttle.create_shape(valid_shape)
