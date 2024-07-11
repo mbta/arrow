@@ -141,11 +141,7 @@ defmodule Arrow.Shuttle do
     if length(check.body.contents) > 0 do
       {:error, :already_exists}
     else
-      upload_request =
-        content
-        |> ExAws.S3.put_object(bucket, remote_path)
-        |> ExAws.request!()
-
+      upload_request = ExAws.S3.put_object(bucket, remote_path, content)
       {:ok, _} = apply(request_module, request_func, [upload_request])
     end
   end
