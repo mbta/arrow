@@ -1,6 +1,7 @@
 defmodule ArrowWeb.ShapeController do
   require Logger
   alias Arrow.Shuttle.ShapesUpload
+  alias ArrowWeb.ErrorHelpers
   alias Ecto.Changeset
   use ArrowWeb, :controller
 
@@ -28,14 +29,23 @@ defmodule ArrowWeb.ShapeController do
 
     with {:ok, saxy_shapes} <- ShapesUpload.parse_kml_from_file(shapes_upload),
          {:ok, shapes} <- ShapesUpload.shapes_from_kml(saxy_shapes),
-         %Changeset{valid?: true} = changeset <-
+         %Changeset{valid?: valid?} = changeset <-
            ShapesUpload.changeset(%ShapesUpload{}, %{filename: filename, shapes: shapes}) do
-      conn
-      |> put_flash(
-        :info,
-        "Successfully parsed shapes #{inspect(shapes)} from file"
-      )
-      |> render(:select, form: changeset |> Phoenix.Component.to_form())
+      if valid? do
+        conn
+        |> put_flash(
+          :info,
+          "Successfully parsed shapes #{inspect(shapes)} from file"
+        )
+        |> render(:select, form: changeset |> Phoenix.Component.to_form())
+      else
+        conn
+        |> put_flash(
+          :errors,
+          {"Error parsing shapes from file", ErrorHelpers.changeset_error_messages(changeset)}
+        )
+        |> render(:new_bulk, errors: changeset.errors, shapes_upload: reset_upload)
+      end
     else
       {:error, reason} ->
         conn
