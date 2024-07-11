@@ -95,7 +95,7 @@ defmodule Arrow.Shuttle do
   def create_shape_kml(%{name: _name, coordinates: _coordinates} = attrs) do
     kml = %KML{xmlns: "http://www.opengis.net/kml/2.2", Folder: attrs}
     shape_kml = Saxy.Builder.build(kml)
-    content = Saxy.encode!(shape_kml, [])
+    content = Saxy.encode!(shape_kml, version: "1.0", encoding: "UTF-8")
     {:ok, Enum.into(%{content: content}, attrs)}
   end
 
