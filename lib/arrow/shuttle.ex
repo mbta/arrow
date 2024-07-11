@@ -10,6 +10,7 @@ defmodule Arrow.Shuttle do
 
   alias Arrow.Shuttle.KML
   alias Arrow.Shuttle.Shape
+  alias Arrow.Shuttle.ShapeUpload
 
   @doc """
   Returns the list of shapes.
@@ -56,12 +57,18 @@ defmodule Arrow.Shuttle do
         errors =
           changesets
           |> Enum.filter(fn changeset -> Kernel.match?({:error, _}, changeset) end)
-          |> Enum.map(fn {_, changeset} ->
-            "#{ErrorHelpers.changeset_error_messages(changeset)} for #{changeset.changes.name}"
-          end)
+          |> Enum.map(&handle_create_error/1)
 
         {:error, {"Failed to upload some shapes", errors}}
     end
+  end
+
+  def handle_create_error({_, message}) when is_binary(message) do
+    message
+  end
+
+  def handle_create_error({_, %Ecto.Changeset{} = changeset}) do
+    "#{ErrorHelpers.changeset_error_messages(changeset)} for #{changeset.changes.name}"
   end
 
   @doc """
@@ -81,6 +88,10 @@ defmodule Arrow.Shuttle do
          {:ok, new_attrs} <- upload_shape_file(shape_with_kml) do
       do_create_shape(Enum.into(new_attrs, attrs))
     else
+      {:error, :already_exists} ->
+        {:error,
+         "File for shape #{attrs.name} already exists, delete the shape to save a new one"}
+
       {:error, e} ->
         {:error, e}
     end
@@ -100,7 +111,7 @@ defmodule Arrow.Shuttle do
   end
 
   def create_shape_kml(attrs) do
-    {:error, Shape.changeset(%Shape{}, attrs)}
+    {:error, ShapeUpload.changeset(%ShapeUpload{}, attrs)}
   end
 
   defp upload_shape_file(%{name: name, content: content}) do
