@@ -103,10 +103,6 @@ defmodule Arrow.Shuttle do
     {:error, Shape.changeset(%Shape{}, attrs)}
   end
 
-  defp upload_shape_file(%{name: name, coordinates: content}) do
-    upload_shape_file(%{name: name, content: content})
-  end
-
   defp upload_shape_file(%{name: name, content: content}) do
     prefix = Application.get_env(:arrow, :shape_storage_prefix)
     bucket = Application.get_env(:arrow, :shape_storage_bucket)
