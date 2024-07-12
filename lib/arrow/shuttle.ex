@@ -82,11 +82,15 @@ defmodule Arrow.Shuttle do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_shape(attrs \\ %{}) do
-    with {:ok, shape_with_kml} <- create_shape_kml(attrs),
+  def create_shape(%{name: name} = attrs) do
+    with nil <- Repo.get_by(Shape, name: name),
+         {:ok, shape_with_kml} <- create_shape_kml(attrs),
          {:ok, new_attrs} <- upload_shape_file(shape_with_kml) do
       do_create_shape(Enum.into(new_attrs, attrs))
     else
+      %Shape{name: name} ->
+        {:error, "Shape #{name} already exists, delete the shape to save a new one"}
+
       {:error, :already_exists} ->
         {:error,
          "File for shape #{attrs.name} already exists, delete the shape to save a new one"}
