@@ -122,12 +122,11 @@ defmodule Arrow.Shuttle do
     request_fn = Application.get_env(:arrow, :shape_storage_request_fn)
 
     if enabled? and prefix_env != nil do
-      prefix_env_value = System.get_env(prefix_env)
       filename = "#{name}.kml"
 
       path =
-        if prefix_env_value,
-          do: "#{prefix}#{prefix_env_value}/#{filename}",
+        if prefix_env,
+          do: "#{prefix_env}#{prefix}#{filename}",
           else: "#{prefix}#{filename}"
 
       case do_upload_shape(content, bucket, path, request_fn) do

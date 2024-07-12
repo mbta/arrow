@@ -36,8 +36,8 @@ config :arrow,
   ex_aws_requester: {Fake.ExAws, :admin_group_request},
   http_client: HTTPoison,
   shape_storage_enabled?: false,
-  shape_storage_prefix_env: "arrow-dev-local",
-  shape_storage_bucket: "mbta-gtfs-s3-sandbox",
+  shape_storage_prefix_env: "dev/local/",
+  shape_storage_bucket: "mbta-arrow",
   shape_storage_prefix: "shape-uploads/",
   shape_storage_request_fn: {ExAws, :request}
 
