@@ -59,7 +59,6 @@ defmodule ArrowWeb.ShapeControllerTest do
       uuid = Ecto.UUID.generate()
       prefix = "arrow/test-runner/#{uuid}/"
       Application.put_env(:arrow, :shape_storage_prefix, prefix)
-      bucket = Application.get_env(:arrow, :shape_storage_bucket)
 
       # Create valid shape:
       conn = post(conn, ~p"/shapes_upload", shapes: @create_attrs)

@@ -32,7 +32,7 @@ defmodule Arrow.ShuttleTest do
     alias Arrow.Shuttle.Shape
 
     import Arrow.ShuttleFixtures
-    @invalid_attrs %{name: nil, coordinates: nil}
+    @invalid_attrs %{name: "", coordinates: nil}
 
     test "list_shapes/0 returns all shapes" do
       shape = shape_fixture()
