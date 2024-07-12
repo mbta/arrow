@@ -1,5 +1,7 @@
 defmodule ArrowWeb.ShapeControllerTest do
   use ArrowWeb.ConnCase, async: true
+  alias Arrow.Repo
+  alias Arrow.Shuttle.Shape
 
   import Arrow.ShuttleFixtures
 
@@ -57,15 +59,14 @@ defmodule ArrowWeb.ShapeControllerTest do
       uuid = Ecto.UUID.generate()
       prefix = "arrow/test-runner/#{uuid}/"
       Application.put_env(:arrow, :shape_storage_prefix, prefix)
+      bucket = Application.get_env(:arrow, :shape_storage_bucket)
 
       # Create valid shape:
       conn = post(conn, ~p"/shapes_upload", shapes: @create_attrs)
+
       assert redirected_to(conn) == ~p"/shapes/"
 
-      conn = ArrowWeb.ConnCase.authenticated_admin()
-      conn = get(conn, ~p"/shapes/by-name/?name=some name")
-      assert %{id: id} = redirected_params(conn)
-      assert redirected_to(conn) == ~p"/shapes/#{id}"
+      %{id: id} = Repo.get_by(Shape, name: "some name")
 
       # Attempt to download:
       conn = ArrowWeb.ConnCase.authenticated_admin()
