@@ -39,7 +39,6 @@ defmodule Arrow.Shuttle do
       ** (Ecto.NoResultsError)
 
   """
-  def get_shape!(%{name: name}), do: Repo.get_by!(Shape, name: name)
   def get_shape!(id), do: Repo.get!(Shape, id)
 
   @doc """
