@@ -20,8 +20,8 @@
       <div class="block text-sm font-semibold leading-6 text-zinc-800">New Name</div>
       <div class="block text-sm font-semibold leading-6 text-zinc-800">Save?</div>
       <.inputs_for :let={f_nested} field={f[:shapes]} id="shapes" as={:shapes} skip_hidden={:true}>
-        <.input field={f_nested[:name]} disabled />
-        <.input field={f_nested[:name]} />
+        <.input field={f_nested[:name]} class="flex align-items-center" disabled />
+        <.input field={f_nested[:name]} class="flex align-items-center" />
         <.input field={f_nested[:save]} type="checkbox" />
         <div class="hidden">
           <.input field={f_nested[:coordinates]} value={Enum.join(f_nested[:coordinates].value, " ")} />
