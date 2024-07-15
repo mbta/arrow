@@ -98,6 +98,11 @@ defmodule ArrowWeb.ShapeControllerTest do
       conn = post(conn, ~p"/shapes_upload", shapes_upload: @upload_attrs)
       assert html_response(conn, 200) =~ "Successfully parsed shapes"
       assert html_response(conn, 200) =~ "RL: Alewife - Harvard - Via Brattle St - Harvard"
+
+      refute html_response(conn, 200) =~
+               "-71.14163,42.39551 -71.14163,42.39551 -71.14163,42.39551 -71.14209,42.39643"
+
+      assert html_response(conn, 200) =~ "-71.14163,42.39551 -71.14209,42.39643"
       assert html_response(conn, 200) =~ "Shapes from File"
       assert html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
