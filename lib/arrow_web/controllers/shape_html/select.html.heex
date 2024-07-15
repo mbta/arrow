@@ -1,5 +1,5 @@
 <.header>
-  Shapes from File
+  Shapes from File <%= @form[:filename].value %>
   <:actions>
     <.link href={~p"/shapes_upload"} data-confirm={"Are you sure?"}>
       <.button>Cancel</.button>
@@ -11,12 +11,10 @@
 
 <div class="container">
 <.simple_form :let={f} for={@form} action={~p"/shapes_upload"} multipart>
-  <.input label="File uploaded" field={f[:filename]} disabled="true" />
   <.error :if={@form.action}>
     Oops, something went wrong! Please check the errors below.
   </.error>
   <%= if f[:shapes] do %>
-    <div>Shapes</div>
     <div class="grid grid-cols-3 gap-4">
       <div class="block text-sm font-semibold leading-6 text-zinc-800">Uploaded Name</div>
       <div class="block text-sm font-semibold leading-6 text-zinc-800">New Name</div>
