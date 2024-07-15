@@ -67,7 +67,7 @@ defmodule Arrow.Shuttle do
   end
 
   def handle_create_error({_, %Ecto.Changeset{} = changeset}) do
-    "#{ErrorHelpers.changeset_error_messages(changeset)} for #{changeset.changes.name}"
+    "#{ErrorHelpers.changeset_error_messages(changeset)} #{changeset.params["name"]}"
   end
 
   @doc """
@@ -157,9 +157,11 @@ defmodule Arrow.Shuttle do
 
   defp delete_shape_file(shape) do
     enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
+    {request_module, request_func} = Application.get_env(:arrow, :shape_storage_request_fn)
 
     if enabled? do
-      ExAws.S3.delete_object(shape.bucket, shape.path) |> ExAws.request()
+      delete_request = ExAws.S3.delete_object(shape.bucket, shape.path)
+      apply(request_module, request_func, [delete_request])
     else
       {:ok, :disabled}
     end
