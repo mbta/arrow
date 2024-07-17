@@ -18,5 +18,6 @@ defmodule Arrow.Shuttle.ShapeUpload do
     shape
     |> cast(attrs, [:name, :coordinates])
     |> validate_required([:name, :coordinates])
+    |> validate_length(:coordinates, min: 2)
   end
 end

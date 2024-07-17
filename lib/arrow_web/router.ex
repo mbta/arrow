@@ -48,6 +48,7 @@ defmodule ArrowWeb.Router do
     resources("/disruptions", DisruptionController, except: [:index])
     put("/disruptions/:id/row_status", DisruptionController, :update_row_status)
     post("/disruptions/:id/notes", NoteController, :create)
+    get("/shapes/:id/download", ShapeController, :download)
     resources("/stops", StopController, except: [:show, :delete])
     resources("/shapes", ShapeController, except: [:new, :create])
     get("/shapes_upload", ShapeController, :new)
