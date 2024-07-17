@@ -4,6 +4,7 @@ defmodule Arrow.Shuttle do
   """
 
   import Ecto.Query, warn: false
+  require Logger
 
   alias Arrow.Repo
   alias ArrowWeb.ErrorHelpers
@@ -127,10 +128,12 @@ defmodule Arrow.Shuttle do
     if enabled? and prefix_env != nil do
       filename = "#{name}.kml"
 
-      path =
+      prefix =
         if prefix_env,
-          do: "#{prefix_env}#{prefix}#{filename}",
-          else: "#{prefix}#{filename}"
+          do: "#{prefix_env}#{prefix}",
+          else: prefix
+
+      path = "#{prefix}#{filename}"
 
       case do_upload_shape(content, bucket, path, request_fn) do
         error = {:error, _} -> error
@@ -145,13 +148,33 @@ defmodule Arrow.Shuttle do
     {request_module, request_func} = request_fn
     # Check if file exists already:
     check_request = ExAws.S3.list_objects_v2(bucket, prefix: remote_path)
-    {:ok, check} = apply(request_module, request_func, [check_request])
 
-    if length(check.body.contents) > 0 do
-      {:error, :already_exists}
-    else
-      upload_request = ExAws.S3.put_object(bucket, remote_path, content)
-      {:ok, _} = apply(request_module, request_func, [upload_request])
+    case apply(request_module, request_func, [check_request]) do
+      {:ok, check} ->
+        if length(check.body.contents) > 0 do
+          {:error, :already_exists}
+        else
+          upload_request = ExAws.S3.put_object(bucket, remote_path, content)
+          # credo:disable-for-next-line
+          case apply(request_module, request_func, [upload_request]) do
+            {:ok, response} ->
+              {:ok, response}
+
+            {:error, {:http_error, 403, _}} ->
+              Logger.error(
+                "Access denied on AWS S3 path for putObject: bucket=#{bucket} remote_path=#{remote_path}"
+              )
+
+              {:error, :access_denied}
+          end
+        end
+
+      {:error, {:http_error, 403, _}} ->
+        Logger.error(
+          "Access denied on AWS S3 path for listBucket: bucket=#{bucket} remote_path=#{remote_path}"
+        )
+
+        {:error, :access_denied}
     end
   end
 
