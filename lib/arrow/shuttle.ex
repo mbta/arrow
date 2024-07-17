@@ -92,6 +92,9 @@ defmodule Arrow.Shuttle do
       %Shape{name: name} ->
         {:error, "Shape #{name} already exists, delete the shape to save a new one"}
 
+      {:error, :access_denied} ->
+        {:error, "Access denied uploading file for shape #{attrs.name}"}
+
       {:error, :already_exists} ->
         {:error,
          "File for shape #{attrs.name} already exists, delete the shape to save a new one"}
