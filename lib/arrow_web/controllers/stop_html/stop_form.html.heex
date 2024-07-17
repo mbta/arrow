@@ -1,0 +1,22 @@
+<.simple_form :let={f} for={@changeset} action={@action}>
+  <.error :if={@changeset.action}>
+    Oops, something went wrong! Please check the errors below.
+  </.error>
+  <.input field={f[:stop_id]} type="text" label="Stop ID" />
+  <.input field={f[:stop_name]} type="text" label="Stop name" />
+  <.input field={f[:stop_desc]} type="text" label="Stop desc" />
+  <.input field={f[:platform_code]} type="text" label="Platform code" />
+  <.input field={f[:platform_name]} type="text" label="Platform name" />
+  <.input field={f[:stop_lat]} type="number" label="Stop lat" step="any" />
+  <.input field={f[:stop_lon]} type="number" label="Stop long" step="any" />
+  <.input field={f[:stop_address]} type="text" label="Stop address" />
+  <.input field={f[:zone_id]} type="text" label="Zone" />
+  <.input field={f[:level_id]} type="text" label="Level" />
+  <.input field={f[:parent_station]} type="text" label="Parent station" />
+  <.input field={f[:municipality]} type="text" label="Municipality" />
+  <.input field={f[:on_street]} type="text" label="On street" />
+  <.input field={f[:at_street]} type="text" label="At street" />
+  <:actions>
+    <.button>Save Stop</.button>
+  </:actions>
+</.simple_form>

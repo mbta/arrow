@@ -1,1 +1,31 @@
-<div>stop_html/index.html.heex</div>
+<.header>
+  Listing Stops
+  <:actions>
+    <.link href={~p"/stops/new"}>
+      <.button>New Stop</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="stops" rows={@stops} row_click={&JS.navigate(~p"/stops/#{&1}")}>
+  <:col :let={stop} label="Stop"><%= stop.stop_id %></:col>
+  <:col :let={stop} label="Stop name"><%= stop.stop_name %></:col>
+  <:col :let={stop} label="Stop desc"><%= stop.stop_desc %></:col>
+  <:col :let={stop} label="Platform code"><%= stop.platform_code %></:col>
+  <:col :let={stop} label="Platform name"><%= stop.platform_name %></:col>
+  <:col :let={stop} label="Stop lat"><%= stop.stop_lat %></:col>
+  <:col :let={stop} label="Stop long"><%= stop.stop_lon %></:col>
+  <:col :let={stop} label="Stop address"><%= stop.stop_address %></:col>
+  <:col :let={stop} label="Zone"><%= stop.zone_id %></:col>
+  <:col :let={stop} label="Level"><%= stop.level_id %></:col>
+  <:col :let={stop} label="Parent station"><%= stop.parent_station %></:col>
+  <:col :let={stop} label="Municipality"><%= stop.municipality %></:col>
+  <:col :let={stop} label="On street"><%= stop.on_street %></:col>
+  <:col :let={stop} label="At street"><%= stop.at_street %></:col>
+  <:action :let={stop}>
+    <div class="sr-only">
+      <.link navigate={~p"/stops/#{stop}"}>Show</.link>
+    </div>
+    <.link navigate={~p"/stops/#{stop}/edit"}>Edit</.link>
+  </:action>
+</.table>

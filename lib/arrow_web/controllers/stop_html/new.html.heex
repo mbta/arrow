@@ -1,3 +1,8 @@
-<div>stop_html/new.html.heex</div>
+<.header>
+  New Stop
+  <:subtitle>Use this form to manage stop records in your database.</:subtitle>
+</.header>
 
-<._form />
+<.stop_form changeset={@changeset} action={~p"/stops"} />
+
+<.back navigate={~p"/stops"}>Back to stops</.back>

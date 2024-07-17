@@ -1,3 +1,8 @@
-<div>stop_html/edit.html.heex</div>
+<.header>
+  Edit Stop <%= @stop.id %>
+  <:subtitle>Use this form to manage stop records in your database.</:subtitle>
+</.header>
 
-<._form />
+<.stop_form changeset={@changeset} action={~p"/stops/#{@stop}"} />
+
+<.back navigate={~p"/stops"}>Back to stops</.back>
