@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 11.17
--- Dumped by pg_dump version 14.5
+-- Dumped from database version 14.12 (Homebrew)
+-- Dumped by pg_dump version 14.12 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -32,6 +32,8 @@ CREATE TYPE public.day_name AS ENUM (
 
 
 SET default_tablespace = '';
+
+SET default_table_access_method = heap;
 
 --
 -- Name: adjustments; Type: TABLE; Schema: public; Owner: -
@@ -346,7 +348,10 @@ CREATE TABLE public.shapes (
     id bigint NOT NULL,
     name character varying(255),
     inserted_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    bucket text,
+    path text,
+    prefix text
 );
 
 
@@ -370,10 +375,10 @@ ALTER SEQUENCE public.shapes_id_seq OWNED BY public.shapes.id;
 
 
 --
--- Name: stops; Type: TABLE; Schema: public; Owner: -
+-- Name: shuttle_stops; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.stops (
+CREATE TABLE public.shuttle_stops (
     id bigint NOT NULL,
     stop_id character varying(255) NOT NULL,
     stop_name character varying(255) NOT NULL,
@@ -381,7 +386,7 @@ CREATE TABLE public.stops (
     platform_code character varying(255),
     platform_name character varying(255),
     stop_lat double precision NOT NULL,
-    stop_lon double precision NOT NULL,
+    stop_long double precision NOT NULL,
     stop_address character varying(255),
     zone_id character varying(255),
     level_id character varying(255),
@@ -395,10 +400,10 @@ CREATE TABLE public.stops (
 
 
 --
--- Name: stops_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- Name: shuttle_stops_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
-CREATE SEQUENCE public.stops_id_seq
+CREATE SEQUENCE public.shuttle_stops_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -407,10 +412,10 @@ CREATE SEQUENCE public.stops_id_seq
 
 
 --
--- Name: stops_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- Name: shuttle_stops_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
-ALTER SEQUENCE public.stops_id_seq OWNED BY public.stops.id;
+ALTER SEQUENCE public.shuttle_stops_id_seq OWNED BY public.shuttle_stops.id;
 
 
 --
@@ -484,10 +489,10 @@ ALTER TABLE ONLY public.shapes ALTER COLUMN id SET DEFAULT nextval('public.shape
 
 
 --
--- Name: stops id; Type: DEFAULT; Schema: public; Owner: -
+-- Name: shuttle_stops id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.stops ALTER COLUMN id SET DEFAULT nextval('public.stops_id_seq'::regclass);
+ALTER TABLE ONLY public.shuttle_stops ALTER COLUMN id SET DEFAULT nextval('public.shuttle_stops_id_seq'::regclass);
 
 
 --
@@ -579,11 +584,11 @@ ALTER TABLE ONLY public.shapes
 
 
 --
--- Name: stops stops_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: shuttle_stops shuttle_stops_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.stops
-    ADD CONSTRAINT stops_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.shuttle_stops
+    ADD CONSTRAINT shuttle_stops_pkey PRIMARY KEY (id);
 
 
 --
@@ -754,5 +759,6 @@ INSERT INTO public."schema_migrations" (version) VALUES (20240605185923);
 INSERT INTO public."schema_migrations" (version) VALUES (20240606171008);
 INSERT INTO public."schema_migrations" (version) VALUES (20240610185146);
 INSERT INTO public."schema_migrations" (version) VALUES (20240611001158);
+INSERT INTO public."schema_migrations" (version) VALUES (20240611173539);
 INSERT INTO public."schema_migrations" (version) VALUES (20240628203237);
 INSERT INTO public."schema_migrations" (version) VALUES (20240701173124);

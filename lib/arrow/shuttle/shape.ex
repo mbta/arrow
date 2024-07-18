@@ -13,6 +13,9 @@ defmodule Arrow.Shuttle.Shape do
 
   schema "shapes" do
     field :name, :string
+    field :bucket, :string
+    field :path, :string
+    field :prefix, :string
 
     timestamps(type: :utc_datetime)
   end
@@ -20,8 +23,8 @@ defmodule Arrow.Shuttle.Shape do
   @doc false
   def changeset(shape, attrs) do
     shape
-    |> cast(attrs, [:name])
-    |> validate_required([:name])
+    |> cast(attrs, [:name, :path, :bucket, :prefix])
+    |> validate_required([:name, :path, :bucket, :prefix])
     |> unique_constraint(:name)
   end
 end

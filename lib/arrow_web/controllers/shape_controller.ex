@@ -1,13 +1,14 @@
 defmodule ArrowWeb.ShapeController do
   require Logger
   alias Arrow.Shuttle.ShapesUpload
+  alias ArrowWeb.ErrorHelpers
   alias Ecto.Changeset
   use ArrowWeb, :controller
 
   alias Arrow.Shuttle
   alias ArrowWeb.Plug.Authorize
 
-  plug(Authorize, :view_disruption when action in [:index, :show])
+  plug(Authorize, :view_disruption when action in [:index, :show, :download])
   plug(Authorize, :create_disruption when action in [:new, :create])
   plug(Authorize, :update_disruption when action in [:edit, :update, :update_row_status])
   plug(Authorize, :delete_disruption when action in [:delete])
@@ -28,14 +29,23 @@ defmodule ArrowWeb.ShapeController do
 
     with {:ok, saxy_shapes} <- ShapesUpload.parse_kml_from_file(shapes_upload),
          {:ok, shapes} <- ShapesUpload.shapes_from_kml(saxy_shapes),
-         %Changeset{valid?: true} = changeset <-
+         %Changeset{valid?: valid?} = changeset <-
            ShapesUpload.changeset(%ShapesUpload{}, %{filename: filename, shapes: shapes}) do
-      conn
-      |> put_flash(
-        :info,
-        "Successfully parsed shapes #{inspect(shapes)} from file"
-      )
-      |> render(:select, form: changeset |> Phoenix.Component.to_form())
+      if valid? do
+        conn
+        |> put_flash(
+          :info,
+          "Successfully parsed shapes #{inspect(shapes)} from file"
+        )
+        |> render(:select, form: changeset |> Phoenix.Component.to_form())
+      else
+        conn
+        |> put_flash(
+          :errors,
+          {"Error parsing shapes from file", ErrorHelpers.changeset_error_messages(changeset)}
+        )
+        |> render(:new_bulk, errors: changeset.errors, shapes_upload: reset_upload)
+      end
     else
       {:error, reason} ->
         conn
@@ -56,6 +66,7 @@ defmodule ArrowWeb.ShapeController do
       shapes
       |> Enum.map(fn {_idx, shape} -> shape end)
       |> Enum.filter(fn shape -> shape["save"] == "true" end)
+      |> Enum.map(fn shape -> %{name: shape["name"], coordinates: shape["coordinates"]} end)
 
     case Shuttle.create_shapes(saved_shapes) do
       {:ok, []} ->
@@ -99,21 +110,22 @@ defmodule ArrowWeb.ShapeController do
     render(conn, :edit, shape: shape, changeset: changeset)
   end
 
-  def update(conn, %{"id" => id, "shape" => shape_params}) do
+  def download(conn, %{"id" => id}) do
+    enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
     shape = Shuttle.get_shape!(id)
+    basic_url = "https://#{shape.bucket}.s3.amazonaws.com/#{shape.path}"
 
-    case Shuttle.update_shape(shape, shape_params) do
-      {:ok, shape} ->
-        conn
-        |> put_flash(
-          :info,
-          "Shape name updated successfully"
-        )
-        |> redirect(to: ~p"/shapes/#{shape}")
+    {:ok, url} =
+      if enabled?,
+        do: ExAws.S3.presigned_url(ExAws.Config.new(:s3), :get, shape.bucket, shape.path, []),
+        else: {:ok, basic_url}
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :edit, shape: shape, changeset: changeset)
-    end
+    conn
+    |> Plug.Conn.resp(:found, "")
+    |> Plug.Conn.put_resp_header(
+      "location",
+      url
+    )
   end
 
   def delete(conn, %{"id" => id}) do
