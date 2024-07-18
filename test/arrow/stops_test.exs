@@ -71,6 +71,31 @@ defmodule Arrow.StopsTest do
       assert stop.at_street == "some at_street"
     end
 
+    test "creating a stop with a duplicate stop_id returns an error" do
+      stop = stop_fixture()
+
+      assert {:error, %Ecto.Changeset{} = change} =
+               Stops.create_stop(%{
+                 stop_id: stop.stop_id,
+                 stop_name: "some stop_name",
+                 stop_desc: "some stop_desc",
+                 platform_code: "some platform_code",
+                 platform_name: "some platform_name",
+                 stop_lat: 120.5,
+                 stop_lon: 120.5,
+                 stop_address: "some stop_address",
+                 zone_id: "some zone_id",
+                 level_id: "some level_id",
+                 parent_station: "some parent_station",
+                 municipality: "some municipality",
+                 on_street: "some on_street",
+                 at_street: "some at_street"
+               })
+
+      assert {_, error} = change.errors[:stop_id]
+      assert error[:constraint] == :unique
+    end
+
     test "create_stop/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Stops.create_stop(@invalid_attrs)
     end
@@ -116,6 +141,17 @@ defmodule Arrow.StopsTest do
       stop = stop_fixture()
       assert {:error, %Ecto.Changeset{}} = Stops.update_stop(stop, @invalid_attrs)
       assert stop == Stops.get_stop!(stop.id)
+    end
+
+    test "updating stop_id to existing id returns an error" do
+      stop1 = stop_fixture()
+      stop2 = stop_fixture()
+
+      assert {:error, %Ecto.Changeset{} = change} =
+               Stops.update_stop(stop1, %{stop_id: stop2.stop_id})
+
+      assert {_, error} = change.errors[:stop_id]
+      assert error[:constraint] == :unique
     end
 
     test "delete_stop/1 deletes the stop" do

@@ -20,7 +20,7 @@ defmodule Arrow.StopsFixtures do
         platform_name: "some platform_name",
         stop_address: "some stop_address",
         stop_desc: "some stop_desc",
-        stop_id: "some stop_id",
+        stop_id: Ecto.UUID.generate(),
         stop_lat: 120.5,
         stop_lon: 120.5,
         stop_name: "some stop_name",
