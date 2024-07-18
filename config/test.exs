@@ -1,5 +1,9 @@
 import Config
 
+config :arrow,
+  shape_storage_enabled?: false,
+  shape_storage_request_fn: {Arrow.Mock.ExAws.Request, :request}
+
 # Configure your database
 config :arrow, Arrow.Repo,
   username: System.get_env("DATABASE_USERNAME") || "postgres",

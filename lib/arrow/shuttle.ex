@@ -4,10 +4,13 @@ defmodule Arrow.Shuttle do
   """
 
   import Ecto.Query, warn: false
+
   alias Arrow.Repo
   alias ArrowWeb.ErrorHelpers
 
+  alias Arrow.Shuttle.KML
   alias Arrow.Shuttle.Shape
+  alias Arrow.Shuttle.ShapeUpload
 
   @doc """
   Returns the list of shapes.
@@ -53,12 +56,18 @@ defmodule Arrow.Shuttle do
         errors =
           changesets
           |> Enum.filter(fn changeset -> Kernel.match?({:error, _}, changeset) end)
-          |> Enum.map(fn {_, changeset} ->
-            "#{ErrorHelpers.changeset_error_messages(changeset)} for #{changeset.changes.name}"
-          end)
+          |> Enum.map(&handle_create_error/1)
 
         {:error, {"Failed to upload some shapes", errors}}
     end
+  end
+
+  def handle_create_error({_, message}) when is_binary(message) do
+    message
+  end
+
+  def handle_create_error({_, %Ecto.Changeset{} = changeset}) do
+    "#{ErrorHelpers.changeset_error_messages(changeset)} #{changeset.params["name"]}"
   end
 
   @doc """
@@ -73,28 +82,89 @@ defmodule Arrow.Shuttle do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_shape(attrs \\ %{}) do
+  def create_shape(%{name: name} = attrs) do
+    with nil <- Repo.get_by(Shape, name: name),
+         {:ok, shape_with_kml} <- create_shape_kml(attrs),
+         {:ok, new_attrs} <- upload_shape_file(shape_with_kml) do
+      do_create_shape(Enum.into(new_attrs, attrs))
+    else
+      %Shape{name: name} ->
+        {:error, "Shape #{name} already exists, delete the shape to save a new one"}
+
+      {:error, :already_exists} ->
+        {:error,
+         "File for shape #{attrs.name} already exists, delete the shape to save a new one"}
+
+      {:error, e} ->
+        {:error, e}
+    end
+  end
+
+  defp do_create_shape(attrs) do
     %Shape{}
     |> Shape.changeset(attrs)
     |> Repo.insert()
   end
 
-  @doc """
-  Updates a shape.
+  def create_shape_kml(%{name: _name, coordinates: _coordinates} = attrs) do
+    kml = %KML{xmlns: "http://www.opengis.net/kml/2.2", Folder: attrs}
+    shape_kml = Saxy.Builder.build(kml)
+    content = Saxy.encode!(shape_kml, version: "1.0", encoding: "UTF-8")
+    {:ok, Enum.into(%{content: content}, attrs)}
+  end
 
-  ## Examples
+  def create_shape_kml(attrs) do
+    {:error, ShapeUpload.changeset(%ShapeUpload{}, attrs)}
+  end
 
-      iex> update_shape(shape, %{field: new_value})
-      {:ok, %Shape{}}
+  defp upload_shape_file(%{name: name, content: content}) do
+    prefix = Application.get_env(:arrow, :shape_storage_prefix)
+    bucket = Application.get_env(:arrow, :shape_storage_bucket)
+    enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
+    prefix_env = Application.get_env(:arrow, :shape_storage_prefix_env)
+    request_fn = Application.get_env(:arrow, :shape_storage_request_fn)
 
-      iex> update_shape(shape, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
+    if enabled? and prefix_env != nil do
+      filename = "#{name}.kml"
 
-  """
-  def update_shape(%Shape{} = shape, attrs) do
-    shape
-    |> Shape.changeset(attrs)
-    |> Repo.update()
+      path =
+        if prefix_env,
+          do: "#{prefix_env}#{prefix}#{filename}",
+          else: "#{prefix}#{filename}"
+
+      case do_upload_shape(content, bucket, path, request_fn) do
+        error = {:error, _} -> error
+        {:ok, _} -> {:ok, %{bucket: bucket, prefix: prefix, path: path}}
+      end
+    else
+      {:ok, %{bucket: "disabled", prefix: "disabled", path: "disabled"}}
+    end
+  end
+
+  defp do_upload_shape(content, bucket, remote_path, request_fn) do
+    {request_module, request_func} = request_fn
+    # Check if file exists already:
+    check_request = ExAws.S3.list_objects_v2(bucket, prefix: remote_path)
+    {:ok, check} = apply(request_module, request_func, [check_request])
+
+    if length(check.body.contents) > 0 do
+      {:error, :already_exists}
+    else
+      upload_request = ExAws.S3.put_object(bucket, remote_path, content)
+      {:ok, _} = apply(request_module, request_func, [upload_request])
+    end
+  end
+
+  defp delete_shape_file(shape) do
+    enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
+    {request_module, request_func} = Application.get_env(:arrow, :shape_storage_request_fn)
+
+    if enabled? do
+      delete_request = ExAws.S3.delete_object(shape.bucket, shape.path)
+      apply(request_module, request_func, [delete_request])
+    else
+      {:ok, :disabled}
+    end
   end
 
   @doc """
@@ -110,6 +180,7 @@ defmodule Arrow.Shuttle do
 
   """
   def delete_shape(%Shape{} = shape) do
+    {:ok, _} = delete_shape_file(shape)
     Repo.delete(shape)
   end
 

@@ -23,6 +23,9 @@ defmodule Arrow.ShuttleFixtures do
       attrs
       |> Enum.into(%{
         name: unique_shape_name(),
+        path: "some/prefix/file.kml",
+        bucket: "some-mbta-bucket",
+        prefix: "some/prefix/",
         coordinates: coords()
       })
       |> Arrow.Shuttle.create_shape()

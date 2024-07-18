@@ -25,7 +25,9 @@
         <.input field={f_nested[:name]} disabled />
         <.input field={f_nested[:name]} />
         <.input field={f_nested[:save]} type="checkbox" />
-        <%= hidden_input f_nested, :coordinates %>
+        <div class="hidden">
+          <.input field={f_nested[:coordinates]} value={Enum.join(f_nested[:coordinates].value, " ")} />
+        </div>
       </.inputs_for>
     </div>
     <% end %>

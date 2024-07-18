@@ -59,7 +59,7 @@ defmodule Arrow.Shuttle.ShapesUpload do
   @doc """
   Parses one or many Shapes from a map of the KML/XML
   """
-  @spec shapes_from_kml(map) :: {:ok, list(Arrow.Shuttle.Shape.t())} | {:error, any}
+  @spec shapes_from_kml(map) :: {:ok, list(Arrow.Shuttle.ShapeUpload.t())} | {:error, any}
   def shapes_from_kml(saxy_shapes) do
     placemarks = saxy_shapes["kml"]["Folder"]["Placemark"]
 
