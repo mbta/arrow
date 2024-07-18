@@ -43,6 +43,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
           >
             <span
               class="fc-icon fc-icon-chevron-left"
+              role="img"
             />
           </button>
           <button
@@ -53,6 +54,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
           >
             <span
               class="fc-icon fc-icon-chevron-right"
+              role="img"
             />
           </button>
         </div>
@@ -64,7 +66,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
       style="padding-bottom: 74.07407407407408%; height: 0px;"
     >
       <div
-        class="fc-daygrid fc-dayGridMonth-view fc-view"
+        class="fc-dayGridMonth-view fc-view fc-daygrid"
       >
         <table
           class="fc-scrollgrid  fc-scrollgrid-liquid"
@@ -108,7 +110,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             >
                               <a
                                 aria-label="Sunday"
-                                class="fc-col-header-cell-cushion "
+                                class="fc-col-header-cell-cushion"
                               >
                                 Sun
                               </a>
@@ -123,7 +125,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             >
                               <a
                                 aria-label="Monday"
-                                class="fc-col-header-cell-cushion "
+                                class="fc-col-header-cell-cushion"
                               >
                                 Mon
                               </a>
@@ -138,7 +140,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             >
                               <a
                                 aria-label="Tuesday"
-                                class="fc-col-header-cell-cushion "
+                                class="fc-col-header-cell-cushion"
                               >
                                 Tue
                               </a>
@@ -153,7 +155,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             >
                               <a
                                 aria-label="Wednesday"
-                                class="fc-col-header-cell-cushion "
+                                class="fc-col-header-cell-cushion"
                               >
                                 Wed
                               </a>
@@ -168,7 +170,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             >
                               <a
                                 aria-label="Thursday"
-                                class="fc-col-header-cell-cushion "
+                                class="fc-col-header-cell-cushion"
                               >
                                 Thu
                               </a>
@@ -183,7 +185,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             >
                               <a
                                 aria-label="Friday"
-                                class="fc-col-header-cell-cushion "
+                                class="fc-col-header-cell-cushion"
                               >
                                 Fri
                               </a>
@@ -198,7 +200,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             >
                               <a
                                 aria-label="Saturday"
-                                class="fc-col-header-cell-cushion "
+                                class="fc-col-header-cell-cushion"
                               >
                                 Sat
                               </a>
@@ -243,7 +245,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                           >
                             <td
                               aria-labelledby="fc-dom-2"
-                              class="fc-daygrid-day fc-day fc-day-sun fc-day-past fc-day-other"
+                              class="fc-day fc-day-sun fc-day-past fc-day-other fc-daygrid-day"
                               data-date="2019-10-27"
                               role="gridcell"
                             >
@@ -276,7 +278,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-4"
-                              class="fc-daygrid-day fc-day fc-day-mon fc-day-past fc-day-other"
+                              class="fc-day fc-day-mon fc-day-past fc-day-other fc-daygrid-day"
                               data-date="2019-10-28"
                               role="gridcell"
                             >
@@ -309,7 +311,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-6"
-                              class="fc-daygrid-day fc-day fc-day-tue fc-day-past fc-day-other"
+                              class="fc-day fc-day-tue fc-day-past fc-day-other fc-daygrid-day"
                               data-date="2019-10-29"
                               role="gridcell"
                             >
@@ -342,7 +344,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-8"
-                              class="fc-daygrid-day fc-day fc-day-wed fc-day-past fc-day-other"
+                              class="fc-day fc-day-wed fc-day-past fc-day-other fc-daygrid-day"
                               data-date="2019-10-30"
                               role="gridcell"
                             >
@@ -375,7 +377,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-10"
-                              class="fc-daygrid-day fc-day fc-day-thu fc-day-past fc-day-other"
+                              class="fc-day fc-day-thu fc-day-past fc-day-other fc-daygrid-day"
                               data-date="2019-10-31"
                               role="gridcell"
                             >
@@ -408,7 +410,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-12"
-                              class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
+                              class="fc-day fc-day-fri fc-day-past fc-daygrid-day"
                               data-date="2019-11-01"
                               role="gridcell"
                             >
@@ -441,7 +443,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-14"
-                              class="fc-daygrid-day fc-day fc-day-sat fc-day-past"
+                              class="fc-day fc-day-sat fc-day-past fc-daygrid-day"
                               data-date="2019-11-02"
                               role="gridcell"
                             >
@@ -467,7 +469,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="margin-top: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past kind-red-line"
+                                      class="fc-event fc-event-start fc-event-past kind-red-line fc-daygrid-event fc-daygrid-block-event fc-h-event"
                                       href="/disruptions/1"
                                     >
                                       <div
@@ -506,7 +508,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                           >
                             <td
                               aria-labelledby="fc-dom-16"
-                              class="fc-daygrid-day fc-day fc-day-sun fc-day-past"
+                              class="fc-day fc-day-sun fc-day-past fc-daygrid-day"
                               data-date="2019-11-03"
                               role="gridcell"
                             >
@@ -532,7 +534,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="margin-top: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past kind-red-line"
+                                      class="fc-event fc-event-end fc-event-past kind-red-line fc-daygrid-event fc-daygrid-block-event fc-h-event"
                                       href="/disruptions/1"
                                     >
                                       <div
@@ -567,7 +569,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-18"
-                              class="fc-daygrid-day fc-day fc-day-mon fc-day-past"
+                              class="fc-day fc-day-mon fc-day-past fc-daygrid-day"
                               data-date="2019-11-04"
                               role="gridcell"
                             >
@@ -600,7 +602,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-20"
-                              class="fc-daygrid-day fc-day fc-day-tue fc-day-past"
+                              class="fc-day fc-day-tue fc-day-past fc-daygrid-day"
                               data-date="2019-11-05"
                               role="gridcell"
                             >
@@ -633,7 +635,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-22"
-                              class="fc-daygrid-day fc-day fc-day-wed fc-day-past"
+                              class="fc-day fc-day-wed fc-day-past fc-daygrid-day"
                               data-date="2019-11-06"
                               role="gridcell"
                             >
@@ -666,7 +668,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-24"
-                              class="fc-daygrid-day fc-day fc-day-thu fc-day-past"
+                              class="fc-day fc-day-thu fc-day-past fc-daygrid-day"
                               data-date="2019-11-07"
                               role="gridcell"
                             >
@@ -699,7 +701,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-26"
-                              class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
+                              class="fc-day fc-day-fri fc-day-past fc-daygrid-day"
                               data-date="2019-11-08"
                               role="gridcell"
                             >
@@ -725,7 +727,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="top: 0px; left: 0px; right: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past kind-red-line"
+                                      class="fc-event fc-event-start fc-event-past kind-red-line fc-daygrid-event fc-daygrid-block-event fc-h-event"
                                       href="/disruptions/1"
                                     >
                                       <div
@@ -750,7 +752,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   </div>
                                   <div
                                     class="fc-daygrid-day-bottom"
-                                    style="margin-top: 0px;"
+                                    style="margin-top: 1px;"
                                   />
                                 </div>
                                 <div
@@ -760,7 +762,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-28"
-                              class="fc-daygrid-day fc-day fc-day-sat fc-day-past"
+                              class="fc-day fc-day-sat fc-day-past fc-daygrid-day"
                               data-date="2019-11-09"
                               role="gridcell"
                             >
@@ -783,7 +785,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                 >
                                   <div
                                     class="fc-daygrid-day-bottom"
-                                    style="margin-top: 0px;"
+                                    style="margin-top: 1px;"
                                   />
                                 </div>
                                 <div
@@ -797,7 +799,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                           >
                             <td
                               aria-labelledby="fc-dom-30"
-                              class="fc-daygrid-day fc-day fc-day-sun fc-day-past"
+                              class="fc-day fc-day-sun fc-day-past fc-daygrid-day"
                               data-date="2019-11-10"
                               role="gridcell"
                             >
@@ -823,7 +825,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="margin-top: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past kind-red-line"
+                                      class="fc-event fc-event-end fc-event-past kind-red-line fc-daygrid-event fc-daygrid-block-event fc-h-event"
                                       href="/disruptions/1"
                                     >
                                       <div
@@ -858,7 +860,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-32"
-                              class="fc-daygrid-day fc-day fc-day-mon fc-day-past"
+                              class="fc-day fc-day-mon fc-day-past fc-daygrid-day"
                               data-date="2019-11-11"
                               role="gridcell"
                             >
@@ -891,7 +893,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-34"
-                              class="fc-daygrid-day fc-day fc-day-tue fc-day-past"
+                              class="fc-day fc-day-tue fc-day-past fc-daygrid-day"
                               data-date="2019-11-12"
                               role="gridcell"
                             >
@@ -924,7 +926,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-36"
-                              class="fc-daygrid-day fc-day fc-day-wed fc-day-past"
+                              class="fc-day fc-day-wed fc-day-past fc-daygrid-day"
                               data-date="2019-11-13"
                               role="gridcell"
                             >
@@ -957,7 +959,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-38"
-                              class="fc-daygrid-day fc-day fc-day-thu fc-day-past"
+                              class="fc-day fc-day-thu fc-day-past fc-daygrid-day"
                               data-date="2019-11-14"
                               role="gridcell"
                             >
@@ -990,7 +992,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-40"
-                              class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
+                              class="fc-day fc-day-fri fc-day-past fc-daygrid-day"
                               data-date="2019-11-15"
                               role="gridcell"
                             >
@@ -1016,35 +1018,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="margin-top: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past kind-blue-line"
-                                      href="/disruptions/5"
-                                    >
-                                      <div
-                                        class="fc-event-main"
-                                      >
-                                        <div
-                                          class="fc-event-main-frame"
-                                        >
-                                          
-                                          <div
-                                            class="fc-event-title-container"
-                                          >
-                                            <div
-                                              class="fc-event-title fc-sticky"
-                                            >
-                                              Airport Wonderland
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </a>
-                                  </div>
-                                  <div
-                                    class="fc-daygrid-event-harness"
-                                    style="margin-top: 0px;"
-                                  >
-                                    <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past kind-red-line"
+                                      class="fc-event fc-event-start fc-event-end fc-event-past kind-red-line fc-daygrid-event fc-daygrid-block-event fc-h-event"
                                       href="/disruptions/1"
                                     >
                                       <div
@@ -1069,10 +1043,10 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   </div>
                                   <div
                                     class="fc-daygrid-event-harness fc-daygrid-event-harness-abs"
-                                    style="top: 0px; left: 0px; right: 0px;"
+                                    style="top: 1px; left: 0px; right: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past kind-green-line-d"
+                                      class="fc-event fc-event-start fc-event-past kind-green-line-d fc-daygrid-event fc-daygrid-block-event fc-h-event"
                                       href="/disruptions/3"
                                     >
                                       <div
@@ -1096,6 +1070,34 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     </a>
                                   </div>
                                   <div
+                                    class="fc-daygrid-event-harness"
+                                    style="margin-top: 1px;"
+                                  >
+                                    <a
+                                      class="fc-event fc-event-start fc-event-end fc-event-past kind-blue-line fc-daygrid-event fc-daygrid-block-event fc-h-event"
+                                      href="/disruptions/5"
+                                    >
+                                      <div
+                                        class="fc-event-main"
+                                      >
+                                        <div
+                                          class="fc-event-main-frame"
+                                        >
+                                          
+                                          <div
+                                            class="fc-event-title-container"
+                                          >
+                                            <div
+                                              class="fc-event-title fc-sticky"
+                                            >
+                                              Airport Wonderland
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </a>
+                                  </div>
+                                  <div
                                     class="fc-daygrid-day-bottom"
                                     style="margin-top: 0px;"
                                   />
@@ -1107,7 +1109,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-42"
-                              class="fc-daygrid-day fc-day fc-day-sat fc-day-past"
+                              class="fc-day fc-day-sat fc-day-past fc-daygrid-day"
                               data-date="2019-11-16"
                               role="gridcell"
                             >
@@ -1130,7 +1132,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                 >
                                   <div
                                     class="fc-daygrid-day-bottom"
-                                    style="margin-top: 0px;"
+                                    style="margin-top: 2px;"
                                   />
                                 </div>
                                 <div
@@ -1144,7 +1146,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                           >
                             <td
                               aria-labelledby="fc-dom-44"
-                              class="fc-daygrid-day fc-day fc-day-sun fc-day-past"
+                              class="fc-day fc-day-sun fc-day-past fc-daygrid-day"
                               data-date="2019-11-17"
                               role="gridcell"
                             >
@@ -1170,7 +1172,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="margin-top: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past kind-green-line-d"
+                                      class="fc-event fc-event-end fc-event-past kind-green-line-d fc-daygrid-event fc-daygrid-block-event fc-h-event"
                                       href="/disruptions/3"
                                     >
                                       <div
@@ -1205,7 +1207,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-46"
-                              class="fc-daygrid-day fc-day fc-day-mon fc-day-past"
+                              class="fc-day fc-day-mon fc-day-past fc-daygrid-day"
                               data-date="2019-11-18"
                               role="gridcell"
                             >
@@ -1238,7 +1240,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-48"
-                              class="fc-daygrid-day fc-day fc-day-tue fc-day-past"
+                              class="fc-day fc-day-tue fc-day-past fc-daygrid-day"
                               data-date="2019-11-19"
                               role="gridcell"
                             >
@@ -1271,7 +1273,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-50"
-                              class="fc-daygrid-day fc-day fc-day-wed fc-day-past"
+                              class="fc-day fc-day-wed fc-day-past fc-daygrid-day"
                               data-date="2019-11-20"
                               role="gridcell"
                             >
@@ -1304,7 +1306,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-52"
-                              class="fc-daygrid-day fc-day fc-day-thu fc-day-past"
+                              class="fc-day fc-day-thu fc-day-past fc-daygrid-day"
                               data-date="2019-11-21"
                               role="gridcell"
                             >
@@ -1337,7 +1339,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-54"
-                              class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
+                              class="fc-day fc-day-fri fc-day-past fc-daygrid-day"
                               data-date="2019-11-22"
                               role="gridcell"
                             >
@@ -1363,7 +1365,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="top: 0px; left: 0px; right: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-past kind-green-line-d"
+                                      class="fc-event fc-event-start fc-event-past kind-green-line-d fc-daygrid-event fc-daygrid-block-event fc-h-event"
                                       href="/disruptions/3"
                                     >
                                       <div
@@ -1388,7 +1390,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   </div>
                                   <div
                                     class="fc-daygrid-day-bottom"
-                                    style="margin-top: 0px;"
+                                    style="margin-top: 1px;"
                                   />
                                 </div>
                                 <div
@@ -1398,7 +1400,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-56"
-                              class="fc-daygrid-day fc-day fc-day-sat fc-day-past"
+                              class="fc-day fc-day-sat fc-day-past fc-daygrid-day"
                               data-date="2019-11-23"
                               role="gridcell"
                             >
@@ -1421,7 +1423,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                 >
                                   <div
                                     class="fc-daygrid-day-bottom"
-                                    style="margin-top: 0px;"
+                                    style="margin-top: 1px;"
                                   />
                                 </div>
                                 <div
@@ -1435,7 +1437,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                           >
                             <td
                               aria-labelledby="fc-dom-58"
-                              class="fc-daygrid-day fc-day fc-day-sun fc-day-past"
+                              class="fc-day fc-day-sun fc-day-past fc-daygrid-day"
                               data-date="2019-11-24"
                               role="gridcell"
                             >
@@ -1461,7 +1463,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="margin-top: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-end fc-event-past kind-green-line-d"
+                                      class="fc-event fc-event-end fc-event-past kind-green-line-d fc-daygrid-event fc-daygrid-block-event fc-h-event"
                                       href="/disruptions/3"
                                     >
                                       <div
@@ -1496,7 +1498,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-60"
-                              class="fc-daygrid-day fc-day fc-day-mon fc-day-past"
+                              class="fc-day fc-day-mon fc-day-past fc-daygrid-day"
                               data-date="2019-11-25"
                               role="gridcell"
                             >
@@ -1529,7 +1531,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-62"
-                              class="fc-daygrid-day fc-day fc-day-tue fc-day-past"
+                              class="fc-day fc-day-tue fc-day-past fc-daygrid-day"
                               data-date="2019-11-26"
                               role="gridcell"
                             >
@@ -1562,7 +1564,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-64"
-                              class="fc-daygrid-day fc-day fc-day-wed fc-day-past"
+                              class="fc-day fc-day-wed fc-day-past fc-daygrid-day"
                               data-date="2019-11-27"
                               role="gridcell"
                             >
@@ -1595,7 +1597,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-66"
-                              class="fc-daygrid-day fc-day fc-day-thu fc-day-past"
+                              class="fc-day fc-day-thu fc-day-past fc-daygrid-day"
                               data-date="2019-11-28"
                               role="gridcell"
                             >
@@ -1628,7 +1630,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-68"
-                              class="fc-daygrid-day fc-day fc-day-fri fc-day-past"
+                              class="fc-day fc-day-fri fc-day-past fc-daygrid-day"
                               data-date="2019-11-29"
                               role="gridcell"
                             >
@@ -1654,7 +1656,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                     style="top: 0px; left: 0px; right: 0px;"
                                   >
                                     <a
-                                      class="fc-daygrid-event fc-daygrid-block-event fc-h-event fc-event fc-event-start fc-event-end fc-event-past kind-green-line-d"
+                                      class="fc-event fc-event-start fc-event-end fc-event-past kind-green-line-d fc-daygrid-event fc-daygrid-block-event fc-h-event"
                                       href="/disruptions/3"
                                     >
                                       <div
@@ -1679,7 +1681,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                   </div>
                                   <div
                                     class="fc-daygrid-day-bottom"
-                                    style="margin-top: 0px;"
+                                    style="margin-top: 1px;"
                                   />
                                 </div>
                                 <div
@@ -1689,7 +1691,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-70"
-                              class="fc-daygrid-day fc-day fc-day-sat fc-day-past"
+                              class="fc-day fc-day-sat fc-day-past fc-daygrid-day"
                               data-date="2019-11-30"
                               role="gridcell"
                             >
@@ -1712,7 +1714,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                                 >
                                   <div
                                     class="fc-daygrid-day-bottom"
-                                    style="margin-top: 0px;"
+                                    style="margin-top: 1px;"
                                   />
                                 </div>
                                 <div
@@ -1726,7 +1728,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                           >
                             <td
                               aria-labelledby="fc-dom-72"
-                              class="fc-daygrid-day fc-day fc-day-sun fc-day-past fc-day-other"
+                              class="fc-day fc-day-sun fc-day-past fc-day-other fc-daygrid-day"
                               data-date="2019-12-01"
                               role="gridcell"
                             >
@@ -1759,7 +1761,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-74"
-                              class="fc-daygrid-day fc-day fc-day-mon fc-day-past fc-day-other"
+                              class="fc-day fc-day-mon fc-day-past fc-day-other fc-daygrid-day"
                               data-date="2019-12-02"
                               role="gridcell"
                             >
@@ -1792,7 +1794,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-76"
-                              class="fc-daygrid-day fc-day fc-day-tue fc-day-past fc-day-other"
+                              class="fc-day fc-day-tue fc-day-past fc-day-other fc-daygrid-day"
                               data-date="2019-12-03"
                               role="gridcell"
                             >
@@ -1825,7 +1827,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-78"
-                              class="fc-daygrid-day fc-day fc-day-wed fc-day-past fc-day-other"
+                              class="fc-day fc-day-wed fc-day-past fc-day-other fc-daygrid-day"
                               data-date="2019-12-04"
                               role="gridcell"
                             >
@@ -1858,7 +1860,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-80"
-                              class="fc-daygrid-day fc-day fc-day-thu fc-day-past fc-day-other"
+                              class="fc-day fc-day-thu fc-day-past fc-day-other fc-daygrid-day"
                               data-date="2019-12-05"
                               role="gridcell"
                             >
@@ -1891,7 +1893,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-82"
-                              class="fc-daygrid-day fc-day fc-day-fri fc-day-past fc-day-other"
+                              class="fc-day fc-day-fri fc-day-past fc-day-other fc-daygrid-day"
                               data-date="2019-12-06"
                               role="gridcell"
                             >
@@ -1924,7 +1926,7 @@ exports[`DisruptionCalendar renders correctly 1`] = `
                             </td>
                             <td
                               aria-labelledby="fc-dom-84"
-                              class="fc-daygrid-day fc-day fc-day-sat fc-day-past fc-day-other"
+                              class="fc-day fc-day-sat fc-day-past fc-day-other fc-daygrid-day"
                               data-date="2019-12-07"
                               role="gridcell"
                             >

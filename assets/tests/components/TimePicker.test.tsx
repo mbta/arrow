@@ -8,7 +8,7 @@ import TimePicker, {
 import { hiddenInputValue } from "../testHelpers"
 
 describe("TimePicker", () => {
-  test("allows selecting a time", () => {
+  test("allows selecting a time", async () => {
     render(
       <TimePicker
         id="test"
@@ -19,15 +19,15 @@ describe("TimePicker", () => {
       />
     )
 
-    userEvent.click(screen.getByLabelText("No time"))
-    userEvent.selectOptions(screen.getByLabelText("time hour"), "3")
-    userEvent.selectOptions(screen.getByLabelText("time minute"), "45")
-    userEvent.selectOptions(screen.getByLabelText("time meridiem"), "PM")
+    await userEvent.click(screen.getByLabelText("No time"))
+    await userEvent.selectOptions(screen.getByLabelText("time hour"), "3")
+    await userEvent.selectOptions(screen.getByLabelText("time minute"), "45")
+    await userEvent.selectOptions(screen.getByLabelText("time meridiem"), "PM")
 
     expect(hiddenInputValue("test_name")).toEqual("15:45:00")
   })
 
-  test("allows selecting no time", () => {
+  test("allows selecting no time", async () => {
     render(
       <TimePicker
         id="test"
@@ -38,7 +38,7 @@ describe("TimePicker", () => {
       />
     )
 
-    userEvent.click(screen.getByLabelText("No time"))
+    await userEvent.click(screen.getByLabelText("No time"))
 
     expect(hiddenInputValue("test_name")).toEqual("")
   })

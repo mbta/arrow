@@ -7,6 +7,8 @@
   </:actions>
 </.header>
 
+<%= react_component("Components.ShapeViewMap", %{}) %>
+
 <div class="container">
 <.simple_form :let={f} for={@form} action={~p"/shapes_upload"} multipart>
   <.input label="File uploaded" field={f[:filename]} disabled="true" />

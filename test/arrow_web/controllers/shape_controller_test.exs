@@ -56,6 +56,7 @@ defmodule ArrowWeb.ShapeControllerTest do
     test "lists all shapes", %{conn: conn} do
       conn = get(conn, ~p"/shapes")
       assert html_response(conn, 200) =~ "Listing Shapes"
+      refute html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
   end
 
@@ -64,6 +65,7 @@ defmodule ArrowWeb.ShapeControllerTest do
     test "renders form", %{conn: conn} do
       conn = get(conn, ~p"/shapes_upload")
       assert html_response(conn, 200) =~ "New Shapes"
+      assert html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
   end
 
@@ -97,6 +99,7 @@ defmodule ArrowWeb.ShapeControllerTest do
       assert html_response(conn, 200) =~ "Successfully parsed shapes"
       assert html_response(conn, 200) =~ "RL: Alewife - Harvard - Via Brattle St - Harvard"
       assert html_response(conn, 200) =~ "Shapes from File"
+      assert html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
 
     @tag :authenticated_admin
@@ -105,6 +108,7 @@ defmodule ArrowWeb.ShapeControllerTest do
       assert html_response(conn, 200) =~ "Successfully parsed shapes"
       assert html_response(conn, 200) =~ "RL: JFK/UMass - Andrew - JFK/UMASS"
       assert html_response(conn, 200) =~ "Shapes from File"
+      assert html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
 
     @tag :authenticated_admin
@@ -114,6 +118,7 @@ defmodule ArrowWeb.ShapeControllerTest do
       assert html_response(conn, 200) =~ "xml was invalid"
       assert html_response(conn, 200) =~ "unexpected end of input, expected token:"
       assert html_response(conn, 200) =~ "New Shapes"
+      assert html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
 
     @tag :authenticated_admin
@@ -125,6 +130,7 @@ defmodule ArrowWeb.ShapeControllerTest do
 
       assert html_response(conn, 200) =~ "Check your whitespace."
       assert html_response(conn, 200) =~ "New Shapes"
+      assert html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
 
     @tag :authenticated_admin
@@ -133,6 +139,7 @@ defmodule ArrowWeb.ShapeControllerTest do
       assert html_response(conn, 200) =~ "Failed to upload shapes from some_file.kml"
       assert html_response(conn, 200) =~ "no such file or directory"
       assert html_response(conn, 200) =~ "New Shapes"
+      assert html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
   end
 
@@ -147,6 +154,7 @@ defmodule ArrowWeb.ShapeControllerTest do
       conn = get(conn, ~p"/shapes")
       assert html_response(conn, 200) =~ "some name"
       refute html_response(conn, 200) =~ "some other name"
+      refute html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
   end
 
