@@ -92,6 +92,29 @@ defmodule ArrowWeb.ShapeControllerTest do
     end
   end
 
+  describe "download shape" do
+    @tag :authenticated_admin
+    test "redirects to s3 url", %{conn: conn} do
+      uuid = Ecto.UUID.generate()
+      prefix = "arrow/test-runner/#{uuid}/"
+      Application.put_env(:arrow, :shape_storage_prefix, prefix)
+
+      # Create valid shape:
+      conn = post(conn, ~p"/shapes_upload", shapes: @create_attrs)
+
+      assert redirected_to(conn) == ~p"/shapes/"
+
+      %{id: id} = Repo.get_by(Shape, name: "some name")
+
+      # Attempt to download:
+      conn = ArrowWeb.ConnCase.authenticated_admin()
+      conn = get(conn, ~p"/shapes/#{id}/download")
+
+      assert redirected_to(conn, 302) ==
+               "https://disabled.s3.amazonaws.com/disabled"
+    end
+  end
+
   describe "shapes_upload for create" do
     @tag :authenticated_admin
     test "redirects to select when upload file is valid with one shape", %{conn: conn} do
@@ -131,6 +154,17 @@ defmodule ArrowWeb.ShapeControllerTest do
       assert html_response(conn, 200) =~ "Check your whitespace."
       assert html_response(conn, 200) =~ "New Shapes"
       assert html_response(conn, 200) =~ "Components.ShapeViewMap"
+    end
+
+    @tag :authenticated_admin
+    test "renders errors when data is invalid due to invalid whitespace in XML", %{conn: conn} do
+      conn = post(conn, ~p"/shapes_upload", shapes_upload: @invalid_whitespace_attrs)
+
+      assert html_response(conn, 200) =~
+               "Failed to parse shape from kml, no coordinates were found."
+
+      assert html_response(conn, 200) =~ "Check your whitespace."
+      assert html_response(conn, 200) =~ "New Shapes"
     end
 
     @tag :authenticated_admin
