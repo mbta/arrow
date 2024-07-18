@@ -8,7 +8,7 @@
   </:actions>
 </.header>
 
-<%= react_component("Components.ShapeViewMap", %{}) %>
+<%= react_component("Components.ShapeViewMap", shapes_map_view(@shape)) %>
 
 <.list>
   <:item title="Name"><%= @shape.name %></:item>

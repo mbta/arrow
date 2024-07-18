@@ -3,7 +3,7 @@
   <:subtitle>Use this form to manage shape records in your database.</:subtitle>
 </.header>
 
-<%= react_component("Components.ShapeViewMap", %{}) %>
+<%= react_component("Components.ShapeViewMap", shapes_map_view(@shape)) %>
 
 <.simple_form :let={f} for={@changeset} action={~p"/shapes/#{@shape}"} multipart>
   <.error :if={@changeset.action}>
