@@ -64,7 +64,7 @@ defmodule ArrowWeb.StopControllerTest do
     @tag :authenticated_admin
     test "renders form", %{conn: conn} do
       conn = get(conn, ~p"/stops/new")
-      assert html_response(conn, 200) =~ "New Stop"
+      assert html_response(conn, 200) =~ "create shuttle stop"
     end
   end
 
@@ -79,7 +79,7 @@ defmodule ArrowWeb.StopControllerTest do
     @tag :authenticated_admin
     test "renders errors when data is invalid", %{conn: conn} do
       conn = post(conn, ~p"/stops", stop: @invalid_attrs)
-      assert html_response(conn, 200) =~ "New Stop"
+      assert html_response(conn, 200) =~ "create shuttle stop"
     end
   end
 
@@ -88,7 +88,7 @@ defmodule ArrowWeb.StopControllerTest do
     @tag :authenticated_admin
     test "renders form for editing chosen stop", %{conn: conn, stop: stop} do
       conn = get(conn, ~p"/stops/#{stop}/edit")
-      assert html_response(conn, 200) =~ "Edit Stop"
+      assert html_response(conn, 200) =~ "edit shuttle stop"
     end
   end
 
@@ -104,7 +104,7 @@ defmodule ArrowWeb.StopControllerTest do
     @tag :authenticated_admin
     test "renders errors when data is invalid", %{conn: conn, stop: stop} do
       conn = put(conn, ~p"/stops/#{stop}", stop: @invalid_attrs)
-      assert html_response(conn, 200) =~ "Edit Stop"
+      assert html_response(conn, 200) =~ "edit shuttle stop"
     end
   end
 
