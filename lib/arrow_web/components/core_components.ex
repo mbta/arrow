@@ -202,11 +202,10 @@ defmodule ArrowWeb.CoreComponents do
   def simple_form(assigns) do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
-      <div class="mt-10 space-y-8 bg-white">
-        <%= render_slot(@inner_block, f) %>
-        <div :for={action <- @actions} class="mt-2 flex items-center justify-start gap-6">
-          <%= render_slot(action, f) %>
-        </div>
+      <%= render_slot(@inner_block, f) %>
+      <hr class="light-hr">
+      <div :for={action <- @actions} class="d-flex justify-content-center">
+        <%= render_slot(action, f) %>
       </div>
     </.form>
     """
@@ -228,17 +227,21 @@ defmodule ArrowWeb.CoreComponents do
 
   def button(assigns) do
     ~H"""
-    <button
-      type={@type}
-      class={[
-        "phx-submit-loading:opacity-75 rounded-lg bg-zinc-900 hover:bg-zinc-700 py-2 px-3",
-        "text-sm font-semibold leading-6 text-white active:text-white/80",
-        @class
-      ]}
-      {@rest}
-    >
+    <button type={@type} class={["btn", @class]} {@rest}>
       <%= render_slot(@inner_block) %>
     </button>
+    """
+  end
+
+  attr :class, :string, default: nil
+  attr :rest, :global, include: ~w(href onclick)
+  slot :inner_block, required: true
+
+  def link_button(assigns) do
+    ~H"""
+    <a class={["btn", @class]} {@rest}>
+      <%= render_slot(@inner_block) %>
+    </a>
     """
   end
 
@@ -378,7 +381,7 @@ defmodule ArrowWeb.CoreComponents do
   # All other inputs text, datetime-local, url, password, etc. are handled here...
   def input(assigns) do
     ~H"""
-    <div phx-feedback-for={@name}>
+    <div class={["form-group", @class]} phx-feedback-for={@name}>
       <.label for={@id}><%= @label %></.label>
       <input
         type={@type}
@@ -386,11 +389,8 @@ defmodule ArrowWeb.CoreComponents do
         id={@id}
         value={Phoenix.HTML.Form.normalize_value(@type, @value)}
         class={[
-          "mt-2 block w-full rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6",
-          "phx-no-feedback:border-zinc-300 phx-no-feedback:focus:border-zinc-400",
-          @errors == [] && "border-zinc-300 focus:border-zinc-400",
-          @errors != [] && "border-rose-400 focus:border-rose-400",
-          @class
+          "form-control",
+          @errors != [] && "is-invalid"
         ]}
         {@rest}
       />
@@ -407,7 +407,7 @@ defmodule ArrowWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for} class="block text-sm font-semibold leading-6 text-zinc-800">
+    <label for={@for}>
       <%= render_slot(@inner_block) %>
     </label>
     """
@@ -420,10 +420,10 @@ defmodule ArrowWeb.CoreComponents do
 
   def error(assigns) do
     ~H"""
-    <p class="mt-3 flex gap-3 text-sm leading-6 text-rose-600 phx-no-feedback:hidden">
-      <.icon name="hero-exclamation-circle-mini" class="mt-0.5 h-5 w-5 flex-none" />
+    <div class="invalid-feedback">
+      <.icon name="hero-exclamation-circle-mini" class="m-icon" />
       <%= render_slot(@inner_block) %>
-    </p>
+    </div>
     """
   end
 
@@ -440,7 +440,7 @@ defmodule ArrowWeb.CoreComponents do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", @class]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8 text-zinc-800">
+        <h1>
           <%= render_slot(@inner_block) %>
         </h1>
         <p :if={@subtitle != []} class="mt-2 text-sm leading-6 text-zinc-600">

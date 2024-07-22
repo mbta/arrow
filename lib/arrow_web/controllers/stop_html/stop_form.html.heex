@@ -1,34 +1,43 @@
-<p class="m-0 text-sm text-zinc-600 italic">
-* required field
+<p>
+  <small class="font-italic">
+  * required field
+  </small>
+  <br>
+  <a class="text-sm" href="https://www.notion.so/mbta-downtown-crossing/Conventions-for-shuttle-bus-information-fc5a788409b24eb088dbfe3a43abf67e?pvs=4#7f7211396f6c46e59c26e63373cdb4ac">View Shuttle Stop Conventions</a>
 </p>
-<a class="text-sm" href="https://www.notion.so/mbta-downtown-crossing/Conventions-for-shuttle-bus-information-fc5a788409b24eb088dbfe3a43abf67e?pvs=4#7f7211396f6c46e59c26e63373cdb4ac">View Shuttle Stop Conventions</a>
-
 <.simple_form :let={f} for={@changeset} action={@action}>
   <.error :if={@changeset.action}>
     Oops, something went wrong! Please check the errors below.
   </.error>
-  <.input class="w-auto" field={f[:stop_id]} type="text" label="Stop ID*" />
+  <div class="form-row">
+    <.input class="col-md-6" field={f[:stop_id]} type="text" label="Stop ID*" />
+  </div>
   <.input field={f[:stop_name]} type="text" label="Stop Name*" />
   <.input field={f[:stop_desc]} type="text" label="Stop Description*" />
   <.input class="w-auto" field={f[:platform_code]} type="text" label="Platform Code" />
   <.input field={f[:platform_name]} type="text" label="Platform Name" />
   <.input field={f[:parent_station]} type="text" label="Parent Station" />
-  <.input class="w-auto" field={f[:level_id]} type="text" label="Level ID" />
-  <.input class="w-auto" field={f[:zone_id]} type="text" label="Zone ID" />
-  <div class="flex gap-6">
-  <.input class="flex-auto" field={f[:stop_lat]} type="number" label="Stop Latitude*" step="any" />
-  <.input class="flex-auto" field={f[:stop_lon]} type="number" label="Stop Longitude*" step="any" />
+  <div class="form-row">
+    <.input class="col-md-6" field={f[:level_id]} type="text" label="Level ID" />
+  </div>
+  <div class="form-row">
+    <.input class="col-md-6" field={f[:zone_id]} type="text" label="Zone ID" />
+  </div>
+  
+  <div class="form-row">
+  <.input class="col-md-6" field={f[:stop_lat]} type="number" label="Latitude*" step="any" />
+  <.input class="col-md-6" field={f[:stop_lon]} type="number" label="Longitude*" step="any" />
   </div>
   <.input field={f[:municipality]} type="text" label="Municipality*" />
   <.input field={f[:stop_address]} type="text" label="Stop Address" />
-  
-  
-  
-  
   <.input field={f[:on_street]} type="text" label="Street" />
   <.input field={f[:at_street]} type="text" label="Cross street" />
   <:actions>
-    <input type="submit" value="Save Shuttle Stop" class="w-60 btn btn-primary" />
-    <a href={~p"/stops"} class="w-60 btn btn-outline-primary" onclick="return confirm('Are you sure you want to cancel? All changes will be lost!')">Cancel</a>
+    <div class="w-25 mr-2">
+      <.button type="submit" class="btn-primary w-100">Save Shuttle Stop</.button>
+    </div>
+    <div class="w-25 mr-2">
+      <.link_button href={~p"/stops"} class="btn-outline-primary w-100" onclick="return confirm('Are you sure you want to cancel? All changes will be lost!')">Cancel</.link_button>
+    </div>
   </:actions>
 </.simple_form>
