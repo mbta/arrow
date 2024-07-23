@@ -88,4 +88,7 @@ if config_env() == :prod do
     pool_size: pool_size,
     # password set by `configure` callback below
     configure: {Arrow.Repo, :before_connect, []}
+
+  config :arrow,
+    shape_storage_prefix_env: System.get_env("S3_PREFIX")
 end
