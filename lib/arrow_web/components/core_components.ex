@@ -234,7 +234,7 @@ defmodule ArrowWeb.CoreComponents do
   end
 
   attr :class, :string, default: nil
-  attr :rest, :global, include: ~w(href onclick)
+  attr :rest, :global, include: ~w(href data-confirm)
   slot :inner_block, required: true
 
   def link_button(assigns) do

@@ -37,7 +37,7 @@
       <.button type="submit" class="btn-primary w-100">Save Shuttle Stop</.button>
     </div>
     <div class="w-25 mr-2">
-      <.link_button href={~p"/stops"} class="btn-outline-primary w-100" onclick="return confirm('Are you sure you want to cancel? All changes will be lost!')">Cancel</.link_button>
+      <.link_button href={~p"/stops"} class="btn-outline-primary w-100" data-confirm="Are you sure you want to cancel? All changes will be lost!">Cancel</.link_button>
     </div>
   </:actions>
 </.simple_form>
