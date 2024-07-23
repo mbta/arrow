@@ -49,7 +49,7 @@ defmodule Arrow.Stops do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_stop(attrs \\ %{}) do
+  def create_stop(attrs) do
     %Stop{}
     |> Stop.changeset(attrs)
     |> Repo.insert()
