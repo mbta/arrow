@@ -16,6 +16,7 @@ defmodule ArrowWeb.ShapeView do
   def shapes_map_view(%ShapesUpload{shapes: shapes}) do
     %{shapes: Enum.map(shapes, &shape_map_view/1)}
   end
+
   def shapes_map_view(%{params: %{"shapes" => shapes}}) do
     %{shapes: Enum.map(shapes, &shape_map_view/1)}
   end
