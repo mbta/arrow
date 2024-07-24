@@ -24,7 +24,7 @@
       <.inputs_for :let={f_nested} field={f[:shapes]} id="shapes" as={:shapes} skip_hidden={:true}>
         <.input field={f_nested[:name]} disabled />
         <.input field={f_nested[:name]} />
-        <.input field={f_nested[:save]} type="checkbox" />
+        <.input field={f_nested[:save]} type="checkbox" phx-click={JS.dispatch("saveToggle")} />
         <div class="hidden">
           <.input field={f_nested[:coordinates]} value={Enum.join(f_nested[:coordinates].value, " ")} />
         </div>

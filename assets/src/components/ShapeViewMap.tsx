@@ -54,7 +54,21 @@ const getMapBounds = (shapes: Shape[]) => {
   ] as LatLngBoundsExpression
 }
 
+const handleSaveToggle = (e) => {
+  console.log("handleSaveToggle")
+  console.log(e)
+}
+
 const ShapeViewMap = ({ shapes }: ShapeViewMapProps) => {
+  useEffect(() => {
+    console.log("adding listener", window)
+    window.addEventListener("saveToggle", handleSaveToggle);
+    return () => {
+      console.log('removing listener')
+      window.removeEventListener("saveToggle", handleSaveToggle);
+    };
+}, [handleSaveToggle]);
+
   const polyLines = useMemo(() => {
     if (shapes && shapes.length > 0) {
       return shapes.map((shape, index) => generatePolyline(shape.coordinates as LatLngExpression[], index))
