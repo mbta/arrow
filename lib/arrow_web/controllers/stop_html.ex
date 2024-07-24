@@ -10,4 +10,10 @@ defmodule ArrowWeb.StopView do
   attr :action, :string, required: true
 
   def stop_form(assigns)
+
+  def format_timestamp(%DateTime{} = dt) do
+    dt
+    |> DateTime.shift_zone!("America/New_York")
+    |> Calendar.strftime("%Y-%m-%d %I:%M %p")
+  end
 end
