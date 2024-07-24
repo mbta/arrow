@@ -1,10 +1,6 @@
 <.header>
-  Shapes from File <%= @form[:filename].value %>
-  <:actions>
-    <.link href={~p"/shapes_upload"} data-confirm={"Are you sure?"}>
-      <.button>Cancel</.button>
-    </.link>
-  </:actions>
+  upload shapes from file
+  <:subtitle><%= input_value(@form, :filename) %></:subtitle>
 </.header>
 
 <%= react_component("Components.ShapeViewMap", %{}) %>
@@ -30,7 +26,10 @@
     </div>
     <% end %>
   <:actions>
-  <.button class="btn-primary">Save Selected Shapes</.button>
+    <.button class="btn-primary">Save Selected Shapes</.button>
+    <.link href={~p"/shapes_upload"} data-confirm={"Are you sure?"}>
+      <.button>Cancel</.button>
+    </.link>
   </:actions>
 </.simple_form>
 </div>
