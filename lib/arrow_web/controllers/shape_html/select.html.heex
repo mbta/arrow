@@ -26,10 +26,12 @@
     </div>
     <% end %>
   <:actions>
-    <.button class="btn-primary">Save Selected Shapes</.button>
-    <.link href={~p"/shapes_upload"} data-confirm={"Are you sure?"}>
-      <.button>Cancel</.button>
-    </.link>
+    <div class="w-25 mr-2">
+      <.button type="submit" class="btn-primary w-100">save selected shapes</.button>
+    </div>
+    <div class="w-25 mr-2">
+      <.link_button href={~p"/shapes_upload"} class="btn-outline-primary w-100" data-confirm="Are you sure you want to cancel? All changes will be lost!">cancel</.link_button>
+    </div>
   </:actions>
 </.simple_form>
 </div>
