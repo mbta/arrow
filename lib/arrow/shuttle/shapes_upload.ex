@@ -56,6 +56,13 @@ defmodule Arrow.Shuttle.ShapesUpload do
     end
   end
 
+  @spec process_coordinates(String.t()) :: [String.t()]
+  def process_coordinates(coordinates) do
+    coordinates
+    |> String.split()
+    |> Enum.dedup()
+  end
+
   @doc """
   Parses one or many Shapes from a map of the KML/XML
   """
@@ -66,7 +73,7 @@ defmodule Arrow.Shuttle.ShapesUpload do
     case placemarks do
       %{"LineString" => %{"coordinates" => coords}, "name" => name}
       when is_binary(coords) ->
-        {:ok, [%{name: name, coordinates: String.split(coords)}]}
+        {:ok, [%{name: name, coordinates: process_coordinates(coords)}]}
 
       %{"LineString" => %{"coordinates" => nil}, "name" => _name} ->
         error =
@@ -81,7 +88,7 @@ defmodule Arrow.Shuttle.ShapesUpload do
 
         {:ok,
          Enum.map(placemarks, fn pm ->
-           %{name: pm["name"], coordinates: String.split(pm["LineString"]["coordinates"])}
+           %{name: pm["name"], coordinates: process_coordinates(pm["LineString"]["coordinates"])}
          end)}
     end
   end
