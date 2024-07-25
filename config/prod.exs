@@ -11,8 +11,7 @@ import Config
 # before starting your production server.
 
 config :arrow,
-  shape_storage_enabled?: true,
-  shape_storage_prefix_env: "prod/"
+  shape_storage_enabled?: true
 
 config :arrow, ArrowWeb.Endpoint,
   http: [:inet6, port: 4000],

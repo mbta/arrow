@@ -1,3 +1,5 @@
-<div>stop_html/new.html.heex</div>
+<.header>
+  create shuttle stop
+</.header>
 
-<._form />
+<.stop_form changeset={@changeset} action={~p"/stops"} />

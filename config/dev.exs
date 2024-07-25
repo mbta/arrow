@@ -74,10 +74,10 @@ config :arrow, :redirect_http?, false
 # Enable dev routes for dashboard and mailbox
 config :arrow, dev_routes: true
 
-# Set prefix env for s3 uploads in dev
+# Set prefix env for s3 uploads
 config :arrow,
   shape_storage_enabled?: true,
-  shape_storage_prefix_env: "dev/"
+  shape_storage_prefix_env: "local/"
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
