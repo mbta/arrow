@@ -1,10 +1,17 @@
-import React, { useEffect, useMemo } from "react"
+import React, { useMemo } from "react"
 import { LatLngBoundsExpression, LatLngExpression } from "leaflet"
-import { CircleMarker, MapContainer, Polyline, TileLayer } from "react-leaflet"
+import {
+  CircleMarker,
+  LayersControl,
+  LayerGroup,
+  MapContainer,
+  Polyline,
+  TileLayer,
+} from "react-leaflet"
 
 type Shape = {
-  name: string;
-  coordinates: number[][];
+  name: string
+  coordinates: number[][]
 }
 
 interface ShapeViewMapProps {
@@ -22,46 +29,81 @@ const COLORS = [
   "#003383",
   "#80276c",
   "#008eaa",
-  "#52bbc5"
+  "#52bbc5",
 ]
 
 const defaultCenter: LatLngExpression = [42.360718, -71.05891]
 
-const generatePolyline = (coordinates: LatLngExpression[] | LatLngExpression[][], index: number) => {
+const generatePolyline = (shape: Shape, index: number) => {
   const color = COLORS[index]
-  const start = coordinates[0]
-  const end = coordinates.slice(-1)[0]
+  const start = shape.coordinates[0]
+  const end = shape.coordinates.slice(-1)[0]
   const key = crypto.randomUUID()
-  
+
   return [
-    <Polyline positions={coordinates} color={COLORS[index]} key={key} />,
-    <CircleMarker center={start as LatLngExpression} pathOptions={{ color }} radius={10} key={`${key}-start`}/>,
-    <CircleMarker center={end as LatLngExpression} pathOptions={{ color, fillColor: color, fillOpacity: 1.0 }} radius={10} key={`${key}-end`} />,
-  ];
-};
+    <LayersControl.Overlay
+      checked
+      name={shape.name}
+      key={`${key}-control-overlay`}
+    >
+      ,
+      <LayerGroup key={`${key}-control-group`}>
+        ,
+        <Polyline
+          positions={shape.coordinates as LatLngExpression[]}
+          color={COLORS[index]}
+          key={`${key}-line`}
+        />
+        ,
+        <CircleMarker
+          center={start as LatLngExpression}
+          pathOptions={{ color }}
+          radius={10}
+          key={`${key}-line-start`}
+        />
+        ,
+        <CircleMarker
+          center={end as LatLngExpression}
+          pathOptions={{ color, fillColor: color, fillOpacity: 1.0 }}
+          radius={10}
+          key={`${key}-line-end`}
+        />
+        ,
+      </LayerGroup>
+      ,
+    </LayersControl.Overlay>,
+  ]
+}
 
 const getMapBounds = (shapes: Shape[]) => {
-  let shapeLats: number[] = []
-  let shapeLongs: number[] = []
-  shapes.map((shape: Shape) => shape.coordinates.map((coordinate) => {
-    shapeLats.push(coordinate[0])
-    shapeLongs.push(coordinate[1])
-  }))
+  const shapeLats: number[] = []
+  const shapeLongs: number[] = []
+  shapes.map((shape: Shape) =>
+    shape.coordinates.map((coordinate) => {
+      shapeLats.push(coordinate[0])
+      shapeLongs.push(coordinate[1])
+    })
+  )
 
   return [
     [Math.max(...shapeLats), Math.max(...shapeLongs)],
-    [Math.min(...shapeLats), Math.min(...shapeLongs)]
+    [Math.min(...shapeLats), Math.min(...shapeLongs)],
   ] as LatLngBoundsExpression
 }
 
 const ShapeViewMap = ({ shapes }: ShapeViewMapProps) => {
   const polyLines = useMemo(() => {
     if (shapes && shapes.length > 0) {
-      return shapes.map((shape, index) => generatePolyline(shape.coordinates as LatLngExpression[], index))
+      const lines = shapes.map((shape, index) => generatePolyline(shape, index))
+      return [
+        <LayersControl position="topright" key="layer-control">
+          ,{lines},
+        </LayersControl>,
+      ]
     } else {
       return []
     }
-  }, shapes);
+  }, [shapes])
 
   const mapProps = useMemo(() => {
     if (shapes && shapes.length > 0) {
@@ -69,7 +111,7 @@ const ShapeViewMap = ({ shapes }: ShapeViewMapProps) => {
     } else {
       return { center: defaultCenter }
     }
-  }, shapes);  
+  }, [shapes])
 
   return (
     <MapContainer
