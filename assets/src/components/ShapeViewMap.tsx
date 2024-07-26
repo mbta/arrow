@@ -19,23 +19,27 @@ interface ShapeViewMapProps {
 }
 
 const COLORS = [
-  "#da291c",
-  "#003da5",
-  "#ffc72c",
-  "#00843d",
-  "#ed8b00",
-  "#7c878e",
-  "#494f5c",
-  "#003383",
-  "#80276c",
-  "#008eaa",
-  "#52bbc5",
+  "da291c",
+  "003da5",
+  "ffc72c",
+  "00843d",
+  "ed8b00",
+  "7c878e",
+  "494f5c",
+  "003383",
+  "80276c",
+  "008eaa",
+  "52bbc5",
 ]
 
 const defaultCenter: LatLngExpression = [42.360718, -71.05891]
 
+const generateNameField = (name: string, color: string) =>
+  `<div class="legend-square color-${color}"></div> ${name}`
+
 const generatePolyline = (shape: Shape, index: number) => {
-  const color = COLORS[index]
+  const colorValue = COLORS[index]
+  const color = `#${colorValue}`
   const start = shape.coordinates[0]
   const end = shape.coordinates.slice(-1)[0]
   const key = crypto.randomUUID()
@@ -43,7 +47,7 @@ const generatePolyline = (shape: Shape, index: number) => {
   return [
     <LayersControl.Overlay
       checked
-      name={shape.name}
+      name={generateNameField(shape.name, colorValue)}
       key={`${key}-control-overlay`}
     >
       ,
@@ -51,7 +55,7 @@ const generatePolyline = (shape: Shape, index: number) => {
         ,
         <Polyline
           positions={shape.coordinates as LatLngExpression[]}
-          color={COLORS[index]}
+          color={color}
           key={`${key}-line`}
         />
         ,
@@ -96,7 +100,11 @@ const ShapeViewMap = ({ shapes }: ShapeViewMapProps) => {
     if (shapes && shapes.length > 0) {
       const lines = shapes.map((shape, index) => generatePolyline(shape, index))
       return [
-        <LayersControl position="topright" key="layer-control">
+        <LayersControl
+          position="topright"
+          key="layer-control"
+          collapsed={false}
+        >
           ,{lines},
         </LayersControl>,
       ]
