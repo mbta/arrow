@@ -2,5 +2,5 @@
   edit shuttle stop
 </.header>
 
-<%= react_component("Components.StopViewMap", %{}) %>
+<%= react_component("Components.StopViewMap", %{stop: %{ name: @stop.stop_name, description: @stop.stop_desc, latitude: @stop.stop_lat, longitude: @stop.stop_lon}}) %>
 <.stop_form changeset={@changeset} action={~p"/stops/#{@stop}"} />
