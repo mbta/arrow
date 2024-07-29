@@ -65,6 +65,7 @@ defmodule ArrowWeb.StopControllerTest do
     test "renders form", %{conn: conn} do
       conn = get(conn, ~p"/stops/new")
       assert html_response(conn, 200) =~ "create shuttle stop"
+      assert html_response(conn, 200) =~ "Components.StopViewMap"
     end
   end
 
@@ -89,6 +90,7 @@ defmodule ArrowWeb.StopControllerTest do
     test "renders form for editing chosen stop", %{conn: conn, stop: stop} do
       conn = get(conn, ~p"/stops/#{stop}/edit")
       assert html_response(conn, 200) =~ "edit shuttle stop"
+      assert html_response(conn, 200) =~ "Components.StopViewMap"
     end
   end
 
