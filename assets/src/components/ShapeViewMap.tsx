@@ -37,53 +37,60 @@ const defaultCenter: LatLngExpression = [42.360718, -71.05891]
 const generateNameField = (name: string, color: string) =>
   `<div class="legend-square color-${color}"></div> ${name}`
 
-const generatePolyline = (shape: Shape, index: number) => {
+const PolyLines = ({ shapes }: { shapes: Shape[] }) =>
+  shapes.map((shape: Shape, index: number) => {
+    const key = crypto.randomUUID()
+    return <PolyLine shape={shape} index={index} key={key} keyPrefix={key} />
+  })
+
+const PolyLine = ({
+  shape,
+  index,
+  keyPrefix,
+}: {
+  shape: Shape
+  index: number
+  keyPrefix: string
+}) => {
   const colorValue = COLORS[index]
   const color = `#${colorValue}`
   const start = shape.coordinates[0]
   const end = shape.coordinates.slice(-1)[0]
-  const key = crypto.randomUUID()
 
-  return [
+  return (
     <LayersControl.Overlay
       checked
       name={generateNameField(shape.name, colorValue)}
-      key={`${key}-control-overlay`}
+      key={`${keyPrefix}-control-overlay`}
     >
-      ,
-      <LayerGroup key={`${key}-control-group`}>
-        ,
+      <LayerGroup key={`${keyPrefix}-control-group`}>
         <Polyline
           positions={shape.coordinates as LatLngExpression[]}
           color={color}
-          key={`${key}-line`}
+          key={`${keyPrefix}-line`}
         />
-        ,
         <CircleMarker
           center={start as LatLngExpression}
           pathOptions={{ color }}
           radius={10}
-          key={`${key}-line-start`}
+          key={`${keyPrefix}-line-start`}
         />
-        ,
         <CircleMarker
           center={end as LatLngExpression}
           pathOptions={{ color, fillColor: color, fillOpacity: 1.0 }}
           radius={10}
-          key={`${key}-line-end`}
+          key={`${keyPrefix}-line-end`}
         />
-        ,
       </LayerGroup>
-      ,
-    </LayersControl.Overlay>,
-  ]
+    </LayersControl.Overlay>
+  )
 }
 
 const getMapBounds = (shapes: Shape[]) => {
   const shapeLats: number[] = []
   const shapeLongs: number[] = []
-  shapes.map((shape: Shape) =>
-    shape.coordinates.map((coordinate) => {
+  shapes.forEach((shape: Shape) =>
+    shape.coordinates.forEach((coordinate) => {
       shapeLats.push(coordinate[0])
       shapeLongs.push(coordinate[1])
     })
@@ -98,16 +105,15 @@ const getMapBounds = (shapes: Shape[]) => {
 const ShapeViewMap = ({ shapes }: ShapeViewMapProps) => {
   const polyLines = useMemo(() => {
     if (shapes && shapes.length > 0) {
-      const lines = shapes.map((shape, index) => generatePolyline(shape, index))
-      return [
+      return (
         <LayersControl
-          position="topright"
+          position="bottomright"
           key="layer-control"
           collapsed={false}
         >
-          ,{lines},
-        </LayersControl>,
-      ]
+          <PolyLines shapes={shapes} />
+        </LayersControl>
+      )
     } else {
       return []
     }
