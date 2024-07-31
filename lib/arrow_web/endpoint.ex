@@ -6,9 +6,19 @@ defmodule ArrowWeb.Endpoint do
     plug Phoenix.Ecto.SQL.Sandbox, sandbox: Ecto.Adapters.SQL.Sandbox
   end
 
+  @session_options [
+    store: :cookie,
+    key: "_arrow_key",
+    signing_salt: "35DDvOCJ"
+  ]
+
   socket "/socket", ArrowWeb.UserSocket,
     websocket: true,
     longpoll: false
+
+  socket "/live", Phoenix.LiveView.Socket,
+    websocket: [connect_info: [session: @session_options]],
+    longpoll: [connect_info: [session: @session_options]]
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -41,14 +51,10 @@ defmodule ArrowWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
-
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
   # Set :encryption_salt if you would also like to encrypt it.
-  plug Plug.Session,
-    store: :cookie,
-    key: "_arrow_key",
-    signing_salt: "35DDvOCJ"
+  plug Plug.Session, @session_options
 
   plug ArrowWeb.Router
 end

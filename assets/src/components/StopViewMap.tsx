@@ -3,10 +3,10 @@ import { LatLngExpression, icon } from "leaflet"
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet"
 
 type Stop = {
-  name: string
-  description: string
-  latitude: number
-  longitude: number
+  stop_name: string
+  stop_desc: string
+  stop_lat: number
+  stop_lon: number
 }
 
 const defaultCenter: LatLngExpression = [42.360718, -71.05891]
@@ -17,8 +17,8 @@ const markerIcon = icon({
   shadowUrl: "/images/marker-shadow.png",
 })
 
-const StopViewMap = ({ stop }: { stop?: Stop }) => {
-  return (
+const StopViewMap = ({ stop } :{ stop: Stop })=> {
+  return stop && (
     <MapContainer
       data-testid="stop-view-map-container"
       style={{ height: "800px" }}
@@ -30,9 +30,11 @@ const StopViewMap = ({ stop }: { stop?: Stop }) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {stop && (
-        <Marker position={[stop.latitude, stop.longitude]} icon={markerIcon}>
-          <Popup>{stop.name}</Popup>
+      {stop.stop_lat && stop.stop_lon && (
+        <Marker position={[stop.stop_lat, stop.stop_lon]} icon={markerIcon}>
+          <Popup>
+            {stop.stop_name}
+          </Popup>
         </Marker>
       )}
     </MapContainer>

@@ -9,7 +9,7 @@
 
     <div class="m-header__long-name navbar-text justify-content-end navbar-collapse collapse">
       Adjustments to the Regular Right of Way
-      <%= if @conn && Plug.Conn.get_session(@conn, :logout_url), do:
+      <%= if @logout_url, do:
         link("logout",
           to: Routes.auth_path(@conn, :logout),
           class: "ml-2 btn btn-outline-danger"
@@ -40,4 +40,4 @@
   </div>
 </footer>
 
-<%= content_tag(:script, "", type: "text/javascript", src: Routes.static_path(@conn, "/assets/app.js")) %>
+<%= content_tag(:script, "", type: "text/javascript", src: ~p"/assets/app.js") %>
