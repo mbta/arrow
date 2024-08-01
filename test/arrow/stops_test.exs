@@ -32,10 +32,10 @@ defmodule Arrow.StopsTest do
     end
 
     test "list_stops/1 returns all stops sorted by order_by param" do
-      stopA = stop_fixture(%{stop_name: "Stop A"})
-      stopZ = stop_fixture(%{stop_name: "Stop Z"})
-      assert Stops.list_stops(%{"order_by" => "stop_name_desc"}) == [stopZ, stopA]
-      assert Stops.list_stops(%{"order_by" => "stop_name_asc"}) == [stopA, stopZ]
+      stop_a = stop_fixture(%{stop_name: "Stop A"})
+      stop_z = stop_fixture(%{stop_name: "Stop Z"})
+      assert Stops.list_stops(%{"order_by" => "stop_name_desc"}) == [stop_z, stop_a]
+      assert Stops.list_stops(%{"order_by" => "stop_name_asc"}) == [stop_a, stop_z]
     end
 
     test "get_stop!/1 returns the stop with given id" do
