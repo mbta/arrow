@@ -493,9 +493,9 @@ defmodule ArrowWeb.CoreComponents do
             <%= if col[:link] do %>
               <.link href={col[:link]}>
                 <%= if String.ends_with?(col[:link], "desc") do %>
-                  <.icon name="hero-bars-arrow-down" class="h-3 w-3" />
+                  <.icon name="hero-bars-arrow-down" class="h-4 w-4" />
                 <% else %>
-                  <.icon name="hero-bars-arrow-up" class="h-3 w-3" />
+                  <.icon name="hero-bars-arrow-up" class="h-4 w-4" />
                 <% end %>
                 <%= col[:label] %>
               </.link>
