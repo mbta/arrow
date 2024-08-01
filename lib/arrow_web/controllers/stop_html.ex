@@ -18,6 +18,7 @@ defmodule ArrowWeb.StopView do
   end
 
   def sort_link(nil, field), do: ~p"/stops?#{%{order_by: "#{field}_desc"}}"
+
   def sort_link(sort_by, field) do
     if sort_by == "#{field}_desc" do
       ~p"/stops?#{%{order_by: "#{field}_asc"}}"
