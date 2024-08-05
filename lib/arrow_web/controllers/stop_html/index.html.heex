@@ -24,9 +24,6 @@
   <:col :let={stop} label="At street"><%= stop.at_street %></:col>
   <:col :let={stop} label="Last updated"><%= format_timestamp(stop.updated_at) %></:col>
   <:action :let={stop}>
-    <div class="sr-only">
-      <.link navigate={~p"/stops/#{stop}"}>Show</.link>
-    </div>
     <.link navigate={~p"/stops/#{stop}/edit"}>Edit</.link>
   </:action>
 </.table>
