@@ -13,7 +13,7 @@ import StopViewMap from "./components/StopViewMap"
 
 declare global {
   interface Window {
-    liveSocket: any,
+    liveSocket: LiveSocket
     Components: {
       [name: string]: (props: any) => JSX.Element
     }
@@ -21,13 +21,15 @@ declare global {
 }
 
 // https://github.com/fidr/phoenix_live_react
-const hooks = { LiveReact };
+const hooks = { LiveReact }
 
-let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+const csrfToken = document
+  .querySelector("meta[name='csrf-token']")!
+  .getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   hooks,
   // longPollFallbackMs: 2500,
-  params: { _csrf_token: csrfToken }
+  params: { _csrf_token: csrfToken },
 })
 
 // connect if there are any LiveViews on the page

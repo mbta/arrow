@@ -32,9 +32,7 @@ const StopViewMap = ({ stop }: { stop?: Stop }) => {
       />
       {stop && stop.stop_lat && stop.stop_lon && (
         <Marker position={[stop.stop_lat, stop.stop_lon]} icon={markerIcon}>
-          <Popup>
-            {stop.stop_name}
-          </Popup>
+          <Popup>{stop.stop_name}</Popup>
         </Marker>
       )}
     </MapContainer>
