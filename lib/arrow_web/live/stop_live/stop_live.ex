@@ -20,7 +20,7 @@ defmodule ArrowWeb.StopViewLive do
       <br>
       <a class="text-sm" href="https://www.notion.so/mbta-downtown-crossing/Conventions-for-shuttle-bus-information-fc5a788409b24eb088dbfe3a43abf67e?pvs=4#7f7211396f6c46e59c26e63373cdb4ac">View Shuttle Stop Conventions</a>
     </p>
-    <.simple_form :let={f} for={@form} as={:stop} phx-change="validate" phx-submit={@action}>
+    <.simple_form :let={f} for={@form} as={:stop} phx-change="validate" phx-submit={@action} id="stop-form">
       <.error :if={@form.action}>
         Oops, something went wrong! Please check the errors below.
       </.error>
