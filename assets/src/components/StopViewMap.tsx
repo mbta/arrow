@@ -17,8 +17,8 @@ const markerIcon = icon({
   shadowUrl: "/images/marker-shadow.png",
 })
 
-const StopViewMap = ({ stop } :{ stop: Stop })=> {
-  return stop && (
+const StopViewMap = ({ stop }: { stop?: Stop }) => {
+  return (
     <MapContainer
       data-testid="stop-view-map-container"
       style={{ height: "800px" }}
@@ -30,7 +30,7 @@ const StopViewMap = ({ stop } :{ stop: Stop })=> {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {stop.stop_lat && stop.stop_lon && (
+      {stop && stop.stop_lat && stop.stop_lon && (
         <Marker position={[stop.stop_lat, stop.stop_lon]} icon={markerIcon}>
           <Popup>
             {stop.stop_name}
