@@ -11,7 +11,7 @@
       Adjustments to the Regular Right of Way
       <%= if @logout_url, do:
         link("logout",
-          to: Routes.auth_path(@conn, :logout),
+          to: ~p"/auth/logout",
           class: "ml-2 btn btn-outline-danger"
       ) %>
     </div>
