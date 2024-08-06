@@ -13,11 +13,14 @@ defmodule ArrowWeb.Endpoint do
   ]
 
   socket "/socket", ArrowWeb.UserSocket,
-    websocket: true,
+    websocket: [check_origin: Application.compile_env(:arrow, :websocket_check_origin, false)],
     longpoll: false
 
   socket "/live", Phoenix.LiveView.Socket,
-    websocket: [connect_info: [session: @session_options]],
+    websocket: [
+      connect_info: [session: @session_options],
+      check_origin: Application.compile_env(:arrow, :websocket_check_origin, false)
+    ],
     longpoll: [connect_info: [session: @session_options]]
 
   # Serve at "/" the static files from "priv/static" directory.
