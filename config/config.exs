@@ -44,7 +44,8 @@ config :arrow,
 config :arrow, ArrowWeb.Endpoint,
   url: [host: "localhost"],
   render_errors: [view: ArrowWeb.ErrorView, accepts: ~w(html json)],
-  pubsub_server: Arrow.PubSub
+  pubsub_server: Arrow.PubSub,
+  live_view: [signing_salt: "35DDvOCJ"]
 
 config :esbuild,
   version: "0.17.11",
@@ -61,7 +62,13 @@ config :esbuild,
       #{if(Mix.env() == :test, do: "--define:__REACT_DEVTOOLS_GLOBAL_HOOK__={'isDisabled':true}")}
     ),
     cd: Path.expand("../assets", __DIR__),
-    env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+    env: %{
+      "NODE_PATH" =>
+        Enum.join(
+          [Path.expand("../deps", __DIR__), Path.expand("../assets/node_modules", __DIR__)],
+          ":"
+        )
+    }
   ]
 
 # Configure tailwind (the version is required)

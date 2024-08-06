@@ -201,7 +201,7 @@ defmodule ArrowWeb.CoreComponents do
 
   def simple_form(assigns) do
     ~H"""
-    <.form :let={f} for={@for} as={@as} {@rest}>
+    <.form :let={f} for={@for} as={@as} phx-change="validate" {@rest}>
       <%= render_slot(@inner_block, f) %>
       <hr class="light-hr">
       <div :for={action <- @actions} class="d-flex justify-content-center">

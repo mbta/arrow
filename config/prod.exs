@@ -13,6 +13,11 @@ import Config
 config :arrow,
   shape_storage_enabled?: true
 
+config :arrow, :websocket_check_origin, [
+  "https://*.mbta.com",
+  "https://*.mbtace.com"
+]
+
 config :arrow, ArrowWeb.Endpoint,
   http: [:inet6, port: 4000],
   url: [host: "example.com", port: 80],
