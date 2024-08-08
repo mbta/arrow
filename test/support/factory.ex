@@ -56,4 +56,15 @@ defmodule Arrow.Factory do
   def note_factory do
     %Arrow.Disruption.Note{author: "An author", body: "This is the body."}
   end
+
+  def stop_factory do
+    %Arrow.Shuttle.Stop{
+      stop_id: sequence(:source_label, &"stop-#{&1}"),
+      stop_name: sequence(:source_label, &"Stop #{&1}"),
+      stop_desc: sequence(:source_label, &"Stop Description #{&1}"),
+      stop_lat: 72.0,
+      stop_lon: 43.0,
+      municipality: "Boston"
+    }
+  end
 end
