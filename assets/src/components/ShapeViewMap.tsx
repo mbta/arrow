@@ -9,7 +9,7 @@ import {
   TileLayer,
 } from "react-leaflet"
 
-type Shape = {
+interface Shape {
   name: string
   coordinates: number[][]
 }

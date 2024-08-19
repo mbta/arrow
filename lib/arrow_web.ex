@@ -23,6 +23,7 @@ defmodule ArrowWeb do
   def router do
     quote do
       use Phoenix.Router
+      import Phoenix.LiveView.Router
       import Plug.Conn
       import Phoenix.Controller
     end
@@ -86,6 +87,26 @@ defmodule ArrowWeb do
     end
   end
 
+  def live_view do
+    quote do
+      use Phoenix.LiveView,
+        layout: {ArrowWeb.LayoutView, :live}
+
+      unquote(html_helpers())
+
+      # Import the `live_react_component` helper
+      import PhoenixLiveReact
+    end
+  end
+
+  def live_component do
+    quote do
+      use Phoenix.LiveComponent
+
+      unquote(html_helpers())
+    end
+  end
+
   def verified_routes do
     quote do
       use Phoenix.VerifiedRoutes,
@@ -96,7 +117,7 @@ defmodule ArrowWeb do
   end
 
   @doc """
-  When used, dispatch to the appropriate controller/view/etc.
+  When used, dispatch to the appropriate controller/live_view/etc.
   """
   defmacro __using__(which) when is_atom(which) do
     apply(__MODULE__, which, [])

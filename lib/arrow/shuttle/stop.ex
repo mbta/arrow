@@ -4,6 +4,8 @@ defmodule Arrow.Shuttle.Stop do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @derive {Jason.Encoder, only: [:stop_name, :stop_desc, :stop_lat, :stop_lon]}
+
   @type id :: integer
   @type t :: %__MODULE__{
           id: id,

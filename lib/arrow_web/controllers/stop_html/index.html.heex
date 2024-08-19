@@ -7,7 +7,7 @@
   </:actions>
 </.header>
 
-<.table id="stops" rows={@stops} row_click={&JS.navigate(~p"/stops/#{&1}")}>
+<.table id="stops" rows={@stops} row_click={&JS.navigate(~p"/stops/#{&1}/edit")}>
   <:col :let={stop} label="Stop" link={sort_link(@order_by, "stop_id")}><%= stop.stop_id %></:col>
   <:col :let={stop} label="Stop name" link={sort_link(@order_by, "stop_name")}><%= stop.stop_name %></:col>
   <:col :let={stop} label="Stop desc" link={sort_link(@order_by, "stop_desc")}><%= stop.stop_desc %></:col>
@@ -24,9 +24,6 @@
   <:col :let={stop} label="At street" link={sort_link(@order_by, "at_street")}><%= stop.at_street %></:col>
   <:col :let={stop} label="Last updated" link={sort_link(@order_by, "updated_at")}><%= format_timestamp(stop.updated_at) %></:col>
   <:action :let={stop}>
-    <div class="sr-only">
-      <.link navigate={~p"/stops/#{stop}"}>Show</.link>
-    </div>
     <.link navigate={~p"/stops/#{stop}/edit"}>Edit</.link>
   </:action>
 </.table>
