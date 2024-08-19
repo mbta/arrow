@@ -65,7 +65,7 @@ config :esbuild,
     env: %{
       "NODE_PATH" =>
         Enum.join(
-          [Path.expand("../deps", __DIR__), Path.expand("../assets/node_modules", __DIR__)],
+          [Path.expand("../deps", __DIR__)],
           ":"
         )
     }
