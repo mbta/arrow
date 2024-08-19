@@ -28,7 +28,7 @@ const csrfToken = document
   .getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   hooks,
-  // longPollFallbackMs: 2500,
+  longPollFallbackMs: location.host.startsWith("localhost") ? undefined : 2500,
   params: { _csrf_token: csrfToken },
 })
 
