@@ -1,43 +1,10 @@
-<header class="container bg-light">
-  <nav class="navbar navbar-expand navbar-light">
-    <div class="navbar-brand">
-      <a href="/" class="m-header__arrow">
-        <%= img_tag(~p"/images/logo.svg", width: "34", height: "34") %>
-        <span class="m-header__arrow-text">ARROW</span>
-      </a>
-    </div>
-
-    <div class="m-header__long-name navbar-text justify-content-end navbar-collapse collapse">
-      Adjustments to the Regular Right of Way
-      <%= if Plug.Conn.get_session(@conn, :logout_url), do:
-        link("logout",
-          to: ~p"/auth/logout",
-          class: "ml-2 btn btn-outline-danger"
-      ) %>
-    </div>
-  </nav>
-</header>
+<._header logout_url={Plug.Conn.get_session(@conn, :logout_url)} view="app" />
 
 <main class="container">
   <._flash flash={@flash} />
   <%= @inner_content %>
 </main>
 
-<footer class="container bg-light mt-auto px-5 py-1">
-  <div class="row align-items-center">
-    <div class="col-md-7 py-2 m-footer__explanation">
-      Arrow is built and maintained by the Customer Technology Department's Transit Real-time
-      team.
-    </div>
+<._footer />
 
-    <div class="col-md-4 offset-md-1 py-2">
-      <b>Contact Us</b>
-      <br>
-      Slack: <a href="https://mbta.slack.com/archives/C6XAZ1R8E"><code>#disruptions</code></a>
-      <br>
-      Email: <a href="mailto:transitdata@mbta.com">transitdata@mbta.com</a>
-    </div>
-  </div>
-</footer>
-
-<%= content_tag(:script, "", type: "text/javascript", src: Routes.static_path(@conn, "/assets/app.js")) %>
+<%= content_tag(:script, "", type: "text/javascript", src: ~p"/assets/app.js") %>
