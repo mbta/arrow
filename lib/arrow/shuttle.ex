@@ -116,8 +116,9 @@ defmodule Arrow.Shuttle do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_shape(%{name: name} = attrs) do
-    with nil <- Repo.get_by(Shape, name: name),
+  def create_shape(attrs) do
+    with {:ok, attrs} <- Shape.validate_and_enforce_name(attrs),
+         nil <- Repo.get_by(Shape, name: attrs.name),
          {:ok, shape_with_kml} <- create_shape_kml(attrs),
          {:ok, new_attrs} <- upload_shape_file(shape_with_kml) do
       do_create_shape(Enum.into(new_attrs, attrs))
