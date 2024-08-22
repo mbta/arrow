@@ -16,7 +16,7 @@ defmodule Arrow.Shuttle.ShapeUpload do
   @doc false
   def changeset(shape, attrs) do
     shape
-    |> cast(attrs, [:name, :coordinates])
+    |> cast(attrs, [:name, :coordinates], empty_values: ["-S"] ++ empty_values())
     |> validate_required([:name, :coordinates])
     |> validate_length(:coordinates, min: 2)
   end

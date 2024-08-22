@@ -8,7 +8,7 @@ defmodule Arrow.ShuttleTest do
 
   describe "shapes with s3 functionality enabled (mocked)" do
     @valid_shape %{
-      name: "some name",
+      name: "some name-S",
       coordinates: "-71.14163,42.39551 -71.14163,42.39551 -71.14163,42.39551"
     }
 
@@ -17,7 +17,18 @@ defmodule Arrow.ShuttleTest do
       reassign_env(:shape_storage_prefix, "prefix/#{Ecto.UUID.generate()}/")
 
       assert {:ok, %Shape{} = shape} = Shuttle.create_shape(@valid_shape)
-      assert shape.name == "some name"
+      assert shape.name == "some name-S"
+      Application.put_env(:arrow, :shape_storage_enabled?, false)
+    end
+
+    test "create_shape/1 with name that does not end in -S adds it" do
+      Application.put_env(:arrow, :shape_storage_enabled?, true)
+      Application.put_env(:arrow, :shape_storage_prefix, "prefix/#{Ecto.UUID.generate()}/")
+
+      assert {:ok, %Shape{} = shape} =
+               Shuttle.create_shape(%{name: "some name", coordinates: coords()})
+
+      assert shape.name == "some name-S"
     end
 
     test "delete_shape/1 deletes the shape" do
@@ -38,7 +49,7 @@ defmodule Arrow.ShuttleTest do
   end
 
   describe "shapes" do
-    @valid_attrs %{name: "some name", coordinates: coords()}
+    @valid_attrs %{name: "some name-S", coordinates: coords()}
     @invalid_attrs %{name: "", coordinates: nil}
 
     test "list_shapes/0 returns all shapes" do
@@ -53,7 +64,7 @@ defmodule Arrow.ShuttleTest do
 
     test "create_shapes/1 with valid data creates a shape" do
       assert {:ok, [{:ok, %Shape{} = shape}]} = Shuttle.create_shapes([@valid_attrs])
-      assert shape.name == "some name"
+      assert shape.name == "some name-S"
     end
 
     test "create_shapes/1 with invalid data returns error changeset" do

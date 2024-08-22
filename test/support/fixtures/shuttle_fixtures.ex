@@ -16,7 +16,7 @@ defmodule Arrow.ShuttleFixtures do
   @doc """
   Generate a unique shape name.
   """
-  def unique_shape_name, do: "some name#{System.unique_integer([:positive])}"
+  def unique_shape_name, do: "some name#{System.unique_integer([:positive])}-S"
 
   @doc """
   Generate a shape.
@@ -40,7 +40,7 @@ defmodule Arrow.ShuttleFixtures do
     props =
       Map.merge(
         %{
-          name: "test-show-shape",
+          name: "test-show-shape-S",
           path: "/test/prefix/test-show-shape.kml",
           bucket: "some-mbta-bucket",
           prefix: "test/prefix/"
