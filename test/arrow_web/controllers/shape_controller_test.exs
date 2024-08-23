@@ -66,18 +66,10 @@ defmodule ArrowWeb.ShapeControllerTest do
     test "shows a shape", %{conn: conn} do
       reassign_env(:shape_storage_enabled?, true)
 
-      {:ok, shape} =
-        %Shape{}
-        |> Shape.changeset(%{
-          name: "my-test-shape",
-          path: "/test/prefix/test-show-shape.kml",
-          bucket: "not-a-real-bucket",
-          prefix: "test/prefix/"
-        })
-        |> Repo.insert()
+      shape = s3_mocked_shape_fixture()
 
       conn = get(conn, ~p"/shapes/#{shape.id}")
-      assert html_response(conn, 200) =~ "my-test-shape"
+      assert html_response(conn, 200) =~ "test-show-shape"
       assert html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
   end

@@ -42,12 +42,22 @@ defmodule Arrow.Shuttle do
   """
   def get_shape!(id), do: Repo.get!(Shape, id)
 
+  @doc """
+  Gets a shapes upload struct associated with a given shape.
+
+  ## Examples
+
+      iex> get_shapes_upload(%Shape{})
+      %ShapesUpload{}
+  """
   def get_shapes_upload(%Shape{} = shape) do
-    with {:ok, %{body: shapes_kml}} <- get_shape_file(shape),
+    with true <- Application.get_env(:arrow, :shape_storage_enabled?),
+         {:ok, %{body: shapes_kml}} <- get_shape_file(shape),
          {:ok, parsed_shapes} <- ShapesUpload.parse_kml(shapes_kml),
          {:ok, shapes} <- ShapesUpload.shapes_from_kml(parsed_shapes) do
       ShapesUpload.changeset(%ShapesUpload{}, %{filename: shape.name, shapes: shapes})
     else
+      false -> {:ok, :disabled}
       error -> error
     end
   end
