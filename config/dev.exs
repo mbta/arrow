@@ -77,7 +77,7 @@ config :arrow, dev_routes: true
 # Set prefix env for s3 uploads
 config :arrow,
   shape_storage_enabled?: true,
-  shape_storage_prefix_env: "local/"
+  shape_storage_prefix_env: "dev/local/"
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
