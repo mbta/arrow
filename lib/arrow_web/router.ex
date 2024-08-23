@@ -49,13 +49,13 @@ defmodule ArrowWeb.Router do
     resources("/disruptions", DisruptionController, except: [:index])
     put("/disruptions/:id/row_status", DisruptionController, :update_row_status)
     post("/disruptions/:id/notes", NoteController, :create)
-    get("/shapes/:id/download", ShapeController, :download)
     live("/stops/new", StopViewLive, :new)
     live("/stops/:id/edit", StopViewLive, :edit)
     get("/stops", StopController, :index)
-    resources("/shapes", ShapeController, except: [:new, :create])
+    resources("/shapes", ShapeController, only: [:delete, :index, :show])
     get("/shapes_upload", ShapeController, :new)
     post("/shapes_upload", ShapeController, :create)
+    get("/shapes/:id/download", ShapeController, :download)
   end
 
   scope "/", ArrowWeb do
