@@ -61,8 +61,6 @@ defmodule ArrowWeb.ShapeControllerTest do
     end
   end
 
-  require Logger
-
   describe "show" do
     @tag :authenticated_admin
     test "shows a shape", %{conn: conn} do

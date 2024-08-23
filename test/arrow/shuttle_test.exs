@@ -28,8 +28,6 @@ defmodule Arrow.ShuttleTest do
       assert_raise Ecto.NoResultsError, fn -> Shuttle.get_shape!(shape.id) end
     end
 
-    require Logger
-
     test "get_shapes_upload/1 returns a ShapesUpload changeset" do
       reassign_env(:shape_storage_enabled?, true)
 
