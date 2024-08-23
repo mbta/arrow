@@ -15,7 +15,7 @@ RUN mix local.hex --force && \
 
 RUN curl https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
   -o /root/aws-cert-bundle.pem
-RUN echo "51b107da46717aed974d97464b63f7357b220fe8737969db1492d1cae74b3947 /root/aws-cert-bundle.pem" | sha256sum -c -
+RUN echo "d72191eaa5d48fe2b6e044a0ae0b0e9f35e325b34b1ecab6ffe11d490d5cdb8f /root/aws-cert-bundle.pem" | sha256sum -c -
 
 # Instructions from:
 # https://github.com/nodesource/distributions#debian-versions
@@ -60,7 +60,7 @@ FROM debian:$DEBIAN_VERSION
 
 RUN apt-get update --allow-releaseinfo-change && \
   apt-get install -y --no-install-recommends \
-    libssl1.1 libsctp1 curl ca-certificates && \
+  libssl1.1 libsctp1 curl ca-certificates && \
   rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -74,7 +74,7 @@ COPY --from=elixir-builder --chown=nobody:root /app/_build/prod/rel/arrow .
 # Ensure SSL support is enabled
 RUN env SECRET_KEY_BASE=fake COGNITO_CLIENT_SECRET=fake DATABASE_PORT=0 \
   sh -c ' \
-     /app/bin/arrow eval ":crypto.supports()" && \
-     /app/bin/arrow eval ":ok = :public_key.cacerts_load"'
+  /app/bin/arrow eval ":crypto.supports()" && \
+  /app/bin/arrow eval ":ok = :public_key.cacerts_load"'
 
 CMD ["/app/bin/arrow", "start"]
