@@ -4,6 +4,7 @@ defmodule ArrowWeb.ShapeControllerTest do
   alias Arrow.Shuttle.Shape
 
   import Arrow.ShuttleFixtures
+  import Test.Support.Helpers
 
   @upload_attrs %{
     name: "some name",
@@ -57,6 +58,19 @@ defmodule ArrowWeb.ShapeControllerTest do
       conn = get(conn, ~p"/shapes")
       assert html_response(conn, 200) =~ "Listing Shapes"
       refute html_response(conn, 200) =~ "Components.ShapeViewMap"
+    end
+  end
+
+  describe "show" do
+    @tag :authenticated_admin
+    test "shows a shape", %{conn: conn} do
+      reassign_env(:shape_storage_enabled?, true)
+
+      shape = s3_mocked_shape_fixture()
+
+      conn = get(conn, ~p"/shapes/#{shape.id}")
+      assert html_response(conn, 200) =~ "test-show-shape"
+      assert html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
   end
 

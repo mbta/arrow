@@ -20,6 +20,8 @@ defmodule ArrowWeb.ShapeView do
     %{shapes: Enum.map(shapes, &shape_map_view/1)}
   end
 
+  def shapes_map_view({:ok, :disabled}), do: %{}
+
   defp shape_map_view(%{coordinates: coordinates, name: name}) do
     %{
       coordinates: map_coordinates(coordinates),
