@@ -101,13 +101,8 @@ defmodule ArrowWeb.ShapeController do
 
   def show(conn, %{"id" => id}) do
     shape = Shuttle.get_shape!(id)
-    render(conn, :show, shape: shape)
-  end
-
-  def edit(conn, %{"id" => id}) do
-    shape = Shuttle.get_shape!(id)
-    changeset = Shuttle.change_shape(shape)
-    render(conn, :edit, shape: shape, changeset: changeset)
+    shape_upload = Shuttle.get_shapes_upload(shape)
+    render(conn, :show, shape: shape, shape_upload: shape_upload)
   end
 
   def download(conn, %{"id" => id}) do

@@ -4,6 +4,9 @@ defmodule Arrow.ShuttleFixtures do
   entities via the `Arrow.Shuttle` context.
   """
 
+  alias Arrow.Repo
+  alias Arrow.Shuttle.Shape
+
   @doc """
   Generate valid coords
   """
@@ -29,6 +32,26 @@ defmodule Arrow.ShuttleFixtures do
         coordinates: coords()
       })
       |> Arrow.Shuttle.create_shape()
+
+    shape
+  end
+
+  def s3_mocked_shape_fixture(attrs \\ %{}) do
+    props =
+      Map.merge(
+        %{
+          name: "test-show-shape",
+          path: "/test/prefix/test-show-shape.kml",
+          bucket: "some-mbta-bucket",
+          prefix: "test/prefix/"
+        },
+        attrs
+      )
+
+    {:ok, shape} =
+      %Shape{}
+      |> Shape.changeset(props)
+      |> Repo.insert()
 
     shape
   end
