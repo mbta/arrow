@@ -23,7 +23,7 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart4 do
 
       add :name, :string, null: false
       add :time_desc, :string
-      # May want to define an enum for this
+      # May want to define an integer-code table for this
       add :typicality, :integer, null: false
       add :sort_order, :integer, null: false
       # References gtfs_trips, but we haven't created that yet. (gtfs_trips
@@ -31,7 +31,7 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart4 do
       # this column later.)
       add :representative_trip_id, :string, null: false
 
-      # Make an enum type for this?
+      # Make an integer-code table for this?
       add :canonical, :integer, null: false
     end
   end

@@ -34,9 +34,7 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart1 do
       add :long_name, :string, null: false
       add :desc, :string, null: false
       add :url, :string
-      # Maybe integer
       add :color, :string, null: false
-      # Maybe integer
       add :text_color, :string, null: false
       add :sort_order, :integer, null: false
     end

@@ -39,7 +39,7 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart2 do
       add :address, :string
       add :url, :string
       add :level_id, references("gtfs_levels", type: :string)
-      # Really an enum type like route_type
+      # Really an integer-code type like route_type
       add :location_type, :integer, null: false
       add :parent_station, references("gtfs_stops", type: :string)
       add :wheelchair_boarding, :integer, null: false
