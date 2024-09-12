@@ -2,6 +2,7 @@ defmodule ArrowWeb.StopController do
   use ArrowWeb, :controller
 
   alias Arrow.Stops
+  alias ArrowWeb.ErrorHelpers
   alias Plug.Conn
 
   @spec index(Conn.t(), Conn.params()) :: Conn.t()
@@ -18,9 +19,13 @@ defmodule ArrowWeb.StopController do
         |> put_flash(:info, "Stop created successfully.")
         |> redirect(to: ~p"/stops")
 
-      {:error, %Ecto.Changeset{} = _changeset} ->
+      {:error, %Ecto.Changeset{} = changeset} ->
         conn
-        |> put_flash(:error, "Unable to create stop, please try again")
+        |> put_flash(
+          :errors,
+          {"Error creating stop, please try again",
+           ErrorHelpers.changeset_error_messages(changeset)}
+        )
         |> redirect(to: ~p"/stops/new")
     end
   end
