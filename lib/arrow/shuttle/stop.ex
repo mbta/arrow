@@ -64,6 +64,7 @@ defmodule Arrow.Shuttle.Stop do
     stop
     |> cast(attrs, @permitted_fields)
     |> validate_required(@required_fields)
+    |> unsafe_validate_unique([:stop_id], Arrow.Repo)
     |> unique_constraint(:stop_id)
   end
 end
