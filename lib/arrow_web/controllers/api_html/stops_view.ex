@@ -29,5 +29,5 @@ defmodule ArrowWeb.API.StopsView do
     |> Map.take(@fields)
   end
 
-  def id(stop, _conn), do: stop.stop_id
+  def id(stop, _conn), do: stop.id
 end
