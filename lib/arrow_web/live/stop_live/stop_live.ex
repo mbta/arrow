@@ -70,7 +70,7 @@ defmodule ArrowWeb.StopViewLive do
       socket
       |> assign(:form, form)
       |> assign(:form_action, "edit")
-      |> assign(:http_action, nil)
+      |> assign(:http_action, ~p"/stops/#{id}")
       |> assign(:stop, stop)
       |> assign(:title, "edit shuttle stop")
       |> assign(:stop_map_props, stop)
@@ -99,6 +99,16 @@ defmodule ArrowWeb.StopViewLive do
     {:ok, socket}
   end
 
+  def handle_changeset(socket, changeset) do
+    case Ecto.Changeset.apply_action(changeset, :validate) do
+      {:ok, _} ->
+        {:noreply, assign(socket, form: to_form(changeset), trigger_submit: true)}
+
+      {:error, applied_changeset} ->
+        {:noreply, assign(socket, form: to_form(applied_changeset), trigger_submit: false)}
+    end
+  end
+
   def handle_event("validate", %{"stop" => stop_params}, socket) do
     form = Stops.change_stop(%Stop{}, stop_params) |> to_form(action: :validate)
 
@@ -109,28 +119,14 @@ defmodule ArrowWeb.StopViewLive do
 
   def handle_event("edit", %{"stop" => stop_params}, socket) do
     stop = Stops.get_stop!(socket.assigns.stop.id)
+    changeset = Stops.change_stop(stop, stop_params)
 
-    case Stops.update_stop(stop, stop_params) do
-      {:ok, _stop} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Stop edited successfully.")
-         |> redirect(to: ~p"/stops/")}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, form: to_form(changeset))}
-    end
+    handle_changeset(socket, changeset)
   end
 
   def handle_event("create", %{"stop" => stop_params}, socket) do
     changeset = Stops.change_stop(%Stop{}, stop_params)
 
-    case Ecto.Changeset.apply_action(changeset, :validate) do
-      {:ok, _} ->
-        {:noreply, assign(socket, form: to_form(changeset), trigger_submit: true)}
-
-      {:error, applied_changeset} ->
-        {:noreply, assign(socket, form: to_form(applied_changeset), trigger_submit: false)}
-    end
+    handle_changeset(socket, changeset)
   end
 end

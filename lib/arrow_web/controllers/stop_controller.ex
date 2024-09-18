@@ -29,4 +29,25 @@ defmodule ArrowWeb.StopController do
         |> redirect(to: ~p"/stops/new")
     end
   end
+
+  @spec update(Conn.t(), Conn.params()) :: Conn.t()
+  def update(conn, %{"id" => id, "stop" => stop_params}) do
+    stop = Stops.get_stop!(id)
+
+    case Stops.update_stop(stop, stop_params) do
+      {:ok, _stop} ->
+        conn
+        |> put_flash(:info, "Stop updated successfully.")
+        |> redirect(to: ~p"/stops")
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_flash(
+          :errors,
+          {"Error updating stop, please try again",
+           ErrorHelpers.changeset_error_messages(changeset)}
+        )
+        |> redirect(to: ~p"/stops/#{id}/edit")
+    end
+  end
 end

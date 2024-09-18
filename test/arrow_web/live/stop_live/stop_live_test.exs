@@ -113,20 +113,27 @@ defmodule ArrowWeb.StopLiveTest do
     test "redirects when data is valid", %{conn: conn, stop: stop} do
       {:ok, edit_live, _html} = live(conn, ~p"/stops/#{stop}/edit")
 
-      assert edit_live
-             |> form("#stop-form", stop: @update_attrs)
-             |> render_submit()
+      form =
+        edit_live
+        |> form("#stop-form", stop: @update_attrs)
 
-      assert_redirect(edit_live, ~p"/stops/")
+      assert render_submit(form) =~ ~r/phx-trigger-action/
+
+      conn = follow_trigger_action(form, conn)
+      assert conn.method == "POST"
+      params = Enum.map(@update_attrs, fn {k, v} -> {"#{k}", v} end) |> Enum.into(%{})
+      assert conn.params == %{"stop" => params, "id" => "#{stop.id}"}
     end
 
     @tag :authenticated_admin
     test "renders errors when data is invalid", %{conn: conn, stop: stop} do
       {:ok, edit_live, _html} = live(conn, ~p"/stops/#{stop}/edit")
 
-      assert edit_live
-             |> form("#stop-form", stop: @invalid_attrs)
-             |> render_submit()
+      form =
+        edit_live
+        |> form("#stop-form", stop: @invalid_attrs)
+
+      refute render_submit(form) =~ ~r/phx-trigger-action/
 
       html = render(edit_live)
       assert html =~ "edit shuttle stop"

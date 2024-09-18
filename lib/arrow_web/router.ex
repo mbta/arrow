@@ -52,6 +52,7 @@ defmodule ArrowWeb.Router do
     live("/stops/new", StopViewLive, :new)
     live("/stops/:id/edit", StopViewLive, :edit)
     get("/stops", StopController, :index)
+    post("/stops/:id", StopController, :update)
     post("/stops", StopController, :create)
     resources("/shapes", ShapeController, only: [:delete, :index, :show])
     get("/shapes_upload", ShapeController, :new)
