@@ -4,19 +4,28 @@ defmodule Arrow.Gtfs do
   replacing the previous archive's data.
   """
 
+  require Logger
   alias Arrow.Repo
 
-  def import(zip_path) do
+  def import(zip_path, current_version) do
     zip_file = Unzip.LocalFile.open(zip_path)
 
-    {:ok, unzip} = Unzip.new(zip_file)
+    with {:ok, unzip} <- Unzip.new(zip_file),
+         :ok <- validate_required_files(unzip),
+         :ok <- validate_version_change(unzip, current_version) do
+      try do
+        Repo.transaction(fn ->
+          truncate_all()
+          import_all(unzip)
+        end)
 
-    validate_required_files!(unzip)
-
-    Repo.transaction(fn ->
-      truncate_all()
-      import_all(unzip)
-    end)
+        :ok
+      rescue
+        error ->
+          Logger.warn("GTFS import transaction failed message=#{Exception.message(error)}")
+          :error
+      end
+    end
   end
 
   defp truncate_all do
@@ -62,7 +71,7 @@ defmodule Arrow.Gtfs do
     |> CSV.decode!(headers: true)
   end
 
-  defp validate_required_files!(unzip) do
+  defp validate_required_files(unzip) do
     files =
       unzip
       |> Unzip.list_entries()
@@ -70,13 +79,34 @@ defmodule Arrow.Gtfs do
 
     required = MapSet.new(required_files())
 
-    unless MapSet.subset?(required, files) do
+    if MapSet.subset?(required, files) do
+      :ok
+    else
       missing =
         MapSet.difference(required, files)
         |> Enum.sort()
-        |> Enum.join(", ")
+        |> Enum.join(",")
 
-      raise "GTFS archive is missing required file(s): #{missing}"
+      Logger.warn("GTFS archive is missing required file(s) missing=#{missing}")
+      :error
+    end
+  end
+
+  defp validate_version_change(unzip, current_version) do
+    unzip
+    |> stream_csv_rows("feed_info.txt")
+    |> Enum.at(0, %{})
+    |> Map.fetch("feed_version")
+    |> case do
+      {:ok, ^current_version} ->
+        :unchanged
+
+      {:ok, _other_version} ->
+        :ok
+
+      :error ->
+        Logger.warn("could not find a feed_version value in feed_info.txt")
+        :error
     end
   end
 
