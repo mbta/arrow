@@ -45,6 +45,7 @@ defmodule Arrow.MixProject do
   def deps do
     [
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:csv, "~> 3.2"},
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
       {:ecto_sql, "~> 3.11"},
       {:esbuild, "~> 0.2", runtime: Mix.env() == :dev},
@@ -89,7 +90,8 @@ defmodule Arrow.MixProject do
        app: false,
        compile: false,
        depth: 1},
-      {:sax_map, "~> 1.2"}
+      {:sax_map, "~> 1.2"},
+      {:unzip, "~> 0.12.0"}
     ]
   end
 
