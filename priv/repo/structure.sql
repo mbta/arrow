@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.5
--- Dumped by pg_dump version 15.5
+-- Dumped from database version 14.13 (Homebrew)
+-- Dumped by pg_dump version 14.13 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -331,6 +331,562 @@ ALTER SEQUENCE public.disruptions_id_seq1 OWNED BY public.disruptions.id;
 
 
 --
+-- Name: gtfs_agencies; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_agencies (
+    id character varying(255) NOT NULL,
+    name character varying(255) NOT NULL,
+    url character varying(255) NOT NULL,
+    timezone character varying(255) NOT NULL,
+    lang character varying(255),
+    phone character varying(255)
+);
+
+
+--
+-- Name: gtfs_bike_boarding_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_bike_boarding_types (
+    id bigint NOT NULL,
+    name character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_bike_boarding_types_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.gtfs_bike_boarding_types_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: gtfs_bike_boarding_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.gtfs_bike_boarding_types_id_seq OWNED BY public.gtfs_bike_boarding_types.id;
+
+
+--
+-- Name: gtfs_canonicalities; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_canonicalities (
+    id bigint NOT NULL,
+    name character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_canonicalities_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.gtfs_canonicalities_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: gtfs_canonicalities_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.gtfs_canonicalities_id_seq OWNED BY public.gtfs_canonicalities.id;
+
+
+--
+-- Name: gtfs_checkpoints; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_checkpoints (
+    id character varying(255) NOT NULL,
+    name character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_continuous_pickup_drop_off_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_continuous_pickup_drop_off_types (
+    id bigint NOT NULL,
+    name character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_continuous_pickup_drop_off_types_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.gtfs_continuous_pickup_drop_off_types_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: gtfs_continuous_pickup_drop_off_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.gtfs_continuous_pickup_drop_off_types_id_seq OWNED BY public.gtfs_continuous_pickup_drop_off_types.id;
+
+
+--
+-- Name: gtfs_directions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_directions (
+    route_id character varying(255) NOT NULL,
+    direction_id integer NOT NULL,
+    "desc" character varying(255) NOT NULL,
+    destination character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_feed_info; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_feed_info (
+    id character varying(255) NOT NULL,
+    publisher_name character varying(255) NOT NULL,
+    publisher_url character varying(255) NOT NULL,
+    lang character varying(255) NOT NULL,
+    start_date date NOT NULL,
+    end_date date NOT NULL,
+    version character varying(255) NOT NULL,
+    contact_email character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_levels; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_levels (
+    id character varying(255) NOT NULL,
+    index double precision NOT NULL,
+    name character varying(255)
+);
+
+
+--
+-- Name: gtfs_lines; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_lines (
+    id character varying(255) NOT NULL,
+    short_name character varying(255) NOT NULL,
+    long_name character varying(255) NOT NULL,
+    "desc" character varying(255) NOT NULL,
+    url character varying(255),
+    color character varying(255) NOT NULL,
+    text_color character varying(255) NOT NULL,
+    sort_order integer NOT NULL
+);
+
+
+--
+-- Name: gtfs_listed_routes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_listed_routes (
+    id bigint NOT NULL,
+    name character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_listed_routes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.gtfs_listed_routes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: gtfs_listed_routes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.gtfs_listed_routes_id_seq OWNED BY public.gtfs_listed_routes.id;
+
+
+--
+-- Name: gtfs_location_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_location_types (
+    id bigint NOT NULL,
+    name character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_location_types_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.gtfs_location_types_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: gtfs_location_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.gtfs_location_types_id_seq OWNED BY public.gtfs_location_types.id;
+
+
+--
+-- Name: gtfs_pickup_drop_off_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_pickup_drop_off_types (
+    id bigint NOT NULL,
+    name character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_pickup_drop_off_types_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.gtfs_pickup_drop_off_types_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: gtfs_pickup_drop_off_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.gtfs_pickup_drop_off_types_id_seq OWNED BY public.gtfs_pickup_drop_off_types.id;
+
+
+--
+-- Name: gtfs_route_pattern_typicalities; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_route_pattern_typicalities (
+    id bigint NOT NULL,
+    name character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_route_pattern_typicalities_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.gtfs_route_pattern_typicalities_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: gtfs_route_pattern_typicalities_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.gtfs_route_pattern_typicalities_id_seq OWNED BY public.gtfs_route_pattern_typicalities.id;
+
+
+--
+-- Name: gtfs_route_patterns; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_route_patterns (
+    id character varying(255) NOT NULL,
+    route_id character varying(255) NOT NULL,
+    direction_id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    time_desc character varying(255),
+    typicality integer NOT NULL,
+    sort_order integer NOT NULL,
+    representative_trip_id character varying(255) NOT NULL,
+    canonical integer NOT NULL
+);
+
+
+--
+-- Name: gtfs_route_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_route_types (
+    id bigint NOT NULL,
+    name character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_route_types_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.gtfs_route_types_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: gtfs_route_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.gtfs_route_types_id_seq OWNED BY public.gtfs_route_types.id;
+
+
+--
+-- Name: gtfs_routes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_routes (
+    id character varying(255) NOT NULL,
+    agency_id character varying(255) NOT NULL,
+    short_name character varying(255),
+    long_name character varying(255),
+    "desc" character varying(255) NOT NULL,
+    type integer NOT NULL,
+    url character varying(255),
+    color character varying(255),
+    text_color character varying(255),
+    sort_order integer NOT NULL,
+    fare_class character varying(255) NOT NULL,
+    line_id character varying(255),
+    listed_route integer,
+    network_id character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_service_dates; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_service_dates (
+    service_id character varying(255) NOT NULL,
+    date date NOT NULL,
+    exception_type integer NOT NULL,
+    holiday_name character varying(255)
+);
+
+
+--
+-- Name: gtfs_service_exception_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_service_exception_types (
+    id bigint NOT NULL,
+    name character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_service_exception_types_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.gtfs_service_exception_types_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: gtfs_service_exception_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.gtfs_service_exception_types_id_seq OWNED BY public.gtfs_service_exception_types.id;
+
+
+--
+-- Name: gtfs_services; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_services (
+    id character varying(255) NOT NULL,
+    monday boolean NOT NULL,
+    tuesday boolean NOT NULL,
+    wednesday boolean NOT NULL,
+    thursday boolean NOT NULL,
+    friday boolean NOT NULL,
+    saturday boolean NOT NULL,
+    sunday boolean NOT NULL,
+    start_date date NOT NULL,
+    end_date date NOT NULL
+);
+
+
+--
+-- Name: gtfs_shape_points; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_shape_points (
+    shape_id character varying(255) NOT NULL,
+    sequence integer NOT NULL,
+    lat double precision NOT NULL,
+    lon double precision NOT NULL,
+    dist_traveled double precision
+);
+
+
+--
+-- Name: gtfs_shapes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_shapes (
+    id character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_stop_times; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_stop_times (
+    trip_id character varying(255) NOT NULL,
+    stop_sequence integer NOT NULL,
+    arrival_time time(0) without time zone NOT NULL,
+    departure_time time(0) without time zone NOT NULL,
+    stop_id character varying(255) NOT NULL,
+    stop_headsign character varying(255),
+    pickup_type integer NOT NULL,
+    drop_off_type integer NOT NULL,
+    timepoint integer,
+    checkpoint_id character varying(255),
+    continuous_pickup integer,
+    continuous_drop_off integer
+);
+
+
+--
+-- Name: gtfs_stops; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_stops (
+    id character varying(255) NOT NULL,
+    code character varying(255),
+    name character varying(255) NOT NULL,
+    "desc" character varying(255),
+    platform_code character varying(255),
+    platform_name character varying(255),
+    lat double precision,
+    lon double precision,
+    zone_id character varying(255),
+    address character varying(255),
+    url character varying(255),
+    level_id character varying(255),
+    location_type integer NOT NULL,
+    parent_station_id character varying(255),
+    wheelchair_boarding integer NOT NULL,
+    municipality character varying(255),
+    on_street character varying(255),
+    at_street character varying(255),
+    vehicle_type integer
+);
+
+
+--
+-- Name: gtfs_timepoint_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_timepoint_types (
+    id bigint NOT NULL,
+    name character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_timepoint_types_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.gtfs_timepoint_types_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: gtfs_timepoint_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.gtfs_timepoint_types_id_seq OWNED BY public.gtfs_timepoint_types.id;
+
+
+--
+-- Name: gtfs_trips; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_trips (
+    id character varying(255) NOT NULL,
+    route_id character varying(255) NOT NULL,
+    service_id character varying(255) NOT NULL,
+    headsign character varying(255) NOT NULL,
+    short_name character varying(255),
+    direction_id integer NOT NULL,
+    block_id character varying(255),
+    shape_id character varying(255),
+    wheelchair_accessible integer NOT NULL,
+    route_type integer,
+    route_pattern_id character varying(255) NOT NULL,
+    bikes_allowed integer NOT NULL
+);
+
+
+--
+-- Name: gtfs_wheelchair_boarding_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_wheelchair_boarding_types (
+    id bigint NOT NULL,
+    name character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_wheelchair_boarding_types_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.gtfs_wheelchair_boarding_types_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: gtfs_wheelchair_boarding_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.gtfs_wheelchair_boarding_types_id_seq OWNED BY public.gtfs_wheelchair_boarding_types.id;
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -482,6 +1038,83 @@ ALTER TABLE ONLY public.disruptions ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
+-- Name: gtfs_bike_boarding_types id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_bike_boarding_types ALTER COLUMN id SET DEFAULT nextval('public.gtfs_bike_boarding_types_id_seq'::regclass);
+
+
+--
+-- Name: gtfs_canonicalities id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_canonicalities ALTER COLUMN id SET DEFAULT nextval('public.gtfs_canonicalities_id_seq'::regclass);
+
+
+--
+-- Name: gtfs_continuous_pickup_drop_off_types id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_continuous_pickup_drop_off_types ALTER COLUMN id SET DEFAULT nextval('public.gtfs_continuous_pickup_drop_off_types_id_seq'::regclass);
+
+
+--
+-- Name: gtfs_listed_routes id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_listed_routes ALTER COLUMN id SET DEFAULT nextval('public.gtfs_listed_routes_id_seq'::regclass);
+
+
+--
+-- Name: gtfs_location_types id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_location_types ALTER COLUMN id SET DEFAULT nextval('public.gtfs_location_types_id_seq'::regclass);
+
+
+--
+-- Name: gtfs_pickup_drop_off_types id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_pickup_drop_off_types ALTER COLUMN id SET DEFAULT nextval('public.gtfs_pickup_drop_off_types_id_seq'::regclass);
+
+
+--
+-- Name: gtfs_route_pattern_typicalities id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_route_pattern_typicalities ALTER COLUMN id SET DEFAULT nextval('public.gtfs_route_pattern_typicalities_id_seq'::regclass);
+
+
+--
+-- Name: gtfs_route_types id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_route_types ALTER COLUMN id SET DEFAULT nextval('public.gtfs_route_types_id_seq'::regclass);
+
+
+--
+-- Name: gtfs_service_exception_types id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_service_exception_types ALTER COLUMN id SET DEFAULT nextval('public.gtfs_service_exception_types_id_seq'::regclass);
+
+
+--
+-- Name: gtfs_timepoint_types id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_timepoint_types ALTER COLUMN id SET DEFAULT nextval('public.gtfs_timepoint_types_id_seq'::regclass);
+
+
+--
+-- Name: gtfs_wheelchair_boarding_types id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_wheelchair_boarding_types ALTER COLUMN id SET DEFAULT nextval('public.gtfs_wheelchair_boarding_types_id_seq'::regclass);
+
+
+--
 -- Name: shapes id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -565,6 +1198,214 @@ ALTER TABLE ONLY public.disruption_revisions
 
 ALTER TABLE ONLY public.disruptions
     ADD CONSTRAINT disruptions_pkey1 PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_agencies gtfs_agencies_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_agencies
+    ADD CONSTRAINT gtfs_agencies_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_bike_boarding_types gtfs_bike_boarding_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_bike_boarding_types
+    ADD CONSTRAINT gtfs_bike_boarding_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_canonicalities gtfs_canonicalities_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_canonicalities
+    ADD CONSTRAINT gtfs_canonicalities_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_checkpoints gtfs_checkpoints_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_checkpoints
+    ADD CONSTRAINT gtfs_checkpoints_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_continuous_pickup_drop_off_types gtfs_continuous_pickup_drop_off_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_continuous_pickup_drop_off_types
+    ADD CONSTRAINT gtfs_continuous_pickup_drop_off_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_directions gtfs_directions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_directions
+    ADD CONSTRAINT gtfs_directions_pkey PRIMARY KEY (route_id, direction_id);
+
+
+--
+-- Name: gtfs_feed_info gtfs_feed_info_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_feed_info
+    ADD CONSTRAINT gtfs_feed_info_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_levels gtfs_levels_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_levels
+    ADD CONSTRAINT gtfs_levels_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_lines gtfs_lines_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_lines
+    ADD CONSTRAINT gtfs_lines_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_listed_routes gtfs_listed_routes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_listed_routes
+    ADD CONSTRAINT gtfs_listed_routes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_location_types gtfs_location_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_location_types
+    ADD CONSTRAINT gtfs_location_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_pickup_drop_off_types gtfs_pickup_drop_off_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_pickup_drop_off_types
+    ADD CONSTRAINT gtfs_pickup_drop_off_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_route_pattern_typicalities gtfs_route_pattern_typicalities_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_route_pattern_typicalities
+    ADD CONSTRAINT gtfs_route_pattern_typicalities_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_route_patterns gtfs_route_patterns_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_route_patterns
+    ADD CONSTRAINT gtfs_route_patterns_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_route_types gtfs_route_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_route_types
+    ADD CONSTRAINT gtfs_route_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_routes gtfs_routes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_routes
+    ADD CONSTRAINT gtfs_routes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_service_dates gtfs_service_dates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_service_dates
+    ADD CONSTRAINT gtfs_service_dates_pkey PRIMARY KEY (service_id, date);
+
+
+--
+-- Name: gtfs_service_exception_types gtfs_service_exception_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_service_exception_types
+    ADD CONSTRAINT gtfs_service_exception_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_services gtfs_services_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_services
+    ADD CONSTRAINT gtfs_services_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_shape_points gtfs_shape_points_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_shape_points
+    ADD CONSTRAINT gtfs_shape_points_pkey PRIMARY KEY (shape_id, sequence);
+
+
+--
+-- Name: gtfs_shapes gtfs_shapes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_shapes
+    ADD CONSTRAINT gtfs_shapes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_stop_times gtfs_stop_times_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stop_times
+    ADD CONSTRAINT gtfs_stop_times_pkey PRIMARY KEY (trip_id, stop_sequence);
+
+
+--
+-- Name: gtfs_stops gtfs_stops_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stops
+    ADD CONSTRAINT gtfs_stops_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_timepoint_types gtfs_timepoint_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_timepoint_types
+    ADD CONSTRAINT gtfs_timepoint_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_trips gtfs_trips_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_trips
+    ADD CONSTRAINT gtfs_trips_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_wheelchair_boarding_types gtfs_wheelchair_boarding_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_wheelchair_boarding_types
+    ADD CONSTRAINT gtfs_wheelchair_boarding_types_pkey PRIMARY KEY (id);
 
 
 --
@@ -655,6 +1496,83 @@ CREATE INDEX disruption_trip_short_names_disruption_id_index ON public.disruptio
 
 
 --
+-- Name: gtfs_bike_boarding_types_name_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX gtfs_bike_boarding_types_name_index ON public.gtfs_bike_boarding_types USING btree (name);
+
+
+--
+-- Name: gtfs_canonicalities_name_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX gtfs_canonicalities_name_index ON public.gtfs_canonicalities USING btree (name);
+
+
+--
+-- Name: gtfs_continuous_pickup_drop_off_types_name_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX gtfs_continuous_pickup_drop_off_types_name_index ON public.gtfs_continuous_pickup_drop_off_types USING btree (name);
+
+
+--
+-- Name: gtfs_listed_routes_name_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX gtfs_listed_routes_name_index ON public.gtfs_listed_routes USING btree (name);
+
+
+--
+-- Name: gtfs_location_types_name_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX gtfs_location_types_name_index ON public.gtfs_location_types USING btree (name);
+
+
+--
+-- Name: gtfs_pickup_drop_off_types_name_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX gtfs_pickup_drop_off_types_name_index ON public.gtfs_pickup_drop_off_types USING btree (name);
+
+
+--
+-- Name: gtfs_route_pattern_typicalities_name_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX gtfs_route_pattern_typicalities_name_index ON public.gtfs_route_pattern_typicalities USING btree (name);
+
+
+--
+-- Name: gtfs_route_types_name_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX gtfs_route_types_name_index ON public.gtfs_route_types USING btree (name);
+
+
+--
+-- Name: gtfs_service_exception_types_name_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX gtfs_service_exception_types_name_index ON public.gtfs_service_exception_types USING btree (name);
+
+
+--
+-- Name: gtfs_timepoint_types_name_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX gtfs_timepoint_types_name_index ON public.gtfs_timepoint_types USING btree (name);
+
+
+--
+-- Name: gtfs_wheelchair_boarding_types_name_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX gtfs_wheelchair_boarding_types_name_index ON public.gtfs_wheelchair_boarding_types USING btree (name);
+
+
+--
 -- Name: shapes_name_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -740,6 +1658,278 @@ ALTER TABLE ONLY public.disruptions
 
 
 --
+-- Name: gtfs_directions gtfs_directions_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_directions
+    ADD CONSTRAINT gtfs_directions_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.gtfs_routes(id);
+
+
+--
+-- Name: gtfs_route_patterns gtfs_route_patterns_canonical_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_route_patterns
+    ADD CONSTRAINT gtfs_route_patterns_canonical_fkey FOREIGN KEY (canonical) REFERENCES public.gtfs_canonicalities(id);
+
+
+--
+-- Name: gtfs_route_patterns gtfs_route_patterns_direction_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_route_patterns
+    ADD CONSTRAINT gtfs_route_patterns_direction_id_fkey FOREIGN KEY (direction_id, route_id) REFERENCES public.gtfs_directions(direction_id, route_id);
+
+
+--
+-- Name: gtfs_route_patterns gtfs_route_patterns_representative_trip_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_route_patterns
+    ADD CONSTRAINT gtfs_route_patterns_representative_trip_id_fkey FOREIGN KEY (representative_trip_id) REFERENCES public.gtfs_trips(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: gtfs_route_patterns gtfs_route_patterns_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_route_patterns
+    ADD CONSTRAINT gtfs_route_patterns_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.gtfs_routes(id);
+
+
+--
+-- Name: gtfs_route_patterns gtfs_route_patterns_typicality_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_route_patterns
+    ADD CONSTRAINT gtfs_route_patterns_typicality_fkey FOREIGN KEY (typicality) REFERENCES public.gtfs_route_pattern_typicalities(id);
+
+
+--
+-- Name: gtfs_routes gtfs_routes_agency_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_routes
+    ADD CONSTRAINT gtfs_routes_agency_id_fkey FOREIGN KEY (agency_id) REFERENCES public.gtfs_agencies(id);
+
+
+--
+-- Name: gtfs_routes gtfs_routes_line_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_routes
+    ADD CONSTRAINT gtfs_routes_line_id_fkey FOREIGN KEY (line_id) REFERENCES public.gtfs_lines(id);
+
+
+--
+-- Name: gtfs_routes gtfs_routes_listed_route_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_routes
+    ADD CONSTRAINT gtfs_routes_listed_route_fkey FOREIGN KEY (listed_route) REFERENCES public.gtfs_listed_routes(id);
+
+
+--
+-- Name: gtfs_routes gtfs_routes_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_routes
+    ADD CONSTRAINT gtfs_routes_type_fkey FOREIGN KEY (type) REFERENCES public.gtfs_route_types(id);
+
+
+--
+-- Name: gtfs_service_dates gtfs_service_dates_exception_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_service_dates
+    ADD CONSTRAINT gtfs_service_dates_exception_type_fkey FOREIGN KEY (exception_type) REFERENCES public.gtfs_service_exception_types(id);
+
+
+--
+-- Name: gtfs_service_dates gtfs_service_dates_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_service_dates
+    ADD CONSTRAINT gtfs_service_dates_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.gtfs_services(id);
+
+
+--
+-- Name: gtfs_shape_points gtfs_shape_points_shape_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_shape_points
+    ADD CONSTRAINT gtfs_shape_points_shape_id_fkey FOREIGN KEY (shape_id) REFERENCES public.gtfs_shapes(id);
+
+
+--
+-- Name: gtfs_stop_times gtfs_stop_times_checkpoint_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stop_times
+    ADD CONSTRAINT gtfs_stop_times_checkpoint_id_fkey FOREIGN KEY (checkpoint_id) REFERENCES public.gtfs_checkpoints(id);
+
+
+--
+-- Name: gtfs_stop_times gtfs_stop_times_continuous_drop_off_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stop_times
+    ADD CONSTRAINT gtfs_stop_times_continuous_drop_off_fkey FOREIGN KEY (continuous_drop_off) REFERENCES public.gtfs_continuous_pickup_drop_off_types(id);
+
+
+--
+-- Name: gtfs_stop_times gtfs_stop_times_continuous_pickup_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stop_times
+    ADD CONSTRAINT gtfs_stop_times_continuous_pickup_fkey FOREIGN KEY (continuous_pickup) REFERENCES public.gtfs_continuous_pickup_drop_off_types(id);
+
+
+--
+-- Name: gtfs_stop_times gtfs_stop_times_drop_off_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stop_times
+    ADD CONSTRAINT gtfs_stop_times_drop_off_type_fkey FOREIGN KEY (drop_off_type) REFERENCES public.gtfs_pickup_drop_off_types(id);
+
+
+--
+-- Name: gtfs_stop_times gtfs_stop_times_pickup_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stop_times
+    ADD CONSTRAINT gtfs_stop_times_pickup_type_fkey FOREIGN KEY (pickup_type) REFERENCES public.gtfs_pickup_drop_off_types(id);
+
+
+--
+-- Name: gtfs_stop_times gtfs_stop_times_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stop_times
+    ADD CONSTRAINT gtfs_stop_times_stop_id_fkey FOREIGN KEY (stop_id) REFERENCES public.gtfs_stops(id);
+
+
+--
+-- Name: gtfs_stop_times gtfs_stop_times_timepoint_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stop_times
+    ADD CONSTRAINT gtfs_stop_times_timepoint_fkey FOREIGN KEY (timepoint) REFERENCES public.gtfs_timepoint_types(id);
+
+
+--
+-- Name: gtfs_stop_times gtfs_stop_times_trip_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stop_times
+    ADD CONSTRAINT gtfs_stop_times_trip_id_fkey FOREIGN KEY (trip_id) REFERENCES public.gtfs_trips(id);
+
+
+--
+-- Name: gtfs_stops gtfs_stops_level_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stops
+    ADD CONSTRAINT gtfs_stops_level_id_fkey FOREIGN KEY (level_id) REFERENCES public.gtfs_levels(id);
+
+
+--
+-- Name: gtfs_stops gtfs_stops_location_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stops
+    ADD CONSTRAINT gtfs_stops_location_type_fkey FOREIGN KEY (location_type) REFERENCES public.gtfs_location_types(id);
+
+
+--
+-- Name: gtfs_stops gtfs_stops_parent_station_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stops
+    ADD CONSTRAINT gtfs_stops_parent_station_id_fkey FOREIGN KEY (parent_station_id) REFERENCES public.gtfs_stops(id);
+
+
+--
+-- Name: gtfs_stops gtfs_stops_vehicle_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stops
+    ADD CONSTRAINT gtfs_stops_vehicle_type_fkey FOREIGN KEY (vehicle_type) REFERENCES public.gtfs_route_types(id);
+
+
+--
+-- Name: gtfs_stops gtfs_stops_wheelchair_boarding_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stops
+    ADD CONSTRAINT gtfs_stops_wheelchair_boarding_fkey FOREIGN KEY (wheelchair_boarding) REFERENCES public.gtfs_wheelchair_boarding_types(id);
+
+
+--
+-- Name: gtfs_trips gtfs_trips_bikes_allowed_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_trips
+    ADD CONSTRAINT gtfs_trips_bikes_allowed_fkey FOREIGN KEY (bikes_allowed) REFERENCES public.gtfs_bike_boarding_types(id);
+
+
+--
+-- Name: gtfs_trips gtfs_trips_direction_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_trips
+    ADD CONSTRAINT gtfs_trips_direction_id_fkey FOREIGN KEY (direction_id, route_id) REFERENCES public.gtfs_directions(direction_id, route_id);
+
+
+--
+-- Name: gtfs_trips gtfs_trips_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_trips
+    ADD CONSTRAINT gtfs_trips_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.gtfs_routes(id);
+
+
+--
+-- Name: gtfs_trips gtfs_trips_route_pattern_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_trips
+    ADD CONSTRAINT gtfs_trips_route_pattern_id_fkey FOREIGN KEY (route_pattern_id) REFERENCES public.gtfs_route_patterns(id);
+
+
+--
+-- Name: gtfs_trips gtfs_trips_route_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_trips
+    ADD CONSTRAINT gtfs_trips_route_type_fkey FOREIGN KEY (route_type) REFERENCES public.gtfs_route_types(id);
+
+
+--
+-- Name: gtfs_trips gtfs_trips_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_trips
+    ADD CONSTRAINT gtfs_trips_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.gtfs_services(id);
+
+
+--
+-- Name: gtfs_trips gtfs_trips_shape_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_trips
+    ADD CONSTRAINT gtfs_trips_shape_id_fkey FOREIGN KEY (shape_id) REFERENCES public.gtfs_shapes(id);
+
+
+--
+-- Name: gtfs_trips gtfs_trips_wheelchair_accessible_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_trips
+    ADD CONSTRAINT gtfs_trips_wheelchair_accessible_fkey FOREIGN KEY (wheelchair_accessible) REFERENCES public.gtfs_wheelchair_boarding_types(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -770,3 +1960,9 @@ INSERT INTO public."schema_migrations" (version) VALUES (20240611173539);
 INSERT INTO public."schema_migrations" (version) VALUES (20240628203237);
 INSERT INTO public."schema_migrations" (version) VALUES (20240701173124);
 INSERT INTO public."schema_migrations" (version) VALUES (20240718181932);
+INSERT INTO public."schema_migrations" (version) VALUES (20240826153959);
+INSERT INTO public."schema_migrations" (version) VALUES (20240826154124);
+INSERT INTO public."schema_migrations" (version) VALUES (20240826154204);
+INSERT INTO public."schema_migrations" (version) VALUES (20240826154208);
+INSERT INTO public."schema_migrations" (version) VALUES (20240826154213);
+INSERT INTO public."schema_migrations" (version) VALUES (20240826154218);

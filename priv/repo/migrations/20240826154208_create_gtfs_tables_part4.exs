@@ -6,8 +6,8 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart4 do
       add :route_id, references("gtfs_routes", type: :string), primary_key: true
       add :direction_id, :integer, primary_key: true
       # Make an enum type for this?
-      add :direction, :string, null: false
-      add :direction_destination, :string, null: false
+      add :desc, :string, null: false
+      add :destination, :string, null: false
     end
 
     create table("gtfs_route_patterns", primary_key: [name: :id, type: :string]) do
@@ -23,8 +23,7 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart4 do
 
       add :name, :string, null: false
       add :time_desc, :string
-      # May want to define an integer-code table for this
-      add :typicality, :integer, null: false
+      add :typicality, references("gtfs_route_pattern_typicalities", type: :integer), null: false
       add :sort_order, :integer, null: false
       # References gtfs_trips, but we haven't created that yet. (gtfs_trips
       # references this table, so we'll need to add a DEFERRED FK constraint to
@@ -32,7 +31,7 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart4 do
       add :representative_trip_id, :string, null: false
 
       # Make an integer-code table for this?
-      add :canonical, :integer, null: false
+      add :canonical, references("gtfs_canonicalities", type: :integer), null: false
     end
   end
 end
