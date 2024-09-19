@@ -1,0 +1,56 @@
+defmodule Arrow.Gtfs.Route do
+  use Arrow.Gtfs.Schema
+  import Ecto.Changeset
+
+  @type t :: %__MODULE__{
+          id: String.t(),
+          agency: Arrow.Gtfs.Agency.t() | Ecto.Association.NotLoaded.t(),
+          short_name: String.t() | nil,
+          long_name: String.t() | nil,
+          desc: String.t(),
+          type: atom,
+          url: String.t() | nil,
+          color: String.t() | nil,
+          text_color: String.t() | nil,
+          sort_order: integer,
+          fare_class: String.t(),
+          line: Arrow.Gtfs.Line.t() | Ecto.Association.NotLoaded.t(),
+          listed_route: atom,
+          network_id: String.t()
+        }
+
+  schema "gtfs_routes" do
+    belongs_to :agency, Arrow.Gtfs.Agency
+    field :short_name, :string
+    field :long_name, :string
+    field :desc, :string
+
+    field :type, Arrow.Gtfs.Types.Enum,
+      values: Enum.with_index(~w[light_rail heavy_rail commuter_rail bus ferry]a)
+
+    field :url, :string
+    field :color, :string
+    field :text_color, :string
+    field :sort_order, :integer
+    field :fare_class, :string
+    belongs_to :line, Arrow.Gtfs.Line
+    field :listed_route, Arrow.Gtfs.Types.Enum, values: Enum.with_index(~w[Included Excluded]a)
+    field :network_id, :string
+
+    has_many :directions, Arrow.Gtfs.Direction
+    has_many :trips, Arrow.Gtfs.Trip
+  end
+
+  def changeset(route, attrs) do
+    attrs = remove_table_prefix(attrs, "route")
+
+    route
+    |> cast(
+      attrs,
+      ~w[id agency_id short_name long_name desc type url color text_color sort_order fare_class line_id listed_route network_id]a
+    )
+    |> validate_required(~w[id agency_id desc type sort_order fare_class network_id]a)
+    |> assoc_constraint(:agency)
+    |> assoc_constraint(:line)
+  end
+end
