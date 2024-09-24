@@ -2,6 +2,9 @@ defmodule Arrow.Gtfs.Types.Enum do
   @moduledoc """
   Ecto.Enum, except it accepts string-formatted integers when casting to an
   integer-valued enum.
+
+  Code is copied directly from Ecto.Enum @3.11.0, with the only
+  change being the expression bound to `on_cast`.
   """
 
   use Ecto.ParameterizedType

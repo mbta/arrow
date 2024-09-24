@@ -5,62 +5,81 @@ defmodule Arrow.Gtfs do
   """
 
   require Logger
+  alias Arrow.Gtfs.ImportHelper
+  alias Ecto.Changeset
   alias Arrow.Repo
 
   def import(zip_path, current_version) do
     zip_file = Unzip.LocalFile.open(zip_path)
 
-    with {:ok, unzip} <- Unzip.new(zip_file),
-         :ok <- validate_required_files(unzip),
-         :ok <- validate_version_change(unzip, current_version) do
-      try do
-        Repo.transaction(fn ->
-          truncate_all()
-          import_all(unzip)
-        end)
+    result =
+      with {:ok, unzip} <- Unzip.new(zip_file),
+           :ok <- validate_required_files(unzip),
+           :ok <- validate_version_change(unzip, current_version) do
+        try do
+          Repo.transaction(fn ->
+            # TODO: Deferring constraints may slow the import down.
+            #       If so, remove this line.
+            Repo.query!("SET CONSTRAINTS ALL DEFERRED")
 
-        :ok
-      rescue
-        error ->
-          Logger.warn("GTFS import transaction failed message=#{Exception.message(error)}")
-          :error
+            truncate_all()
+            import_all(unzip)
+
+            Logger.info("Checking deferred constraints")
+            Repo.query!("SET CONSTRAINTS ALL IMMEDIATE")
+          end)
+
+          :ok
+        rescue
+          error ->
+            Logger.warn("GTFS import transaction failed message=#{Exception.message(error)}")
+            :error
+        end
       end
-    end
+
+    Unzip.LocalFile.close(zip_file)
+    result
   end
 
   defp truncate_all do
     tables =
-      table_to_importer()
-      |> Enum.flat_map(fn
-        {_, {mods, _import_fn}} -> mods
-        {_, mod} -> [mod]
+      Enum.map_join(table_to_importer(), ", ", fn {_, settings} ->
+        schema_mod = Keyword.fetch!(settings, :schema)
+        schema_mod.__schema__(:source)
       end)
-      |> Enum.map_join(", ", & &1.__schema__(:source))
 
     Repo.query!("TRUNCATE #{tables}")
   end
 
   defp import_all(unzip) do
-    Enum.each(table_to_importer(), &do_import(unzip, &1))
+    Enum.each(table_to_importer(), &import_table(&1, unzip))
   end
 
-  defp do_import(unzip, {table, {_mods, import_fn}}) when is_function(import_fn, 1) do
-    unzip
-    |> stream_csv_rows(table)
-    |> import_fn.()
-  end
+  defp import_table({table, settings}, unzip) do
+    schema_mod = Keyword.fetch!(settings, :schema)
+    preprocess_rows = Keyword.get(settings, :preprocess, &Function.identity/1)
 
-  defp do_import(unzip, {table, schema_mod}) when is_atom(schema_mod) do
     unzip
     |> stream_csv_rows(table)
-    # Is this the correct way to create a new record?
-    # (Make a changeset starting from a default struct)
-    # Instructions
-    |> Stream.map(&schema_mod.changeset(struct(schema_mod), &1))
-    # TODO: Remove once we figure out what to do about the bad direction rows
-    # (See direction.ex for details)
-    |> Stream.reject(&(&1.action == :ignore_bad_row))
-    |> Enum.each(&Repo.insert!/1)
+    |> preprocess_rows.()
+    # Pass each row through a changeset so we can cast & validate it,
+    # then convert back to a plain map for compatibility with Repo.insert_all.
+    |> Stream.map(fn row ->
+      struct(schema_mod)
+      |> schema_mod.changeset(row)
+      |> then(fn
+        %{action: :ignore_bad_row} ->
+          nil
+
+        cs ->
+          cs
+          |> Changeset.apply_action!(:insert)
+          |> ImportHelper.schema_struct_to_map()
+      end)
+    end)
+    |> Stream.reject(&is_nil/1)
+    |> ImportHelper.chunk_values()
+    |> Enum.each(&Repo.insert_all(schema_mod, &1))
   end
 
   defp stream_csv_rows(unzip, table) do
@@ -77,13 +96,11 @@ defmodule Arrow.Gtfs do
       |> Unzip.list_entries()
       |> MapSet.new(& &1.file_name)
 
-    required = MapSet.new(required_files())
-
-    if MapSet.subset?(required, files) do
+    if MapSet.subset?(required_files(), files) do
       :ok
     else
       missing =
-        MapSet.difference(required, files)
+        MapSet.difference(required_files(), files)
         |> Enum.sort()
         |> Enum.join(",")
 
@@ -113,53 +130,32 @@ defmodule Arrow.Gtfs do
   defp table_to_importer do
     # Listed in the order in which they should be imported.
     [
-      feed_info: Arrow.Gtfs.FeedInfo,
-      agency: Arrow.Gtfs.Agency,
-      checkpoints: Arrow.Gtfs.Checkpoint,
-      levels: Arrow.Gtfs.Level,
-      lines: Arrow.Gtfs.Line,
-      calendar: Arrow.Gtfs.Service,
-      calendar_dates: Arrow.Gtfs.ServiceDate,
-      stops: Arrow.Gtfs.Stop,
-      shapes: {[Arrow.Gtfs.Shape, Arrow.Gtfs.ShapePoint], &import_shapes/1},
-      routes: Arrow.Gtfs.Route,
-      directions: Arrow.Gtfs.Direction,
-      route_patterns: Arrow.Gtfs.RoutePattern,
-      trips: Arrow.Gtfs.Trip,
-      # stop_times is huge, need to find another way to import it.
-      stop_times: Arrow.Gtfs.StopTime
+      feed_info: [schema: Arrow.Gtfs.FeedInfo],
+      agency: [schema: Arrow.Gtfs.Agency],
+      checkpoints: [schema: Arrow.Gtfs.Checkpoint],
+      levels: [schema: Arrow.Gtfs.Level],
+      lines: [schema: Arrow.Gtfs.Line],
+      calendar: [schema: Arrow.Gtfs.Service],
+      calendar_dates: [schema: Arrow.Gtfs.ServiceDate],
+      stops: [schema: Arrow.Gtfs.Stop],
+      # shapes.txt is imported into gtfs_shapes AND gtfs_shape_points,
+      # to properly model the 1:* shape:points relationship.
+      # (All fields except shape_id are ignored when importing into gtfs_shapes.)
+      shapes: [
+        schema: Arrow.Gtfs.Shape,
+        preprocess: fn rows -> Stream.uniq_by(rows, & &1["shape_id"]) end
+      ],
+      shapes: [schema: Arrow.Gtfs.ShapePoint],
+      routes: [schema: Arrow.Gtfs.Route],
+      directions: [schema: Arrow.Gtfs.Direction],
+      route_patterns: [schema: Arrow.Gtfs.RoutePattern],
+      trips: [schema: Arrow.Gtfs.Trip],
+      stop_times: [schema: Arrow.Gtfs.StopTime]
     ]
-    |> Enum.map(fn {table, importer} -> {"#{table}.txt", importer} end)
+    |> Enum.map(fn {table, settings} -> {"#{table}.txt", settings} end)
   end
 
   defp required_files do
-    Enum.map(table_to_importer(), fn {path, _} -> path end)
-  end
-
-  defp import_shapes(shape_rows) do
-    shape_rows
-    |> Enum.group_by(& &1["shape_id"])
-    |> Enum.each(fn {shape_id, points} ->
-      %Arrow.Gtfs.Shape{}
-      |> Arrow.Gtfs.Shape.changeset(%{"shape_id" => shape_id})
-      |> Repo.insert!()
-
-      ####################################################
-      # TODO: Importing points takes too long and causes #
-      #       the transaction to time out.               #
-      #                                                  #
-      #       Is the COPY command a good idea here?      #
-      #       Can it be used alongside other statements  #
-      #       inside a txn?                              #
-      #                                                  #
-      #       Is there a way to increase the timeout?    #
-      ####################################################
-
-      Enum.each(points, fn point ->
-        %Arrow.Gtfs.ShapePoint{}
-        |> Arrow.Gtfs.ShapePoint.changeset(point)
-        |> Repo.insert!()
-      end)
-    end)
+    MapSet.new(table_to_importer(), fn {path, _} -> path end)
   end
 end

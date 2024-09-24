@@ -1,8 +1,10 @@
 defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart4 do
   use Ecto.Migration
 
+  import Arrow.Repo.MigrationHelper, only: [create_deferrable: 2]
+
   def change do
-    create table("gtfs_directions", primary_key: false) do
+    create_deferrable table("gtfs_directions", primary_key: false) do
       add :route_id, references("gtfs_routes", type: :string), primary_key: true
       add :direction_id, :integer, primary_key: true
       # Make an enum type for this?
@@ -10,7 +12,7 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart4 do
       add :destination, :string, null: false
     end
 
-    create table("gtfs_route_patterns", primary_key: [name: :id, type: :string]) do
+    create_deferrable table("gtfs_route_patterns", primary_key: [name: :id, type: :string]) do
       add :route_id, references("gtfs_routes", type: :string), null: false
 
       add :direction_id,

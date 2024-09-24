@@ -1,8 +1,10 @@
 defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart6 do
   use Ecto.Migration
 
+  import Arrow.Repo.MigrationHelper, only: [create_deferrable: 2]
+
   def change do
-    create table("gtfs_stop_times", primary_key: false) do
+    create_deferrable table("gtfs_stop_times", primary_key: false) do
       add :trip_id, references("gtfs_trips", type: :string), primary_key: true
       add :stop_sequence, :integer, primary_key: true
       # Maybe type can be :time?

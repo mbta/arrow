@@ -8,7 +8,8 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart1 do
 
   use Ecto.Migration
 
-  import Arrow.Repo.MigrationHelper, only: [create_and_populate_enum_table: 2]
+  import Arrow.Repo.MigrationHelper,
+    only: [create_and_populate_enum_table: 2, create_deferrable: 2]
 
   def change do
     ###########################################
@@ -89,7 +90,7 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart1 do
     #################################
     # Tables with zero dependencies #
     #################################
-    create table("gtfs_feed_info", primary_key: [name: :id, type: :string]) do
+    create_deferrable table("gtfs_feed_info", primary_key: [name: :id, type: :string]) do
       add :publisher_name, :string, null: false
       add :publisher_url, :string, null: false
       add :lang, :string, null: false
@@ -99,7 +100,7 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart1 do
       add :contact_email, :string, null: false
     end
 
-    create table("gtfs_agencies", primary_key: [name: :id, type: :string]) do
+    create_deferrable table("gtfs_agencies", primary_key: [name: :id, type: :string]) do
       add :name, :string, null: false
       add :url, :string, null: false
       add :timezone, :string, null: false
@@ -107,11 +108,11 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart1 do
       add :phone, :string
     end
 
-    create table("gtfs_checkpoints", primary_key: [name: :id, type: :string]) do
+    create_deferrable table("gtfs_checkpoints", primary_key: [name: :id, type: :string]) do
       add :name, :string, null: false
     end
 
-    create table("gtfs_levels", primary_key: [name: :id, type: :string]) do
+    create_deferrable table("gtfs_levels", primary_key: [name: :id, type: :string]) do
       add :index, :float, null: false
       add :name, :string
       # `level_elevation` column is included but empty in the CSV and not
@@ -119,7 +120,7 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart1 do
       # add :elevation, :string
     end
 
-    create table("gtfs_lines", primary_key: [name: :id, type: :string]) do
+    create_deferrable table("gtfs_lines", primary_key: [name: :id, type: :string]) do
       # Spec says always included, but column is partially empty
       add :short_name, :string
       add :long_name, :string, null: false

@@ -486,9 +486,9 @@ CREATE TABLE public.gtfs_levels (
 
 CREATE TABLE public.gtfs_lines (
     id character varying(255) NOT NULL,
-    short_name character varying(255) NOT NULL,
+    short_name character varying(255),
     long_name character varying(255) NOT NULL,
-    "desc" character varying(255) NOT NULL,
+    "desc" character varying(255),
     url character varying(255),
     color character varying(255) NOT NULL,
     text_color character varying(255) NOT NULL,
@@ -768,8 +768,8 @@ CREATE TABLE public.gtfs_shapes (
 CREATE TABLE public.gtfs_stop_times (
     trip_id character varying(255) NOT NULL,
     stop_sequence integer NOT NULL,
-    arrival_time time(0) without time zone NOT NULL,
-    departure_time time(0) without time zone NOT NULL,
+    arrival_time jsonb NOT NULL,
+    departure_time jsonb NOT NULL,
     stop_id character varying(255) NOT NULL,
     stop_headsign character varying(255),
     pickup_type integer NOT NULL,
@@ -1662,7 +1662,7 @@ ALTER TABLE ONLY public.disruptions
 --
 
 ALTER TABLE ONLY public.gtfs_directions
-    ADD CONSTRAINT gtfs_directions_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.gtfs_routes(id);
+    ADD CONSTRAINT gtfs_directions_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.gtfs_routes(id) DEFERRABLE;
 
 
 --
@@ -1670,7 +1670,7 @@ ALTER TABLE ONLY public.gtfs_directions
 --
 
 ALTER TABLE ONLY public.gtfs_route_patterns
-    ADD CONSTRAINT gtfs_route_patterns_canonical_fkey FOREIGN KEY (canonical) REFERENCES public.gtfs_canonicalities(id);
+    ADD CONSTRAINT gtfs_route_patterns_canonical_fkey FOREIGN KEY (canonical) REFERENCES public.gtfs_canonicalities(id) DEFERRABLE;
 
 
 --
@@ -1678,7 +1678,7 @@ ALTER TABLE ONLY public.gtfs_route_patterns
 --
 
 ALTER TABLE ONLY public.gtfs_route_patterns
-    ADD CONSTRAINT gtfs_route_patterns_direction_id_fkey FOREIGN KEY (direction_id, route_id) REFERENCES public.gtfs_directions(direction_id, route_id);
+    ADD CONSTRAINT gtfs_route_patterns_direction_id_fkey FOREIGN KEY (direction_id, route_id) REFERENCES public.gtfs_directions(direction_id, route_id) DEFERRABLE;
 
 
 --
@@ -1694,7 +1694,7 @@ ALTER TABLE ONLY public.gtfs_route_patterns
 --
 
 ALTER TABLE ONLY public.gtfs_route_patterns
-    ADD CONSTRAINT gtfs_route_patterns_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.gtfs_routes(id);
+    ADD CONSTRAINT gtfs_route_patterns_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.gtfs_routes(id) DEFERRABLE;
 
 
 --
@@ -1702,7 +1702,7 @@ ALTER TABLE ONLY public.gtfs_route_patterns
 --
 
 ALTER TABLE ONLY public.gtfs_route_patterns
-    ADD CONSTRAINT gtfs_route_patterns_typicality_fkey FOREIGN KEY (typicality) REFERENCES public.gtfs_route_pattern_typicalities(id);
+    ADD CONSTRAINT gtfs_route_patterns_typicality_fkey FOREIGN KEY (typicality) REFERENCES public.gtfs_route_pattern_typicalities(id) DEFERRABLE;
 
 
 --
@@ -1710,7 +1710,7 @@ ALTER TABLE ONLY public.gtfs_route_patterns
 --
 
 ALTER TABLE ONLY public.gtfs_routes
-    ADD CONSTRAINT gtfs_routes_agency_id_fkey FOREIGN KEY (agency_id) REFERENCES public.gtfs_agencies(id);
+    ADD CONSTRAINT gtfs_routes_agency_id_fkey FOREIGN KEY (agency_id) REFERENCES public.gtfs_agencies(id) DEFERRABLE;
 
 
 --
@@ -1718,7 +1718,7 @@ ALTER TABLE ONLY public.gtfs_routes
 --
 
 ALTER TABLE ONLY public.gtfs_routes
-    ADD CONSTRAINT gtfs_routes_line_id_fkey FOREIGN KEY (line_id) REFERENCES public.gtfs_lines(id);
+    ADD CONSTRAINT gtfs_routes_line_id_fkey FOREIGN KEY (line_id) REFERENCES public.gtfs_lines(id) DEFERRABLE;
 
 
 --
@@ -1726,7 +1726,7 @@ ALTER TABLE ONLY public.gtfs_routes
 --
 
 ALTER TABLE ONLY public.gtfs_routes
-    ADD CONSTRAINT gtfs_routes_listed_route_fkey FOREIGN KEY (listed_route) REFERENCES public.gtfs_listed_routes(id);
+    ADD CONSTRAINT gtfs_routes_listed_route_fkey FOREIGN KEY (listed_route) REFERENCES public.gtfs_listed_routes(id) DEFERRABLE;
 
 
 --
@@ -1734,7 +1734,7 @@ ALTER TABLE ONLY public.gtfs_routes
 --
 
 ALTER TABLE ONLY public.gtfs_routes
-    ADD CONSTRAINT gtfs_routes_type_fkey FOREIGN KEY (type) REFERENCES public.gtfs_route_types(id);
+    ADD CONSTRAINT gtfs_routes_type_fkey FOREIGN KEY (type) REFERENCES public.gtfs_route_types(id) DEFERRABLE;
 
 
 --
@@ -1742,7 +1742,7 @@ ALTER TABLE ONLY public.gtfs_routes
 --
 
 ALTER TABLE ONLY public.gtfs_service_dates
-    ADD CONSTRAINT gtfs_service_dates_exception_type_fkey FOREIGN KEY (exception_type) REFERENCES public.gtfs_service_exception_types(id);
+    ADD CONSTRAINT gtfs_service_dates_exception_type_fkey FOREIGN KEY (exception_type) REFERENCES public.gtfs_service_exception_types(id) DEFERRABLE;
 
 
 --
@@ -1750,7 +1750,7 @@ ALTER TABLE ONLY public.gtfs_service_dates
 --
 
 ALTER TABLE ONLY public.gtfs_service_dates
-    ADD CONSTRAINT gtfs_service_dates_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.gtfs_services(id);
+    ADD CONSTRAINT gtfs_service_dates_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.gtfs_services(id) DEFERRABLE;
 
 
 --
@@ -1758,7 +1758,7 @@ ALTER TABLE ONLY public.gtfs_service_dates
 --
 
 ALTER TABLE ONLY public.gtfs_shape_points
-    ADD CONSTRAINT gtfs_shape_points_shape_id_fkey FOREIGN KEY (shape_id) REFERENCES public.gtfs_shapes(id);
+    ADD CONSTRAINT gtfs_shape_points_shape_id_fkey FOREIGN KEY (shape_id) REFERENCES public.gtfs_shapes(id) DEFERRABLE;
 
 
 --
@@ -1766,7 +1766,7 @@ ALTER TABLE ONLY public.gtfs_shape_points
 --
 
 ALTER TABLE ONLY public.gtfs_stop_times
-    ADD CONSTRAINT gtfs_stop_times_checkpoint_id_fkey FOREIGN KEY (checkpoint_id) REFERENCES public.gtfs_checkpoints(id);
+    ADD CONSTRAINT gtfs_stop_times_checkpoint_id_fkey FOREIGN KEY (checkpoint_id) REFERENCES public.gtfs_checkpoints(id) DEFERRABLE;
 
 
 --
@@ -1774,7 +1774,7 @@ ALTER TABLE ONLY public.gtfs_stop_times
 --
 
 ALTER TABLE ONLY public.gtfs_stop_times
-    ADD CONSTRAINT gtfs_stop_times_continuous_drop_off_fkey FOREIGN KEY (continuous_drop_off) REFERENCES public.gtfs_continuous_pickup_drop_off_types(id);
+    ADD CONSTRAINT gtfs_stop_times_continuous_drop_off_fkey FOREIGN KEY (continuous_drop_off) REFERENCES public.gtfs_continuous_pickup_drop_off_types(id) DEFERRABLE;
 
 
 --
@@ -1782,7 +1782,7 @@ ALTER TABLE ONLY public.gtfs_stop_times
 --
 
 ALTER TABLE ONLY public.gtfs_stop_times
-    ADD CONSTRAINT gtfs_stop_times_continuous_pickup_fkey FOREIGN KEY (continuous_pickup) REFERENCES public.gtfs_continuous_pickup_drop_off_types(id);
+    ADD CONSTRAINT gtfs_stop_times_continuous_pickup_fkey FOREIGN KEY (continuous_pickup) REFERENCES public.gtfs_continuous_pickup_drop_off_types(id) DEFERRABLE;
 
 
 --
@@ -1790,7 +1790,7 @@ ALTER TABLE ONLY public.gtfs_stop_times
 --
 
 ALTER TABLE ONLY public.gtfs_stop_times
-    ADD CONSTRAINT gtfs_stop_times_drop_off_type_fkey FOREIGN KEY (drop_off_type) REFERENCES public.gtfs_pickup_drop_off_types(id);
+    ADD CONSTRAINT gtfs_stop_times_drop_off_type_fkey FOREIGN KEY (drop_off_type) REFERENCES public.gtfs_pickup_drop_off_types(id) DEFERRABLE;
 
 
 --
@@ -1798,7 +1798,7 @@ ALTER TABLE ONLY public.gtfs_stop_times
 --
 
 ALTER TABLE ONLY public.gtfs_stop_times
-    ADD CONSTRAINT gtfs_stop_times_pickup_type_fkey FOREIGN KEY (pickup_type) REFERENCES public.gtfs_pickup_drop_off_types(id);
+    ADD CONSTRAINT gtfs_stop_times_pickup_type_fkey FOREIGN KEY (pickup_type) REFERENCES public.gtfs_pickup_drop_off_types(id) DEFERRABLE;
 
 
 --
@@ -1806,7 +1806,7 @@ ALTER TABLE ONLY public.gtfs_stop_times
 --
 
 ALTER TABLE ONLY public.gtfs_stop_times
-    ADD CONSTRAINT gtfs_stop_times_stop_id_fkey FOREIGN KEY (stop_id) REFERENCES public.gtfs_stops(id);
+    ADD CONSTRAINT gtfs_stop_times_stop_id_fkey FOREIGN KEY (stop_id) REFERENCES public.gtfs_stops(id) DEFERRABLE;
 
 
 --
@@ -1814,7 +1814,7 @@ ALTER TABLE ONLY public.gtfs_stop_times
 --
 
 ALTER TABLE ONLY public.gtfs_stop_times
-    ADD CONSTRAINT gtfs_stop_times_timepoint_fkey FOREIGN KEY (timepoint) REFERENCES public.gtfs_timepoint_types(id);
+    ADD CONSTRAINT gtfs_stop_times_timepoint_fkey FOREIGN KEY (timepoint) REFERENCES public.gtfs_timepoint_types(id) DEFERRABLE;
 
 
 --
@@ -1822,7 +1822,7 @@ ALTER TABLE ONLY public.gtfs_stop_times
 --
 
 ALTER TABLE ONLY public.gtfs_stop_times
-    ADD CONSTRAINT gtfs_stop_times_trip_id_fkey FOREIGN KEY (trip_id) REFERENCES public.gtfs_trips(id);
+    ADD CONSTRAINT gtfs_stop_times_trip_id_fkey FOREIGN KEY (trip_id) REFERENCES public.gtfs_trips(id) DEFERRABLE;
 
 
 --
@@ -1830,7 +1830,7 @@ ALTER TABLE ONLY public.gtfs_stop_times
 --
 
 ALTER TABLE ONLY public.gtfs_stops
-    ADD CONSTRAINT gtfs_stops_level_id_fkey FOREIGN KEY (level_id) REFERENCES public.gtfs_levels(id);
+    ADD CONSTRAINT gtfs_stops_level_id_fkey FOREIGN KEY (level_id) REFERENCES public.gtfs_levels(id) DEFERRABLE;
 
 
 --
@@ -1838,7 +1838,7 @@ ALTER TABLE ONLY public.gtfs_stops
 --
 
 ALTER TABLE ONLY public.gtfs_stops
-    ADD CONSTRAINT gtfs_stops_location_type_fkey FOREIGN KEY (location_type) REFERENCES public.gtfs_location_types(id);
+    ADD CONSTRAINT gtfs_stops_location_type_fkey FOREIGN KEY (location_type) REFERENCES public.gtfs_location_types(id) DEFERRABLE;
 
 
 --
@@ -1846,7 +1846,7 @@ ALTER TABLE ONLY public.gtfs_stops
 --
 
 ALTER TABLE ONLY public.gtfs_stops
-    ADD CONSTRAINT gtfs_stops_parent_station_id_fkey FOREIGN KEY (parent_station_id) REFERENCES public.gtfs_stops(id);
+    ADD CONSTRAINT gtfs_stops_parent_station_id_fkey FOREIGN KEY (parent_station_id) REFERENCES public.gtfs_stops(id) DEFERRABLE;
 
 
 --
@@ -1854,7 +1854,7 @@ ALTER TABLE ONLY public.gtfs_stops
 --
 
 ALTER TABLE ONLY public.gtfs_stops
-    ADD CONSTRAINT gtfs_stops_vehicle_type_fkey FOREIGN KEY (vehicle_type) REFERENCES public.gtfs_route_types(id);
+    ADD CONSTRAINT gtfs_stops_vehicle_type_fkey FOREIGN KEY (vehicle_type) REFERENCES public.gtfs_route_types(id) DEFERRABLE;
 
 
 --
@@ -1862,7 +1862,7 @@ ALTER TABLE ONLY public.gtfs_stops
 --
 
 ALTER TABLE ONLY public.gtfs_stops
-    ADD CONSTRAINT gtfs_stops_wheelchair_boarding_fkey FOREIGN KEY (wheelchair_boarding) REFERENCES public.gtfs_wheelchair_boarding_types(id);
+    ADD CONSTRAINT gtfs_stops_wheelchair_boarding_fkey FOREIGN KEY (wheelchair_boarding) REFERENCES public.gtfs_wheelchair_boarding_types(id) DEFERRABLE;
 
 
 --
@@ -1870,7 +1870,7 @@ ALTER TABLE ONLY public.gtfs_stops
 --
 
 ALTER TABLE ONLY public.gtfs_trips
-    ADD CONSTRAINT gtfs_trips_bikes_allowed_fkey FOREIGN KEY (bikes_allowed) REFERENCES public.gtfs_bike_boarding_types(id);
+    ADD CONSTRAINT gtfs_trips_bikes_allowed_fkey FOREIGN KEY (bikes_allowed) REFERENCES public.gtfs_bike_boarding_types(id) DEFERRABLE;
 
 
 --
@@ -1878,7 +1878,7 @@ ALTER TABLE ONLY public.gtfs_trips
 --
 
 ALTER TABLE ONLY public.gtfs_trips
-    ADD CONSTRAINT gtfs_trips_direction_id_fkey FOREIGN KEY (direction_id, route_id) REFERENCES public.gtfs_directions(direction_id, route_id);
+    ADD CONSTRAINT gtfs_trips_direction_id_fkey FOREIGN KEY (direction_id, route_id) REFERENCES public.gtfs_directions(direction_id, route_id) DEFERRABLE;
 
 
 --
@@ -1886,7 +1886,7 @@ ALTER TABLE ONLY public.gtfs_trips
 --
 
 ALTER TABLE ONLY public.gtfs_trips
-    ADD CONSTRAINT gtfs_trips_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.gtfs_routes(id);
+    ADD CONSTRAINT gtfs_trips_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.gtfs_routes(id) DEFERRABLE;
 
 
 --
@@ -1894,7 +1894,7 @@ ALTER TABLE ONLY public.gtfs_trips
 --
 
 ALTER TABLE ONLY public.gtfs_trips
-    ADD CONSTRAINT gtfs_trips_route_pattern_id_fkey FOREIGN KEY (route_pattern_id) REFERENCES public.gtfs_route_patterns(id);
+    ADD CONSTRAINT gtfs_trips_route_pattern_id_fkey FOREIGN KEY (route_pattern_id) REFERENCES public.gtfs_route_patterns(id) DEFERRABLE;
 
 
 --
@@ -1902,7 +1902,7 @@ ALTER TABLE ONLY public.gtfs_trips
 --
 
 ALTER TABLE ONLY public.gtfs_trips
-    ADD CONSTRAINT gtfs_trips_route_type_fkey FOREIGN KEY (route_type) REFERENCES public.gtfs_route_types(id);
+    ADD CONSTRAINT gtfs_trips_route_type_fkey FOREIGN KEY (route_type) REFERENCES public.gtfs_route_types(id) DEFERRABLE;
 
 
 --
@@ -1910,7 +1910,7 @@ ALTER TABLE ONLY public.gtfs_trips
 --
 
 ALTER TABLE ONLY public.gtfs_trips
-    ADD CONSTRAINT gtfs_trips_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.gtfs_services(id);
+    ADD CONSTRAINT gtfs_trips_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.gtfs_services(id) DEFERRABLE;
 
 
 --
@@ -1918,7 +1918,7 @@ ALTER TABLE ONLY public.gtfs_trips
 --
 
 ALTER TABLE ONLY public.gtfs_trips
-    ADD CONSTRAINT gtfs_trips_shape_id_fkey FOREIGN KEY (shape_id) REFERENCES public.gtfs_shapes(id);
+    ADD CONSTRAINT gtfs_trips_shape_id_fkey FOREIGN KEY (shape_id) REFERENCES public.gtfs_shapes(id) DEFERRABLE;
 
 
 --
@@ -1926,7 +1926,7 @@ ALTER TABLE ONLY public.gtfs_trips
 --
 
 ALTER TABLE ONLY public.gtfs_trips
-    ADD CONSTRAINT gtfs_trips_wheelchair_accessible_fkey FOREIGN KEY (wheelchair_accessible) REFERENCES public.gtfs_wheelchair_boarding_types(id);
+    ADD CONSTRAINT gtfs_trips_wheelchair_accessible_fkey FOREIGN KEY (wheelchair_accessible) REFERENCES public.gtfs_wheelchair_boarding_types(id) DEFERRABLE;
 
 
 --
