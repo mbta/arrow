@@ -95,7 +95,7 @@ defmodule ArrowWeb.Router do
   if Mix.env() == :dev do
     scope "/" do
       pipe_through :browser
-      live_dashboard "/dashboard"
+      live_dashboard "/dashboard", ecto_repos: [Arrow.Repo]
     end
   end
 end
