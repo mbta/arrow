@@ -22,4 +22,7 @@ defmodule Arrow.Gtfs.Level do
     |> cast(attrs, ~w[id index name]a)
     |> validate_required(~w[id index]a)
   end
+
+  @impl Arrow.Gtfs.Importable
+  def filename, do: "levels.txt"
 end

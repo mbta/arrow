@@ -1,10 +1,8 @@
 defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart5 do
   use Ecto.Migration
 
-  import Arrow.Repo.MigrationHelper, only: [create_deferrable: 2]
-
   def change do
-    create_deferrable table("gtfs_trips", primary_key: [name: :id, type: :string]) do
+    create table("gtfs_trips", primary_key: [name: :id, type: :string]) do
       add :route_id, references("gtfs_routes", type: :string), null: false
       add :service_id, references("gtfs_services", type: :string), null: false
       add :headsign, :string, null: false

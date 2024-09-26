@@ -1,93 +1,89 @@
 defmodule Arrow.Gtfs do
   @moduledoc """
-  Loads a GTFS archive into Arrow's gtfs_* DB tables,
-  replacing the previous archive's data.
+  GTFS import logic.
   """
 
   require Logger
+  alias Arrow.Gtfs.Importable
   alias Arrow.Gtfs.ImportHelper
-  alias Ecto.Changeset
   alias Arrow.Repo
 
-  def import(zip_path, current_version) do
+  @import_timeout_ms 60_000
+
+  @doc """
+  Loads a GTFS archive into Arrow's gtfs_* DB tables,
+  replacing the previous archive's data.
+
+  Setting `dry_run?` true causes the transaction to be rolled back
+  instead of committed, even if all queries succeed.
+
+  Returns:
+
+  - `:ok` on successful import or dry-run
+  - `:unchanged` if the archive has the same version as the GTFS data currently stored in the DB
+  - `:error` if the import or dry-run failed.
+  """
+  @spec import(Path.t(), String.t() | nil, boolean) :: :ok | :unchanged | :error
+  def import(zip_path, current_version, dry_run? \\ false) do
     zip_file = Unzip.LocalFile.open(zip_path)
+    {:ok, unzip} = Unzip.new(zip_file)
 
     result =
-      with {:ok, unzip} <- Unzip.new(zip_file),
-           :ok <- validate_required_files(unzip),
+      with :ok <- validate_required_files(unzip),
            :ok <- validate_version_change(unzip, current_version) do
         try do
-          Repo.transaction(fn ->
-            # TODO: Deferring constraints may slow the import down.
-            #       If so, remove this line.
-            Repo.query!("SET CONSTRAINTS ALL DEFERRED")
+          {ms, result} = :timer.tc(fn -> import_transaction(unzip, dry_run?) end, :millisecond)
 
-            truncate_all()
-            import_all(unzip)
+          case result do
+            {:ok, _} ->
+              Logger.info("GTFS import success elapsed_sec=#{ms / 1000}")
+              :ok
 
-            Logger.info("Checking deferred constraints")
-            Repo.query!("SET CONSTRAINTS ALL IMMEDIATE")
-          end)
+            {:error, :dry_run_success} ->
+              Logger.info("GTFS dry-run success elapsed_sec=#{ms / 1000}")
+              :ok
 
-          :ok
+            {:error, reason} ->
+              Logger.warn("GTFS import failure reason=#{inspect(reason)}")
+              :error
+          end
         rescue
           error ->
-            Logger.warn("GTFS import transaction failed message=#{Exception.message(error)}")
+            Logger.warn("GTFS import failure message=#{Exception.message(error)}")
             :error
         end
       end
+
+    if result == :unchanged do
+      Logger.info("GTFS import skipped due to unchanged version version=\"#{current_version}\"")
+    end
 
     Unzip.LocalFile.close(zip_file)
     result
   end
 
-  defp truncate_all do
-    tables =
-      Enum.map_join(table_to_importer(), ", ", fn {_, settings} ->
-        schema_mod = Keyword.fetch!(settings, :schema)
-        schema_mod.__schema__(:source)
-      end)
+  defp import_transaction(unzip, dry_run?) do
+    Repo.transaction(
+      fn ->
+        truncate_all()
+        import_all(unzip)
 
+        if dry_run? do
+          Repo.query!("SET CONSTRAINTS ALL IMMEDIATE")
+          Repo.rollback(:dry_run_success)
+        end
+      end,
+      timeout: @import_timeout_ms
+    )
+  end
+
+  defp truncate_all do
+    tables = Enum.map_join(importable_schemas(), ", ", & &1.__schema__(:source))
     Repo.query!("TRUNCATE #{tables}")
   end
 
   defp import_all(unzip) do
-    Enum.each(table_to_importer(), &import_table(&1, unzip))
-  end
-
-  defp import_table({table, settings}, unzip) do
-    schema_mod = Keyword.fetch!(settings, :schema)
-    preprocess_rows = Keyword.get(settings, :preprocess, &Function.identity/1)
-
-    unzip
-    |> stream_csv_rows(table)
-    |> preprocess_rows.()
-    # Pass each row through a changeset so we can cast & validate it,
-    # then convert back to a plain map for compatibility with Repo.insert_all.
-    |> Stream.map(fn row ->
-      struct(schema_mod)
-      |> schema_mod.changeset(row)
-      |> then(fn
-        %{action: :ignore_bad_row} ->
-          nil
-
-        cs ->
-          cs
-          |> Changeset.apply_action!(:insert)
-          |> ImportHelper.schema_struct_to_map()
-      end)
-    end)
-    |> Stream.reject(&is_nil/1)
-    |> ImportHelper.chunk_values()
-    |> Enum.each(&Repo.insert_all(schema_mod, &1))
-  end
-
-  defp stream_csv_rows(unzip, table) do
-    unzip
-    |> Unzip.file_stream!(table)
-    # Flatten iodata for compatibility with CSV.decode
-    |> Stream.flat_map(&List.flatten/1)
-    |> CSV.decode!(headers: true)
+    Enum.each(importable_schemas(), &Importable.import(&1, unzip))
   end
 
   defp validate_required_files(unzip) do
@@ -109,9 +105,10 @@ defmodule Arrow.Gtfs do
     end
   end
 
+  @spec validate_version_change(Unzip.t(), String.t() | nil) :: :ok | :unchanged | :error
   defp validate_version_change(unzip, current_version) do
     unzip
-    |> stream_csv_rows("feed_info.txt")
+    |> ImportHelper.stream_csv_rows("feed_info.txt")
     |> Enum.at(0, %{})
     |> Map.fetch("feed_version")
     |> case do
@@ -127,35 +124,28 @@ defmodule Arrow.Gtfs do
     end
   end
 
-  defp table_to_importer do
+  defp importable_schemas do
     # Listed in the order in which they should be imported.
     [
-      feed_info: [schema: Arrow.Gtfs.FeedInfo],
-      agency: [schema: Arrow.Gtfs.Agency],
-      checkpoints: [schema: Arrow.Gtfs.Checkpoint],
-      levels: [schema: Arrow.Gtfs.Level],
-      lines: [schema: Arrow.Gtfs.Line],
-      calendar: [schema: Arrow.Gtfs.Service],
-      calendar_dates: [schema: Arrow.Gtfs.ServiceDate],
-      stops: [schema: Arrow.Gtfs.Stop],
-      # shapes.txt is imported into gtfs_shapes AND gtfs_shape_points,
-      # to properly model the 1:* shape:points relationship.
-      # (All fields except shape_id are ignored when importing into gtfs_shapes.)
-      shapes: [
-        schema: Arrow.Gtfs.Shape,
-        preprocess: fn rows -> Stream.uniq_by(rows, & &1["shape_id"]) end
-      ],
-      shapes: [schema: Arrow.Gtfs.ShapePoint],
-      routes: [schema: Arrow.Gtfs.Route],
-      directions: [schema: Arrow.Gtfs.Direction],
-      route_patterns: [schema: Arrow.Gtfs.RoutePattern],
-      trips: [schema: Arrow.Gtfs.Trip],
-      stop_times: [schema: Arrow.Gtfs.StopTime]
+      Arrow.Gtfs.FeedInfo,
+      Arrow.Gtfs.Agency,
+      Arrow.Gtfs.Checkpoint,
+      Arrow.Gtfs.Level,
+      Arrow.Gtfs.Line,
+      Arrow.Gtfs.Service,
+      Arrow.Gtfs.ServiceDate,
+      Arrow.Gtfs.Stop,
+      Arrow.Gtfs.Shape,
+      Arrow.Gtfs.ShapePoint,
+      Arrow.Gtfs.Route,
+      Arrow.Gtfs.Direction,
+      Arrow.Gtfs.RoutePattern,
+      Arrow.Gtfs.Trip,
+      Arrow.Gtfs.StopTime
     ]
-    |> Enum.map(fn {table, settings} -> {"#{table}.txt", settings} end)
   end
 
   defp required_files do
-    MapSet.new(table_to_importer(), fn {path, _} -> path end)
+    MapSet.new(importable_schemas(), & &1.filename())
   end
 end

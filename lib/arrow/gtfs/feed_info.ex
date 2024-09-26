@@ -47,4 +47,7 @@ defmodule Arrow.Gtfs.FeedInfo do
       add_error(changeset, :dates, "start date should be before end date")
     end
   end
+
+  @impl Arrow.Gtfs.Importable
+  def filename, do: "feed_info.txt"
 end

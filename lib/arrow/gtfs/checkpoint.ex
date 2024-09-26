@@ -1,5 +1,6 @@
 defmodule Arrow.Gtfs.Checkpoint do
   use Arrow.Gtfs.Schema
+
   import Ecto.Changeset
 
   @type t :: %__MODULE__{
@@ -19,4 +20,7 @@ defmodule Arrow.Gtfs.Checkpoint do
     |> cast(attrs, ~w[id name]a)
     |> validate_required(~w[id name]a)
   end
+
+  @impl Arrow.Gtfs.Importable
+  def filename, do: "checkpoints.txt"
 end

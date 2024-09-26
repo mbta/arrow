@@ -3,6 +3,8 @@ defmodule Arrow.Gtfs.ImportHelper do
   Helper functions for casting GTFS feed data to Ecto-defined structs.
   """
 
+  @type csv_row :: %{String.t() => String.t()}
+
   @doc """
   Removes the table name prefix commonly included on GTFS field names.
 
@@ -98,5 +100,14 @@ defmodule Arrow.Gtfs.ImportHelper do
       rows_per_chunk = div(max_query_params(), params_per_row)
       Stream.chunk_every(values, rows_per_chunk)
     end
+  end
+
+  @spec stream_csv_rows(Unzip.t(), String.t()) :: Enumerable.t(csv_row)
+  def stream_csv_rows(unzip, filename) do
+    unzip
+    |> Unzip.file_stream!(filename)
+    # Flatten iodata for compatibility with CSV.decode
+    |> Stream.flat_map(&List.flatten/1)
+    |> CSV.decode!(headers: true)
   end
 end

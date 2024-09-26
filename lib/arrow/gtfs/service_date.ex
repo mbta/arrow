@@ -55,4 +55,7 @@ defmodule Arrow.Gtfs.ServiceDate do
       )
     end
   end
+
+  @impl Arrow.Gtfs.Importable
+  def filename, do: "calendar_dates.txt"
 end

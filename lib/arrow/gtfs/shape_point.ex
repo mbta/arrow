@@ -14,9 +14,9 @@ defmodule Arrow.Gtfs.ShapePoint do
 
   schema "gtfs_shape_points" do
     belongs_to :shape, Arrow.Gtfs.Shape, primary_key: true
-    field :sequence, :integer, primary_key: true
     field :lat, :float
     field :lon, :float
+    field :sequence, :integer, primary_key: true
     field :dist_traveled, :float
   end
 
@@ -30,5 +30,22 @@ defmodule Arrow.Gtfs.ShapePoint do
     |> cast(attrs, ~w[shape_id sequence lat lon dist_traveled]a)
     |> validate_required(~w[shape_id sequence lat lon]a)
     |> assoc_constraint(:shape)
+  end
+
+  @impl Arrow.Gtfs.Importable
+  def filename, do: "shapes.txt"
+
+  @impl Arrow.Gtfs.Importable
+  def import(unzip) do
+    Arrow.Gtfs.Importable.import_using_copy(
+      __MODULE__,
+      unzip,
+      header_mappings: %{
+        "shape_pt_lat" => "lat",
+        "shape_pt_lon" => "lon",
+        "shape_pt_sequence" => "sequence",
+        "shape_dist_traveled" => "dist_traveled"
+      }
+    )
   end
 end

@@ -61,4 +61,10 @@ defmodule Arrow.Gtfs.StopTime do
     |> assoc_constraint(:stop)
     |> assoc_constraint(:checkpoint)
   end
+
+  @impl Arrow.Gtfs.Importable
+  def filename, do: "stop_times.txt"
+
+  @impl Arrow.Gtfs.Importable
+  def import(unzip), do: Arrow.Gtfs.Importable.import_using_copy(__MODULE__, unzip)
 end

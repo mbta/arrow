@@ -58,4 +58,7 @@ defmodule Arrow.Gtfs.Service do
       add_error(changeset, :dates, "start date should not be after end date")
     end
   end
+
+  @impl Arrow.Gtfs.Importable
+  def filename, do: "calendar.txt"
 end

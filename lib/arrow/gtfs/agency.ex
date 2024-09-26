@@ -1,5 +1,6 @@
 defmodule Arrow.Gtfs.Agency do
   use Arrow.Gtfs.Schema
+
   import Ecto.Changeset
 
   @type t :: %__MODULE__{
@@ -28,4 +29,7 @@ defmodule Arrow.Gtfs.Agency do
     |> cast(attrs, ~w[id name url timezone lang phone]a)
     |> validate_required(~w[id name url timezone]a)
   end
+
+  @impl Arrow.Gtfs.Importable
+  def filename, do: "agency.txt"
 end

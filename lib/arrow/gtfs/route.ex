@@ -53,4 +53,7 @@ defmodule Arrow.Gtfs.Route do
     |> assoc_constraint(:agency)
     |> assoc_constraint(:line)
   end
+
+  @impl Arrow.Gtfs.Importable
+  def filename, do: "routes.txt"
 end

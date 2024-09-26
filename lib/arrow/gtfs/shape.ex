@@ -22,4 +22,15 @@ defmodule Arrow.Gtfs.Shape do
     |> cast(attrs, ~w[id]a)
     |> validate_required(~w[id]a)
   end
+
+  @impl Arrow.Gtfs.Importable
+  def filename, do: "shapes.txt"
+
+  @impl Arrow.Gtfs.Importable
+  def import(unzip) do
+    unzip
+    |> Arrow.Gtfs.ImportHelper.stream_csv_rows(filename())
+    |> Stream.uniq_by(& &1["shape_id"])
+    |> Arrow.Gtfs.Importable.cast_and_insert(__MODULE__)
+  end
 end

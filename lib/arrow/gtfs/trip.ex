@@ -73,4 +73,35 @@ defmodule Arrow.Gtfs.Trip do
     |> assoc_constraint(:shape)
     |> assoc_constraint(:route_pattern)
   end
+
+  @impl Arrow.Gtfs.Importable
+  def filename, do: "trips.txt"
+
+  @impl Arrow.Gtfs.Importable
+  def import(unzip) do
+    Arrow.Gtfs.Importable.import_using_copy(
+      __MODULE__,
+      unzip,
+      header_mappings: %{
+        "trip_id" => "id",
+        "trip_headsign" => "headsign",
+        "trip_short_name" => "short_name",
+        "trip_route_type" => "route_type"
+      },
+      header_order: [
+        "route_id",
+        "service_id",
+        "id",
+        "headsign",
+        "short_name",
+        "direction_id",
+        "block_id",
+        "shape_id",
+        "wheelchair_accessible",
+        "route_type",
+        "route_pattern_id",
+        "bikes_allowed"
+      ]
+    )
+  end
 end

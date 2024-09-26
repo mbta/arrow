@@ -81,4 +81,7 @@ defmodule Arrow.Gtfs.Stop do
     |> assoc_constraint(:level)
     |> assoc_constraint(:parent_station)
   end
+
+  @impl Arrow.Gtfs.Importable
+  def filename, do: "stops.txt"
 end

@@ -68,4 +68,7 @@ defmodule Arrow.Gtfs.RoutePattern do
     # is circular and we populate this table before gtfs_trips.
     # (DB has a deferred FK constraint for representative_trip_id, though)
   end
+
+  @impl Arrow.Gtfs.Importable
+  def filename, do: "route_patterns.txt"
 end

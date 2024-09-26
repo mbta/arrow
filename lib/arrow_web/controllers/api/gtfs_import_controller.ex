@@ -8,7 +8,7 @@ defmodule ArrowWeb.API.GtfsImportController do
     version_query =
       from info in Arrow.Gtfs.FeedInfo, where: info.id == "mbta-ma-us", select: info.version
 
-    version = Arrow.Repo.one!(version_query)
+    version = Arrow.Repo.one(version_query)
 
     case Arrow.Gtfs.import(upload.path, version) do
       :ok ->

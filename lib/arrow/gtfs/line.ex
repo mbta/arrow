@@ -30,4 +30,7 @@ defmodule Arrow.Gtfs.Line do
     |> cast(attrs, ~w[id short_name long_name desc url color text_color sort_order]a)
     |> validate_required(~w[id long_name color text_color sort_order]a)
   end
+
+  @impl Arrow.Gtfs.Importable
+  def filename, do: "lines.txt"
 end
