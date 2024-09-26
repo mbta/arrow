@@ -1,4 +1,12 @@
 defmodule Arrow.Gtfs.ShapePoint do
+  @moduledoc """
+  Represents a row from shapes.txt.
+
+  ShapePoints are grouped under Shapes, by their shape_id field.
+
+  Changeset is intended for use only in CSV imports--
+  table contents should be considered read-only otherwise.
+  """
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 

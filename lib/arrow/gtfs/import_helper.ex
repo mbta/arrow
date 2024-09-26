@@ -12,7 +12,7 @@ defmodule Arrow.Gtfs.ImportHelper do
       iex> remove_table_prefix(attrs, "stop")
       %{"id" => "70027", "platform_name" => "Oak Grove", "url" => "https://www.mbta.com/stops/place-north"}
 
-  Pass an `:except` opt with a string or list of strings to exclude specific keys.
+  Pass an `:except` opt with a string or list of strings to preserve specific keys.
 
       iex> attrs = %{"stop_id" => "70027", "platform_name" => "Oak Grove", "stop_url" => "https://www.mbta.com/stops/place-north"}
       iex> remove_table_prefix(attrs, "stop", except: ["stop_id"])
@@ -26,20 +26,22 @@ defmodule Arrow.Gtfs.ImportHelper do
   @spec remove_table_prefix(map, String.t(), Keyword.t()) :: map
   def remove_table_prefix(attrs, prefix, opts \\ []) when is_map(attrs) do
     except = List.wrap(opts[:except])
-
     prefix = if String.ends_with?(prefix, "_"), do: prefix, else: "#{prefix}_"
-    prefix_size = String.length(prefix)
 
     Map.new(attrs, fn {k, v} ->
-      if k in except do
-        {k, v}
-      else
-        case k do
-          <<^prefix::binary-size(prefix_size), k::binary>> -> {k, v}
-          _ -> {k, v}
-        end
-      end
+      {de_prefix_key(k, prefix, except), v}
     end)
+  end
+
+  defp de_prefix_key(k, prefix, except) do
+    if k in except do
+      k
+    else
+      case k do
+        <<^prefix::binary-size(byte_size(prefix)), k::binary>> -> k
+        _ -> k
+      end
+    end
   end
 
   @doc """

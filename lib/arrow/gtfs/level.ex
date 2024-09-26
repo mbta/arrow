@@ -1,4 +1,10 @@
 defmodule Arrow.Gtfs.Level do
+  @moduledoc """
+  Represents a row from levels.txt.
+
+  Changeset is intended for use only in CSV imports--
+  table contents should be considered read-only otherwise.
+  """
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 

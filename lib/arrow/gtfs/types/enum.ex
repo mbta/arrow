@@ -1,3 +1,4 @@
+# credo:disable-for-this-file
 defmodule Arrow.Gtfs.Types.Enum do
   @moduledoc """
   Ecto.Enum, except it accepts string-formatted integers when casting to an

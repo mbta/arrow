@@ -5,8 +5,8 @@ defmodule Arrow.Gtfs.Importable do
   Callback modules are assumed to also be Ecto schemas.
   """
 
-  alias Arrow.Repo
   alias Arrow.Gtfs.ImportHelper
+  alias Arrow.Repo
   alias Ecto.Changeset
 
   @doc "CSV filename to import from."

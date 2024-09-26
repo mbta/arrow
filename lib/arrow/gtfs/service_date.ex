@@ -1,8 +1,10 @@
 defmodule Arrow.Gtfs.ServiceDate do
   @moduledoc """
-  Ecto schema for a row in calendar_dates.txt
-  """
+  Represents a row from calendar_dates.txt.
 
+  Changeset is intended for use only in CSV imports--
+  table contents should be considered read-only otherwise.
+  """
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 
