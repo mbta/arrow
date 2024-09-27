@@ -1,5 +1,6 @@
 defmodule ArrowWeb.Router do
   use ArrowWeb, :router
+  import Phoenix.LiveDashboard.Router
 
   pipeline :browser do
     plug(:accepts, ["html"])
@@ -90,4 +91,11 @@ defmodule ArrowWeb.Router do
   # scope "/api", ArrowWeb do
   #   pipe_through :api
   # end
+
+  if Mix.env() == :dev do
+    scope "/" do
+      pipe_through :browser
+      live_dashboard "/dashboard", ecto_repos: [Arrow.Repo]
+    end
+  end
 end
