@@ -23,14 +23,17 @@ defmodule Arrow.Gtfs.FeedInfo do
     field :publisher_name, :string
     field :publisher_url, :string
     field :lang, :string
-    field :start_date, Arrow.Gtfs.Types.Date
-    field :end_date, Arrow.Gtfs.Types.Date
+    field :start_date, :date
+    field :end_date, :date
     field :version, :string
     field :contact_email, :string
   end
 
   def changeset(feed_info, attrs) do
-    attrs = remove_table_prefix(attrs, "feed")
+    attrs =
+      attrs
+      |> remove_table_prefix("feed")
+      |> values_to_iso8601_datestamp(~w[start_date end_date])
 
     feed_info
     |> cast(

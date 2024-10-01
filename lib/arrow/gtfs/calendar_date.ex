@@ -19,12 +19,17 @@ defmodule Arrow.Gtfs.CalendarDate do
 
   schema "gtfs_calendar_dates" do
     belongs_to :service, Arrow.Gtfs.Service, primary_key: true
-    field :date, Arrow.Gtfs.Types.Date, primary_key: true
-    field :exception_type, Arrow.Gtfs.Types.Enum, values: [added: 1, removed: 2]
+    field :date, :date, primary_key: true
+    field :exception_type, Ecto.Enum, values: [added: 1, removed: 2]
     field :holiday_name, :string
   end
 
   def changeset(calendar_date, attrs) do
+    attrs =
+      attrs
+      |> values_to_iso8601_datestamp(~w[date])
+      |> values_to_int(~w[exception_type])
+
     calendar_date
     |> cast(attrs, ~w[service_id date exception_type holiday_name]a)
     |> validate_required(~w[service_id date exception_type]a)

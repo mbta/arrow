@@ -45,6 +45,74 @@ defmodule Arrow.Gtfs.ImportHelper do
   end
 
   @doc """
+  Renames the given `old_key` in `map` to `new_key`, if it exists.
+
+  Otherwise, returns the map unchanged.
+
+      iex> rename_key(%{foo: 5}, :foo, :bar)
+      %{bar: 5}
+
+      iex> rename_key(%{baz: 6}, :foo, :bar)
+      %{baz: 6}
+  """
+  @spec rename_key(map, term, term) :: map
+  def rename_key(map, old_key, new_key) do
+    case Map.pop(map, old_key) do
+      {nil, map} -> map
+      {value, map} -> Map.put(map, new_key, value)
+    end
+  end
+
+  @doc """
+  Calls `String.to_integer/1` on the values of `keys` in `map`.
+
+  This is useful for preprocessing CSV fields corresponding to `Ecto.Enum`-typed schema fields--
+  `Ecto.Enum.cast/2` expects either integer or (textual) string values, but the
+  values for these CSV fields come in as numeric strings.
+
+      iex> values_to_int(%{"route_type" => "1", "other" => "value"}, ["route_type"])
+      %{"route_type" => 1, "other" => "value"}
+
+      iex> values_to_int(%{"route_type" => "1", "other" => "value"}, ["route_type", "exception_type"])
+      %{"route_type" => 1, "other" => "value"}
+
+      iex> values_to_int(%{"maybe_empty" => ""}, ["maybe_empty"])
+      %{"maybe_empty" => ""}
+  """
+  @spec values_to_int(map, Enumerable.t(term)) :: map
+  def values_to_int(map, keys) do
+    Enum.reduce(keys, map, fn k, m ->
+      Map.replace_lazy(m, k, fn
+        k when byte_size(k) > 0 -> String.to_integer(k)
+        "" -> ""
+      end)
+    end)
+  end
+
+  @doc """
+  Edits the GTFS-datestamp values under `keys` in `map` to be ISO8601-compliant.
+
+  This is useful for preprocessing CSV fields corresponding to `:date`-typed schema fields--
+  Ecto's date type expects incoming strings to be in ISO8601 format.
+
+      iex> map = %{"start_date" => "20240925", "end_date" => "20240926", "blind_date" => "", "other" => "value"}
+      iex> values_to_iso8601_datestamp(map, ~w[start_date end_date blind_date double_date])
+      %{"start_date" => "2024-09-25", "end_date" => "2024-09-26", "blind_date" => "", "other" => "value"}
+  """
+  @spec values_to_iso8601_datestamp(map, Enumerable.t(term)) :: map
+  def values_to_iso8601_datestamp(map, keys) do
+    Enum.reduce(keys, map, fn k, m ->
+      Map.replace_lazy(m, k, fn
+        <<y::binary-size(4), m::binary-size(2), d::binary-size(2)>> ->
+          <<y::binary, ?-, m::binary, ?-, d::binary>>
+
+        "" ->
+          ""
+      end)
+    end)
+  end
+
+  @doc """
   Strips metadata and association fields from an Ecto.Schema-defined struct, so
   that it contains only the fields corresponding to its source table's columns.
 

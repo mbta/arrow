@@ -50,15 +50,21 @@ defmodule Arrow.Gtfs.StopTime do
 
     belongs_to :stop, Arrow.Gtfs.Stop
     field :stop_headsign, :string
-    field :pickup_type, Arrow.Gtfs.Types.Enum, values: @pickup_drop_off_types
-    field :drop_off_type, Arrow.Gtfs.Types.Enum, values: @pickup_drop_off_types
-    field :timepoint, Arrow.Gtfs.Types.Enum, values: Enum.with_index(~w[approximate exact]a)
+    field :pickup_type, Ecto.Enum, values: @pickup_drop_off_types
+    field :drop_off_type, Ecto.Enum, values: @pickup_drop_off_types
+    field :timepoint, Ecto.Enum, values: Enum.with_index(~w[approximate exact]a)
     belongs_to :checkpoint, Arrow.Gtfs.Checkpoint
-    field :continuous_pickup, Arrow.Gtfs.Types.Enum, values: @continuous_pickup_drop_off_types
-    field :continuous_drop_off, Arrow.Gtfs.Types.Enum, values: @continuous_pickup_drop_off_types
+    field :continuous_pickup, Ecto.Enum, values: @continuous_pickup_drop_off_types
+    field :continuous_drop_off, Ecto.Enum, values: @continuous_pickup_drop_off_types
   end
 
   def changeset(stop_time, attrs) do
+    attrs =
+      values_to_int(
+        attrs,
+        ~w[pickup_type drop_off_type timepoint continuous_pickup continuous_drop_off]
+      )
+
     stop_time
     |> cast(
       attrs,

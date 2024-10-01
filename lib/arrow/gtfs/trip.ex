@@ -51,19 +51,22 @@ defmodule Arrow.Gtfs.Trip do
     field :block_id, :string
     belongs_to :shape, Arrow.Gtfs.Shape
     has_many :shape_points, through: [:shape, :points]
-    field :wheelchair_accessible, Arrow.Gtfs.Types.Enum, values: @wheelchair_accessibility_values
-    field :route_type, Arrow.Gtfs.Types.Enum, values: @route_type_values
+    field :wheelchair_accessible, Ecto.Enum, values: @wheelchair_accessibility_values
+    field :route_type, Ecto.Enum, values: @route_type_values
     belongs_to :route_pattern, Arrow.Gtfs.RoutePattern
 
     has_one :representing_route_pattern, Arrow.Gtfs.RoutePattern,
       foreign_key: :representative_trip_id
 
-    field :bikes_allowed, Arrow.Gtfs.Types.Enum, values: @bike_boarding_values
+    field :bikes_allowed, Ecto.Enum, values: @bike_boarding_values
     has_many :stop_times, Arrow.Gtfs.StopTime, preload_order: [:stop_sequence]
   end
 
   def changeset(trip, attrs) do
-    attrs = remove_table_prefix(attrs, "trip")
+    attrs =
+      attrs
+      |> remove_table_prefix("trip")
+      |> values_to_int(~w[wheelchair_accessible route_type bikes_allowed])
 
     trip
     |> cast(

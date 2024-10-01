@@ -22,7 +22,9 @@ defmodule Arrow.Gtfs.Service do
   end
 
   def changeset(service, attrs) do
-    cast(service, attrs, [:id])
+    service
+    |> cast(attrs, [:id])
+    |> validate_required(~w[id]a)
   end
 
   @impl Arrow.Gtfs.Importable

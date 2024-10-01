@@ -31,6 +31,16 @@ defmodule Arrow.Gtfs.Stop do
           times: list(Arrow.Gtfs.StopTime.t()) | Ecto.Association.NotLoaded.t()
         }
 
+  @location_type_values Enum.with_index(
+                          ~w[stop_platform parent_station entrance_exit generic_node boarding_area]a
+                        )
+
+  @wheelchair_boarding_values Enum.with_index(
+                                ~w[no_info_inherit_from_parent accessible not_accessible]a
+                              )
+
+  @vehicle_type_values Enum.with_index(~w[light_rail heavy_rail commuter_rail bus ferry]a)
+
   schema "gtfs_stops" do
     field :code, :string
     field :name, :string
@@ -43,26 +53,13 @@ defmodule Arrow.Gtfs.Stop do
     field :address, :string
     field :url, :string
     belongs_to :level, Arrow.Gtfs.Level
-
-    field :location_type, Arrow.Gtfs.Types.Enum,
-      values:
-        Enum.with_index(
-          ~w[stop_platform parent_station entrance_exit generic_node boarding_area]a
-        )
-
+    field :location_type, Ecto.Enum, values: @location_type_values
     belongs_to :parent_station, Arrow.Gtfs.Stop
-
-    field :wheelchair_boarding,
-          Arrow.Gtfs.Types.Enum,
-          values: Enum.with_index(~w[no_info_inherit_from_parent accessible not_accessible]a)
-
+    field :wheelchair_boarding, Ecto.Enum, values: @wheelchair_boarding_values
     field :municipality, :string
     field :on_street, :string
     field :at_street, :string
-
-    field :vehicle_type, Arrow.Gtfs.Types.Enum,
-      values: Enum.with_index(~w[light_rail heavy_rail commuter_rail bus ferry]a)
-
+    field :vehicle_type, Ecto.Enum, values: @vehicle_type_values
     has_many :times, Arrow.Gtfs.StopTime
   end
 
@@ -70,13 +67,9 @@ defmodule Arrow.Gtfs.Stop do
     attrs =
       attrs
       |> remove_table_prefix("stop")
-      # `parent_station` is inconsistently named--this changes the key to
-      # `parent_station_id` if it's set. (Which it should be!)
-      |> Map.pop("parent_station")
-      |> then(fn
-        {nil, attrs} -> attrs
-        {parent_station_id, attrs} -> Map.put(attrs, "parent_station_id", parent_station_id)
-      end)
+      # `parent_station` is inconsistently named--this changes the key to `parent_station_id`.
+      |> rename_key("parent_station", "parent_station_id")
+      |> values_to_int(~w[location_type wheelchair_boarding vehicle_type])
 
     stop
     |> cast(

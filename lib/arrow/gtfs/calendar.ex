@@ -30,11 +30,13 @@ defmodule Arrow.Gtfs.Calendar do
       field day, :boolean
     end
 
-    field :start_date, Arrow.Gtfs.Types.Date
-    field :end_date, Arrow.Gtfs.Types.Date
+    field :start_date, :date
+    field :end_date, :date
   end
 
   def changeset(calendar, attrs) do
+    attrs = values_to_iso8601_datestamp(attrs, ~w[start_date end_date])
+
     calendar
     |> cast(
       attrs,

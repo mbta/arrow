@@ -49,7 +49,9 @@ defmodule Arrow.Gtfs do
           end
         rescue
           error ->
-            Logger.warn("GTFS import failure message=#{Exception.message(error)}")
+            message = Exception.format(:error, error, __STACKTRACE__)
+            Logger.warn("GTFS import failure:")
+            Logger.warn(message)
             :error
         end
       end

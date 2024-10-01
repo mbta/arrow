@@ -30,11 +30,7 @@ defmodule Arrow.Gtfs.Direction do
       # Taking liberties:
       # `direction` is inconsistently named--the human-readable name is
       # "#{table}_desc" in all other tables.
-      |> Map.pop("direction")
-      |> then(fn
-        {nil, attrs} -> attrs
-        {desc, attrs} -> Map.put(attrs, "desc", desc)
-      end)
+      |> rename_key("direction", "desc")
       |> remove_table_prefix("direction", except: ["direction_id"])
 
     direction

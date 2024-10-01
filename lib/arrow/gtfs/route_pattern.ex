@@ -43,22 +43,19 @@ defmodule Arrow.Gtfs.RoutePattern do
     has_many :directions, through: [:route, :directions]
     field :name, :string
     field :time_desc, :string
-    field :typicality, Arrow.Gtfs.Types.Enum, values: @typicality_values
+    field :typicality, Ecto.Enum, values: @typicality_values
     field :sort_order, :integer
     belongs_to :representative_trip, Arrow.Gtfs.Trip
     has_many :trips, Arrow.Gtfs.Trip
-    field :canonical, Arrow.Gtfs.Types.Enum, values: @canonicality_values
+    field :canonical, Ecto.Enum, values: @canonicality_values
   end
 
   def changeset(route_pattern, attrs) do
     attrs =
       attrs
       |> remove_table_prefix("route_pattern")
-      |> Map.pop("canonical_route_pattern")
-      |> then(fn
-        {nil, attrs} -> attrs
-        {canonical, attrs} -> Map.put(attrs, "canonical", canonical)
-      end)
+      |> rename_key("canonical_route_pattern", "canonical")
+      |> values_to_int(~w[typicality canonical])
 
     route_pattern
     |> cast(
@@ -69,10 +66,7 @@ defmodule Arrow.Gtfs.RoutePattern do
       ~w[id route_id direction_id name typicality sort_order representative_trip_id canonical]a
     )
     |> assoc_constraint(:route)
-
-    # No assoc_constraint for representative_trip_id because the relationship
-    # is circular and we populate this table before gtfs_trips.
-    # (DB has a deferred FK constraint for representative_trip_id, though)
+    |> assoc_constraint(:representative_trip)
   end
 
   @impl Arrow.Gtfs.Importable

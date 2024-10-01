@@ -25,14 +25,15 @@ defmodule Arrow.Gtfs.Route do
           network_id: String.t()
         }
 
+  @route_type_values Enum.with_index(~w[light_rail heavy_rail commuter_rail bus ferry]a)
+
   schema "gtfs_routes" do
     belongs_to :agency, Arrow.Gtfs.Agency
     field :short_name, :string
     field :long_name, :string
     field :desc, :string
 
-    field :type, Arrow.Gtfs.Types.Enum,
-      values: Enum.with_index(~w[light_rail heavy_rail commuter_rail bus ferry]a)
+    field :type, Ecto.Enum, values: @route_type_values
 
     field :url, :string
     field :color, :string
@@ -40,7 +41,7 @@ defmodule Arrow.Gtfs.Route do
     field :sort_order, :integer
     field :fare_class, :string
     belongs_to :line, Arrow.Gtfs.Line
-    field :listed_route, Arrow.Gtfs.Types.Enum, values: Enum.with_index(~w[Included Excluded]a)
+    field :listed_route, Ecto.Enum, values: Enum.with_index(~w[Included Excluded]a)
     field :network_id, :string
 
     has_many :directions, Arrow.Gtfs.Direction
@@ -48,7 +49,10 @@ defmodule Arrow.Gtfs.Route do
   end
 
   def changeset(route, attrs) do
-    attrs = remove_table_prefix(attrs, "route")
+    attrs =
+      attrs
+      |> remove_table_prefix("route")
+      |> values_to_int(~w[type listed_route])
 
     route
     |> cast(
