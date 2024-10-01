@@ -11,8 +11,8 @@ defmodule Arrow.Gtfs.StopTime do
   @type t :: %__MODULE__{
           trip: Arrow.Gtfs.Trip.t() | Ecto.Association.NotLoaded.t(),
           stop_sequence: integer,
-          arrival_time: Time.t(),
-          departure_time: Time.t(),
+          arrival_time: String.t(),
+          departure_time: String.t(),
           stop: Arrow.Gtfs.Stop.t() | Ecto.Association.NotLoaded.t(),
           stop_headsign: String.t() | nil,
           pickup_type: atom,
@@ -42,8 +42,12 @@ defmodule Arrow.Gtfs.StopTime do
   schema "gtfs_stop_times" do
     belongs_to :trip, Arrow.Gtfs.Trip, primary_key: true
     field :stop_sequence, :integer, primary_key: true
-    field :arrival_time, Arrow.Gtfs.Types.Time
-    field :departure_time, Arrow.Gtfs.Types.Time
+
+    # arrival_time and departure_time are kept as timestamps, to preserve after-midnight times like 24:15:00.
+    # `Arrow.Gtfs.TimeHelper` provides utility functions for converting timestamps to other representations.
+    field :arrival_time, :string
+    field :departure_time, :string
+
     belongs_to :stop, Arrow.Gtfs.Stop
     field :stop_headsign, :string
     field :pickup_type, Arrow.Gtfs.Types.Enum, values: @pickup_drop_off_types
