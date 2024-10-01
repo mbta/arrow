@@ -1,8 +1,8 @@
 defmodule Arrow.Gtfs.ServiceTest do
   use Arrow.DataCase
-  alias Arrow.Gtfs.Service
   alias Arrow.Gtfs.Calendar
   alias Arrow.Gtfs.CalendarDate
+  alias Arrow.Gtfs.Service
 
   describe "database" do
     test "enforces string FK constraints and integer-coded values, parses datestamps" do
