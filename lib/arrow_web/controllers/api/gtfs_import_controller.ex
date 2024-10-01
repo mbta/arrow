@@ -2,8 +2,6 @@ defmodule ArrowWeb.API.GtfsImportController do
   use ArrowWeb, :controller
   import Ecto.Query
 
-  # TODO: Authorization
-
   def import(conn, %{"archive" => %Plug.Upload{} = upload}) do
     version_query =
       from info in Arrow.Gtfs.FeedInfo, where: info.id == "mbta-ma-us", select: info.version
