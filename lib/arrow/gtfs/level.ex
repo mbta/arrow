@@ -30,5 +30,5 @@ defmodule Arrow.Gtfs.Level do
   end
 
   @impl Arrow.Gtfs.Importable
-  def filename, do: "levels.txt"
+  def filenames, do: ["levels.txt"]
 end

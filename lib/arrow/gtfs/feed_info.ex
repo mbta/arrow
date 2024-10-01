@@ -55,5 +55,5 @@ defmodule Arrow.Gtfs.FeedInfo do
   end
 
   @impl Arrow.Gtfs.Importable
-  def filename, do: "feed_info.txt"
+  def filenames, do: ["feed_info.txt"]
 end

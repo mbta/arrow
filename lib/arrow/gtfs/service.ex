@@ -1,6 +1,7 @@
 defmodule Arrow.Gtfs.Service do
   @moduledoc """
-  Represents a row from calendar.txt.
+  Represents all calendar data related to a service_id,
+  which may exist in one or both of calendar.txt or calendar_dates.txt.
 
   Changeset is intended for use only in CSV imports--
   table contents should be considered read-only otherwise.
@@ -9,58 +10,35 @@ defmodule Arrow.Gtfs.Service do
   import Ecto.Changeset
 
   @type t :: %__MODULE__{
-          id: String.t(),
-          monday: boolean,
-          tuesday: boolean,
-          wednesday: boolean,
-          thursday: boolean,
-          friday: boolean,
-          saturday: boolean,
-          sunday: boolean,
-          start_date: Date.t(),
-          end_date: Date.t(),
-          dates: list(Arrow.Gtfs.ServiceDate.t()) | Ecto.Association.NotLoaded.t()
+          calendar: Arrow.Gtfs.Calendar.t() | Ecto.Association.NotLoaded.t(),
+          calendar_dates: list(Arrow.Gtfs.CalendarDate.t()) | Ecto.Association.NotLoaded.t()
         }
 
   schema "gtfs_services" do
-    # Should these be combined into one list or map field?
-    # E.g. %{monday: true, tuesday: false, ...} or [true, false, ...]
-    for day <- ~w[monday tuesday wednesday thursday friday saturday sunday]a do
-      field day, :boolean
-    end
+    has_one :calendar, Arrow.Gtfs.Calendar
+    has_many :calendar_dates, Arrow.Gtfs.CalendarDate
 
-    field :start_date, Arrow.Gtfs.Types.Date
-    field :end_date, Arrow.Gtfs.Types.Date
-
-    has_many :dates, Arrow.Gtfs.ServiceDate
     has_many :trips, Arrow.Gtfs.Trip
   end
 
   def changeset(service, attrs) do
-    attrs = remove_table_prefix(attrs, "service")
-
-    service
-    |> cast(
-      attrs,
-      ~w[id monday tuesday wednesday thursday friday saturday sunday start_date end_date]a
-    )
-    |> validate_required(
-      ~w[id monday tuesday wednesday thursday friday saturday sunday start_date end_date]a
-    )
-    |> validate_start_date_before_end_date()
-  end
-
-  defp validate_start_date_before_end_date(changeset) do
-    start_date = fetch_field!(changeset, :start_date)
-    end_date = fetch_field!(changeset, :end_date)
-
-    if Date.compare(start_date, end_date) in [:lt, :eq] do
-      changeset
-    else
-      add_error(changeset, :dates, "start date should not be after end date")
-    end
+    cast(service, attrs, [:id])
   end
 
   @impl Arrow.Gtfs.Importable
-  def filename, do: "calendar.txt"
+  def filenames, do: ["calendar.txt", "calendar_dates.txt"]
+
+  @impl Arrow.Gtfs.Importable
+  def import(unzip) do
+    # This table's IDs are the union of those found in
+    # calendar.txt and calendar_dates.txt.
+    service_rows =
+      filenames()
+      |> Enum.map(&Arrow.Gtfs.ImportHelper.stream_csv_rows(unzip, &1))
+      |> Stream.concat()
+      |> Stream.uniq_by(& &1["service_id"])
+      |> Stream.map(&%{"id" => Map.fetch!(&1, "service_id")})
+
+    Arrow.Gtfs.Importable.cast_and_insert(service_rows, __MODULE__)
+  end
 end

@@ -76,5 +76,5 @@ defmodule Arrow.Gtfs.RoutePattern do
   end
 
   @impl Arrow.Gtfs.Importable
-  def filename, do: "route_patterns.txt"
+  def filenames, do: ["route_patterns.txt"]
 end

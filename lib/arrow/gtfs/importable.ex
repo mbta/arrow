@@ -9,8 +9,12 @@ defmodule Arrow.Gtfs.Importable do
   alias Arrow.Repo
   alias Ecto.Changeset
 
-  @doc "CSV filename to import from."
-  @callback filename :: String.t()
+  @doc """
+  CSV filename(s) to import from.
+
+  In certain cases, this must be a list of length 1.
+  """
+  @callback filenames :: list(String.t())
 
   @doc "How to import this table's data."
   @callback import(Unzip.t()) :: term
@@ -42,9 +46,11 @@ defmodule Arrow.Gtfs.Importable do
   """
   @spec default_import(module, Unzip.t()) :: term
   def default_import(importable, unzip) do
-    unzip
-    |> ImportHelper.stream_csv_rows(importable.filename())
-    |> cast_and_insert(importable)
+    for filename <- importable.filenames() do
+      unzip
+      |> ImportHelper.stream_csv_rows(filename)
+      |> cast_and_insert(importable)
+    end
   end
 
   @spec cast_and_insert(Enumerable.t(csv_row()), module) :: :ok
@@ -79,8 +85,10 @@ defmodule Arrow.Gtfs.Importable do
     included and CSV column order must match that of the destination table.
   """
   @spec import_using_copy(module, Unzip.t(), Keyword.t()) :: term
-  def import_using_copy(importable_schema, unzip, opts \\ []) do
-    csv_stream = Unzip.file_stream!(unzip, importable_schema.filename())
+  def import_using_copy(importable, unzip, opts \\ []) do
+    # The schema must be sourced from only 1 CSV file.
+    [filename] = importable.filenames()
+    csv_stream = Unzip.file_stream!(unzip, filename)
 
     csv_stream =
       case Keyword.fetch(opts, :header_mappings) do
@@ -94,7 +102,7 @@ defmodule Arrow.Gtfs.Importable do
         :error -> ""
       end
 
-    table = importable_schema.__schema__(:source)
+    table = importable.__schema__(:source)
 
     copy_query = """
     COPY "#{table}" #{column_list}
@@ -108,6 +116,8 @@ defmodule Arrow.Gtfs.Importable do
     end)
   end
 
+  # Passes a CSV-parsed map through given schema's `changeset` function,
+  # then converts it back to a plain map compatible with `Repo.insert_all`.
   @spec cast_to_insertable(csv_row(), module) :: %{atom => term}
   defp cast_to_insertable(row, schema) do
     struct(schema)

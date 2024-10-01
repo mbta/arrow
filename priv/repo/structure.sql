@@ -374,6 +374,36 @@ ALTER SEQUENCE public.gtfs_bike_boarding_types_id_seq OWNED BY public.gtfs_bike_
 
 
 --
+-- Name: gtfs_calendar_dates; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_calendar_dates (
+    service_id character varying(255) NOT NULL,
+    date date NOT NULL,
+    exception_type integer NOT NULL,
+    holiday_name character varying(255)
+);
+
+
+--
+-- Name: gtfs_calendars; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_calendars (
+    service_id character varying(255) NOT NULL,
+    monday boolean NOT NULL,
+    tuesday boolean NOT NULL,
+    wednesday boolean NOT NULL,
+    thursday boolean NOT NULL,
+    friday boolean NOT NULL,
+    saturday boolean NOT NULL,
+    sunday boolean NOT NULL,
+    start_date date NOT NULL,
+    end_date date NOT NULL
+);
+
+
+--
 -- Name: gtfs_canonicalities; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -681,18 +711,6 @@ CREATE TABLE public.gtfs_routes (
 
 
 --
--- Name: gtfs_service_dates; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.gtfs_service_dates (
-    service_id character varying(255) NOT NULL,
-    date date NOT NULL,
-    exception_type integer NOT NULL,
-    holiday_name character varying(255)
-);
-
-
---
 -- Name: gtfs_service_exception_types; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -726,16 +744,7 @@ ALTER SEQUENCE public.gtfs_service_exception_types_id_seq OWNED BY public.gtfs_s
 --
 
 CREATE TABLE public.gtfs_services (
-    id character varying(255) NOT NULL,
-    monday boolean NOT NULL,
-    tuesday boolean NOT NULL,
-    wednesday boolean NOT NULL,
-    thursday boolean NOT NULL,
-    friday boolean NOT NULL,
-    saturday boolean NOT NULL,
-    sunday boolean NOT NULL,
-    start_date date NOT NULL,
-    end_date date NOT NULL
+    id character varying(255) NOT NULL
 );
 
 
@@ -1217,6 +1226,22 @@ ALTER TABLE ONLY public.gtfs_bike_boarding_types
 
 
 --
+-- Name: gtfs_calendar_dates gtfs_calendar_dates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_calendar_dates
+    ADD CONSTRAINT gtfs_calendar_dates_pkey PRIMARY KEY (service_id, date);
+
+
+--
+-- Name: gtfs_calendars gtfs_calendars_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_calendars
+    ADD CONSTRAINT gtfs_calendars_pkey PRIMARY KEY (service_id);
+
+
+--
 -- Name: gtfs_canonicalities gtfs_canonicalities_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1326,14 +1351,6 @@ ALTER TABLE ONLY public.gtfs_route_types
 
 ALTER TABLE ONLY public.gtfs_routes
     ADD CONSTRAINT gtfs_routes_pkey PRIMARY KEY (id);
-
-
---
--- Name: gtfs_service_dates gtfs_service_dates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.gtfs_service_dates
-    ADD CONSTRAINT gtfs_service_dates_pkey PRIMARY KEY (service_id, date);
 
 
 --
@@ -1658,6 +1675,30 @@ ALTER TABLE ONLY public.disruptions
 
 
 --
+-- Name: gtfs_calendar_dates gtfs_calendar_dates_exception_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_calendar_dates
+    ADD CONSTRAINT gtfs_calendar_dates_exception_type_fkey FOREIGN KEY (exception_type) REFERENCES public.gtfs_service_exception_types(id);
+
+
+--
+-- Name: gtfs_calendar_dates gtfs_calendar_dates_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_calendar_dates
+    ADD CONSTRAINT gtfs_calendar_dates_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.gtfs_services(id);
+
+
+--
+-- Name: gtfs_calendars gtfs_calendars_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_calendars
+    ADD CONSTRAINT gtfs_calendars_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.gtfs_services(id);
+
+
+--
 -- Name: gtfs_directions gtfs_directions_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1735,22 +1776,6 @@ ALTER TABLE ONLY public.gtfs_routes
 
 ALTER TABLE ONLY public.gtfs_routes
     ADD CONSTRAINT gtfs_routes_type_fkey FOREIGN KEY (type) REFERENCES public.gtfs_route_types(id);
-
-
---
--- Name: gtfs_service_dates gtfs_service_dates_exception_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.gtfs_service_dates
-    ADD CONSTRAINT gtfs_service_dates_exception_type_fkey FOREIGN KEY (exception_type) REFERENCES public.gtfs_service_exception_types(id);
-
-
---
--- Name: gtfs_service_dates gtfs_service_dates_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.gtfs_service_dates
-    ADD CONSTRAINT gtfs_service_dates_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.gtfs_services(id);
 
 
 --

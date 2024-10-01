@@ -69,7 +69,7 @@ defmodule Arrow.Gtfs.StopTime do
   end
 
   @impl Arrow.Gtfs.Importable
-  def filename, do: "stop_times.txt"
+  def filenames, do: ["stop_times.txt"]
 
   @impl Arrow.Gtfs.Importable
   def import(unzip), do: Arrow.Gtfs.Importable.import_using_copy(__MODULE__, unzip)

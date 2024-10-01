@@ -32,12 +32,14 @@ defmodule Arrow.Gtfs.Shape do
   end
 
   @impl Arrow.Gtfs.Importable
-  def filename, do: "shapes.txt"
+  def filenames, do: ["shapes.txt"]
 
   @impl Arrow.Gtfs.Importable
   def import(unzip) do
+    [filename] = filenames()
+
     unzip
-    |> Arrow.Gtfs.ImportHelper.stream_csv_rows(filename())
+    |> Arrow.Gtfs.ImportHelper.stream_csv_rows(filename)
     |> Stream.uniq_by(& &1["shape_id"])
     |> Arrow.Gtfs.Importable.cast_and_insert(__MODULE__)
   end

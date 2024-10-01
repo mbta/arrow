@@ -36,5 +36,5 @@ defmodule Arrow.Gtfs.Agency do
   end
 
   @impl Arrow.Gtfs.Importable
-  def filename, do: "agency.txt"
+  def filenames, do: ["agency.txt"]
 end

@@ -133,7 +133,8 @@ defmodule Arrow.Gtfs do
       Arrow.Gtfs.Level,
       Arrow.Gtfs.Line,
       Arrow.Gtfs.Service,
-      Arrow.Gtfs.ServiceDate,
+      Arrow.Gtfs.Calendar,
+      Arrow.Gtfs.CalendarDate,
       Arrow.Gtfs.Stop,
       Arrow.Gtfs.Shape,
       Arrow.Gtfs.ShapePoint,
@@ -146,6 +147,8 @@ defmodule Arrow.Gtfs do
   end
 
   defp required_files do
-    MapSet.new(importable_schemas(), & &1.filename())
+    importable_schemas()
+    |> Enum.flat_map(& &1.filenames())
+    |> MapSet.new()
   end
 end

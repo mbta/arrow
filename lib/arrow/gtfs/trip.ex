@@ -81,7 +81,7 @@ defmodule Arrow.Gtfs.Trip do
   end
 
   @impl Arrow.Gtfs.Importable
-  def filename, do: "trips.txt"
+  def filenames, do: ["trips.txt"]
 
   @impl Arrow.Gtfs.Importable
   def import(unzip) do

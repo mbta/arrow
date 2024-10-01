@@ -89,5 +89,5 @@ defmodule Arrow.Gtfs.Stop do
   end
 
   @impl Arrow.Gtfs.Importable
-  def filename, do: "stops.txt"
+  def filenames, do: ["stops.txt"]
 end

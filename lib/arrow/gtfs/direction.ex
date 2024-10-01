@@ -45,5 +45,5 @@ defmodule Arrow.Gtfs.Direction do
   end
 
   @impl Arrow.Gtfs.Importable
-  def filename, do: "directions.txt"
+  def filenames, do: ["directions.txt"]
 end

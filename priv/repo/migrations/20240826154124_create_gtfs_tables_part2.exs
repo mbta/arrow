@@ -2,7 +2,13 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart2 do
   use Ecto.Migration
 
   def change do
-    create table("gtfs_services", primary_key: [name: :id, type: :string]) do
+    # A new table that allows us to easily view all
+    # calendar/calendar_dates entries referencing a given service_id.
+    create table("gtfs_services", primary_key: [name: :id, type: :string])
+
+    create table("gtfs_calendars", primary_key: false) do
+      add :service_id, references("gtfs_services", type: :string), primary_key: true
+
       for day <- ~w[monday tuesday wednesday thursday friday saturday sunday]a do
         add day, :boolean, null: false
       end
@@ -11,7 +17,7 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart2 do
       add :end_date, :date, null: false
     end
 
-    create table("gtfs_service_dates", primary_key: false) do
+    create table("gtfs_calendar_dates", primary_key: false) do
       add :service_id, references("gtfs_services", type: :string), primary_key: true
       add :date, :date, primary_key: true
       add :exception_type, references("gtfs_service_exception_types", type: :integer), null: false

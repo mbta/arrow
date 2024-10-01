@@ -27,5 +27,5 @@ defmodule Arrow.Gtfs.Checkpoint do
   end
 
   @impl Arrow.Gtfs.Importable
-  def filename, do: "checkpoints.txt"
+  def filenames, do: ["checkpoints.txt"]
 end

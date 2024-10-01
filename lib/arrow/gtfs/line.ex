@@ -38,5 +38,5 @@ defmodule Arrow.Gtfs.Line do
   end
 
   @impl Arrow.Gtfs.Importable
-  def filename, do: "lines.txt"
+  def filenames, do: ["lines.txt"]
 end

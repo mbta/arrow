@@ -41,7 +41,7 @@ defmodule Arrow.Gtfs.ShapePoint do
   end
 
   @impl Arrow.Gtfs.Importable
-  def filename, do: "shapes.txt"
+  def filenames, do: ["shapes.txt"]
 
   @impl Arrow.Gtfs.Importable
   def import(unzip) do
