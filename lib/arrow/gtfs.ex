@@ -67,11 +67,11 @@ defmodule Arrow.Gtfs do
   defp import_transaction(unzip, dry_run?) do
     Repo.transaction(
       fn ->
-        truncate_all()
+        _ = truncate_all()
         import_all(unzip)
 
         if dry_run? do
-          Repo.query!("SET CONSTRAINTS ALL IMMEDIATE")
+          _ = Repo.query!("SET CONSTRAINTS ALL IMMEDIATE")
           Repo.rollback(:dry_run_success)
         end
       end,

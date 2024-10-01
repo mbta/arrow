@@ -4,7 +4,6 @@ defmodule Arrow.Repo.MigrationHelper do
 
   Currently these functions are used only in the gtfs_* table migrations.
   """
-
   import Ecto.Migration
 
   @spec create_and_populate_enum_table(
@@ -49,11 +48,12 @@ defmodule Arrow.Repo.MigrationHelper do
       |> normalize_values!()
       |> Enum.map_join(",\n  ", fn {i, value} -> "(#{i}, '#{value}')" end)
 
-    create table(name) do
-      add(:name, :string, null: false)
-    end
+    _ =
+      create table(name) do
+        add(:name, :string, null: false)
+      end
 
-    create(unique_index(name, [:name]))
+    _ = create(unique_index(name, [:name]))
 
     up_fn = fn ->
       repo().query!("""
