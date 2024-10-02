@@ -19,7 +19,7 @@ config :arrow, :websocket_check_origin, [
 ]
 
 config :arrow, ArrowWeb.Endpoint,
-  http: [:inet6, port: 4000],
+  http: [:inet6, port: 4000, protocol_options: [idle_timeout: 5_000_000]],
   url: [host: "example.com", port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json",
   server: true
