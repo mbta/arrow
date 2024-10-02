@@ -8,7 +8,7 @@ defmodule Arrow.Gtfs do
   alias Arrow.Gtfs.ImportHelper
   alias Arrow.Repo
 
-  @import_timeout_ms 60_000
+  @import_timeout_ms 180_000
 
   @doc """
   Loads a GTFS archive into Arrow's gtfs_* DB tables,
