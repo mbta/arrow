@@ -10,6 +10,7 @@ defmodule Arrow.Shuttle do
 
   alias Arrow.Shuttle.KML
   alias Arrow.Shuttle.Shape
+  alias Arrow.Shuttle.ShapesUpload
   alias Arrow.Shuttle.ShapeUpload
 
   @doc """
@@ -41,6 +42,39 @@ defmodule Arrow.Shuttle do
   """
   def get_shape!(id), do: Repo.get!(Shape, id)
 
+  @doc """
+  Gets a shapes upload struct associated with a given shape.
+
+  ## Examples
+
+      iex> get_shapes_upload(%Shape{})
+      %ShapesUpload{}
+  """
+  def get_shapes_upload(%Shape{} = shape) do
+    with true <- Application.get_env(:arrow, :shape_storage_enabled?),
+         {:ok, %{body: shapes_kml}} <- get_shape_file(shape),
+         {:ok, parsed_shapes} <- ShapesUpload.parse_kml(shapes_kml),
+         {:ok, shapes} <- ShapesUpload.shapes_from_kml(parsed_shapes) do
+      ShapesUpload.changeset(%ShapesUpload{}, %{filename: shape.name, shapes: shapes})
+    else
+      false -> {:ok, :disabled}
+      error -> error
+    end
+  end
+
+  defp get_shape_file(shape) do
+    enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
+    {request_module, request_func} = Application.get_env(:arrow, :shape_storage_request_fn)
+
+    if enabled? do
+      get_request = ExAws.S3.get_object(shape.bucket, shape.path)
+      apply(request_module, request_func, [get_request])
+    else
+      {:ok, :disabled}
+    end
+  end
+
+  @spec create_shapes(any()) :: {:error, {<<_::224>>, list()}} | {:ok, list()}
   @doc """
   Creates shapes.
 
@@ -82,8 +116,9 @@ defmodule Arrow.Shuttle do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_shape(%{name: name} = attrs) do
-    with nil <- Repo.get_by(Shape, name: name),
+  def create_shape(attrs) do
+    with {:ok, attrs} <- Shape.validate_and_enforce_name(attrs),
+         nil <- Repo.get_by(Shape, name: attrs.name),
          {:ok, shape_with_kml} <- create_shape_kml(attrs),
          {:ok, new_attrs} <- upload_shape_file(shape_with_kml) do
       do_create_shape(Enum.into(new_attrs, attrs))

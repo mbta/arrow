@@ -9,6 +9,10 @@ defmodule Mix.Tasks.CopyDb do
   @shortdoc "Copies database"
   @impl Mix.Task
   def run(_args) do
+    # Load the DBStructure module now, so that relevant atoms like :route_id are
+    # registered ahead of the call to `String.to_existing_atom/1` further down
+    # in this function.
+    Code.ensure_loaded!(Arrow.DBStructure)
     api_key = System.get_env("ARROW_API_KEY")
     domain = System.get_env("ARROW_DOMAIN", "https://arrow.mbta.com")
     fetch_module = Application.get_env(:arrow, :http_client)

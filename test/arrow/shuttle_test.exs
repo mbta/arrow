@@ -2,46 +2,54 @@ defmodule Arrow.ShuttleTest do
   use Arrow.DataCase
 
   alias Arrow.Shuttle
+  alias Arrow.Shuttle.Shape
+  import Arrow.ShuttleFixtures
+  import Test.Support.Helpers
 
   describe "shapes with s3 functionality enabled (mocked)" do
-    alias Arrow.Shuttle.Shape
-
     @valid_shape %{
-      name: "some name",
+      name: "some name-S",
       coordinates: "-71.14163,42.39551 -71.14163,42.39551 -71.14163,42.39551"
     }
 
-    import Arrow.ShuttleFixtures
-
-    setup do
-      Application.put_env(:arrow, :shape_storage_enabled?, true)
-      on_exit(fn -> Application.put_env(:arrow, :shape_storage_enabled?, false) end)
-    end
-
     test "create_shape/1 with valid data creates a shape when shape storage is enabled" do
-      Application.put_env(:arrow, :shape_storage_enabled?, true)
-      Application.put_env(:arrow, :shape_storage_prefix, "prefix/#{Ecto.UUID.generate()}/")
+      reassign_env(:shape_storage_enabled?, true)
+      reassign_env(:shape_storage_prefix, "prefix/#{Ecto.UUID.generate()}/")
 
       assert {:ok, %Shape{} = shape} = Shuttle.create_shape(@valid_shape)
-      assert shape.name == "some name"
+      assert shape.name == "some name-S"
       Application.put_env(:arrow, :shape_storage_enabled?, false)
     end
 
-    test "delete_shape/1 deletes the shape" do
+    test "create_shape/1 with name that does not end in -S adds it" do
       Application.put_env(:arrow, :shape_storage_enabled?, true)
+      Application.put_env(:arrow, :shape_storage_prefix, "prefix/#{Ecto.UUID.generate()}/")
+
+      assert {:ok, %Shape{} = shape} =
+               Shuttle.create_shape(%{name: "some name", coordinates: coords()})
+
+      assert shape.name == "some name-S"
+    end
+
+    test "delete_shape/1 deletes the shape" do
+      reassign_env(:shape_storage_enabled?, true)
 
       assert {:ok, %Shape{} = shape} = Shuttle.create_shape(@valid_shape)
       assert {:ok, %Shape{}} = Shuttle.delete_shape(shape)
       assert_raise Ecto.NoResultsError, fn -> Shuttle.get_shape!(shape.id) end
-      Application.put_env(:arrow, :shape_storage_enabled?, false)
+    end
+
+    test "get_shapes_upload/1 returns a ShapesUpload changeset" do
+      reassign_env(:shape_storage_enabled?, true)
+
+      new_shape = s3_mocked_shape_fixture()
+      shape = Shuttle.get_shape!(new_shape.id)
+      assert %Ecto.Changeset{valid?: true} = Shuttle.get_shapes_upload(shape)
     end
   end
 
   describe "shapes" do
-    alias Arrow.Shuttle.Shape
-
-    import Arrow.ShuttleFixtures
-    @valid_attrs %{name: "some name", coordinates: coords()}
+    @valid_attrs %{name: "some name-S", coordinates: coords()}
     @invalid_attrs %{name: "", coordinates: nil}
 
     test "list_shapes/0 returns all shapes" do
@@ -56,7 +64,7 @@ defmodule Arrow.ShuttleTest do
 
     test "create_shapes/1 with valid data creates a shape" do
       assert {:ok, [{:ok, %Shape{} = shape}]} = Shuttle.create_shapes([@valid_attrs])
-      assert shape.name == "some name"
+      assert shape.name == "some name-S"
     end
 
     test "create_shapes/1 with invalid data returns error changeset" do

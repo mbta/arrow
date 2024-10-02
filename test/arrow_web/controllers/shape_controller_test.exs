@@ -4,9 +4,10 @@ defmodule ArrowWeb.ShapeControllerTest do
   alias Arrow.Shuttle.Shape
 
   import Arrow.ShuttleFixtures
+  import Test.Support.Helpers
 
   @upload_attrs %{
-    name: "some name",
+    name: "some name-S",
     filename: %Plug.Upload{
       path: "test/support/fixtures/kml/one_shape.kml",
       filename: "some filename"
@@ -44,11 +45,12 @@ defmodule ArrowWeb.ShapeControllerTest do
   @create_attrs [
     {0,
      %{
-       name: "some other name",
+       name: "some other name-S",
        save: "false",
        coordinates: "-71.14163,42.39551 -71.14163,42.39551 -71.14163,42.39551"
      }},
-    {1, %{name: "some name", save: "true", coordinates: "-71.14163,42.39551 -71.14163,42.39551 "}}
+    {1,
+     %{name: "some name-S", save: "true", coordinates: "-71.14163,42.39551 -71.14163,42.39551 "}}
   ]
 
   describe "index" do
@@ -57,6 +59,19 @@ defmodule ArrowWeb.ShapeControllerTest do
       conn = get(conn, ~p"/shapes")
       assert html_response(conn, 200) =~ "Listing Shapes"
       refute html_response(conn, 200) =~ "Components.ShapeViewMap"
+    end
+  end
+
+  describe "show" do
+    @tag :authenticated_admin
+    test "shows a shape", %{conn: conn} do
+      reassign_env(:shape_storage_enabled?, true)
+
+      shape = s3_mocked_shape_fixture()
+
+      conn = get(conn, ~p"/shapes/#{shape.id}")
+      assert html_response(conn, 200) =~ "test-show-shape"
+      assert html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
   end
 
@@ -81,7 +96,7 @@ defmodule ArrowWeb.ShapeControllerTest do
 
       assert redirected_to(conn) == ~p"/shapes/"
 
-      %{id: id} = Repo.get_by(Shape, name: "some name")
+      %{id: id} = Repo.get_by(Shape, name: "some name-S")
 
       # Attempt to download:
       conn = ArrowWeb.ConnCase.authenticated_admin()
@@ -157,8 +172,8 @@ defmodule ArrowWeb.ShapeControllerTest do
 
       conn = ArrowWeb.ConnCase.authenticated_admin()
       conn = get(conn, ~p"/shapes")
-      assert html_response(conn, 200) =~ "some name"
-      refute html_response(conn, 200) =~ "some other name"
+      assert html_response(conn, 200) =~ "some name-S"
+      refute html_response(conn, 200) =~ "some other name-S"
       refute html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
   end

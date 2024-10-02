@@ -40,7 +40,7 @@ defmodule ArrowWeb.API.StopsControllerTest do
                    "stop_name" => stop1.stop_name,
                    "updated_at" => DateTime.to_iso8601(stop1.updated_at)
                  },
-                 "id" => stop1.stop_id,
+                 "id" => "#{stop1.id}",
                  "type" => "stops"
                },
                %{
@@ -54,7 +54,7 @@ defmodule ArrowWeb.API.StopsControllerTest do
                    "stop_name" => stop2.stop_name,
                    "updated_at" => DateTime.to_iso8601(stop2.updated_at)
                  },
-                 "id" => stop2.stop_id,
+                 "id" => "#{stop2.id}",
                  "type" => "stops"
                },
                %{
@@ -68,7 +68,7 @@ defmodule ArrowWeb.API.StopsControllerTest do
                    "stop_name" => stop3.stop_name,
                    "updated_at" => DateTime.to_iso8601(stop3.updated_at)
                  },
-                 "id" => stop3.stop_id,
+                 "id" => "#{stop3.id}",
                  "type" => "stops"
                }
              ] == data
@@ -103,7 +103,7 @@ defmodule ArrowWeb.API.StopsControllerTest do
                    "at_street" => "At Avenue",
                    "on_street" => "On Street"
                  },
-                 "id" => stop1.stop_id,
+                 "id" => "#{stop1.id}",
                  "type" => "stops"
                },
                %{
@@ -118,7 +118,7 @@ defmodule ArrowWeb.API.StopsControllerTest do
                    "updated_at" => DateTime.to_iso8601(stop2.updated_at),
                    "at_street" => "At Avenue"
                  },
-                 "id" => stop2.stop_id,
+                 "id" => "#{stop2.id}",
                  "type" => "stops"
                },
                %{
@@ -133,7 +133,7 @@ defmodule ArrowWeb.API.StopsControllerTest do
                    "updated_at" => DateTime.to_iso8601(stop3.updated_at),
                    "on_street" => "On Street"
                  },
-                 "id" => stop3.stop_id,
+                 "id" => "#{stop3.id}",
                  "type" => "stops"
                }
              ] == data

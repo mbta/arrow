@@ -100,7 +100,7 @@ defmodule Arrow.StopsTest do
                })
 
       assert {_, error} = change.errors[:stop_id]
-      assert error[:constraint] == :unique
+      assert error == [validation: :unsafe_unique, fields: [:stop_id]]
     end
 
     test "create_stop/1 with invalid data returns error changeset" do
@@ -158,7 +158,7 @@ defmodule Arrow.StopsTest do
                Stops.update_stop(stop1, %{stop_id: stop2.stop_id})
 
       assert {_, error} = change.errors[:stop_id]
-      assert error[:constraint] == :unique
+      assert error == [validation: :unsafe_unique, fields: [:stop_id]]
     end
 
     test "delete_stop/1 deletes the stop" do

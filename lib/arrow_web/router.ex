@@ -1,5 +1,6 @@
 defmodule ArrowWeb.Router do
   use ArrowWeb, :router
+  import Phoenix.LiveDashboard.Router
 
   pipeline :browser do
     plug(:accepts, ["html"])
@@ -49,13 +50,15 @@ defmodule ArrowWeb.Router do
     resources("/disruptions", DisruptionController, except: [:index])
     put("/disruptions/:id/row_status", DisruptionController, :update_row_status)
     post("/disruptions/:id/notes", NoteController, :create)
-    get("/shapes/:id/download", ShapeController, :download)
     live("/stops/new", StopViewLive, :new)
     live("/stops/:id/edit", StopViewLive, :edit)
     get("/stops", StopController, :index)
-    resources("/shapes", ShapeController, except: [:new, :create])
+    post("/stops/:id", StopController, :update)
+    post("/stops", StopController, :create)
+    resources("/shapes", ShapeController, only: [:delete, :index, :show])
     get("/shapes_upload", ShapeController, :new)
     post("/shapes_upload", ShapeController, :create)
+    get("/shapes/:id/download", ShapeController, :download)
   end
 
   scope "/", ArrowWeb do
@@ -89,4 +92,11 @@ defmodule ArrowWeb.Router do
   # scope "/api", ArrowWeb do
   #   pipe_through :api
   # end
+
+  if Mix.env() == :dev do
+    scope "/" do
+      pipe_through :browser
+      live_dashboard "/dashboard", ecto_repos: [Arrow.Repo]
+    end
+  end
 end
