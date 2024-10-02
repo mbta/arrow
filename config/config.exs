@@ -14,7 +14,7 @@ config :arrow,
   fetch_adjustments?: true,
   adjustments_url: "https://mbta-gtfs-s3.s3.amazonaws.com/arrow/shuttles.json",
   # Run migrations synchronously before anything else. Must finish in <5 seconds
-  migrate_synchronously?: false,
+  migrate_synchronously?: true,
   redirect_http?: true,
   cognito_groups: %{
     # map cognito groups to roles
