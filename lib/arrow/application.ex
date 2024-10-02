@@ -17,7 +17,8 @@ defmodule Arrow.Application do
         # Start the Ecto repository
         Arrow.Repo,
         # Start the endpoint when the application starts
-        ArrowWeb.Endpoint
+        ArrowWeb.Endpoint,
+        {Task.Supervisor, name: Arrow.TaskSupervisor}
       ] ++
         migrate_children(run_migrations_at_startup?) ++
         adjustment_fetcher_children(run_adjustment_fetcher?)

@@ -8,7 +8,12 @@ defmodule ArrowWeb.API.GtfsImportController do
 
     version = Arrow.Repo.one(version_query)
 
-    case Arrow.Gtfs.import(upload.path, version) do
+    t =
+      Task.Supervisor.async_nolink(Arrow.TaskSupervisor, fn ->
+        Arrow.Gtfs.import(upload.path, version)
+      end)
+
+    case Task.await(t, :infinity) do
       :ok ->
         new_version = Arrow.Repo.one!(version_query)
 
