@@ -1,5 +1,6 @@
 defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart5 do
   use Ecto.Migration
+  import Arrow.Gtfs.MigrationHelper
 
   def change do
     create table("gtfs_trips", primary_key: [name: :id, type: :string]) do
@@ -18,14 +19,15 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart5 do
 
       add :block_id, :string
       add :shape_id, references("gtfs_shapes", type: :string)
-
-      add :wheelchair_accessible, references("gtfs_wheelchair_boarding_types", type: :integer),
-        null: false
-
-      add :route_type, references("gtfs_route_types", type: :integer)
+      add :wheelchair_accessible, :integer, null: false
+      add :route_type, :integer
       add :route_pattern_id, references("gtfs_route_patterns", type: :string), null: false
-      add :bikes_allowed, references("gtfs_bike_boarding_types", type: :integer), null: false
+      add :bikes_allowed, :integer, null: false
     end
+
+    create_int_code_constraint("gtfs_trips", :wheelchair_accessible, 2)
+    create_int_code_constraint("gtfs_trips", :route_type, 4)
+    create_int_code_constraint("gtfs_trips", :bikes_allowed, 2)
 
     execute(&route_patterns_deferred_pk_up/0, &route_patterns_deferred_pk_down/0)
   end

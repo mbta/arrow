@@ -1,5 +1,6 @@
 defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart2 do
   use Ecto.Migration
+  import Arrow.Gtfs.MigrationHelper
 
   def change do
     # A new table that allows us to easily view all
@@ -20,9 +21,11 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart2 do
     create table("gtfs_calendar_dates", primary_key: false) do
       add :service_id, references("gtfs_services", type: :string), primary_key: true
       add :date, :date, primary_key: true
-      add :exception_type, references("gtfs_service_exception_types", type: :integer), null: false
+      add :exception_type, :integer, null: false
       add :holiday_name, :string
     end
+
+    create_int_code_constraint("gtfs_calendar_dates", :exception_type, 1..2)
 
     create table("gtfs_stops", primary_key: [name: :id, type: :string]) do
       add :code, :string
@@ -36,17 +39,18 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart2 do
       add :address, :string
       add :url, :string
       add :level_id, references("gtfs_levels", type: :string)
-      add :location_type, references("gtfs_location_types", type: :integer), null: false
+      add :location_type, :integer, null: false
       add :parent_station_id, references("gtfs_stops", type: :string)
-
-      add :wheelchair_boarding, references("gtfs_wheelchair_boarding_types", type: :integer),
-        null: false
-
+      add :wheelchair_boarding, :integer, null: false
       add :municipality, :string
       add :on_street, :string
       add :at_street, :string
-      add :vehicle_type, references("gtfs_route_types", type: :integer)
+      add :vehicle_type, :integer
     end
+
+    create_int_code_constraint("gtfs_stops", :location_type, 4)
+    create_int_code_constraint("gtfs_stops", :wheelchair_boarding, 2)
+    create_int_code_constraint("gtfs_stops", :vehicle_type, 4)
 
     create table("gtfs_shapes", primary_key: [name: :id, type: :string])
 

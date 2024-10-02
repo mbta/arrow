@@ -1,5 +1,6 @@
 defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart6 do
   use Ecto.Migration
+  import Arrow.Gtfs.MigrationHelper
 
   def change do
     create table("gtfs_stop_times", primary_key: false) do
@@ -11,14 +12,18 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart6 do
       add :stop_id, references("gtfs_stops", type: :string), null: false
       add :stop_sequence, :integer, primary_key: true
       add :stop_headsign, :string
-      add :pickup_type, references("gtfs_pickup_drop_off_types", type: :integer), null: false
-      add :drop_off_type, references("gtfs_pickup_drop_off_types", type: :integer), null: false
-      add :timepoint, references("gtfs_timepoint_types", type: :integer)
+      add :pickup_type, :integer, null: false
+      add :drop_off_type, :integer, null: false
+      add :timepoint, :integer
       add :checkpoint_id, references("gtfs_checkpoints", type: :string)
-      add :continuous_pickup, references("gtfs_continuous_pickup_drop_off_types", type: :integer)
-
-      add :continuous_drop_off,
-          references("gtfs_continuous_pickup_drop_off_types", type: :integer)
+      add :continuous_pickup, :integer
+      add :continuous_drop_off, :integer
     end
+
+    create_int_code_constraint("gtfs_stop_times", :pickup_type, 3)
+    create_int_code_constraint("gtfs_stop_times", :drop_off_type, 3)
+    create_int_code_constraint("gtfs_stop_times", :timepoint, 1)
+    create_int_code_constraint("gtfs_stop_times", :continuous_pickup, 3)
+    create_int_code_constraint("gtfs_stop_times", :continuous_drop_off, 3)
   end
 end
