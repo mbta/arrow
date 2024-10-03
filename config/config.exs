@@ -47,6 +47,12 @@ config :arrow, ArrowWeb.Endpoint,
   pubsub_server: Arrow.PubSub,
   live_view: [signing_salt: "35DDvOCJ"]
 
+# Configures Oban, the job processing library
+config :arrow, Oban,
+  engine: Oban.Engines.Basic,
+  queues: [default: 10],
+  repo: Arrow.Repo
+
 config :esbuild,
   version: "0.17.11",
   default: [

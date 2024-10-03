@@ -19,6 +19,9 @@ config :arrow, ArrowWeb.Endpoint,
 
 config :arrow, ArrowWeb.AuthManager, secret_key: "test key"
 
+# Prevent Oban from running jobs and plugins during test runs
+config :arrow, Oban, testing: :inline
+
 config :ueberauth, Ueberauth,
   providers: [
     cognito: {Arrow.Ueberauth.Strategy.Fake, []},
