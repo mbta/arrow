@@ -29,22 +29,17 @@ defmodule Arrow.Repo.Migrations.CreateGtfsTablesPart5 do
     create_int_code_constraint("gtfs_trips", :route_type, 4)
     create_int_code_constraint("gtfs_trips", :bikes_allowed, 2)
 
-    execute(&route_patterns_deferred_pk_up/0, &route_patterns_deferred_pk_down/0)
-  end
-
-  defp route_patterns_deferred_pk_up do
-    repo().query!("""
-    ALTER TABLE "gtfs_route_patterns"
-    ADD CONSTRAINT "gtfs_route_patterns_representative_trip_id_fkey"
-      FOREIGN KEY ("representative_trip_id") REFERENCES "gtfs_trips"("id")
-      DEFERRABLE INITIALLY DEFERRED
-    """)
-  end
-
-  defp route_patterns_deferred_pk_down do
-    repo().query!("""
-    ALTER TABLE "gtfs_route_patterns"
-    DROP CONSTRAINT "gtfs_route_patterns_representative_trip_id_fkey"
-    """)
+    execute(
+      """
+      ALTER TABLE "gtfs_route_patterns"
+      ADD CONSTRAINT "gtfs_route_patterns_representative_trip_id_fkey"
+        FOREIGN KEY ("representative_trip_id") REFERENCES "gtfs_trips"("id")
+        DEFERRABLE INITIALLY DEFERRED
+      """,
+      """
+      ALTER TABLE "gtfs_route_patterns"
+      DROP CONSTRAINT "gtfs_route_patterns_representative_trip_id_fkey"
+      """
+    )
   end
 end

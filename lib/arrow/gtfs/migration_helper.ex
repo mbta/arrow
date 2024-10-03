@@ -43,12 +43,9 @@ defmodule Arrow.Gtfs.MigrationHelper do
   def create_enum_type(name, strings) do
     values_list = Enum.map_join(strings, ",", &"'#{&1}'")
 
-    up = "CREATE TYPE #{name} AS ENUM (#{values_list})"
-    down = "DROP TYPE #{name}"
-
     execute(
-      fn -> repo().query!(up) end,
-      fn -> repo().query!(down) end
+      "CREATE TYPE #{name} AS ENUM (#{values_list})",
+      "DROP TYPE #{name}"
     )
   end
 end
