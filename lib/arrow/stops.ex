@@ -6,7 +6,7 @@ defmodule Arrow.Stops do
   import Ecto.Query, warn: false
   alias Arrow.Repo
 
-  alias Arrow.Shuttle.Stop
+  alias Arrow.Shuttles.Stop
 
   @doc """
   Returns the list of stops.

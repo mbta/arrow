@@ -1,11 +1,11 @@
 defmodule ArrowWeb.ShapeController do
   require Logger
-  alias Arrow.Shuttle.ShapesUpload
+  alias Arrow.Shuttles.ShapesUpload
   alias ArrowWeb.ErrorHelpers
   alias Ecto.Changeset
   use ArrowWeb, :controller
 
-  alias Arrow.Shuttle
+  alias Arrow.Shuttles
   alias ArrowWeb.Plug.Authorize
 
   plug(Authorize, :view_disruption when action in [:index, :show, :download])
@@ -14,7 +14,7 @@ defmodule ArrowWeb.ShapeController do
   plug(Authorize, :delete_disruption when action in [:delete])
 
   def index(conn, _params) do
-    shapes = Shuttle.list_shapes()
+    shapes = Shuttles.list_shapes()
     render(conn, :index, shapes: shapes)
   end
 
@@ -68,7 +68,7 @@ defmodule ArrowWeb.ShapeController do
       |> Enum.filter(fn shape -> shape["save"] == "true" end)
       |> Enum.map(fn shape -> %{name: shape["name"], coordinates: shape["coordinates"]} end)
 
-    case Shuttle.create_shapes(saved_shapes) do
+    case Shuttles.create_shapes(saved_shapes) do
       {:ok, []} ->
         conn
         |> put_flash(
@@ -100,14 +100,14 @@ defmodule ArrowWeb.ShapeController do
   end
 
   def show(conn, %{"id" => id}) do
-    shape = Shuttle.get_shape!(id)
-    shape_upload = Shuttle.get_shapes_upload(shape)
+    shape = Shuttles.get_shape!(id)
+    shape_upload = Shuttles.get_shapes_upload(shape)
     render(conn, :show, shape: shape, shape_upload: shape_upload)
   end
 
   def download(conn, %{"id" => id}) do
     enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
-    shape = Shuttle.get_shape!(id)
+    shape = Shuttles.get_shape!(id)
     basic_url = "https://#{shape.bucket}.s3.amazonaws.com/#{shape.path}"
 
     {:ok, url} =
@@ -124,8 +124,8 @@ defmodule ArrowWeb.ShapeController do
   end
 
   def delete(conn, %{"id" => id}) do
-    shape = Shuttle.get_shape!(id)
-    {:ok, _shape} = Shuttle.delete_shape(shape)
+    shape = Shuttles.get_shape!(id)
+    {:ok, _shape} = Shuttles.delete_shape(shape)
 
     conn
     |> put_flash(:info, "Shape deleted successfully.")

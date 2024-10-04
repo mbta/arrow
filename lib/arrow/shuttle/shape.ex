@@ -1,4 +1,4 @@
-defmodule Arrow.Shuttle.Shape do
+defmodule Arrow.Shuttles.Shape do
   @moduledoc "schema for shuttle shapes for the db"
   use Ecto.Schema
   import Ecto.Changeset

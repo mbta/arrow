@@ -1,16 +1,16 @@
-defmodule Arrow.Shuttle.ShapesUpload do
+defmodule Arrow.Shuttles.ShapesUpload do
   @moduledoc "schema for shapes upload"
   use Ecto.Schema
   import Ecto.Changeset
 
   @type t :: %__MODULE__{
           filename: String.t(),
-          shapes: list(Arrow.Shuttle.ShapeUpload.t())
+          shapes: list(Arrow.Shuttles.ShapeUpload.t())
         }
 
   embedded_schema do
     field :filename, :string
-    embeds_many :shapes, Arrow.Shuttle.ShapeUpload
+    embeds_many :shapes, Arrow.Shuttles.ShapeUpload
   end
 
   @doc false
@@ -66,7 +66,7 @@ defmodule Arrow.Shuttle.ShapesUpload do
   @doc """
   Parses one or many Shapes from a map of the KML/XML
   """
-  @spec shapes_from_kml(map) :: {:ok, list(Arrow.Shuttle.ShapeUpload.t())} | {:error, any}
+  @spec shapes_from_kml(map) :: {:ok, list(Arrow.Shuttles.ShapeUpload.t())} | {:error, any}
   def shapes_from_kml(saxy_shapes) do
     placemarks = saxy_shapes["kml"]["Folder"]["Placemark"]
 

@@ -1,8 +1,8 @@
-defmodule Arrow.Shuttle.ShapeKMLTest do
+defmodule Arrow.Shuttles.ShapeKMLTest do
   @moduledoc false
   use Arrow.DataCase
 
-  @required_struct %Arrow.Shuttle.ShapeKML{
+  @required_struct %Arrow.Shuttles.ShapeKML{
     name: "some shape",
     coordinates: "-71.14163,42.39551 -71.14163,42.39551 -71.14163,42.39551"
   }

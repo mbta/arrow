@@ -1,4 +1,4 @@
-defmodule Arrow.Shuttle.Stop do
+defmodule Arrow.Shuttles.Stop do
   @moduledoc false
 
   use Ecto.Schema
