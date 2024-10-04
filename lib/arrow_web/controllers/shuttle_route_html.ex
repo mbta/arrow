@@ -1,4 +1,4 @@
-defmodule ArrowWeb.ShuttleRouteHTML do
+defmodule ArrowWeb.ShuttleRouteView do
   use ArrowWeb, :html
 
   embed_templates "shuttle_route_html/*"
