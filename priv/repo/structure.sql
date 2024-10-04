@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.8 (Homebrew)
--- Dumped by pg_dump version 15.8 (Homebrew)
+-- Dumped from database version 14.12 (Homebrew)
+-- Dumped by pg_dump version 14.12 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -693,6 +693,111 @@ ALTER SEQUENCE public.shapes_id_seq OWNED BY public.shapes.id;
 
 
 --
+-- Name: shuttle_route_stops; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.shuttle_route_stops (
+    id bigint NOT NULL,
+    direction_id character varying(255),
+    stop_id character varying(255),
+    stop_sequence integer,
+    time_to_next_stop numeric,
+    shuttle_route_id bigint,
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
+-- Name: shuttle_route_stops_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.shuttle_route_stops_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: shuttle_route_stops_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.shuttle_route_stops_id_seq OWNED BY public.shuttle_route_stops.id;
+
+
+--
+-- Name: shuttle_routes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.shuttle_routes (
+    id bigint NOT NULL,
+    direction_id character varying(255),
+    direction_desc character varying(255),
+    destination character varying(255),
+    waypoint character varying(255),
+    suffix character varying(255),
+    shuttle_id bigint,
+    shape_id bigint,
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
+-- Name: shuttle_routes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.shuttle_routes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: shuttle_routes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.shuttle_routes_id_seq OWNED BY public.shuttle_routes.id;
+
+
+--
+-- Name: shuttles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.shuttles (
+    id bigint NOT NULL,
+    shuttle_name character varying(255),
+    status character varying(255),
+    disrupted_route_id character varying,
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
+-- Name: shuttles_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.shuttles_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: shuttles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.shuttles_id_seq OWNED BY public.shuttles.id;
+
+
+--
 -- Name: stops; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -804,6 +909,27 @@ ALTER TABLE ONLY public.disruptions ALTER COLUMN id SET DEFAULT nextval('public.
 --
 
 ALTER TABLE ONLY public.shapes ALTER COLUMN id SET DEFAULT nextval('public.shapes_id_seq'::regclass);
+
+
+--
+-- Name: shuttle_route_stops id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shuttle_route_stops ALTER COLUMN id SET DEFAULT nextval('public.shuttle_route_stops_id_seq'::regclass);
+
+
+--
+-- Name: shuttle_routes id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shuttle_routes ALTER COLUMN id SET DEFAULT nextval('public.shuttle_routes_id_seq'::regclass);
+
+
+--
+-- Name: shuttles id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shuttles ALTER COLUMN id SET DEFAULT nextval('public.shuttles_id_seq'::regclass);
 
 
 --
@@ -1030,6 +1156,30 @@ ALTER TABLE ONLY public.shapes
 
 
 --
+-- Name: shuttle_route_stops shuttle_route_stops_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shuttle_route_stops
+    ADD CONSTRAINT shuttle_route_stops_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: shuttle_routes shuttle_routes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shuttle_routes
+    ADD CONSTRAINT shuttle_routes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: shuttles shuttles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shuttles
+    ADD CONSTRAINT shuttles_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: stops stops_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1105,6 +1255,41 @@ CREATE INDEX disruption_trip_short_names_disruption_id_index ON public.disruptio
 --
 
 CREATE UNIQUE INDEX shapes_name_index ON public.shapes USING btree (name);
+
+
+--
+-- Name: shuttle_route_stops_shuttle_route_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX shuttle_route_stops_shuttle_route_id_index ON public.shuttle_route_stops USING btree (shuttle_route_id);
+
+
+--
+-- Name: shuttle_routes_shape_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX shuttle_routes_shape_id_index ON public.shuttle_routes USING btree (shape_id);
+
+
+--
+-- Name: shuttle_routes_shuttle_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX shuttle_routes_shuttle_id_index ON public.shuttle_routes USING btree (shuttle_id);
+
+
+--
+-- Name: shuttles_disrupted_route_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX shuttles_disrupted_route_id_index ON public.shuttles USING btree (disrupted_route_id);
+
+
+--
+-- Name: shuttles_shuttle_name_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX shuttles_shuttle_name_index ON public.shuttles USING btree (shuttle_name);
 
 
 --
@@ -1338,6 +1523,38 @@ ALTER TABLE ONLY public.gtfs_trips
 
 
 --
+-- Name: shuttle_route_stops shuttle_route_stops_shuttle_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shuttle_route_stops
+    ADD CONSTRAINT shuttle_route_stops_shuttle_route_id_fkey FOREIGN KEY (shuttle_route_id) REFERENCES public.shuttle_routes(id);
+
+
+--
+-- Name: shuttle_routes shuttle_routes_shape_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shuttle_routes
+    ADD CONSTRAINT shuttle_routes_shape_id_fkey FOREIGN KEY (shape_id) REFERENCES public.shapes(id);
+
+
+--
+-- Name: shuttle_routes shuttle_routes_shuttle_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shuttle_routes
+    ADD CONSTRAINT shuttle_routes_shuttle_id_fkey FOREIGN KEY (shuttle_id) REFERENCES public.shuttles(id);
+
+
+--
+-- Name: shuttles shuttles_disrupted_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shuttles
+    ADD CONSTRAINT shuttles_disrupted_route_id_fkey FOREIGN KEY (disrupted_route_id) REFERENCES public.gtfs_routes(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -1374,3 +1591,6 @@ INSERT INTO public."schema_migrations" (version) VALUES (20240826154204);
 INSERT INTO public."schema_migrations" (version) VALUES (20240826154208);
 INSERT INTO public."schema_migrations" (version) VALUES (20240826154213);
 INSERT INTO public."schema_migrations" (version) VALUES (20240826154218);
+INSERT INTO public."schema_migrations" (version) VALUES (20241004194354);
+INSERT INTO public."schema_migrations" (version) VALUES (20241004194719);
+INSERT INTO public."schema_migrations" (version) VALUES (20241004194901);

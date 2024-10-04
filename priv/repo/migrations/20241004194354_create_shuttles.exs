@@ -5,7 +5,7 @@ defmodule Arrow.Repo.Migrations.CreateShuttles do
     create table(:shuttles) do
       add :shuttle_name, :string
       add :status, :string
-      add :disrupted_route_id, references(:gtfs_routes, on_delete: :nothing)
+      add :disrupted_route_id, references(:gtfs_routes, type: :varchar, on_delete: :nothing)
 
       timestamps()
     end
