@@ -107,13 +107,20 @@ defmodule Arrow.Gtfs.Importable do
     copy_query = """
     COPY "#{table}" #{column_list}
       FROM STDIN
-      WITH (FORMAT csv, HEADER MATCH)
+      WITH (FORMAT csv, HEADER true)
     """
 
-    Repo.transaction(fn ->
+    # https://hexdocs.pm/postgrex/Postgrex.html#stream/4
+    result = Repo.transaction(fn ->
       db_stream = Ecto.Adapters.SQL.stream(Repo, copy_query)
       Enum.into(csv_stream, db_stream)
     end)
+
+    case result do
+      {:ok, _} -> result
+      {:error, reason} -> IO.inspect reason
+    end
+    result
   end
 
   # Passes a CSV-parsed map through given schema's `changeset` function,

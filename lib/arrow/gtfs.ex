@@ -8,7 +8,7 @@ defmodule Arrow.Gtfs do
   alias Arrow.Gtfs.ImportHelper
   alias Arrow.Repo
 
-  @import_timeout_ms 60_000
+  @import_timeout_ms :infinity
 
   @doc """
   Loads a GTFS archive into Arrow's gtfs_* DB tables,
@@ -80,12 +80,23 @@ defmodule Arrow.Gtfs do
   end
 
   defp truncate_all do
-    tables = Enum.map_join(importable_schemas(), ", ", & &1.__schema__(:source))
-    Repo.query!("TRUNCATE #{tables}")
+    tables = Enum.map(importable_schemas(), & &1.__schema__(:source))
+
+    Enum.each(tables, fn table ->
+      Repo.query!("DELETE FROM #{table}")
+    end)
   end
 
   defp import_all(unzip) do
-    Enum.each(importable_schemas(), &Importable.import(&1, unzip))
+    Enum.each(importable_schemas(), fn schema ->
+      try do
+        Importable.import(schema, unzip)
+      rescue
+        e ->
+          Logger.error("Failed to import #{schema}")
+          reraise e, __STACKTRACE__
+      end
+    end)
   end
 
   defp validate_required_files(unzip) do
@@ -142,9 +153,9 @@ defmodule Arrow.Gtfs do
       Arrow.Gtfs.ShapePoint,
       Arrow.Gtfs.Route,
       Arrow.Gtfs.Direction,
-      Arrow.Gtfs.RoutePattern,
-      Arrow.Gtfs.Trip,
-      Arrow.Gtfs.StopTime
+      # Arrow.Gtfs.RoutePattern,
+      # Arrow.Gtfs.Trip,
+      # Arrow.Gtfs.StopTime
     ]
   end
 
