@@ -1,11 +1,11 @@
-defmodule Arrow.ShuttleFixtures do
+defmodule Arrow.ShuttlesFixtures do
   @moduledoc """
   This module defines test helpers for creating
-  entities via the `Arrow.Shuttle` context.
+  entities via the `Arrow.Shuttles` context.
   """
 
   alias Arrow.Repo
-  alias Arrow.Shuttle.Shape
+  alias Arrow.Shuttles.Shape
 
   @doc """
   Generate valid coords
@@ -31,7 +31,7 @@ defmodule Arrow.ShuttleFixtures do
         prefix: "some/prefix/",
         coordinates: coords()
       })
-      |> Arrow.Shuttle.create_shape()
+      |> Arrow.Shuttles.create_shape()
 
     shape
   end

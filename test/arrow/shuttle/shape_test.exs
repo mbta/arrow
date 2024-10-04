@@ -1,7 +1,7 @@
-defmodule Arrow.Shuttle.ShapeTest do
+defmodule Arrow.Shuttles.ShapeTest do
   use Arrow.DataCase
 
-  alias Arrow.Shuttle.Shape
+  alias Arrow.Shuttles.Shape
 
   describe "changeset/2" do
     test "validates shape name ends with -S" do

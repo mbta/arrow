@@ -1,7 +1,7 @@
-defmodule Arrow.Shuttle.StopTest do
+defmodule Arrow.Shuttles.StopTest do
   use Arrow.DataCase
 
-  alias Arrow.Shuttle.Stop
+  alias Arrow.Shuttles.Stop
 
   @required_stop_params %{
     stop_id: "stop_id",

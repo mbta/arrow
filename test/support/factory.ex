@@ -58,7 +58,7 @@ defmodule Arrow.Factory do
   end
 
   def stop_factory do
-    %Arrow.Shuttle.Stop{
+    %Arrow.Shuttles.Stop{
       stop_id: sequence(:source_label, &"stop-#{&1}"),
       stop_name: sequence(:source_label, &"Stop #{&1}"),
       stop_desc: sequence(:source_label, &"Stop Description #{&1}"),
