@@ -152,7 +152,7 @@ defmodule Arrow.Gtfs do
       Arrow.Gtfs.Shape,
       Arrow.Gtfs.ShapePoint,
       Arrow.Gtfs.Route,
-      Arrow.Gtfs.Direction,
+      Arrow.Gtfs.Direction
       # Arrow.Gtfs.RoutePattern,
       # Arrow.Gtfs.Trip,
       # Arrow.Gtfs.StopTime

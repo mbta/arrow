@@ -3,234 +3,234 @@ defmodule Arrow.Shuttles do
   The Shuttles context.
   """
 
-import Ecto.Query, warn: false
+  import Ecto.Query, warn: false
 
-alias Arrow.Repo
-alias ArrowWeb.ErrorHelpers
+  alias Arrow.Repo
+  alias ArrowWeb.ErrorHelpers
 
-alias Arrow.Shuttles.KML
-alias Arrow.Shuttles.Shape
-alias Arrow.Shuttles.ShapesUpload
-alias Arrow.Shuttles.ShapeUpload
+  alias Arrow.Shuttles.KML
+  alias Arrow.Shuttles.Shape
+  alias Arrow.Shuttles.ShapesUpload
+  alias Arrow.Shuttles.ShapeUpload
 
-@doc """
-Returns the list of shapes.
+  @doc """
+  Returns the list of shapes.
 
-## Examples
+  ## Examples
 
-    iex> list_shapes()
-    [%Shape{}, ...]
+      iex> list_shapes()
+      [%Shape{}, ...]
 
-"""
-def list_shapes do
-  Repo.all(Shape)
-end
-
-@doc """
-Gets a single shape.
-
-Raises `Ecto.NoResultsError` if the Shape does not exist.
-
-## Examples
-
-    iex> get_shape!(123)
-    %Shape{}
-
-    iex> get_shape!(456)
-    ** (Ecto.NoResultsError)
-
-"""
-def get_shape!(id), do: Repo.get!(Shape, id)
-
-@doc """
-Gets a shapes upload struct associated with a given shape.
-
-## Examples
-
-    iex> get_shapes_upload(%Shape{})
-    %ShapesUpload{}
-"""
-def get_shapes_upload(%Shape{} = shape) do
-  with true <- Application.get_env(:arrow, :shape_storage_enabled?),
-       {:ok, %{body: shapes_kml}} <- get_shape_file(shape),
-       {:ok, parsed_shapes} <- ShapesUpload.parse_kml(shapes_kml),
-       {:ok, shapes} <- ShapesUpload.shapes_from_kml(parsed_shapes) do
-    ShapesUpload.changeset(%ShapesUpload{}, %{filename: shape.name, shapes: shapes})
-  else
-    false -> {:ok, :disabled}
-    error -> error
+  """
+  def list_shapes do
+    Repo.all(Shape)
   end
-end
 
-defp get_shape_file(shape) do
-  enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
-  {request_module, request_func} = Application.get_env(:arrow, :shape_storage_request_fn)
+  @doc """
+  Gets a single shape.
 
-  if enabled? do
-    get_request = ExAws.S3.get_object(shape.bucket, shape.path)
-    apply(request_module, request_func, [get_request])
-  else
-    {:ok, :disabled}
-  end
-end
+  Raises `Ecto.NoResultsError` if the Shape does not exist.
 
-@spec create_shapes(any()) :: {:error, {<<_::224>>, list()}} | {:ok, list()}
-@doc """
-Creates shapes.
+  ## Examples
 
-"""
-def create_shapes(shapes) do
-  changesets = Enum.map(shapes, fn shape -> create_shape(shape) end)
+      iex> get_shape!(123)
+      %Shape{}
 
-  case Enum.all?(changesets, fn changeset -> Kernel.match?({:ok, _shape}, changeset) end) do
-    true ->
-      {:ok, changesets}
+      iex> get_shape!(456)
+      ** (Ecto.NoResultsError)
 
-    _ ->
-      errors =
-        changesets
-        |> Enum.filter(fn changeset -> Kernel.match?({:error, _}, changeset) end)
-        |> Enum.map(&handle_create_error/1)
+  """
+  def get_shape!(id), do: Repo.get!(Shape, id)
 
-      {:error, {"Failed to upload some shapes", errors}}
-  end
-end
+  @doc """
+  Gets a shapes upload struct associated with a given shape.
 
-def handle_create_error({_, message}) when is_binary(message) do
-  message
-end
+  ## Examples
 
-def handle_create_error({_, %Ecto.Changeset{} = changeset}) do
-  "#{ErrorHelpers.changeset_error_messages(changeset)} #{changeset.params["name"]}"
-end
-
-@doc """
-Creates a shape.
-
-## Examples
-
-    iex> create_shape(%{field: value})
-    {:ok, %Shape{}}
-
-    iex> create_shape(%{field: bad_value})
-    {:error, %Ecto.Changeset{}}
-
-"""
-def create_shape(attrs) do
-  with {:ok, attrs} <- Shape.validate_and_enforce_name(attrs),
-       nil <- Repo.get_by(Shape, name: attrs.name),
-       {:ok, shape_with_kml} <- create_shape_kml(attrs),
-       {:ok, new_attrs} <- upload_shape_file(shape_with_kml) do
-    do_create_shape(Enum.into(new_attrs, attrs))
-  else
-    %Shape{name: name} ->
-      {:error, "Shape #{name} already exists, delete the shape to save a new one"}
-
-    {:error, :already_exists} ->
-      {:error,
-       "File for shape #{attrs.name} already exists, delete the shape to save a new one"}
-
-    {:error, e} ->
-      {:error, e}
-  end
-end
-
-defp do_create_shape(attrs) do
-  %Shape{}
-  |> Shape.changeset(attrs)
-  |> Repo.insert()
-end
-
-def create_shape_kml(%{name: _name, coordinates: _coordinates} = attrs) do
-  kml = %KML{xmlns: "http://www.opengis.net/kml/2.2", Folder: attrs}
-  shape_kml = Saxy.Builder.build(kml)
-  content = Saxy.encode!(shape_kml, version: "1.0", encoding: "UTF-8")
-  {:ok, Enum.into(%{content: content}, attrs)}
-end
-
-def create_shape_kml(attrs) do
-  {:error, ShapeUpload.changeset(%ShapeUpload{}, attrs)}
-end
-
-defp upload_shape_file(%{name: name, content: content}) do
-  prefix = Application.get_env(:arrow, :shape_storage_prefix)
-  bucket = Application.get_env(:arrow, :shape_storage_bucket)
-  enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
-  prefix_env = Application.get_env(:arrow, :shape_storage_prefix_env)
-  request_fn = Application.get_env(:arrow, :shape_storage_request_fn)
-
-  if enabled? and prefix_env != nil do
-    filename = "#{name}.kml"
-
-    path =
-      if prefix_env,
-        do: "#{prefix_env}#{prefix}#{filename}",
-        else: "#{prefix}#{filename}"
-
-    case do_upload_shape(content, bucket, path, request_fn) do
-      error = {:error, _} -> error
-      {:ok, _} -> {:ok, %{bucket: bucket, prefix: prefix, path: path}}
+      iex> get_shapes_upload(%Shape{})
+      %ShapesUpload{}
+  """
+  def get_shapes_upload(%Shape{} = shape) do
+    with true <- Application.get_env(:arrow, :shape_storage_enabled?),
+         {:ok, %{body: shapes_kml}} <- get_shape_file(shape),
+         {:ok, parsed_shapes} <- ShapesUpload.parse_kml(shapes_kml),
+         {:ok, shapes} <- ShapesUpload.shapes_from_kml(parsed_shapes) do
+      ShapesUpload.changeset(%ShapesUpload{}, %{filename: shape.name, shapes: shapes})
+    else
+      false -> {:ok, :disabled}
+      error -> error
     end
-  else
-    {:ok, %{bucket: "disabled", prefix: "disabled", path: "disabled"}}
   end
-end
 
-defp do_upload_shape(content, bucket, remote_path, request_fn) do
-  {request_module, request_func} = request_fn
-  # Check if file exists already:
-  check_request = ExAws.S3.list_objects_v2(bucket, prefix: remote_path)
-  {:ok, check} = apply(request_module, request_func, [check_request])
+  defp get_shape_file(shape) do
+    enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
+    {request_module, request_func} = Application.get_env(:arrow, :shape_storage_request_fn)
 
-  if length(check.body.contents) > 0 do
-    {:error, :already_exists}
-  else
-    upload_request = ExAws.S3.put_object(bucket, remote_path, content)
-    {:ok, _} = apply(request_module, request_func, [upload_request])
+    if enabled? do
+      get_request = ExAws.S3.get_object(shape.bucket, shape.path)
+      apply(request_module, request_func, [get_request])
+    else
+      {:ok, :disabled}
+    end
   end
-end
 
-defp delete_shape_file(shape) do
-  enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
-  {request_module, request_func} = Application.get_env(:arrow, :shape_storage_request_fn)
+  @spec create_shapes(any()) :: {:error, {<<_::224>>, list()}} | {:ok, list()}
+  @doc """
+  Creates shapes.
 
-  if enabled? do
-    delete_request = ExAws.S3.delete_object(shape.bucket, shape.path)
-    apply(request_module, request_func, [delete_request])
-  else
-    {:ok, :disabled}
+  """
+  def create_shapes(shapes) do
+    changesets = Enum.map(shapes, fn shape -> create_shape(shape) end)
+
+    case Enum.all?(changesets, fn changeset -> Kernel.match?({:ok, _shape}, changeset) end) do
+      true ->
+        {:ok, changesets}
+
+      _ ->
+        errors =
+          changesets
+          |> Enum.filter(fn changeset -> Kernel.match?({:error, _}, changeset) end)
+          |> Enum.map(&handle_create_error/1)
+
+        {:error, {"Failed to upload some shapes", errors}}
+    end
   end
-end
 
-@doc """
-Deletes a shape.
+  def handle_create_error({_, message}) when is_binary(message) do
+    message
+  end
 
-## Examples
+  def handle_create_error({_, %Ecto.Changeset{} = changeset}) do
+    "#{ErrorHelpers.changeset_error_messages(changeset)} #{changeset.params["name"]}"
+  end
 
-    iex> delete_shape(shape)
-    {:ok, %Shape{}}
+  @doc """
+  Creates a shape.
 
-    iex> delete_shape(shape)
-    {:error, %Ecto.Changeset{}}
+  ## Examples
 
-"""
-def delete_shape(%Shape{} = shape) do
-  {:ok, _} = delete_shape_file(shape)
-  Repo.delete(shape)
-end
+      iex> create_shape(%{field: value})
+      {:ok, %Shape{}}
 
-@doc """
-Returns an `%Ecto.Changeset{}` for tracking shape changes.
+      iex> create_shape(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
 
-## Examples
+  """
+  def create_shape(attrs) do
+    with {:ok, attrs} <- Shape.validate_and_enforce_name(attrs),
+         nil <- Repo.get_by(Shape, name: attrs.name),
+         {:ok, shape_with_kml} <- create_shape_kml(attrs),
+         {:ok, new_attrs} <- upload_shape_file(shape_with_kml) do
+      do_create_shape(Enum.into(new_attrs, attrs))
+    else
+      %Shape{name: name} ->
+        {:error, "Shape #{name} already exists, delete the shape to save a new one"}
 
-    iex> change_shape(shape)
-    %Ecto.Changeset{data: %Shape{}}
+      {:error, :already_exists} ->
+        {:error,
+         "File for shape #{attrs.name} already exists, delete the shape to save a new one"}
 
-"""
-def change_shape(%Shape{} = shape, attrs \\ %{}) do
-  Shape.changeset(shape, attrs)
-end
+      {:error, e} ->
+        {:error, e}
+    end
+  end
+
+  defp do_create_shape(attrs) do
+    %Shape{}
+    |> Shape.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def create_shape_kml(%{name: _name, coordinates: _coordinates} = attrs) do
+    kml = %KML{xmlns: "http://www.opengis.net/kml/2.2", Folder: attrs}
+    shape_kml = Saxy.Builder.build(kml)
+    content = Saxy.encode!(shape_kml, version: "1.0", encoding: "UTF-8")
+    {:ok, Enum.into(%{content: content}, attrs)}
+  end
+
+  def create_shape_kml(attrs) do
+    {:error, ShapeUpload.changeset(%ShapeUpload{}, attrs)}
+  end
+
+  defp upload_shape_file(%{name: name, content: content}) do
+    prefix = Application.get_env(:arrow, :shape_storage_prefix)
+    bucket = Application.get_env(:arrow, :shape_storage_bucket)
+    enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
+    prefix_env = Application.get_env(:arrow, :shape_storage_prefix_env)
+    request_fn = Application.get_env(:arrow, :shape_storage_request_fn)
+
+    if enabled? and prefix_env != nil do
+      filename = "#{name}.kml"
+
+      path =
+        if prefix_env,
+          do: "#{prefix_env}#{prefix}#{filename}",
+          else: "#{prefix}#{filename}"
+
+      case do_upload_shape(content, bucket, path, request_fn) do
+        error = {:error, _} -> error
+        {:ok, _} -> {:ok, %{bucket: bucket, prefix: prefix, path: path}}
+      end
+    else
+      {:ok, %{bucket: "disabled", prefix: "disabled", path: "disabled"}}
+    end
+  end
+
+  defp do_upload_shape(content, bucket, remote_path, request_fn) do
+    {request_module, request_func} = request_fn
+    # Check if file exists already:
+    check_request = ExAws.S3.list_objects_v2(bucket, prefix: remote_path)
+    {:ok, check} = apply(request_module, request_func, [check_request])
+
+    if length(check.body.contents) > 0 do
+      {:error, :already_exists}
+    else
+      upload_request = ExAws.S3.put_object(bucket, remote_path, content)
+      {:ok, _} = apply(request_module, request_func, [upload_request])
+    end
+  end
+
+  defp delete_shape_file(shape) do
+    enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
+    {request_module, request_func} = Application.get_env(:arrow, :shape_storage_request_fn)
+
+    if enabled? do
+      delete_request = ExAws.S3.delete_object(shape.bucket, shape.path)
+      apply(request_module, request_func, [delete_request])
+    else
+      {:ok, :disabled}
+    end
+  end
+
+  @doc """
+  Deletes a shape.
+
+  ## Examples
+
+      iex> delete_shape(shape)
+      {:ok, %Shape{}}
+
+      iex> delete_shape(shape)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_shape(%Shape{} = shape) do
+    {:ok, _} = delete_shape_file(shape)
+    Repo.delete(shape)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking shape changes.
+
+  ## Examples
+
+      iex> change_shape(shape)
+      %Ecto.Changeset{data: %Shape{}}
+
+  """
+  def change_shape(%Shape{} = shape, attrs \\ %{}) do
+    Shape.changeset(shape, attrs)
+  end
 
   alias Arrow.Shuttles.Shuttle
 

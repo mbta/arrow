@@ -3,9 +3,27 @@ defmodule ArrowWeb.ShuttleRouteControllerTest do
 
   import Arrow.ShuttlesFixtures
 
-  @create_attrs %{suffix: "some suffix", destination: "some destination", direction_id: :"0", direction_desc: "some direction_desc", waypoint: "some waypoint"}
-  @update_attrs %{suffix: "some updated suffix", destination: "some updated destination", direction_id: :"1", direction_desc: "some updated direction_desc", waypoint: "some updated waypoint"}
-  @invalid_attrs %{suffix: nil, destination: nil, direction_id: nil, direction_desc: nil, waypoint: nil}
+  @create_attrs %{
+    suffix: "some suffix",
+    destination: "some destination",
+    direction_id: :"0",
+    direction_desc: "some direction_desc",
+    waypoint: "some waypoint"
+  }
+  @update_attrs %{
+    suffix: "some updated suffix",
+    destination: "some updated destination",
+    direction_id: :"1",
+    direction_desc: "some updated direction_desc",
+    waypoint: "some updated waypoint"
+  }
+  @invalid_attrs %{
+    suffix: nil,
+    destination: nil,
+    direction_id: nil,
+    direction_desc: nil,
+    waypoint: nil
+  }
 
   describe "index" do
     test "lists all shuttle_routes", %{conn: conn} do
@@ -41,7 +59,10 @@ defmodule ArrowWeb.ShuttleRouteControllerTest do
   describe "edit shuttle_route" do
     setup [:create_shuttle_route]
 
-    test "renders form for editing chosen shuttle_route", %{conn: conn, shuttle_route: shuttle_route} do
+    test "renders form for editing chosen shuttle_route", %{
+      conn: conn,
+      shuttle_route: shuttle_route
+    } do
       conn = get(conn, ~p"/shuttle_routes/#{shuttle_route}/edit")
       assert html_response(conn, 200) =~ "Edit Shuttle route"
     end

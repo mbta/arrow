@@ -111,15 +111,17 @@ defmodule Arrow.Gtfs.Importable do
     """
 
     # https://hexdocs.pm/postgrex/Postgrex.html#stream/4
-    result = Repo.transaction(fn ->
-      db_stream = Ecto.Adapters.SQL.stream(Repo, copy_query)
-      Enum.into(csv_stream, db_stream)
-    end)
+    result =
+      Repo.transaction(fn ->
+        db_stream = Ecto.Adapters.SQL.stream(Repo, copy_query)
+        Enum.into(csv_stream, db_stream)
+      end)
 
     case result do
       {:ok, _} -> result
-      {:error, reason} -> IO.inspect reason
+      {:error, reason} -> IO.inspect(reason)
     end
+
     result
   end
 

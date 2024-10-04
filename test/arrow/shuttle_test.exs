@@ -1,4 +1,4 @@
-defmodule Arrow.ShuttlesTest do
+defmodule Arrow.ShuttlesTwoTest do
   use Arrow.DataCase
 
   alias Arrow.Shuttles
