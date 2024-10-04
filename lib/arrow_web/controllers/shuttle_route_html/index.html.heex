@@ -1,0 +1,27 @@
+<.header>
+  Listing Shuttle routes
+  <:actions>
+    <.link href={~p"/shuttle_routes/new"}>
+      <.button>New Shuttle route</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="shuttle_routes" rows={@shuttle_routes} row_click={&JS.navigate(~p"/shuttle_routes/#{&1}")}>
+  <:col :let={shuttle_route} label="Direction"><%= shuttle_route.direction_id %></:col>
+  <:col :let={shuttle_route} label="Direction desc"><%= shuttle_route.direction_desc %></:col>
+  <:col :let={shuttle_route} label="Destination"><%= shuttle_route.destination %></:col>
+  <:col :let={shuttle_route} label="Waypoint"><%= shuttle_route.waypoint %></:col>
+  <:col :let={shuttle_route} label="Suffix"><%= shuttle_route.suffix %></:col>
+  <:action :let={shuttle_route}>
+    <div class="sr-only">
+      <.link navigate={~p"/shuttle_routes/#{shuttle_route}"}>Show</.link>
+    </div>
+    <.link navigate={~p"/shuttle_routes/#{shuttle_route}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={shuttle_route}>
+    <.link href={~p"/shuttle_routes/#{shuttle_route}"} method="delete" data-confirm="Are you sure?">
+      Delete
+    </.link>
+  </:action>
+</.table>

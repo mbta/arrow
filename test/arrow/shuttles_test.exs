@@ -58,4 +58,66 @@ defmodule Arrow.ShuttlesTest do
       assert %Ecto.Changeset{} = Shuttles.change_shuttle(shuttle)
     end
   end
+
+  describe "shuttle_routes" do
+    alias Arrow.Shuttles.ShuttleRoute
+
+    import Arrow.ShuttlesFixtures
+
+    @invalid_attrs %{suffix: nil, destination: nil, direction_id: nil, direction_desc: nil, waypoint: nil}
+
+    test "list_shuttle_routes/0 returns all shuttle_routes" do
+      shuttle_route = shuttle_route_fixture()
+      assert Shuttles.list_shuttle_routes() == [shuttle_route]
+    end
+
+    test "get_shuttle_route!/1 returns the shuttle_route with given id" do
+      shuttle_route = shuttle_route_fixture()
+      assert Shuttles.get_shuttle_route!(shuttle_route.id) == shuttle_route
+    end
+
+    test "create_shuttle_route/1 with valid data creates a shuttle_route" do
+      valid_attrs = %{suffix: "some suffix", destination: "some destination", direction_id: :"0", direction_desc: "some direction_desc", waypoint: "some waypoint"}
+
+      assert {:ok, %ShuttleRoute{} = shuttle_route} = Shuttles.create_shuttle_route(valid_attrs)
+      assert shuttle_route.suffix == "some suffix"
+      assert shuttle_route.destination == "some destination"
+      assert shuttle_route.direction_id == :"0"
+      assert shuttle_route.direction_desc == "some direction_desc"
+      assert shuttle_route.waypoint == "some waypoint"
+    end
+
+    test "create_shuttle_route/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Shuttles.create_shuttle_route(@invalid_attrs)
+    end
+
+    test "update_shuttle_route/2 with valid data updates the shuttle_route" do
+      shuttle_route = shuttle_route_fixture()
+      update_attrs = %{suffix: "some updated suffix", destination: "some updated destination", direction_id: :"1", direction_desc: "some updated direction_desc", waypoint: "some updated waypoint"}
+
+      assert {:ok, %ShuttleRoute{} = shuttle_route} = Shuttles.update_shuttle_route(shuttle_route, update_attrs)
+      assert shuttle_route.suffix == "some updated suffix"
+      assert shuttle_route.destination == "some updated destination"
+      assert shuttle_route.direction_id == :"1"
+      assert shuttle_route.direction_desc == "some updated direction_desc"
+      assert shuttle_route.waypoint == "some updated waypoint"
+    end
+
+    test "update_shuttle_route/2 with invalid data returns error changeset" do
+      shuttle_route = shuttle_route_fixture()
+      assert {:error, %Ecto.Changeset{}} = Shuttles.update_shuttle_route(shuttle_route, @invalid_attrs)
+      assert shuttle_route == Shuttles.get_shuttle_route!(shuttle_route.id)
+    end
+
+    test "delete_shuttle_route/1 deletes the shuttle_route" do
+      shuttle_route = shuttle_route_fixture()
+      assert {:ok, %ShuttleRoute{}} = Shuttles.delete_shuttle_route(shuttle_route)
+      assert_raise Ecto.NoResultsError, fn -> Shuttles.get_shuttle_route!(shuttle_route.id) end
+    end
+
+    test "change_shuttle_route/1 returns a shuttle_route changeset" do
+      shuttle_route = shuttle_route_fixture()
+      assert %Ecto.Changeset{} = Shuttles.change_shuttle_route(shuttle_route)
+    end
+  end
 end

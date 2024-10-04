@@ -23,4 +23,22 @@ defmodule Arrow.ShuttlesFixtures do
 
     shuttle
   end
+
+  @doc """
+  Generate a shuttle_route.
+  """
+  def shuttle_route_fixture(attrs \\ %{}) do
+    {:ok, shuttle_route} =
+      attrs
+      |> Enum.into(%{
+        destination: "some destination",
+        direction_desc: "some direction_desc",
+        direction_id: :"0",
+        suffix: "some suffix",
+        waypoint: "some waypoint"
+      })
+      |> Arrow.Shuttles.create_shuttle_route()
+
+    shuttle_route
+  end
 end

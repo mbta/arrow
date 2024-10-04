@@ -1,0 +1,19 @@
+<.header>
+  Shuttle route <%= @shuttle_route.id %>
+  <:subtitle>This is a shuttle_route record from your database.</:subtitle>
+  <:actions>
+    <.link href={~p"/shuttle_routes/#{@shuttle_route}/edit"}>
+      <.button>Edit shuttle_route</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Direction"><%= @shuttle_route.direction_id %></:item>
+  <:item title="Direction desc"><%= @shuttle_route.direction_desc %></:item>
+  <:item title="Destination"><%= @shuttle_route.destination %></:item>
+  <:item title="Waypoint"><%= @shuttle_route.waypoint %></:item>
+  <:item title="Suffix"><%= @shuttle_route.suffix %></:item>
+</.list>
+
+<.back navigate={~p"/shuttle_routes"}>Back to shuttle_routes</.back>
