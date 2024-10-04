@@ -41,4 +41,21 @@ defmodule Arrow.ShuttlesFixtures do
 
     shuttle_route
   end
+
+  @doc """
+  Generate a shuttle_route_stops.
+  """
+  def shuttle_route_stops_fixture(attrs \\ %{}) do
+    {:ok, shuttle_route_stops} =
+      attrs
+      |> Enum.into(%{
+        direction_id: :"0",
+        stop_id: "some stop_id",
+        stop_sequence: 42,
+        time_to_next_stop: "120.5"
+      })
+      |> Arrow.Shuttles.create_shuttle_route_stops()
+
+    shuttle_route_stops
+  end
 end

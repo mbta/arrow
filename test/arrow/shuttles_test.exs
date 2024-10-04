@@ -120,4 +120,64 @@ defmodule Arrow.ShuttlesTest do
       assert %Ecto.Changeset{} = Shuttles.change_shuttle_route(shuttle_route)
     end
   end
+
+  describe "shuttle_route_stops" do
+    alias Arrow.Shuttles.ShuttleRouteStops
+
+    import Arrow.ShuttlesFixtures
+
+    @invalid_attrs %{direction_id: nil, stop_id: nil, stop_sequence: nil, time_to_next_stop: nil}
+
+    test "list_shuttle_route_stops/0 returns all shuttle_route_stops" do
+      shuttle_route_stops = shuttle_route_stops_fixture()
+      assert Shuttles.list_shuttle_route_stops() == [shuttle_route_stops]
+    end
+
+    test "get_shuttle_route_stops!/1 returns the shuttle_route_stops with given id" do
+      shuttle_route_stops = shuttle_route_stops_fixture()
+      assert Shuttles.get_shuttle_route_stops!(shuttle_route_stops.id) == shuttle_route_stops
+    end
+
+    test "create_shuttle_route_stops/1 with valid data creates a shuttle_route_stops" do
+      valid_attrs = %{direction_id: :"0", stop_id: "some stop_id", stop_sequence: 42, time_to_next_stop: "120.5"}
+
+      assert {:ok, %ShuttleRouteStops{} = shuttle_route_stops} = Shuttles.create_shuttle_route_stops(valid_attrs)
+      assert shuttle_route_stops.direction_id == :"0"
+      assert shuttle_route_stops.stop_id == "some stop_id"
+      assert shuttle_route_stops.stop_sequence == 42
+      assert shuttle_route_stops.time_to_next_stop == Decimal.new("120.5")
+    end
+
+    test "create_shuttle_route_stops/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Shuttles.create_shuttle_route_stops(@invalid_attrs)
+    end
+
+    test "update_shuttle_route_stops/2 with valid data updates the shuttle_route_stops" do
+      shuttle_route_stops = shuttle_route_stops_fixture()
+      update_attrs = %{direction_id: :"1", stop_id: "some updated stop_id", stop_sequence: 43, time_to_next_stop: "456.7"}
+
+      assert {:ok, %ShuttleRouteStops{} = shuttle_route_stops} = Shuttles.update_shuttle_route_stops(shuttle_route_stops, update_attrs)
+      assert shuttle_route_stops.direction_id == :"1"
+      assert shuttle_route_stops.stop_id == "some updated stop_id"
+      assert shuttle_route_stops.stop_sequence == 43
+      assert shuttle_route_stops.time_to_next_stop == Decimal.new("456.7")
+    end
+
+    test "update_shuttle_route_stops/2 with invalid data returns error changeset" do
+      shuttle_route_stops = shuttle_route_stops_fixture()
+      assert {:error, %Ecto.Changeset{}} = Shuttles.update_shuttle_route_stops(shuttle_route_stops, @invalid_attrs)
+      assert shuttle_route_stops == Shuttles.get_shuttle_route_stops!(shuttle_route_stops.id)
+    end
+
+    test "delete_shuttle_route_stops/1 deletes the shuttle_route_stops" do
+      shuttle_route_stops = shuttle_route_stops_fixture()
+      assert {:ok, %ShuttleRouteStops{}} = Shuttles.delete_shuttle_route_stops(shuttle_route_stops)
+      assert_raise Ecto.NoResultsError, fn -> Shuttles.get_shuttle_route_stops!(shuttle_route_stops.id) end
+    end
+
+    test "change_shuttle_route_stops/1 returns a shuttle_route_stops changeset" do
+      shuttle_route_stops = shuttle_route_stops_fixture()
+      assert %Ecto.Changeset{} = Shuttles.change_shuttle_route_stops(shuttle_route_stops)
+    end
+  end
 end

@@ -1,0 +1,18 @@
+<.simple_form :let={f} for={@changeset} action={@action}>
+  <.error :if={@changeset.action}>
+    Oops, something went wrong! Please check the errors below.
+  </.error>
+  <.input
+    field={f[:direction_id]}
+    type="select"
+    label="Direction"
+    prompt="Choose a value"
+    options={Ecto.Enum.values(Arrow.Shuttles.ShuttleRouteStops, :direction_id)}
+  />
+  <.input field={f[:stop_id]} type="text" label="Stop" />
+  <.input field={f[:stop_sequence]} type="number" label="Stop sequence" />
+  <.input field={f[:time_to_next_stop]} type="number" label="Time to next stop" step="any" />
+  <:actions>
+    <.button>Save Shuttle route stops</.button>
+  </:actions>
+</.simple_form>
