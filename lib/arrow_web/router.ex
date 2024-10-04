@@ -59,6 +59,9 @@ defmodule ArrowWeb.Router do
     get("/shapes_upload", ShapeController, :new)
     post("/shapes_upload", ShapeController, :create)
     get("/shapes/:id/download", ShapeController, :download)
+    resources("/shuttles", ShuttleController)
+    resources("/shuttle_routes", ShuttleRouteController)
+    resources("/shuttle_route_stops", ShuttleRouteStopsController)
   end
 
   scope "/", ArrowWeb do
