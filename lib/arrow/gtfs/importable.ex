@@ -107,7 +107,7 @@ defmodule Arrow.Gtfs.Importable do
     copy_query = """
     COPY "#{table}" #{column_list}
       FROM STDIN
-      WITH (FORMAT csv, HEADER true)
+      WITH (FORMAT csv, HEADER match)
     """
 
     # https://hexdocs.pm/postgrex/Postgrex.html#stream/4
