@@ -8,6 +8,8 @@
 </.header>
 
 <.table id="shuttle_route_stops" rows={@shuttle_route_stops_collection} row_click={&JS.navigate(~p"/shuttle_route_stops/#{&1}")}>
+  <!-- Including shuttle_route_id for testing -->
+  <:col :let={shuttle_route_stops} label="shuttle route id"><%= shuttle_route_stops.shuttle_route_id %></:col>
   <:col :let={shuttle_route_stops} label="Direction"><%= shuttle_route_stops.direction_id %></:col>
   <:col :let={shuttle_route_stops} label="Stop"><%= shuttle_route_stops.stop_id %></:col>
   <:col :let={shuttle_route_stops} label="Stop sequence"><%= shuttle_route_stops.stop_sequence %></:col>

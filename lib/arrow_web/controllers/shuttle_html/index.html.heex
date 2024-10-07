@@ -8,7 +8,10 @@
 </.header>
 
 <.table id="shuttles" rows={@shuttles} row_click={&JS.navigate(~p"/shuttles/#{&1}")}>
+  <!-- Including id for testing -->
+  <:col :let={shuttle} label="id"><%= shuttle.id %></:col>
   <:col :let={shuttle} label="Shuttle name"><%= shuttle.shuttle_name %></:col>
+  <:col :let={shuttle} label="Disrupted route_id"><%= shuttle.disrupted_route_id %></:col>
   <:col :let={shuttle} label="Status"><%= shuttle.status %></:col>
   <:action :let={shuttle}>
     <div class="sr-only">

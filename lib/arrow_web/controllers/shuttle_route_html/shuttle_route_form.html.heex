@@ -2,6 +2,7 @@
   <.error :if={@changeset.action}>
     Oops, something went wrong! Please check the errors below.
   </.error>
+  <.input field={f[:shuttle_id]} type="text" label="Shuttle id" />
   <.input
     field={f[:direction_id]}
     type="select"
@@ -13,6 +14,7 @@
   <.input field={f[:destination]} type="text" label="Destination" />
   <.input field={f[:waypoint]} type="text" label="Waypoint" />
   <.input field={f[:suffix]} type="text" label="Suffix" />
+  <.input field={f[:shape_id]} type="text" label="Shape id" />
   <:actions>
     <.button>Save Shuttle route</.button>
   </:actions>

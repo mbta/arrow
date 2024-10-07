@@ -9,7 +9,10 @@
 </.header>
 
 <.list>
+  <!-- Including id for testing -->
+  <:item title="id"><%= @shuttle.id %></:item>
   <:item title="Shuttle name"><%= @shuttle.shuttle_name %></:item>
+  <:item title="Disrupted route_id"><%= @shuttle.disrupted_route_id%></:item>
   <:item title="Status"><%= @shuttle.status %></:item>
 </.list>
 
