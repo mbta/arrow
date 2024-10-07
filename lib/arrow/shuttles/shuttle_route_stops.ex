@@ -15,7 +15,8 @@ defmodule Arrow.Shuttles.ShuttleRouteStops do
   @doc false
   def changeset(shuttle_route_stops, attrs) do
     shuttle_route_stops
-    |> cast(attrs, [:direction_id, :stop_id, :stop_sequence, :time_to_next_stop])
-    |> validate_required([:direction_id, :stop_id, :stop_sequence, :time_to_next_stop])
+    |> cast(attrs, [:direction_id, :stop_id, :stop_sequence, :time_to_next_stop, :shuttle_route_id])
+    |> foreign_key_constraint(:shuttle_route_id)
+    |> validate_required([:direction_id, :stop_id, :stop_sequence, :time_to_next_stop, :shuttle_route_id])
   end
 end

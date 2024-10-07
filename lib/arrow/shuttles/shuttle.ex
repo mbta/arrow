@@ -5,7 +5,7 @@ defmodule Arrow.Shuttles.Shuttle do
   schema "shuttles" do
     field :status, Ecto.Enum, values: [:draft, :active, :inactive]
     field :shuttle_name, :string
-    field :disrupted_route_id, :id
+    field :disrupted_route_id, :string
 
     timestamps()
   end
@@ -13,7 +13,8 @@ defmodule Arrow.Shuttles.Shuttle do
   @doc false
   def changeset(shuttle, attrs) do
     shuttle
-    |> cast(attrs, [:shuttle_name, :status])
+    |> cast(attrs, [:shuttle_name, :status, :disrupted_route_id])
+    |> foreign_key_constraint(:disrupted_route_id)
     |> validate_required([:shuttle_name, :status])
     |> unique_constraint(:shuttle_name)
   end
