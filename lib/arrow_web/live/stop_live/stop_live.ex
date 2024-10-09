@@ -1,7 +1,7 @@
 defmodule ArrowWeb.StopViewLive do
   use ArrowWeb, :live_view
 
-  alias Arrow.Shuttle.Stop
+  alias Arrow.Shuttles.Stop
   alias Arrow.Stops
   embed_templates "stop_live/*"
 

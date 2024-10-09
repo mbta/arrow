@@ -1,8 +1,8 @@
-defmodule Arrow.Shuttle.KMLTest do
+defmodule Arrow.Shuttles.KMLTest do
   @moduledoc false
   use Arrow.DataCase
 
-  @required_struct %Arrow.Shuttle.ShapeKML{
+  @required_struct %Arrow.Shuttles.ShapeKML{
     name: "some shape",
     coordinates: "-71.14163,42.39551 -71.14163,42.39551 -71.14163,42.39551"
   }
@@ -24,7 +24,7 @@ defmodule Arrow.Shuttle.KMLTest do
                     ]}
                  ]}
               ]} =
-               Saxy.Builder.build(%Arrow.Shuttle.KML{
+               Saxy.Builder.build(%Arrow.Shuttles.KML{
                  xmlns: "http://www.opengis.net/kml/2.2",
                  Folder: @required_struct
                })

@@ -1,6 +1,6 @@
-defmodule Arrow.Shuttle do
+defmodule Arrow.Shuttles do
   @moduledoc """
-  The Shuttle context.
+  The Shuttles context.
   """
 
   import Ecto.Query, warn: false
@@ -8,10 +8,10 @@ defmodule Arrow.Shuttle do
   alias Arrow.Repo
   alias ArrowWeb.ErrorHelpers
 
-  alias Arrow.Shuttle.KML
-  alias Arrow.Shuttle.Shape
-  alias Arrow.Shuttle.ShapesUpload
-  alias Arrow.Shuttle.ShapeUpload
+  alias Arrow.Shuttles.KML
+  alias Arrow.Shuttles.Shape
+  alias Arrow.Shuttles.ShapesUpload
+  alias Arrow.Shuttles.ShapeUpload
 
   @doc """
   Returns the list of shapes.
