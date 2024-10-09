@@ -85,6 +85,7 @@ defmodule ArrowWeb.Router do
 
     post("/publish_notice", NoticeController, :publish)
     get("/db_dump", DBDumpController, :show)
+    post("/import-GTFS", GtfsImportController, :import)
   end
 
   # Other scopes may use custom stacks.
