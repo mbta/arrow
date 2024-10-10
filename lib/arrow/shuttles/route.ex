@@ -1,4 +1,5 @@
 defmodule Arrow.Shuttles.Route do
+  @moduledoc "schema for a shuttle route for the db"
   use Ecto.Schema
   import Ecto.Changeset
 
