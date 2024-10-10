@@ -7,7 +7,7 @@ defmodule Arrow.Shuttles.Shuttle do
     field :shuttle_name, :string
     field :disrupted_route_id, :string
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

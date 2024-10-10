@@ -8,7 +8,7 @@ defmodule Arrow.Repo.Migrations.CreateShuttles do
       # add :disrupted_route_id, references(:gtfs_routes, type: :varchar, on_delete: :nothing)
       add :status, :string
 
-      timestamps()
+      timestamps(type: :timestamptz)
     end
 
     create unique_index(:shuttles, [:shuttle_name])

@@ -9,7 +9,7 @@ defmodule Arrow.Repo.Migrations.CreateShuttleRouteStops do
       add :time_to_next_stop, :decimal
       add :shuttle_route_id, references(:shuttle_routes, on_delete: :nothing)
 
-      timestamps()
+      timestamps(type: :timestamptz)
     end
 
     create index(:shuttle_route_stops, [:shuttle_route_id])

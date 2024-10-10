@@ -11,7 +11,7 @@ defmodule Arrow.Shuttles.Route do
     field :shuttle_id, :id
     field :shape_id, :id
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

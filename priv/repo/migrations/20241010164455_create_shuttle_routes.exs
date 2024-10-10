@@ -11,7 +11,7 @@ defmodule Arrow.Repo.Migrations.CreateShuttleRoutes do
       add :shuttle_id, references(:shuttles, on_delete: :nothing)
       add :shape_id, references(:shapes, on_delete: :nothing)
 
-      timestamps()
+      timestamps(type: :timestamptz)
     end
 
     create index(:shuttle_routes, [:shuttle_id])
