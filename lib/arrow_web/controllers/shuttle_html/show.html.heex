@@ -1,0 +1,16 @@
+<.header>
+  Shuttle <%= @shuttle.id %>
+  <:subtitle>This is a shuttle record from your database.</:subtitle>
+  <:actions>
+    <.link href={~p"/shuttles/#{@shuttle}/edit"}>
+      <.button>Edit shuttle</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Shuttle name"><%= @shuttle.shuttle_name %></:item>
+  <:item title="Status"><%= @shuttle.status %></:item>
+</.list>
+
+<.back navigate={~p"/shuttles"}>Back to shuttles</.back>
