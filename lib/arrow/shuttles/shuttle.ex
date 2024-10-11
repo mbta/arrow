@@ -15,7 +15,7 @@ defmodule Arrow.Shuttles.Shuttle do
   def changeset(shuttle, attrs) do
     shuttle
     |> cast(attrs, [:shuttle_name, :disrupted_route_id, :status])
-    |> validate_required([:shuttle_name, :disrupted_route_id, :status])
+    |> validate_required([:shuttle_name, :status])
     |> unique_constraint(:shuttle_name)
   end
 end
