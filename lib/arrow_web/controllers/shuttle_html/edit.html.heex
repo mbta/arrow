@@ -1,0 +1,8 @@
+<.header>
+  Edit Shuttle <%= @shuttle.id %>
+  <:subtitle>Use this form to manage shuttle records in your database.</:subtitle>
+</.header>
+
+<.shuttle_form changeset={@changeset} action={~p"/shuttles/#{@shuttle}"} />
+
+<.back navigate={~p"/shuttles"}>Back to shuttles</.back>
