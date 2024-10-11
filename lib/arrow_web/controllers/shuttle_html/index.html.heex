@@ -16,9 +16,4 @@
     </div>
     <.link navigate={~p"/shuttles/#{shuttle}/edit"}>Edit</.link>
   </:action>
-  <:action :let={shuttle}>
-    <.link href={~p"/shuttles/#{shuttle}"} method="delete" data-confirm="Are you sure?">
-      Delete
-    </.link>
-  </:action>
 </.table>
