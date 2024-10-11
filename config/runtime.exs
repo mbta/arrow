@@ -90,5 +90,6 @@ if config_env() == :prod do
     configure: {Arrow.Repo, :before_connect, []}
 
   config :arrow,
-    shape_storage_prefix_env: System.get_env("S3_PREFIX")
+    shape_storage_prefix_env: System.get_env("S3_PREFIX"),
+    gtfs_archive_storage_prefix_env: System.get_env("S3_PREFIX")
 end

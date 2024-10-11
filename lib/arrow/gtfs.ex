@@ -5,10 +5,9 @@ defmodule Arrow.Gtfs do
 
   require Logger
   alias Arrow.Gtfs.Importable
-  alias Arrow.Gtfs.ImportHelper
   alias Arrow.Repo
 
-  @import_timeout_ms 60_000
+  @import_timeout_ms :timer.minutes(10)
 
   @doc """
   Loads a GTFS archive into Arrow's gtfs_* DB tables,
@@ -19,54 +18,34 @@ defmodule Arrow.Gtfs do
 
   Returns:
 
-  - `:ok` on successful import or dry-run
-  - `:unchanged` if the archive has the same version as the GTFS data currently stored in the DB
-  - `:error` if the import or dry-run failed.
+  - `:ok` on successful import or dry-run, or skipped import due to unchanged version.
+  - `{:error, reason}` if the import or dry-run failed.
   """
-  @spec import(Path.t(), String.t() | nil, boolean) :: :ok | :unchanged | :error
-  def import(zip_path, current_version, dry_run? \\ false) do
-    zip_file = Unzip.LocalFile.open(zip_path)
-    {:ok, unzip} = Unzip.new(zip_file)
-
+  @spec import(Unzip.t(), String.t(), String.t() | nil, boolean) :: :ok | {:error, term}
+  def import(unzip, new_version, current_version, dry_run? \\ false) do
     result =
       with :ok <- validate_required_files(unzip),
-           :ok <- validate_version_change(unzip, current_version) do
-        try do
-          {ms, result} = :timer.tc(fn -> import_transaction(unzip, dry_run?) end, :millisecond)
-
-          case result do
-            {:ok, _} ->
-              Logger.info("GTFS import success elapsed_sec=#{ms / 1000}")
-              :ok
-
-            {:error, :dry_run_success} ->
-              Logger.info("GTFS dry-run success elapsed_sec=#{ms / 1000}")
-              :ok
-
-            {:error, reason} ->
-              Logger.warn("GTFS import failure reason=#{inspect(reason)}")
-              :error
-          end
-        rescue
-          error ->
-            message = Exception.format(:error, error, __STACKTRACE__)
-            Logger.warn("GTFS import failure:")
-            Logger.warn(message)
-            :error
+           :ok <- validate_version_change(new_version, current_version) do
+        case import_transaction(unzip, dry_run?) do
+          {:ok, _} -> :ok
+          {:error, :dry_run_success} -> :ok
+          {:error, _reason} = error -> error
         end
       end
 
     if result == :unchanged do
       Logger.info("GTFS import skipped due to unchanged version version=\"#{current_version}\"")
+      :ok
+    else
+      result
     end
-
-    Unzip.LocalFile.close(zip_file)
-    result
   end
 
   defp import_transaction(unzip, dry_run?) do
     Repo.transaction(
       fn ->
+        _ = Repo.query!("SET CONSTRAINTS ALL DEFERRED")
+
         _ = truncate_all()
         import_all(unzip)
 
@@ -107,24 +86,11 @@ defmodule Arrow.Gtfs do
     end
   end
 
-  @spec validate_version_change(Unzip.t(), String.t() | nil) :: :ok | :unchanged | :error
-  defp validate_version_change(unzip, current_version) do
-    unzip
-    |> ImportHelper.stream_csv_rows("feed_info.txt")
-    |> Enum.at(0, %{})
-    |> Map.fetch("feed_version")
-    |> case do
-      {:ok, ^current_version} ->
-        :unchanged
+  @spec validate_version_change(String.t(), String.t() | nil) :: :ok | :unchanged
+  defp validate_version_change(new_version, current_version)
 
-      {:ok, _other_version} ->
-        :ok
-
-      :error ->
-        Logger.warn("could not find a feed_version value in feed_info.txt")
-        :error
-    end
-  end
+  defp validate_version_change(version, version), do: :unchanged
+  defp validate_version_change(_new_version, _current_version), do: :ok
 
   defp importable_schemas do
     # Listed in the order in which they should be imported.

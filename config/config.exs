@@ -38,7 +38,11 @@ config :arrow,
   shape_storage_enabled?: false,
   shape_storage_bucket: "mbta-arrow",
   shape_storage_prefix: "shape-uploads/",
-  shape_storage_request_fn: {ExAws, :request}
+  shape_storage_request_fn: {ExAws, :request},
+  gtfs_archive_storage_enabled?: false,
+  gtfs_archive_storage_bucket: "mbta-arrow",
+  gtfs_archive_storage_prefix: "gtfs-archive-uploads/",
+  gtfs_archive_storage_request_fn: {ExAws, :request}
 
 # Configures the endpoint
 config :arrow, ArrowWeb.Endpoint,
@@ -50,7 +54,7 @@ config :arrow, ArrowWeb.Endpoint,
 # Configures Oban, the job processing library
 config :arrow, Oban,
   engine: Oban.Engines.Basic,
-  queues: [default: 10],
+  queues: [default: 10, gtfs_import: 1],
   repo: Arrow.Repo
 
 config :esbuild,
