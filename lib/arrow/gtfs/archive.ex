@@ -49,28 +49,24 @@ defmodule Arrow.Gtfs.Archive do
   end
 
   @spec upload_to_s3(iodata) :: {:ok, s3_uri :: String.t()} | {:ok, :disabled} | {:error, term}
-  def upload_to_s3(zip_iodata, now \\ DateTime.utc_now()) do
+  def upload_to_s3(zip_iodata) do
     config = Config.get()
 
     if config.enabled? do
-      do_upload(zip_iodata, config, now)
+      do_upload(zip_iodata, config)
     else
       {:ok, :disabled}
     end
   end
 
-  defp do_upload(zip_iodata, config, now) do
+  defp do_upload(zip_iodata, config) do
     path = get_upload_path(config)
-    expires_timestamp = get_expires_timestamp(now)
 
     upload_op =
       zip_iodata
       |> List.wrap()
       |> Stream.map(&IO.iodata_to_binary/1)
-      |> ExAws.S3.upload(config.bucket, path,
-        expires: expires_timestamp,
-        content_type: "application/zip"
-      )
+      |> ExAws.S3.upload(config.bucket, path, content_type: "application/zip")
 
     {mod, fun} = config.request_fn
 
@@ -132,12 +128,6 @@ defmodule Arrow.Gtfs.Archive do
     [config.prefix_env, config.prefix, filename]
     |> Enum.reject(&is_nil/1)
     |> Path.join()
-  end
-
-  defp get_expires_timestamp(utc_now) do
-    utc_now
-    |> DateTime.add(div(365, 2), :day)
-    |> Calendar.strftime("%a, %d %b %Y %X GMT")
   end
 
   defimpl Unzip.FileAccess do
