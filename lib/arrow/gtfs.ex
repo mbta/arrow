@@ -21,41 +21,75 @@ defmodule Arrow.Gtfs do
   - `:ok` on successful import or dry-run, or skipped import due to unchanged version.
   - `{:error, reason}` if the import or dry-run failed.
   """
-  @spec import(Unzip.t(), String.t(), String.t() | nil, boolean) :: :ok | {:error, term}
-  def import(unzip, new_version, current_version, dry_run? \\ false) do
-    result =
-      with :ok <- validate_required_files(unzip),
-           :ok <- validate_version_change(new_version, current_version) do
-        case import_transaction(unzip, dry_run?) do
-          {:ok, _} -> :ok
-          {:error, :dry_run_success} -> :ok
-          {:error, _reason} = error -> error
-        end
-      end
+  @spec import(Unzip.t(), String.t(), String.t() | nil, Oban.Job.t(), boolean) ::
+          :ok | {:error, term}
+  def import(unzip, new_version, current_version, job, dry_run? \\ false) do
+    with :ok <- validate_required_files(unzip),
+         :ok <- validate_version_change(new_version, current_version) do
+      case import_transaction(unzip, dry_run?) do
+        {:ok, _} ->
+          Logger.info("GTFS import success #{job_logging_params(job)}")
+          :ok
 
-    if result == :unchanged do
-      Logger.info("GTFS import skipped due to unchanged version version=\"#{current_version}\"")
-      :ok
+        {:error, :dry_run_success} ->
+          Logger.info("GTFS validation success #{job_logging_params(job)}")
+          :ok
+
+        {:error, reason} = error ->
+          Logger.warn(
+            "GTFS import or validation failed #{job_logging_params(job)} reason=#{inspect(reason)}"
+          )
+
+          error
+      end
     else
-      result
+      :unchanged ->
+        Logger.info("GTFS import skipped due to unchanged version #{job_logging_params(job)}")
+
+        :ok
+
+      {:error, reason} = error ->
+        Logger.warn(
+          "GTFS import or validation failed #{job_logging_params(job)} reason=#{inspect(reason)}"
+        )
+
+        error
     end
   end
 
+  defp job_logging_params(job) do
+    s3_object_key =
+      job.args
+      |> Map.fetch!("s3_uri")
+      |> URI.parse()
+      |> then(& &1.path)
+
+    archive_version = Map.fetch!(job.args, "archive_version")
+
+    "job_id=#{job.id} archive_s3_object_key=#{s3_object_key} archive_version=\"#{archive_version}\""
+  end
+
   defp import_transaction(unzip, dry_run?) do
-    Repo.transaction(
-      fn ->
-        _ = Repo.query!("SET CONSTRAINTS ALL DEFERRED")
+    transaction = fn ->
+      _ = Repo.query!("SET CONSTRAINTS ALL DEFERRED")
 
-        _ = truncate_all()
-        import_all(unzip)
+      _ = truncate_all()
+      import_all(unzip)
 
-        if dry_run? do
-          _ = Repo.query!("SET CONSTRAINTS ALL IMMEDIATE")
-          Repo.rollback(:dry_run_success)
-        end
-      end,
-      timeout: @import_timeout_ms
-    )
+      if dry_run? do
+        _ = Repo.query!("SET CONSTRAINTS ALL IMMEDIATE")
+        Repo.rollback(:dry_run_success)
+      end
+    end
+
+    {elapsed_ms, result} =
+      fn -> Repo.transaction(transaction, timeout: @import_timeout_ms) end
+      |> :timer.tc(:millisecond)
+
+    action = if dry_run?, do: "validation", else: "import"
+    Logger.info("GTFS archive #{action} transaction completed elapsed_ms=#{elapsed_ms}")
+
+    result
   end
 
   defp truncate_all do
@@ -81,8 +115,7 @@ defmodule Arrow.Gtfs do
         |> Enum.sort()
         |> Enum.join(",")
 
-      Logger.warn("GTFS archive is missing required file(s) missing=#{missing}")
-      :error
+      {:error, "GTFS archive is missing required file(s) missing=#{missing}"}
     end
   end
 

@@ -1,13 +1,32 @@
 defmodule ArrowWeb.API.GtfsImportController do
   use ArrowWeb, :controller
+
+  require Logger
   import Ecto.Query
 
   @type error_tuple :: {:error, term} | {:error, status :: atom, term}
 
+  @doc """
+  When successful, responds with 200 status + JSON body `{"id": integer}` containing the ID of the enqueued job.
+
+  When unsuccessful, responds with non-200 status and an error message in plaintext.
+  """
   def enqueue_import(conn, _) do
     enqueue_job(conn, Arrow.Gtfs.ImportWorker)
   end
 
+  @doc """
+  When the requested job exists, responds with 200 status + JSON body `{"status": st}` where `st` is one of:
+  - "queued"
+  - "executing"
+  - "success"
+  - "failure"
+  - "cancelled"
+
+  Responds with 400 status if `id` request param is missing.
+
+  Responds with 404 status if no job exists with the requested `id`.
+  """
   def import_status(conn, params) do
     case Map.fetch(params, "id") do
       {:ok, id} -> check_status(conn, id, Arrow.Gtfs.ImportWorker, "import")
@@ -15,10 +34,27 @@ defmodule ArrowWeb.API.GtfsImportController do
     end
   end
 
+  @doc """
+  When successful, responds with 200 status + JSON body `{"id": integer}` containing the ID of the enqueued job.
+
+  When unsuccessful, responds with non-200 status and an error message in plaintext.
+  """
   def enqueue_validation(conn, _) do
     enqueue_job(conn, Arrow.Gtfs.ValidationWorker)
   end
 
+  @doc """
+  When the requested job exists, responds with 200 status + JSON body `{"status": st}` where `st` is one of:
+  - "queued"
+  - "executing"
+  - "success"
+  - "failure"
+  - "cancelled"
+
+  Responds with 400 status if `id` request param is missing.
+
+  Responds with 404 status if no job exists with the requested `id`.
+  """
   def validation_status(conn, params) do
     case Map.fetch(params, "id") do
       {:ok, id} -> check_status(conn, id, Arrow.Gtfs.ValidationWorker, "validation")
@@ -29,9 +65,15 @@ defmodule ArrowWeb.API.GtfsImportController do
   @spec to_resp({:ok, term} | error_tuple, Plug.Conn.t()) :: Plug.Conn.t()
   defp to_resp(result, conn) do
     case result do
-      {:ok, value} -> json(conn, value)
-      {:error, status, message} -> send_resp(conn, status, message)
-      {:error, message} -> to_resp({:error, :bad_request, message}, conn)
+      {:ok, value} ->
+        json(conn, value)
+
+      {:error, status, message} ->
+        Logger.warn("GtfsImportController unsuccessful request message=#{inspect(message)}")
+        send_resp(conn, status, message)
+
+      {:error, message} ->
+        to_resp({:error, :bad_request, message}, conn)
     end
   end
 
@@ -46,6 +88,10 @@ defmodule ArrowWeb.API.GtfsImportController do
 
       case Oban.insert(changeset) do
         {:ok, job} ->
+          Logger.info(
+            "Job enqueued for GTFS archive job_id=#{job.id} archive_version=\"#{version}\" worker=#{inspect(worker_mod)}"
+          )
+
           {:ok, %{id: job.id}}
 
         {:error, reason} ->

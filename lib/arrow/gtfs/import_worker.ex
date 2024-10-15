@@ -22,14 +22,14 @@ defmodule Arrow.Gtfs.ImportWorker do
   import Ecto.Query
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"s3_uri" => s3_uri, "archive_version" => new_version}}) do
+  def perform(%Oban.Job{args: %{"s3_uri" => s3_uri, "archive_version" => new_version}} = job) do
     current_version =
       Arrow.Repo.one(
         from info in Arrow.Gtfs.FeedInfo, where: info.id == "mbta-ma-us", select: info.version
       )
 
     with {:ok, unzip} <- Arrow.Gtfs.Archive.to_unzip_struct(s3_uri) do
-      Arrow.Gtfs.import(unzip, current_version, new_version)
+      Arrow.Gtfs.import(unzip, current_version, new_version, job)
     end
   end
 
