@@ -344,6 +344,7 @@ defmodule ArrowWeb.CoreComponents do
         name={@name}
         class={[
           "mt-2 block w-full rounded-md border border-gray-300 bg-white shadow-sm focus:border-zinc-400 focus:ring-0 sm:text-sm",
+          @errors != [] && "is-invalid",
           @class
         ]}
         multiple={@multiple}

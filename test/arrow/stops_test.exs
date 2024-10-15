@@ -5,7 +5,7 @@ defmodule Arrow.StopsTest do
   alias Arrow.Stops
 
   describe "stops" do
-    alias Arrow.Shuttle.Stop
+    alias Arrow.Shuttles.Stop
 
     import Arrow.StopsFixtures
 

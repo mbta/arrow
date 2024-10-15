@@ -1,6 +1,6 @@
 defmodule ArrowWeb.ShapeView do
   use ArrowWeb, :html
-  alias Arrow.Shuttle.ShapesUpload
+  alias Arrow.Shuttles.ShapesUpload
 
   embed_templates "shape_html/*"
 
