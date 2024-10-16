@@ -68,7 +68,7 @@ defmodule Arrow.Gtfs do
 
     archive_version = Map.fetch!(job.args, "archive_version")
 
-    "job_id=#{job.id} archive_s3_object_key=#{s3_object_key} archive_version=\"#{archive_version}\""
+    "job_id=#{job.id} archive_s3_object_key=#{s3_object_key} archive_version=\"#{archive_version}\" job_worker=#{job.worker}"
   end
 
   defp import_transaction(unzip, dry_run?) do

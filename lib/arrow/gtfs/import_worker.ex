@@ -14,7 +14,7 @@ defmodule Arrow.Gtfs.ImportWorker do
     # It's ok to queue up an import job for a different version than what's currently
     # running/queued, though.
     unique: [
-      fields: [:worker],
+      fields: [:worker, :args],
       keys: [:archive_version],
       states: Oban.Job.states() -- [:completed, :discarded, :cancelled]
     ]

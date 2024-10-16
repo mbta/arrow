@@ -82,14 +82,17 @@ defmodule ArrowWeb.API.GtfsImportController do
     with :ok <- validate_zip_file(conn),
          {:ok, zip_iodata, conn} <- read_whole_body(conn),
          {:ok, version} <- get_version(zip_iodata),
-         :ok <- validate_no_duplicates(version, worker_mod),
          {:ok, s3_uri} <- upload_zip(zip_iodata) do
       changeset = worker_mod.new(%{s3_uri: s3_uri, archive_version: version})
 
       case Oban.insert(changeset) do
+        {:ok, %Oban.Job{conflict?: true} = job} ->
+          {:error,
+           "tried to insert a duplicate GTFS import or validation job existing_job_id=#{job.id} archive_version=\"#{version}\" worker=#{inspect(worker_mod)}"}
+
         {:ok, job} ->
           Logger.info(
-            "Job enqueued for GTFS archive job_id=#{job.id} archive_version=\"#{version}\" worker=#{inspect(worker_mod)}"
+            "job enqueued for GTFS archive job_id=#{job.id} archive_version=\"#{version}\" worker=#{inspect(worker_mod)}"
           )
 
           {:ok, %{id: job.id}}
@@ -149,26 +152,6 @@ defmodule ArrowWeb.API.GtfsImportController do
 
       others ->
         {:error, "expected a single content-type header, got multiple: #{inspect(others)}"}
-    end
-  end
-
-  @spec validate_no_duplicates(String.t(), module) :: :ok | error_tuple
-  defp validate_no_duplicates(version, worker_mod) do
-    worker_name = inspect(worker_mod)
-
-    duplicates =
-      Arrow.Repo.all(
-        from job in Oban.Job,
-          where: job.state not in ~w[completed discarded cancelled],
-          where: job.worker == ^worker_name,
-          where: job.args["archive_version"] == ^version
-      )
-
-    if duplicates == [] do
-      :ok
-    else
-      {:error,
-       "duplicate pending or active job exists for archive with version \"#{version}\", worker #{inspect(worker_mod)}"}
     end
   end
 
