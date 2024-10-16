@@ -62,6 +62,38 @@ defmodule ArrowWeb.API.GtfsImportController do
     end
   end
 
+  @status_filters ~w[all queued executing succeeded failed cancelled not_done done]
+
+  @doc """
+  Responds with info about the :gtfs_import queue and its jobs, in JSON form.
+
+  See Arrow.Gtfs.JobHelper.status_filter for available filters.
+  """
+  def check_jobs(conn, %{"status_filter" => status_filter})
+      when status_filter in @status_filters do
+    status_filter = String.to_existing_atom(status_filter)
+
+    info = %{
+      queue_state: Oban.check_queue(queue: :gtfs_import),
+      import_jobs: Arrow.Gtfs.ImportWorker.check_jobs(status_filter),
+      validate_jobs: Arrow.Gtfs.ImportWorker.check_jobs(status_filter)
+    }
+
+    json(conn, info)
+  end
+
+  def check_jobs(conn, %{"status_filter" => other}) do
+    send_resp(
+      conn,
+      :bad_request,
+      "Unrecognized `status_filter` param: \"#{other}\". Recognized filters are: #{Enum.join(@status_filters, ", ")}"
+    )
+  end
+
+  def check_jobs(conn, _) do
+    check_jobs(conn, %{"status_filter" => "all"})
+  end
+
   @spec to_resp({:ok, term} | error_tuple, Plug.Conn.t()) :: Plug.Conn.t()
   defp to_resp(result, conn) do
     case result do

@@ -93,6 +93,8 @@ defmodule ArrowWeb.Router do
 
       post("/validate", GtfsImportController, :enqueue_validation)
       get("/validate/:id/status", GtfsImportController, :validation_status)
+
+      get("check_jobs", GtfsImportController, :check_jobs)
     end
   end
 

@@ -37,4 +37,9 @@ defmodule Arrow.Gtfs.ImportWorker do
   # Jobs should take much less than an hour, generally.
   @impl Oban.Worker
   def timeout(_job), do: :timer.hours(1)
+
+  @spec check_jobs(Arrow.Gtfs.JobHelper.status_filter()) :: list(map)
+  def check_jobs(status_filter) do
+    Arrow.Gtfs.JobHelper.check_jobs(__MODULE__, status_filter)
+  end
 end
