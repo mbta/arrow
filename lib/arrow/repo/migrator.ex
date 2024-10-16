@@ -36,7 +36,10 @@ defmodule Arrow.Repo.Migrator do
         _ = Logger.info(fn -> "Migrating repo=#{repo}" end)
 
         {time_usec, {:ok, _, _}} =
-          :timer.tc(module, :with_repo, [repo, &module.run(&1, :up, all: true)])
+          :timer.tc(module, :with_repo, [
+            repo,
+            &module.run(&1, :up, all: true, log_migrations_sql: true, log_migrator_sql: true)
+          ])
 
         time_msec = System.convert_time_unit(time_usec, :microsecond, :millisecond)
         _ = Logger.info(fn -> "Migration finished repo=#{repo} time=#{time_msec}" end)

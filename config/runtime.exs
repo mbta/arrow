@@ -89,7 +89,8 @@ if config_env() == :prod do
     # password set by `configure` callback below
     configure: {Arrow.Repo, :before_connect, []},
     queue_target: 30_000,
-    queue_interval: 120_000
+    queue_interval: 120_000,
+    log: :info
 
   config :arrow,
     shape_storage_prefix_env: System.get_env("S3_PREFIX"),
