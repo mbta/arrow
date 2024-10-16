@@ -91,7 +91,7 @@ if config_env() == :prod do
     queue_target: 30_000,
     queue_interval: 120_000,
     log: :info,
-    timeout: :infinity
+    timeout: 15_000
 
   config :arrow,
     shape_storage_prefix_env: System.get_env("S3_PREFIX"),
