@@ -24,6 +24,8 @@ defmodule Arrow.Gtfs do
   @spec import(Unzip.t(), String.t(), String.t() | nil, Oban.Job.t(), boolean) ::
           :ok | {:error, term}
   def import(unzip, new_version, current_version, job, dry_run? \\ false) do
+    Logger.info("GTFS import or validation job starting #{job_logging_params(job)}")
+
     with :ok <- validate_required_files(unzip),
          :ok <- validate_version_change(new_version, current_version) do
       case import_transaction(unzip, dry_run?) do
@@ -71,12 +73,12 @@ defmodule Arrow.Gtfs do
 
   defp import_transaction(unzip, dry_run?) do
     transaction = fn ->
-      _ = Repo.query!("SET CONSTRAINTS ALL DEFERRED")
-
       _ = truncate_all()
       import_all(unzip)
 
       if dry_run? do
+        # Set any deferred constraints to run now, instead of on transaction commit,
+        # since we don't actually commit the transaction in this case.
         _ = Repo.query!("SET CONSTRAINTS ALL IMMEDIATE")
         Repo.rollback(:dry_run_success)
       end
