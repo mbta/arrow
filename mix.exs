@@ -45,6 +45,7 @@ defmodule Arrow.MixProject do
   def deps do
     [
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:csv, "~> 3.2"},
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
       {:ecto_sql, "~> 3.11"},
       {:ecto_psql_extras, "~> 0.6"},
@@ -64,6 +65,7 @@ defmodule Arrow.MixProject do
       {:jason, "~> 1.0"},
       {:lcov_ex, "~> 0.2", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.0.0", only: :test},
+      {:oban, "~> 2.18"},
       {:phoenix_ecto, "~> 4.0"},
       {:phoenix_live_reload, "~> 1.5", only: :dev},
       {:phoenix_html, "~> 3.0"},
@@ -91,7 +93,8 @@ defmodule Arrow.MixProject do
        app: false,
        compile: false,
        depth: 1},
-      {:sax_map, "~> 1.2"}
+      {:sax_map, "~> 1.2"},
+      {:unzip, "~> 0.12.0"}
     ]
   end
 

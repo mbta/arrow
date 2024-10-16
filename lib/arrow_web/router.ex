@@ -1,4 +1,5 @@
 defmodule ArrowWeb.Router do
+  alias ArrowWeb.API.GtfsImportController
   use ArrowWeb, :router
   import Phoenix.LiveDashboard.Router
 
@@ -85,6 +86,16 @@ defmodule ArrowWeb.Router do
 
     post("/publish_notice", NoticeController, :publish)
     get("/db_dump", DBDumpController, :show)
+
+    scope "/gtfs", alias: false do
+      post("/import", GtfsImportController, :enqueue_import)
+      get("/import/:id/status", GtfsImportController, :import_status)
+
+      post("/validate", GtfsImportController, :enqueue_validation)
+      get("/validate/:id/status", GtfsImportController, :validation_status)
+
+      get("/check_jobs", GtfsImportController, :check_jobs)
+    end
   end
 
   # Other scopes may use custom stacks.

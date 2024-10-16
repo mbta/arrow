@@ -11,7 +11,8 @@ import Config
 # before starting your production server.
 
 config :arrow,
-  shape_storage_enabled?: true
+  shape_storage_enabled?: true,
+  gtfs_archive_storage_enabled?: true
 
 config :arrow, :websocket_check_origin, [
   "https://*.mbta.com",

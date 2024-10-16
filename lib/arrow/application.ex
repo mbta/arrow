@@ -16,6 +16,8 @@ defmodule Arrow.Application do
         {Phoenix.PubSub, name: Arrow.PubSub},
         # Start the Ecto repository
         Arrow.Repo,
+        # Start Oban, the job processing library
+        {Oban, Application.fetch_env!(:arrow, Oban)},
         # Start the endpoint when the application starts
         ArrowWeb.Endpoint
       ] ++
