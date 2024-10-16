@@ -33,7 +33,7 @@ config :logger,
   level: :info
 
 config :arrow,
-  run_migrations_at_startup?: true,
+  run_migrations_at_startup?: false,
   ex_aws_requester: {ExAws, :request}
 
 config :arrow, Arrow.Repo, ssl: true
