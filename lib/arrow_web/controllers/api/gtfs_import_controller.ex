@@ -76,7 +76,7 @@ defmodule ArrowWeb.API.GtfsImportController do
     info = %{
       queue_state: Oban.check_queue(queue: :gtfs_import),
       import_jobs: Arrow.Gtfs.ImportWorker.check_jobs(status_filter),
-      validate_jobs: Arrow.Gtfs.ImportWorker.check_jobs(status_filter)
+      validate_jobs: Arrow.Gtfs.ValidationWorker.check_jobs(status_filter)
     }
 
     json(conn, info)
