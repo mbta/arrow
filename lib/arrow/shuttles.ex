@@ -8,6 +8,7 @@ defmodule Arrow.Shuttles do
   alias Arrow.Repo
   alias ArrowWeb.ErrorHelpers
 
+  alias Arrow.Gtfs.Route, as: GtfsRoute
   alias Arrow.Shuttles.KML
   alias Arrow.Shuttles.Shape
   alias Arrow.Shuttles.ShapesUpload
@@ -310,5 +311,10 @@ defmodule Arrow.Shuttles do
   """
   def change_shuttle(%Shuttle{} = shuttle, attrs \\ %{}) do
     Shuttle.changeset(shuttle, attrs)
+  end
+
+  def list_disruptable_routes do
+    query = from(r in GtfsRoute, where: r.type in [:light_rail, :heavy_rail])
+    Repo.all(query)
   end
 end
