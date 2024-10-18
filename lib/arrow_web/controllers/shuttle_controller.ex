@@ -11,7 +11,8 @@ defmodule ArrowWeb.ShuttleController do
 
   def new(conn, _params) do
     changeset = Shuttles.change_shuttle(%Shuttle{})
-    render(conn, :new, changeset: changeset)
+    gtfs_disruptable_routes = Shuttles.list_disruptable_routes()
+    render(conn, :new, changeset: changeset, gtfs_disruptable_routes: gtfs_disruptable_routes)
   end
 
   def create(conn, %{"shuttle" => shuttle_params}) do
@@ -34,7 +35,13 @@ defmodule ArrowWeb.ShuttleController do
   def edit(conn, %{"id" => id}) do
     shuttle = Shuttles.get_shuttle!(id)
     changeset = Shuttles.change_shuttle(shuttle)
-    render(conn, :edit, shuttle: shuttle, changeset: changeset)
+    gtfs_disruptable_routes = Shuttles.list_disruptable_routes()
+
+    render(conn, :edit,
+      shuttle: shuttle,
+      changeset: changeset,
+      gtfs_disruptable_routes: gtfs_disruptable_routes
+    )
   end
 
   def update(conn, %{"id" => id, "shuttle" => shuttle_params}) do

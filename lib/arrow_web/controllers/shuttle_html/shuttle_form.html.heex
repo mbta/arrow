@@ -3,7 +3,13 @@
     Oops, something went wrong! Please check the errors below.
   </.error>
   <.input field={f[:shuttle_name]} type="text" label="Shuttle name" />
-  <.input field={f[:disrupted_route_id]} type="text" label="Disrupted route" />
+  <.input 
+    field={f[:disrupted_route_id]} 
+    type="select" 
+    label="Disrupted route"
+    prompt="Choose a route"
+    options={Enum.map(@gtfs_disruptable_routes, fn route -> route.id end)}
+   />
   <.input
     field={f[:status]}
     type="select"
