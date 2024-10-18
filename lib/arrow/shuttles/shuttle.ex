@@ -16,6 +16,7 @@ defmodule Arrow.Shuttles.Shuttle do
     shuttle
     |> cast(attrs, [:shuttle_name, :disrupted_route_id, :status])
     |> validate_required([:shuttle_name, :status])
+    |> foreign_key_constraint(:disrupted_route_id)
     |> unique_constraint(:shuttle_name)
   end
 end
