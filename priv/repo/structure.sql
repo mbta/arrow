@@ -17,13 +17,6 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: public; Type: SCHEMA; Schema: -; Owner: -
---
-
--- *not* creating schema, since initdb creates it
-
-
---
 -- Name: day_name; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -35,6 +28,77 @@ CREATE TYPE public.day_name AS ENUM (
     'friday',
     'saturday',
     'sunday'
+);
+
+
+--
+-- Name: direction_desc; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.direction_desc AS ENUM (
+    'North',
+    'South',
+    'East',
+    'West',
+    'Northeast',
+    'Northwest',
+    'Southeast',
+    'Southwest',
+    'Clockwise',
+    'Counterclockwise',
+    'Inbound',
+    'Outbound',
+    'Loop A',
+    'Loop B',
+    'Loop'
+);
+
+
+--
+-- Name: fare_class; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.fare_class AS ENUM (
+    'Local Bus',
+    'Inner Express',
+    'Outer Express',
+    'Rapid Transit',
+    'Commuter Rail',
+    'Ferry',
+    'Free',
+    'Special'
+);
+
+
+--
+-- Name: oban_job_state; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.oban_job_state AS ENUM (
+    'available',
+    'scheduled',
+    'executing',
+    'retryable',
+    'completed',
+    'discarded',
+    'cancelled'
+);
+
+
+--
+-- Name: route_desc; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.route_desc AS ENUM (
+    'Commuter Rail',
+    'Rapid Transit',
+    'Local Bus',
+    'Key Bus',
+    'Supplemental Bus',
+    'Community Bus',
+    'Commuter Bus',
+    'Ferry',
+    'Rail Replacement Bus'
 );
 
 
@@ -338,6 +402,336 @@ ALTER SEQUENCE public.disruptions_id_seq1 OWNED BY public.disruptions.id;
 
 
 --
+-- Name: gtfs_agencies; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_agencies (
+    id character varying(255) NOT NULL,
+    name character varying(255) NOT NULL,
+    url character varying(255) NOT NULL,
+    timezone character varying(255) NOT NULL,
+    lang character varying(255),
+    phone character varying(255)
+);
+
+
+--
+-- Name: gtfs_calendar_dates; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_calendar_dates (
+    service_id character varying(255) NOT NULL,
+    date date NOT NULL,
+    exception_type integer NOT NULL,
+    holiday_name character varying(255),
+    CONSTRAINT exception_type_must_be_in_range CHECK ((exception_type <@ int4range(1, 2, '[]'::text)))
+);
+
+
+--
+-- Name: gtfs_calendars; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_calendars (
+    service_id character varying(255) NOT NULL,
+    monday boolean NOT NULL,
+    tuesday boolean NOT NULL,
+    wednesday boolean NOT NULL,
+    thursday boolean NOT NULL,
+    friday boolean NOT NULL,
+    saturday boolean NOT NULL,
+    sunday boolean NOT NULL,
+    start_date date NOT NULL,
+    end_date date NOT NULL
+);
+
+
+--
+-- Name: gtfs_checkpoints; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_checkpoints (
+    id character varying(255) NOT NULL,
+    name character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_directions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_directions (
+    route_id character varying(255) NOT NULL,
+    direction_id integer NOT NULL,
+    "desc" public.direction_desc NOT NULL,
+    destination character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_feed_info; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_feed_info (
+    id character varying(255) NOT NULL,
+    publisher_name character varying(255) NOT NULL,
+    publisher_url character varying(255) NOT NULL,
+    lang character varying(255) NOT NULL,
+    start_date date NOT NULL,
+    end_date date NOT NULL,
+    version character varying(255) NOT NULL,
+    contact_email character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_levels; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_levels (
+    id character varying(255) NOT NULL,
+    index double precision NOT NULL,
+    name character varying(255)
+);
+
+
+--
+-- Name: gtfs_lines; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_lines (
+    id character varying(255) NOT NULL,
+    short_name character varying(255),
+    long_name character varying(255) NOT NULL,
+    "desc" character varying(255),
+    url character varying(255),
+    color character varying(255) NOT NULL,
+    text_color character varying(255) NOT NULL,
+    sort_order integer NOT NULL
+);
+
+
+--
+-- Name: gtfs_route_patterns; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_route_patterns (
+    id character varying(255) NOT NULL,
+    route_id character varying(255) NOT NULL,
+    direction_id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    time_desc character varying(255),
+    typicality integer NOT NULL,
+    sort_order integer NOT NULL,
+    representative_trip_id character varying(255) NOT NULL,
+    canonical integer NOT NULL,
+    CONSTRAINT canonical_must_be_in_range CHECK ((canonical <@ int4range(0, 2, '[]'::text))),
+    CONSTRAINT typicality_must_be_in_range CHECK ((typicality <@ int4range(0, 5, '[]'::text)))
+);
+
+
+--
+-- Name: gtfs_routes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_routes (
+    id character varying(255) NOT NULL,
+    agency_id character varying(255) NOT NULL,
+    short_name character varying(255),
+    long_name character varying(255),
+    "desc" public.route_desc NOT NULL,
+    type integer NOT NULL,
+    url character varying(255),
+    color character varying(255),
+    text_color character varying(255),
+    sort_order integer NOT NULL,
+    fare_class public.fare_class NOT NULL,
+    line_id character varying(255),
+    listed_route integer,
+    network_id character varying(255) NOT NULL,
+    CONSTRAINT listed_route_must_be_in_range CHECK ((listed_route <@ int4range(0, 1, '[]'::text))),
+    CONSTRAINT type_must_be_in_range CHECK ((type <@ int4range(0, 4, '[]'::text)))
+);
+
+
+--
+-- Name: gtfs_services; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_services (
+    id character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_shape_points; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_shape_points (
+    shape_id character varying(255) NOT NULL,
+    lat double precision NOT NULL,
+    lon double precision NOT NULL,
+    sequence integer NOT NULL,
+    dist_traveled double precision
+);
+
+
+--
+-- Name: gtfs_shapes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_shapes (
+    id character varying(255) NOT NULL
+);
+
+
+--
+-- Name: gtfs_stop_times; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_stop_times (
+    trip_id character varying(255) NOT NULL,
+    arrival_time character varying(255) NOT NULL,
+    departure_time character varying(255) NOT NULL,
+    stop_id character varying(255) NOT NULL,
+    stop_sequence integer NOT NULL,
+    stop_headsign character varying(255),
+    pickup_type integer NOT NULL,
+    drop_off_type integer NOT NULL,
+    timepoint integer,
+    checkpoint_id character varying(255),
+    continuous_pickup integer,
+    continuous_drop_off integer,
+    CONSTRAINT continuous_drop_off_must_be_in_range CHECK ((continuous_drop_off <@ int4range(0, 3, '[]'::text))),
+    CONSTRAINT continuous_pickup_must_be_in_range CHECK ((continuous_pickup <@ int4range(0, 3, '[]'::text))),
+    CONSTRAINT drop_off_type_must_be_in_range CHECK ((drop_off_type <@ int4range(0, 3, '[]'::text))),
+    CONSTRAINT pickup_type_must_be_in_range CHECK ((pickup_type <@ int4range(0, 3, '[]'::text))),
+    CONSTRAINT timepoint_must_be_in_range CHECK ((timepoint <@ int4range(0, 1, '[]'::text)))
+);
+
+
+--
+-- Name: gtfs_stops; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_stops (
+    id character varying(255) NOT NULL,
+    code character varying(255),
+    name character varying(255) NOT NULL,
+    "desc" character varying(255),
+    platform_code character varying(255),
+    platform_name character varying(255),
+    lat double precision,
+    lon double precision,
+    zone_id character varying(255),
+    address character varying(255),
+    url character varying(255),
+    level_id character varying(255),
+    location_type integer NOT NULL,
+    parent_station_id character varying(255),
+    wheelchair_boarding integer NOT NULL,
+    municipality character varying(255),
+    on_street character varying(255),
+    at_street character varying(255),
+    vehicle_type integer,
+    CONSTRAINT location_type_must_be_in_range CHECK ((location_type <@ int4range(0, 4, '[]'::text))),
+    CONSTRAINT vehicle_type_must_be_in_range CHECK ((vehicle_type <@ int4range(0, 4, '[]'::text))),
+    CONSTRAINT wheelchair_boarding_must_be_in_range CHECK ((wheelchair_boarding <@ int4range(0, 2, '[]'::text)))
+);
+
+
+--
+-- Name: gtfs_trips; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.gtfs_trips (
+    id character varying(255) NOT NULL,
+    route_id character varying(255) NOT NULL,
+    service_id character varying(255) NOT NULL,
+    headsign character varying(255) NOT NULL,
+    short_name character varying(255),
+    direction_id integer NOT NULL,
+    block_id character varying(255),
+    shape_id character varying(255),
+    wheelchair_accessible integer NOT NULL,
+    route_type integer,
+    route_pattern_id character varying(255) NOT NULL,
+    bikes_allowed integer NOT NULL,
+    CONSTRAINT bikes_allowed_must_be_in_range CHECK ((bikes_allowed <@ int4range(0, 2, '[]'::text))),
+    CONSTRAINT route_type_must_be_in_range CHECK ((route_type <@ int4range(0, 4, '[]'::text))),
+    CONSTRAINT wheelchair_accessible_must_be_in_range CHECK ((wheelchair_accessible <@ int4range(0, 2, '[]'::text)))
+);
+
+
+--
+-- Name: oban_jobs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.oban_jobs (
+    id bigint NOT NULL,
+    state public.oban_job_state DEFAULT 'available'::public.oban_job_state NOT NULL,
+    queue text DEFAULT 'default'::text NOT NULL,
+    worker text NOT NULL,
+    args jsonb DEFAULT '{}'::jsonb NOT NULL,
+    errors jsonb[] DEFAULT ARRAY[]::jsonb[] NOT NULL,
+    attempt integer DEFAULT 0 NOT NULL,
+    max_attempts integer DEFAULT 20 NOT NULL,
+    inserted_at timestamp without time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    scheduled_at timestamp without time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    attempted_at timestamp without time zone,
+    completed_at timestamp without time zone,
+    attempted_by text[],
+    discarded_at timestamp without time zone,
+    priority integer DEFAULT 0 NOT NULL,
+    tags text[] DEFAULT ARRAY[]::text[],
+    meta jsonb DEFAULT '{}'::jsonb,
+    cancelled_at timestamp without time zone,
+    CONSTRAINT attempt_range CHECK (((attempt >= 0) AND (attempt <= max_attempts))),
+    CONSTRAINT positive_max_attempts CHECK ((max_attempts > 0)),
+    CONSTRAINT queue_length CHECK (((char_length(queue) > 0) AND (char_length(queue) < 128))),
+    CONSTRAINT worker_length CHECK (((char_length(worker) > 0) AND (char_length(worker) < 128)))
+);
+
+
+--
+-- Name: TABLE oban_jobs; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.oban_jobs IS '12';
+
+
+--
+-- Name: oban_jobs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.oban_jobs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: oban_jobs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.oban_jobs_id_seq OWNED BY public.oban_jobs.id;
+
+
+--
+-- Name: oban_peers; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE UNLOGGED TABLE public.oban_peers (
+    name text NOT NULL,
+    node text NOT NULL,
+    started_at timestamp without time zone NOT NULL,
+    expires_at timestamp without time zone NOT NULL
+);
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -594,6 +988,13 @@ ALTER TABLE ONLY public.disruptions ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
+-- Name: oban_jobs id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oban_jobs ALTER COLUMN id SET DEFAULT nextval('public.oban_jobs_id_seq'::regclass);
+
+
+--
 -- Name: shapes id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -698,6 +1099,158 @@ ALTER TABLE ONLY public.disruption_revisions
 
 ALTER TABLE ONLY public.disruptions
     ADD CONSTRAINT disruptions_pkey1 PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_agencies gtfs_agencies_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_agencies
+    ADD CONSTRAINT gtfs_agencies_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_calendar_dates gtfs_calendar_dates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_calendar_dates
+    ADD CONSTRAINT gtfs_calendar_dates_pkey PRIMARY KEY (service_id, date);
+
+
+--
+-- Name: gtfs_calendars gtfs_calendars_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_calendars
+    ADD CONSTRAINT gtfs_calendars_pkey PRIMARY KEY (service_id);
+
+
+--
+-- Name: gtfs_checkpoints gtfs_checkpoints_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_checkpoints
+    ADD CONSTRAINT gtfs_checkpoints_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_directions gtfs_directions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_directions
+    ADD CONSTRAINT gtfs_directions_pkey PRIMARY KEY (route_id, direction_id);
+
+
+--
+-- Name: gtfs_feed_info gtfs_feed_info_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_feed_info
+    ADD CONSTRAINT gtfs_feed_info_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_levels gtfs_levels_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_levels
+    ADD CONSTRAINT gtfs_levels_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_lines gtfs_lines_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_lines
+    ADD CONSTRAINT gtfs_lines_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_route_patterns gtfs_route_patterns_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_route_patterns
+    ADD CONSTRAINT gtfs_route_patterns_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_routes gtfs_routes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_routes
+    ADD CONSTRAINT gtfs_routes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_services gtfs_services_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_services
+    ADD CONSTRAINT gtfs_services_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_shape_points gtfs_shape_points_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_shape_points
+    ADD CONSTRAINT gtfs_shape_points_pkey PRIMARY KEY (shape_id, sequence);
+
+
+--
+-- Name: gtfs_shapes gtfs_shapes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_shapes
+    ADD CONSTRAINT gtfs_shapes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_stop_times gtfs_stop_times_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stop_times
+    ADD CONSTRAINT gtfs_stop_times_pkey PRIMARY KEY (trip_id, stop_sequence);
+
+
+--
+-- Name: gtfs_stops gtfs_stops_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stops
+    ADD CONSTRAINT gtfs_stops_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: gtfs_trips gtfs_trips_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_trips
+    ADD CONSTRAINT gtfs_trips_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: oban_jobs non_negative_priority; Type: CHECK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE public.oban_jobs
+    ADD CONSTRAINT non_negative_priority CHECK ((priority >= 0)) NOT VALID;
+
+
+--
+-- Name: oban_jobs oban_jobs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oban_jobs
+    ADD CONSTRAINT oban_jobs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: oban_peers oban_peers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.oban_peers
+    ADD CONSTRAINT oban_peers_pkey PRIMARY KEY (name);
 
 
 --
@@ -809,6 +1362,27 @@ CREATE INDEX disruption_notes_disruption_id_index ON public.disruption_notes USI
 --
 
 CREATE INDEX disruption_trip_short_names_disruption_id_index ON public.disruption_trip_short_names USING btree (disruption_revision_id);
+
+
+--
+-- Name: oban_jobs_args_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oban_jobs_args_index ON public.oban_jobs USING gin (args);
+
+
+--
+-- Name: oban_jobs_meta_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oban_jobs_meta_index ON public.oban_jobs USING gin (meta);
+
+
+--
+-- Name: oban_jobs_state_queue_priority_scheduled_at_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX oban_jobs_state_queue_priority_scheduled_at_id_index ON public.oban_jobs USING btree (state, queue, priority, scheduled_at, id);
 
 
 --
@@ -925,6 +1499,158 @@ ALTER TABLE ONLY public.disruptions
 
 
 --
+-- Name: gtfs_calendar_dates gtfs_calendar_dates_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_calendar_dates
+    ADD CONSTRAINT gtfs_calendar_dates_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.gtfs_services(id);
+
+
+--
+-- Name: gtfs_calendars gtfs_calendars_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_calendars
+    ADD CONSTRAINT gtfs_calendars_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.gtfs_services(id);
+
+
+--
+-- Name: gtfs_directions gtfs_directions_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_directions
+    ADD CONSTRAINT gtfs_directions_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.gtfs_routes(id);
+
+
+--
+-- Name: gtfs_route_patterns gtfs_route_patterns_direction_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_route_patterns
+    ADD CONSTRAINT gtfs_route_patterns_direction_id_fkey FOREIGN KEY (direction_id, route_id) REFERENCES public.gtfs_directions(direction_id, route_id);
+
+
+--
+-- Name: gtfs_route_patterns gtfs_route_patterns_representative_trip_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_route_patterns
+    ADD CONSTRAINT gtfs_route_patterns_representative_trip_id_fkey FOREIGN KEY (representative_trip_id) REFERENCES public.gtfs_trips(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: gtfs_route_patterns gtfs_route_patterns_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_route_patterns
+    ADD CONSTRAINT gtfs_route_patterns_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.gtfs_routes(id);
+
+
+--
+-- Name: gtfs_routes gtfs_routes_agency_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_routes
+    ADD CONSTRAINT gtfs_routes_agency_id_fkey FOREIGN KEY (agency_id) REFERENCES public.gtfs_agencies(id);
+
+
+--
+-- Name: gtfs_routes gtfs_routes_line_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_routes
+    ADD CONSTRAINT gtfs_routes_line_id_fkey FOREIGN KEY (line_id) REFERENCES public.gtfs_lines(id);
+
+
+--
+-- Name: gtfs_shape_points gtfs_shape_points_shape_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_shape_points
+    ADD CONSTRAINT gtfs_shape_points_shape_id_fkey FOREIGN KEY (shape_id) REFERENCES public.gtfs_shapes(id);
+
+
+--
+-- Name: gtfs_stop_times gtfs_stop_times_checkpoint_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stop_times
+    ADD CONSTRAINT gtfs_stop_times_checkpoint_id_fkey FOREIGN KEY (checkpoint_id) REFERENCES public.gtfs_checkpoints(id);
+
+
+--
+-- Name: gtfs_stop_times gtfs_stop_times_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stop_times
+    ADD CONSTRAINT gtfs_stop_times_stop_id_fkey FOREIGN KEY (stop_id) REFERENCES public.gtfs_stops(id);
+
+
+--
+-- Name: gtfs_stop_times gtfs_stop_times_trip_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stop_times
+    ADD CONSTRAINT gtfs_stop_times_trip_id_fkey FOREIGN KEY (trip_id) REFERENCES public.gtfs_trips(id);
+
+
+--
+-- Name: gtfs_stops gtfs_stops_level_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stops
+    ADD CONSTRAINT gtfs_stops_level_id_fkey FOREIGN KEY (level_id) REFERENCES public.gtfs_levels(id);
+
+
+--
+-- Name: gtfs_stops gtfs_stops_parent_station_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_stops
+    ADD CONSTRAINT gtfs_stops_parent_station_id_fkey FOREIGN KEY (parent_station_id) REFERENCES public.gtfs_stops(id);
+
+
+--
+-- Name: gtfs_trips gtfs_trips_direction_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_trips
+    ADD CONSTRAINT gtfs_trips_direction_id_fkey FOREIGN KEY (direction_id, route_id) REFERENCES public.gtfs_directions(direction_id, route_id);
+
+
+--
+-- Name: gtfs_trips gtfs_trips_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_trips
+    ADD CONSTRAINT gtfs_trips_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.gtfs_routes(id);
+
+
+--
+-- Name: gtfs_trips gtfs_trips_route_pattern_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_trips
+    ADD CONSTRAINT gtfs_trips_route_pattern_id_fkey FOREIGN KEY (route_pattern_id) REFERENCES public.gtfs_route_patterns(id);
+
+
+--
+-- Name: gtfs_trips gtfs_trips_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_trips
+    ADD CONSTRAINT gtfs_trips_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.gtfs_services(id);
+
+
+--
+-- Name: gtfs_trips gtfs_trips_shape_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.gtfs_trips
+    ADD CONSTRAINT gtfs_trips_shape_id_fkey FOREIGN KEY (shape_id) REFERENCES public.gtfs_shapes(id);
+
+
+--
 -- Name: shuttle_route_stops shuttle_route_stops_shuttle_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -979,6 +1705,13 @@ INSERT INTO public."schema_migrations" (version) VALUES (20240611173539);
 INSERT INTO public."schema_migrations" (version) VALUES (20240628203237);
 INSERT INTO public."schema_migrations" (version) VALUES (20240701173124);
 INSERT INTO public."schema_migrations" (version) VALUES (20240718181932);
+INSERT INTO public."schema_migrations" (version) VALUES (20240826153959);
+INSERT INTO public."schema_migrations" (version) VALUES (20240826154124);
+INSERT INTO public."schema_migrations" (version) VALUES (20240826154204);
+INSERT INTO public."schema_migrations" (version) VALUES (20240826154208);
+INSERT INTO public."schema_migrations" (version) VALUES (20240826154213);
+INSERT INTO public."schema_migrations" (version) VALUES (20240826154218);
+INSERT INTO public."schema_migrations" (version) VALUES (20241003182524);
 INSERT INTO public."schema_migrations" (version) VALUES (20241010164333);
 INSERT INTO public."schema_migrations" (version) VALUES (20241010164455);
 INSERT INTO public."schema_migrations" (version) VALUES (20241010164555);

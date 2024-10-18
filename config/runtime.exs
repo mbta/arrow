@@ -87,8 +87,11 @@ if config_env() == :prod do
     port: port,
     pool_size: pool_size,
     # password set by `configure` callback below
-    configure: {Arrow.Repo, :before_connect, []}
+    configure: {Arrow.Repo, :before_connect, []},
+    queue_target: 30_000,
+    queue_interval: 120_000
 
   config :arrow,
-    shape_storage_prefix_env: System.get_env("S3_PREFIX")
+    shape_storage_prefix_env: System.get_env("S3_PREFIX"),
+    gtfs_archive_storage_prefix_env: System.get_env("S3_PREFIX")
 end
