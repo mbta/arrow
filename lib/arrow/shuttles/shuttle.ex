@@ -16,7 +16,33 @@ defmodule Arrow.Shuttles.Shuttle do
     shuttle
     |> cast(attrs, [:shuttle_name, :disrupted_route_id, :status])
     |> validate_required([:shuttle_name, :status])
+    |> validate_required_for(:status)
     |> foreign_key_constraint(:disrupted_route_id)
     |> unique_constraint(:shuttle_name)
+  end
+
+  def validate_required_for(changeset, :status) do
+    # Placeholder validation until form is complete
+    status = get_field(changeset, :status)
+    # Set error on status field for now
+    fields = [:status]
+
+    case status do
+      :active ->
+        message = "can't be set to active when required fields are missing"
+
+        %{
+          changeset
+          | errors:
+              Enum.map(
+                fields,
+                &{&1, {message, [validation: :required]}}
+              ),
+            valid?: false
+        }
+
+      _ ->
+        changeset
+    end
   end
 end
