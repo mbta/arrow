@@ -60,7 +60,7 @@ defmodule Arrow.MixProject do
       {:guardian, "~> 2.0"},
       {:hackney, "~> 1.9"},
       {:httpoison, "~> 2.2"},
-      {:ja_serializer, github: "mbta/ja_serializer", branch: "master"},
+      {:ja_serializer, "~> 0.18.0"},
       {:jason, "~> 1.0"},
       {:lcov_ex, "~> 0.2", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.2", only: :test},
