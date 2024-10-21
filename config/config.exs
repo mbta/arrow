@@ -44,6 +44,16 @@ config :arrow,
   gtfs_archive_storage_prefix: "gtfs-archive-uploads/",
   gtfs_archive_storage_request_fn: {ExAws, :request}
 
+# Addresses an issue with Oban
+# https://github.com/oban-bg/oban/issues/493#issuecomment-1187001822
+config :arrow, Arrow.Repo,
+  parameters: [
+    tcp_keepalives_idle: "60",
+    tcp_keepalives_interval: "5",
+    tcp_keepalives_count: "3"
+  ],
+  socket_options: [keepalive: true]
+
 # Configures the endpoint
 config :arrow, ArrowWeb.Endpoint,
   url: [host: "localhost"],
