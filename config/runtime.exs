@@ -56,8 +56,7 @@ if config_env() == :prod do
       root_source_code_path: File.cwd!(),
       tags: %{
         env: sentry_env
-      },
-      included_environments: [sentry_env]
+      }
 
     config :logger, Sentry.LoggerBackend,
       level: :warn,

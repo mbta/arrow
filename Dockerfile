@@ -39,6 +39,7 @@ COPY config/config.exs config/
 COPY config/prod.exs config/
 
 RUN mix deps.compile
+RUN mix sentry.package_source_code
 
 COPY assets assets
 RUN npm ci --prefix assets
