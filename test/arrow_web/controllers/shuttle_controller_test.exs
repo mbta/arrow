@@ -4,7 +4,7 @@ defmodule ArrowWeb.ShuttleControllerTest do
   import Arrow.ShuttlesFixtures
 
   @create_attrs %{status: :draft, shuttle_name: "some shuttle_name"}
-  @update_attrs %{status: :active, shuttle_name: "some updated shuttle_name"}
+  @update_attrs %{status: :inactive, shuttle_name: "some updated shuttle_name"}
   @invalid_attrs %{status: nil, shuttle_name: nil}
 
   describe "index" do

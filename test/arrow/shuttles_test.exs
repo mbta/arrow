@@ -141,11 +141,20 @@ defmodule Arrow.ShuttlesTest do
 
     test "update_shuttle/2 with valid data updates the shuttle" do
       shuttle = shuttle_fixture()
-      update_attrs = %{status: :active, shuttle_name: "some updated shuttle_name"}
+      update_attrs = %{status: :draft, shuttle_name: "some updated shuttle_name"}
 
       assert {:ok, %Shuttle{} = shuttle} = Shuttles.update_shuttle(shuttle, update_attrs)
-      assert shuttle.status == :active
+      assert shuttle.status == :draft
       assert shuttle.shuttle_name == "some updated shuttle_name"
+    end
+
+    test "update_shuttle/2 with invalid data updates for status active returns error changeset" do
+      shuttle = shuttle_fixture()
+      update_attrs = %{status: :active, shuttle_name: "some updated shuttle_name"}
+
+      assert {:error, %Ecto.Changeset{}} = Shuttles.update_shuttle(shuttle, update_attrs)
+      assert shuttle == Shuttles.get_shuttle!(shuttle.id)
+      refute shuttle.status == :active
     end
 
     test "update_shuttle/2 with invalid data returns error changeset" do
