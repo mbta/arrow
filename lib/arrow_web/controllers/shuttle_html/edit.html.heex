@@ -1,0 +1,7 @@
+<.header>
+  Edit Shuttle <%= @shuttle.id %>
+</.header>
+
+<.shuttle_form changeset={@changeset} action={~p"/shuttles/#{@shuttle}"} />
+
+<.back navigate={~p"/shuttles"}>Back to shuttles</.back>

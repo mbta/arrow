@@ -1,0 +1,16 @@
+<.simple_form :let={f} for={@changeset} action={@action}>
+  <.error :if={@changeset.action}>
+    Oops, something went wrong! Please check the errors below.
+  </.error>
+  <.input field={f[:shuttle_name]} type="text" label="Shuttle name" />
+  <.input
+    field={f[:status]}
+    type="select"
+    label="Status"
+    prompt="Choose a value"
+    options={Ecto.Enum.values(Arrow.Shuttles.Shuttle, :status)}
+  />
+  <:actions>
+    <.button>Save Shuttle</.button>
+  </:actions>
+</.simple_form>
