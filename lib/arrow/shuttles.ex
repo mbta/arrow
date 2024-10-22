@@ -262,7 +262,9 @@ defmodule Arrow.Shuttles do
       ** (Ecto.NoResultsError)
 
   """
-  def get_shuttle!(id), do: Repo.get!(Shuttle, id)
+  def get_shuttle!(id) do
+    Repo.get!(Shuttle, id) |> Repo.preload(routes: [:shape])
+  end
 
   @doc """
   Creates a shuttle.

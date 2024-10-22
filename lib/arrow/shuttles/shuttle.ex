@@ -7,6 +7,7 @@ defmodule Arrow.Shuttles.Shuttle do
     field :status, Ecto.Enum, values: [:draft, :active, :inactive]
     field :shuttle_name, :string
     field :disrupted_route_id, :string
+    has_many :routes, Arrow.Shuttles.Route
 
     timestamps(type: :utc_datetime)
   end
@@ -15,6 +16,7 @@ defmodule Arrow.Shuttles.Shuttle do
   def changeset(shuttle, attrs) do
     shuttle
     |> cast(attrs, [:shuttle_name, :disrupted_route_id, :status])
+    |> cast_assoc(:routes)
     |> validate_required([:shuttle_name, :status])
     |> validate_required_for(:status)
     |> foreign_key_constraint(:disrupted_route_id)

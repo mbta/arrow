@@ -17,6 +17,20 @@
     prompt="Choose a value"
     options={Ecto.Enum.values(Arrow.Shuttles.Shuttle, :status)}
   />
+  <.inputs_for :let={f_route} field={f[:routes]}> 
+    <hr>
+    <div class="form-group">
+      <h3>direction <%= input_value(f_route, :direction_id) %> </h3>
+      <div class="hidden">
+        <.input field={f_route[:direction_id]} type="text" label="Direction id" />
+      </div>
+      <.input field={f_route[:direction_desc]} type="text" label="Direction desc" />
+      <.input field={f_route[:destination]} type="text" label="Destination" />
+      <.input field={f_route[:waypoint]} type="text" label="Waypoint" />
+      <.input field={f_route[:suffix]} type="text" label="Suffix" />
+      <.input field={f_route[:shape_id]} type="text" label="Shape id" />
+    </div>
+  </.inputs_for>
   <:actions>
     <.button>Save Shuttle</.button>
   </:actions>

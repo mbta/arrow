@@ -9,8 +9,8 @@ defmodule Arrow.Shuttles.Route do
     field :direction_id, Ecto.Enum, values: [:"0", :"1"]
     field :direction_desc, :string
     field :waypoint, :string
-    field :shuttle_id, :id
-    field :shape_id, :id
+    belongs_to :shuttle, Arrow.Shuttles.Shuttle
+    belongs_to :shape, Arrow.Shuttles.Shape
 
     timestamps(type: :utc_datetime)
   end
@@ -19,6 +19,7 @@ defmodule Arrow.Shuttles.Route do
   def changeset(route, attrs) do
     route
     |> cast(attrs, [:direction_id, :direction_desc, :destination, :waypoint, :suffix])
+    |> cast_assoc(:shape)
     |> validate_required([:direction_id, :direction_desc, :destination])
   end
 end

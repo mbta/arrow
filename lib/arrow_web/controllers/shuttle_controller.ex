@@ -10,7 +10,11 @@ defmodule ArrowWeb.ShuttleController do
   end
 
   def new(conn, _params) do
-    changeset = Shuttles.change_shuttle(%Shuttle{})
+    changeset =
+      Shuttles.change_shuttle(%Shuttle{
+        routes: [%Shuttles.Route{direction_id: :"0"}, %Shuttles.Route{direction_id: :"1"}]
+      })
+
     gtfs_disruptable_routes = Shuttles.list_disruptable_routes()
     render(conn, :new, changeset: changeset, gtfs_disruptable_routes: gtfs_disruptable_routes)
   end
