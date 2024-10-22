@@ -76,6 +76,8 @@ defmodule Arrow.MixProject do
       {:phoenix, "~> 1.7.12"},
       {:plug_cowboy, "~> 2.1"},
       {:telemetry, "~> 1.2", override: true},
+      {:telemetry_poller, "~> 0.4"},
+      {:telemetry_metrics, "~> 0.4"},
       {:postgrex, ">= 0.0.0"},
       # If react_phoenix changes, check assets/src/ReactPhoenix.js, too
       {:react_phoenix, "1.3.1"},

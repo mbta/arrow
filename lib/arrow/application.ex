@@ -19,7 +19,8 @@ defmodule Arrow.Application do
         # Start Oban, the job processing library
         {Oban, Application.fetch_env!(:arrow, Oban)},
         # Start the endpoint when the application starts
-        ArrowWeb.Endpoint
+        ArrowWeb.Endpoint,
+        ArrowWeb.Telemetry
       ] ++
         migrate_children(run_migrations_at_startup?) ++
         adjustment_fetcher_children(run_adjustment_fetcher?)
