@@ -408,7 +408,7 @@ defmodule ArrowWeb.CoreComponents do
 
   def label(assigns) do
     ~H"""
-    <label for={@for}>
+    <label for={@for} class="col-form-label">
       <%= render_slot(@inner_block) %>
     </label>
     """

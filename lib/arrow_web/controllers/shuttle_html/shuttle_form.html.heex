@@ -1,34 +1,71 @@
 <.simple_form :let={f} for={@changeset} action={@action}>
+  <div class="form-group">
+    <a
+      target="_blank"
+      rel="noreferrer noopener"
+      href="https://www.notion.so/native/mbta-downtown-crossing/Conventions-for-shuttle-bus-information-fc5a788409b24eb088dbfe3a43abf67e?pvs=4&deepLinkOpenNewTab=true#2b8886089b25403991f1ed69144d8fd8"
+    >
+      View Shuttle Definition Conventions
+    </a>
+  </div>
   <.error :if={@changeset.action}>
     Oops, something went wrong! Please check the errors below.
   </.error>
-  <.input field={f[:shuttle_name]} type="text" label="Shuttle name" />
-  <.input 
-    field={f[:disrupted_route_id]} 
-    type="select" 
-    label="Disrupted route"
-    prompt="Choose a route"
-    options={Enum.map(@gtfs_disruptable_routes, fn route -> route.id end)}
-   />
-  <.input
-    field={f[:status]}
-    type="select"
-    label="Status"
-    prompt="Choose a value"
-    options={Ecto.Enum.values(Arrow.Shuttles.Shuttle, :status)}
-  />
+  <div class="row">
+    <div class="col">
+      <.input field={f[:shuttle_name]} type="text" label="Shuttle Name" />
+    </div>
+    <div class="col">
+      <.input 
+        field={f[:disrupted_route_id]} 
+        type="select" 
+        label="Disrupted Route"
+        prompt="Choose a route"
+        options={Enum.map(@gtfs_disruptable_routes, fn route -> route.id end)}
+      />
+    </div>
+    <div class="col">
+      <.input
+        field={f[:status]}
+        type="select"
+        label="Status"
+        prompt="Choose a value"
+        options={Ecto.Enum.values(Arrow.Shuttles.Shuttle, :status)}
+      />
+    </div>
+  </div>
+  <hr>
+  <h2> define route </h2>
   <.inputs_for :let={f_route} field={f[:routes]}> 
-    <hr>
-    <div class="form-group">
-      <h3>direction <%= input_value(f_route, :direction_id) %> </h3>
+    <h4>direction <%= input_value(f_route, :direction_id) %> </h4>
+    <div class="row">
       <div class="hidden">
         <.input field={f_route[:direction_id]} type="text" label="Direction id" />
       </div>
-      <.input field={f_route[:direction_desc]} type="text" label="Direction desc" />
-      <.input field={f_route[:destination]} type="text" label="Destination" />
-      <.input field={f_route[:waypoint]} type="text" label="Waypoint" />
-      <.input field={f_route[:suffix]} type="text" label="Suffix" />
-      <.input field={f_route[:shape_id]} type="text" label="Shape id" />
+      <div class="col">
+        <.input field={f_route[:direction_desc]} type="text" label="Direction desc" />
+      </div>
+      <div class="col offset-md-1">
+        <.input field={f_route[:shape_id]} type="text" label="Shape id" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <.input field={f_route[:destination]} type="text" label="Destination" />
+      </div>
+      <div class="col-1 align-self-end italic">
+        <div class="form-group">
+        via
+        </div>
+      </div>
+      <div class="col">
+        <.input field={f_route[:waypoint]} type="text" label="Waypoint" />
+      </div>
+    </div>
+    <div class="row">
+        <div class="col">
+        <.input field={f_route[:suffix]} type="text" label="Suffix" />
+        </div>
     </div>
   </.inputs_for>
   <:actions>
