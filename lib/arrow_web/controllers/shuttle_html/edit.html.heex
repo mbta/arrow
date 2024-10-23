@@ -2,6 +2,10 @@
   edit shuttle <%= @shuttle.id %>
 </.header>
 
-<.shuttle_form changeset={@changeset} action={~p"/shuttles/#{@shuttle}"} gtfs_disruptable_routes={@gtfs_disruptable_routes} />
+<.shuttle_form
+  changeset={@changeset}
+  action={~p"/shuttles/#{@shuttle}"}
+  gtfs_disruptable_routes={@gtfs_disruptable_routes}
+/>
 
 <.back navigate={~p"/shuttles"}>Back to shuttles</.back>
