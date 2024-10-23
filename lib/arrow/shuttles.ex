@@ -245,7 +245,7 @@ defmodule Arrow.Shuttles do
 
   """
   def list_shuttles do
-    Repo.all(Shuttle)
+    Repo.all(Shuttle) |> Repo.preload(routes: [:shape])
   end
 
   @doc """

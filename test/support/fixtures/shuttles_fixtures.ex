@@ -69,7 +69,8 @@ defmodule Arrow.ShuttlesFixtures do
       attrs
       |> Enum.into(%{
         shuttle_name: unique_shuttle_shuttle_name(),
-        status: :draft
+        status: :draft,
+        routes: []
       })
       |> Arrow.Shuttles.create_shuttle()
 
