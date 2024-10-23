@@ -9,6 +9,7 @@ defmodule ArrowWeb.ShuttleView do
   attr :changeset, Ecto.Changeset, required: true
   attr :action, :string, required: true
   attr :gtfs_disruptable_routes, :list, required: true
+  attr :shapes, :list, required: true
 
   def shuttle_form(assigns)
 end

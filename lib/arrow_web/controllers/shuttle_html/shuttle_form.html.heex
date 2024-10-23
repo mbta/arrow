@@ -21,7 +21,7 @@
         type="select"
         label="Disrupted Route"
         prompt="Choose a route"
-        options={Enum.map(@gtfs_disruptable_routes, fn route -> route.id end)}
+        options={Enum.map(@gtfs_disruptable_routes, &{&1.long_name, &1.id})}
       />
     </div>
     <div class="col">
@@ -46,7 +46,13 @@
         <.input field={f_route[:direction_desc]} type="text" label="Direction desc" />
       </div>
       <div class="col offset-md-1">
-        <.input field={f_route[:shape_id]} type="text" label="Shape id" />
+        <.input
+          field={f_route[:shape_id]}
+          type="select"
+          label="Shape"
+          prompt="Choose a shape"
+          options={Enum.map(@shapes, &{&1.name, &1.id})}
+        />
       </div>
     </div>
     <div class="row">

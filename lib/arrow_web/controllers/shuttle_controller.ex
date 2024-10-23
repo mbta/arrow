@@ -16,7 +16,13 @@ defmodule ArrowWeb.ShuttleController do
       })
 
     gtfs_disruptable_routes = Shuttles.list_disruptable_routes()
-    render(conn, :new, changeset: changeset, gtfs_disruptable_routes: gtfs_disruptable_routes)
+    shapes = Shuttles.list_shapes()
+
+    render(conn, :new,
+      changeset: changeset,
+      gtfs_disruptable_routes: gtfs_disruptable_routes,
+      shapes: shapes
+    )
   end
 
   def create(conn, %{"shuttle" => shuttle_params}) do
@@ -28,7 +34,13 @@ defmodule ArrowWeb.ShuttleController do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         gtfs_disruptable_routes = Shuttles.list_disruptable_routes()
-        render(conn, :new, changeset: changeset, gtfs_disruptable_routes: gtfs_disruptable_routes)
+        shapes = Shuttles.list_shapes()
+
+        render(conn, :new,
+          changeset: changeset,
+          gtfs_disruptable_routes: gtfs_disruptable_routes,
+          shapes: shapes
+        )
     end
   end
 
@@ -41,11 +53,13 @@ defmodule ArrowWeb.ShuttleController do
     shuttle = Shuttles.get_shuttle!(id)
     changeset = Shuttles.change_shuttle(shuttle)
     gtfs_disruptable_routes = Shuttles.list_disruptable_routes()
+    shapes = Shuttles.list_shapes()
 
     render(conn, :edit,
       shuttle: shuttle,
       changeset: changeset,
-      gtfs_disruptable_routes: gtfs_disruptable_routes
+      gtfs_disruptable_routes: gtfs_disruptable_routes,
+      shapes: shapes
     )
   end
 
@@ -60,11 +74,13 @@ defmodule ArrowWeb.ShuttleController do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         gtfs_disruptable_routes = Shuttles.list_disruptable_routes()
+        shapes = Shuttles.list_shapes()
 
         render(conn, :edit,
           shuttle: shuttle,
           changeset: changeset,
-          gtfs_disruptable_routes: gtfs_disruptable_routes
+          gtfs_disruptable_routes: gtfs_disruptable_routes,
+          shapes: shapes
         )
     end
   end

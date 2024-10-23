@@ -18,8 +18,8 @@ defmodule Arrow.Shuttles.Route do
   @doc false
   def changeset(route, attrs) do
     route
-    |> cast(attrs, [:direction_id, :direction_desc, :destination, :waypoint, :suffix])
-    |> cast_assoc(:shape)
+    |> cast(attrs, [:direction_id, :direction_desc, :destination, :waypoint, :suffix, :shape_id])
+    |> foreign_key_constraint(:shape_id)
     |> validate_required([:direction_id, :direction_desc, :destination])
   end
 end

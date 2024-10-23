@@ -16,7 +16,7 @@ defmodule Arrow.Shuttles.Shuttle do
   def changeset(shuttle, attrs) do
     shuttle
     |> cast(attrs, [:shuttle_name, :disrupted_route_id, :status])
-    |> cast_assoc(:routes)
+    |> cast_assoc(:routes, with: &Arrow.Shuttles.Route.changeset/2)
     |> validate_required([:shuttle_name, :status])
     |> validate_required_for(:status)
     |> foreign_key_constraint(:disrupted_route_id)
