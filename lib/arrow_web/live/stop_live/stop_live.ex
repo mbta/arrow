@@ -15,14 +15,28 @@ defmodule ArrowWeb.StopViewLive do
 
   def stop_form(assigns) do
     ~H"""
-      <p>
+    <p>
       <small class="font-italic">
-      * required field
+        * required field
       </small>
-      <br>
-      <a class="text-sm" href="https://www.notion.so/mbta-downtown-crossing/Conventions-for-shuttle-bus-information-fc5a788409b24eb088dbfe3a43abf67e?pvs=4#7f7211396f6c46e59c26e63373cdb4ac">View Shuttle Stop Conventions</a>
+      <br />
+      <a
+        class="text-sm"
+        href="https://www.notion.so/mbta-downtown-crossing/Conventions-for-shuttle-bus-information-fc5a788409b24eb088dbfe3a43abf67e?pvs=4#7f7211396f6c46e59c26e63373cdb4ac"
+      >
+        View Shuttle Stop Conventions
+      </a>
     </p>
-    <.simple_form :let={f} for={@form} as={:stop} action={@http_action} phx-change="validate" phx-submit={@action} phx-trigger-action={@trigger_submit} id="stop-form">
+    <.simple_form
+      :let={f}
+      for={@form}
+      as={:stop}
+      action={@http_action}
+      phx-change="validate"
+      phx-submit={@action}
+      phx-trigger-action={@trigger_submit}
+      id="stop-form"
+    >
       <.error :if={@form.action}>
         Oops, something went wrong! Please check the errors below.
       </.error>
@@ -42,8 +56,8 @@ defmodule ArrowWeb.StopViewLive do
       </div>
 
       <div class="form-row">
-      <.input class="col-md-6" field={f[:stop_lat]} type="number" label="Latitude*" step="any" />
-      <.input class="col-md-6" field={f[:stop_lon]} type="number" label="Longitude*" step="any" />
+        <.input class="col-md-6" field={f[:stop_lat]} type="number" label="Latitude*" step="any" />
+        <.input class="col-md-6" field={f[:stop_lon]} type="number" label="Longitude*" step="any" />
       </div>
       <.input field={f[:municipality]} type="text" label="Municipality*" />
       <.input field={f[:stop_address]} type="text" label="Stop Address" />
@@ -54,7 +68,13 @@ defmodule ArrowWeb.StopViewLive do
           <.button type="submit" class="btn-primary w-100">Save Shuttle Stop</.button>
         </div>
         <div class="w-25 mr-2">
-          <.link_button href={~p"/stops"} class="btn-outline-primary w-100" data-confirm="Are you sure you want to cancel? All changes will be lost!">Cancel</.link_button>
+          <.link_button
+            href={~p"/stops"}
+            class="btn-outline-primary w-100"
+            data-confirm="Are you sure you want to cancel? All changes will be lost!"
+          >
+            Cancel
+          </.link_button>
         </div>
       </:actions>
     </.simple_form>

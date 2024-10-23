@@ -8,12 +8,12 @@
     </div>
 
     <div class="m-header__long-name navbar-text justify-content-end navbar-collapse">
-      Adjustments to the Regular Right of Way
-      <%= if @logout_url, do:
-        link("logout",
-          to: ~p"/auth/logout",
-          class: "ml-2 btn btn-outline-danger"
-      ) %>
+      Adjustments to the Regular Right of Way <%= if @logout_url,
+        do:
+          link("logout",
+            to: ~p"/auth/logout",
+            class: "ml-2 btn btn-outline-danger"
+          ) %>
       <div class="hidden">
         <%= @view %>
       </div>

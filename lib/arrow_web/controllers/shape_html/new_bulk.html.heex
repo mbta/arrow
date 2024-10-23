@@ -6,7 +6,7 @@
 <%= react_component("Components.ShapeViewMap", %{}) %>
 
 <.simple_form :let={f} for={@shapes_upload} action={~p"/shapes_upload"} multipart>
-  <.input field={f[:filename]} type="file" label="Filename" required="true"/>
+  <.input field={f[:filename]} type="file" label="Filename" required="true" />
   <:actions>
     <.button class="btn-primary">upload file</.button>
   </:actions>
