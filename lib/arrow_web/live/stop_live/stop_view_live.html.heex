@@ -1,6 +1,11 @@
 <.header>
-  <%= @title %> 
+  <%= @title %>
 </.header>
 
 <%= live_react_component("Components.StopViewMap", [stop: @stop_map_props], id: "stop-view-map") %>
-<.stop_form form={@form} action={@form_action} http_action={@http_action} trigger_submit={@trigger_submit} />
+<.stop_form
+  form={@form}
+  action={@form_action}
+  http_action={@http_action}
+  trigger_submit={@trigger_submit}
+/>

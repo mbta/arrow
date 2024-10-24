@@ -203,7 +203,7 @@ defmodule ArrowWeb.CoreComponents do
     ~H"""
     <.form :let={f} for={@for} as={@as} phx-change="validate" {@rest}>
       <%= render_slot(@inner_block, f) %>
-      <hr class="light-hr">
+      <hr class="light-hr" />
       <div :for={action <- @actions} class="d-flex justify-content-center">
         <%= render_slot(action, f) %>
       </div>
@@ -490,19 +490,19 @@ defmodule ArrowWeb.CoreComponents do
       <table class="w-[40rem] mt-11 sm:w-full">
         <thead class="text-sm text-left leading-6 text-zinc-500">
           <tr>
-          <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal">
-            <%= if col[:link] do %>
-              <.link href={col[:link]}>
-                <%= if String.ends_with?(col[:link], "desc") do %>
-                  <.icon name="hero-bars-arrow-down" class="h-4 w-4" />
-                <% else %>
-                  <.icon name="hero-bars-arrow-up" class="h-4 w-4" />
-                <% end %>
+            <th :for={col <- @col} class="p-0 pb-4 pr-6 font-normal">
+              <%= if col[:link] do %>
+                <.link href={col[:link]}>
+                  <%= if String.ends_with?(col[:link], "desc") do %>
+                    <.icon name="hero-bars-arrow-down" class="h-4 w-4" />
+                  <% else %>
+                    <.icon name="hero-bars-arrow-up" class="h-4 w-4" />
+                  <% end %>
+                  <%= col[:label] %>
+                </.link>
+              <% else %>
                 <%= col[:label] %>
-              </.link>
-            <% else %>
-              <%= col[:label] %>
-            <% end %>
+              <% end %>
             </th>
             <th :if={@action != []} class="relative p-0 pb-4">
               <span class="sr-only"><%= gettext("Actions") %></span>

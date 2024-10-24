@@ -1,18 +1,18 @@
-
 <div class="p-8">
   <h1 class="text-6xl">Feed</h1>
 
   <p>Disruptions with differences compared to their GTFS version.</p>
 
-  <hr class="my-4">
+  <hr class="my-4" />
 
   <div class="divide-y divide-gray-300">
     <%= for d <- @disruptions do %>
       <div class="mb-2 p-4 border rounded shadow">
         <h3 class="text-2xl">
-          <%= link "Disruption ##{d.id}",
+          <%= link("Disruption ##{d.id}",
             to: Routes.disruption_path(@conn, :show, d.id),
-            class: "text-blue-500 underline" %>
+            class: "text-blue-500 underline"
+          ) %>
         </h3>
 
         <%= case d.revisions do %>
@@ -22,7 +22,6 @@
             <.disruption_summary revision={latest} />
             <em>from the published version:</em>
             <.disruption_summary revision={published} />
-          
           <% [revision] -> %>
             <div>
               <em>A new, unpublished disruption:</em>
