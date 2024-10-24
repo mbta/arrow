@@ -59,7 +59,7 @@ if config_env() == :prod do
       }
 
     config :logger, Sentry.LoggerBackend,
-      level: :warn,
+      level: :warning,
       capture_log_messages: true
   end
 
