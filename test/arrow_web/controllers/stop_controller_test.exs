@@ -40,7 +40,7 @@ defmodule ArrowWeb.StopControllerTest do
       conn = post(conn, ~p"/stops", stop: invalid_attrs)
       assert redirected_to(conn) == ~p"/stops/new"
 
-      assert get_flash(conn, :errors) ==
+      assert Phoenix.Flash.get(conn.assigns.flash, :errors) ==
                {"Error creating stop, please try again", ["Stop id can\'t be blank"]}
     end
   end
