@@ -14,11 +14,10 @@ defmodule Arrow.MixProject do
       releases: releases(),
       dialyzer: [
         plt_add_apps: [:mix],
-        plt_add_deps: :transitive,
+        plt_add_deps: :app_tree,
         flags: [
           :unmatched_returns
-        ],
-        ignore_warnings: ".dialyzer.ignore-warnings"
+        ]
       ],
       preferred_cli_env: ["test.integration": :test],
       test_coverage: [tool: LcovEx, ignore_paths: ["deps/"]]
