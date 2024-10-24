@@ -210,7 +210,7 @@ defmodule Arrow.DisruptionRevision do
 
       Enum.all?(days_of_week, fn day ->
         Enum.member?(
-          Enum.map(Date.range(start_date, end_date), fn date -> Date.day_of_week(date) end),
+          Enum.map(date_range(start_date, end_date), fn date -> Date.day_of_week(date) end),
           DayOfWeek.day_number(day)
         )
       end) ->
@@ -283,6 +283,14 @@ defmodule Arrow.DisruptionRevision do
 
       true ->
         changeset
+    end
+  end
+
+  defp date_range(start_date, end_date) do
+    if Date.compare(start_date, end_date) == :gt do
+      Date.range(start_date, end_date, -1)
+    else
+      Date.range(start_date, end_date)
     end
   end
 end

@@ -75,7 +75,7 @@ defmodule ArrowWeb.TryApiTokenAuthTest do
       token = Arrow.AuthToken.get_or_create_token_for_user("foo@mbta.com")
 
       log =
-        capture_log([level: :warn], fn ->
+        capture_log([level: :warning], fn ->
           conn =
             conn
             |> put_req_header("x-api-key", token)
