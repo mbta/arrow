@@ -64,7 +64,7 @@ defmodule Arrow.MixProject do
       {:ja_serializer, github: "mbta/ja_serializer", branch: "master"},
       {:jason, "~> 1.0"},
       {:lcov_ex, "~> 0.2", only: [:dev, :test], runtime: false},
-      {:mox, "~> 1.0.0", only: :test},
+      {:mox, "~> 1.2", only: :test},
       {:oban, "~> 2.18"},
       {:phoenix_ecto, "~> 4.0"},
       {:phoenix_live_reload, "~> 1.5", only: :dev},
