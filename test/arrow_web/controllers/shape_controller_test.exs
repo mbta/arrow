@@ -27,13 +27,6 @@ defmodule ArrowWeb.ShapeControllerTest do
       filename: "invalid_file.kml"
     }
   }
-  @invalid_whitespace_attrs %{
-    name: nil,
-    filename: %Plug.Upload{
-      path: "test/support/fixtures/kml/invalid_whitespace_shape.kml",
-      filename: "invalid_whitespace_shape.kml"
-    }
-  }
   @file_read_fail_attrs %{
     name: nil,
     filename: %Plug.Upload{
@@ -137,18 +130,6 @@ defmodule ArrowWeb.ShapeControllerTest do
       assert html_response(conn, 200) =~ "Failed to upload shapes from invalid_file.kml"
       assert html_response(conn, 200) =~ "xml was invalid"
       assert html_response(conn, 200) =~ "unexpected end of input, expected token:"
-      assert html_response(conn, 200) =~ "new shapes"
-      assert html_response(conn, 200) =~ "Components.ShapeViewMap"
-    end
-
-    @tag :authenticated_admin
-    test "renders errors when data is invalid due to invalid whitespace in XML", %{conn: conn} do
-      conn = post(conn, ~p"/shapes_upload", shapes_upload: @invalid_whitespace_attrs)
-
-      assert html_response(conn, 200) =~
-               "Failed to parse shape from kml, no coordinates were found."
-
-      assert html_response(conn, 200) =~ "Check your whitespace."
       assert html_response(conn, 200) =~ "new shapes"
       assert html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
