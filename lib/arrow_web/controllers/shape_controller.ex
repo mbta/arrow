@@ -51,11 +51,6 @@ defmodule ArrowWeb.ShapeController do
         conn
         |> put_flash(:errors, reason)
         |> render(:new_bulk, errors: reason, shapes_upload: reset_upload)
-
-      error ->
-        conn
-        |> put_flash(:errors, error)
-        |> render(:new_bulk, errors: error, shapes_upload: reset_upload)
     end
   end
 
