@@ -279,9 +279,15 @@ defmodule Arrow.Shuttles do
 
   """
   def create_shuttle(attrs \\ %{}) do
-    %Shuttle{}
-    |> Shuttle.changeset(attrs)
-    |> Repo.insert()
+    created_shuttle =
+      %Shuttle{}
+      |> Shuttle.changeset(attrs)
+      |> Repo.insert()
+
+    case created_shuttle do
+      {:ok, shuttle} -> {:ok, Repo.preload(shuttle, routes: [:shape])}
+      err -> err
+    end
   end
 
   @doc """
@@ -297,9 +303,15 @@ defmodule Arrow.Shuttles do
 
   """
   def update_shuttle(%Shuttle{} = shuttle, attrs) do
-    shuttle
-    |> Shuttle.changeset(attrs)
-    |> Repo.update()
+    updated_shuttle =
+      shuttle
+      |> Shuttle.changeset(attrs)
+      |> Repo.update()
+
+    case updated_shuttle do
+      {:ok, shuttle} -> {:ok, Repo.preload(shuttle, routes: [:shape])}
+      err -> err
+    end
   end
 
   @doc """

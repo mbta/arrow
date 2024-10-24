@@ -62,6 +62,38 @@ defmodule Arrow.ShuttlesFixtures do
   def unique_shuttle_shuttle_name, do: "some shuttle_name#{System.unique_integer([:positive])}"
 
   @doc """
+  Generate a unique shuttle route destination.
+  """
+  def unique_shuttle_route_destination,
+    do: "some shuttle_route_destination#{System.unique_integer([:positive])}"
+
+  defp shuttle_routes do
+    shape1 = shape_fixture()
+    shape2 = shape_fixture()
+
+    [
+      %{
+        shape_id: shape1.id,
+        shape: shape1,
+        destination: "Harvard",
+        direction_id: :"0",
+        direction_desc: "Southbound",
+        suffix: nil,
+        waypoint: "Brattle"
+      },
+      %{
+        shape_id: shape2.id,
+        shape: shape2,
+        destination: "Alewife",
+        direction_id: :"1",
+        direction_desc: "Northbound",
+        suffix: nil,
+        waypoint: "Brattle"
+      }
+    ]
+  end
+
+  @doc """
   Generate a shuttle.
   """
   def shuttle_fixture(attrs \\ %{}) do
@@ -70,7 +102,7 @@ defmodule Arrow.ShuttlesFixtures do
       |> Enum.into(%{
         shuttle_name: unique_shuttle_shuttle_name(),
         status: :draft,
-        routes: []
+        routes: shuttle_routes()
       })
       |> Arrow.Shuttles.create_shuttle()
 

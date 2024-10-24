@@ -148,6 +148,52 @@ defmodule Arrow.ShuttlesTest do
       assert shuttle.shuttle_name == "some updated shuttle_name"
     end
 
+    test "update_shuttle/2 with valid route data updates the shuttle route" do
+      shuttle = shuttle_fixture()
+      [route1, route2] = shuttle.routes
+      destination = unique_shuttle_route_destination()
+      updated_route1 = Map.merge(route1, %{destination: destination})
+
+      update_attrs =
+        Map.from_struct(%Shuttle{
+          shuttle
+          | routes: [Map.from_struct(updated_route1), Map.from_struct(route2)]
+        })
+
+      assert {:ok, %Shuttle{} = shuttle} = Shuttles.update_shuttle(shuttle, update_attrs)
+      assert List.first(shuttle.routes).id == route1.id
+      assert List.first(shuttle.routes).destination == destination
+    end
+
+    test "update_shuttle/2 with valid shape_id updates the shuttle route shape" do
+      shuttle = shuttle_fixture()
+      routes = shuttle.routes
+      first_route = List.first(routes)
+      new_shape = shape_fixture()
+      # Updated shape is set by shape_id param
+      updated_route1 = Map.merge(List.first(routes), %{shape_id: new_shape.id})
+      existing_route2 = Enum.at(routes, 1)
+
+      update_attrs =
+        Map.from_struct(%Shuttle{
+          shuttle
+          | routes: [Map.from_struct(updated_route1), Map.from_struct(existing_route2)]
+        })
+
+      assert {:ok, %Shuttle{} = updated_shuttle} = Shuttles.update_shuttle(shuttle, update_attrs)
+      # Shuttle id is the same
+      assert updated_shuttle.id == shuttle.id
+      # Existing route is unchanged
+      assert Enum.at(updated_shuttle.routes, 1) == existing_route2
+      # Route definition id is the same
+      updated_shuttle_route = List.first(updated_shuttle.routes)
+      assert updated_shuttle_route.id == first_route.id
+      # Shape reference is updated
+      refute updated_shuttle_route.shape == first_route.shape
+      assert updated_shuttle_route.shape.id == updated_route1.shape_id
+      assert updated_shuttle_route.shape == new_shape
+    end
+
     test "update_shuttle/2 with invalid data updates for status active returns error changeset" do
       shuttle = shuttle_fixture()
       update_attrs = %{status: :active, shuttle_name: "some updated shuttle_name"}
