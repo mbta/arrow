@@ -4,14 +4,14 @@ defmodule ArrowWeb.ShuttleControllerTest do
   import Arrow.ShuttlesFixtures
 
   @create_attrs %{status: :draft, shuttle_name: "some shuttle_name"}
-  @update_attrs %{status: :active, shuttle_name: "some updated shuttle_name"}
+  @update_attrs %{status: :inactive, shuttle_name: "some updated shuttle_name"}
   @invalid_attrs %{status: nil, shuttle_name: nil}
 
   describe "index" do
     @tag :authenticated
     test "lists all shuttles", %{conn: conn} do
       conn = get(conn, ~p"/shuttles")
-      assert html_response(conn, 200) =~ "Listing Shuttles"
+      assert html_response(conn, 200) =~ "shuttles"
     end
   end
 
@@ -19,7 +19,7 @@ defmodule ArrowWeb.ShuttleControllerTest do
     @tag :authenticated_admin
     test "renders form", %{conn: conn} do
       conn = get(conn, ~p"/shuttles/new")
-      assert html_response(conn, 200) =~ "New Shuttle"
+      assert html_response(conn, 200) =~ "new shuttle"
     end
   end
 
@@ -35,7 +35,7 @@ defmodule ArrowWeb.ShuttleControllerTest do
     @tag :authenticated_admin
     test "renders errors when data is invalid", %{conn: conn} do
       conn = post(conn, ~p"/shuttles", shuttle: @invalid_attrs)
-      assert html_response(conn, 200) =~ "New Shuttle"
+      assert html_response(conn, 200) =~ "new shuttle"
     end
   end
 
@@ -45,7 +45,7 @@ defmodule ArrowWeb.ShuttleControllerTest do
     @tag :authenticated_admin
     test "renders form for editing chosen shuttle", %{conn: conn, shuttle: shuttle} do
       conn = get(conn, ~p"/shuttles/#{shuttle}/edit")
-      assert html_response(conn, 200) =~ "Edit Shuttle"
+      assert html_response(conn, 200) =~ "edit shuttle"
     end
   end
 
@@ -64,7 +64,7 @@ defmodule ArrowWeb.ShuttleControllerTest do
     @tag :authenticated_admin
     test "renders errors when data is invalid", %{conn: conn, shuttle: shuttle} do
       conn = put(conn, ~p"/shuttles/#{shuttle}", shuttle: @invalid_attrs)
-      assert html_response(conn, 200) =~ "Edit Shuttle"
+      assert html_response(conn, 200) =~ "edit shuttle"
     end
   end
 

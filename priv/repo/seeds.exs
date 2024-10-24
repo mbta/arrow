@@ -11,27 +11,34 @@
 # and so on) as they will fail if something goes wrong.
 
 alias Arrow.Repo
-# alias Arrow.Gtfs.Route
+alias Arrow.Gtfs
 alias Arrow.Shuttles.{Shape, Stop, Shuttle, Route, RouteStop}
 
 # For testing locally with dependency on /import-gtfs
-# Repo.insert %Route{
-#   id: "Red-dev",
-#   agency_id: "1",
-#   short_name: nil,
-#   long_name: "Red Line",
-#   desc: "Rapid Transit",
-#   type: :heavy_rail,
-#   url: "https://www.mbta.com/schedules/Red",
-#   color: "DA291C",
-#   text_color: "FFFFFF",
-#   sort_order: 10010,
-#   fare_class: "Rapid Transit",
-#   line_id: "line-Red",
-#   listed_route: nil,
-#   network_id: "rapid_transit"
-# }
-#
+Repo.insert(%Gtfs.Route{
+  id: "Red-dev",
+  agency: %Gtfs.Agency{id: "1", name: "MBTA", url: "https://www.mbta.com", timezone: "ETC"},
+  short_name: nil,
+  long_name: "Red Line",
+  desc: "Rapid Transit",
+  type: :heavy_rail,
+  url: "https://www.mbta.com/schedules/Red",
+  color: "DA291C",
+  text_color: "FFFFFF",
+  sort_order: 10010,
+  fare_class: "Rapid Transit",
+  line: %Gtfs.Line{
+    id: "line-Red",
+    short_name: "Red",
+    long_name: "Red line",
+    desc: "Red line subway",
+    color: "Red",
+    text_color: "Red",
+    sort_order: 0
+  },
+  listed_route: nil,
+  network_id: "rapid_transit"
+})
 
 Repo.insert!(%Shape{
   id: 1,

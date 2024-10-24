@@ -8,7 +8,7 @@ defmodule Arrow.Shuttles.RouteStop do
     field :stop_id, :string
     field :stop_sequence, :integer
     field :time_to_next_stop, :decimal
-    field :shuttle_route_id, :id
+    belongs_to :route, Arrow.Shuttles.Route
 
     timestamps(type: :utc_datetime)
   end
