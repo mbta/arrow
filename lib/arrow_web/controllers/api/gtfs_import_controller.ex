@@ -101,7 +101,7 @@ defmodule ArrowWeb.API.GtfsImportController do
         json(conn, value)
 
       {:error, status, message} ->
-        Logger.warn("GtfsImportController unsuccessful request message=#{inspect(message)}")
+        Logger.warning("GtfsImportController unsuccessful request message=#{inspect(message)}")
         send_resp(conn, status, message)
 
       {:error, message} ->

@@ -42,3 +42,5 @@ npm-debug.log
 
 # Screenshots taken by Wallaby
 /test/integration/screenshots
+
+.elixir_ls

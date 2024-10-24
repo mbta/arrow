@@ -42,7 +42,7 @@ defmodule ArrowWeb.TryApiTokenAuth.Cognito do
           []
 
         response ->
-          :ok = Logger.warn("unexpected_aws_api_response: #{inspect(response)}")
+          :ok = Logger.warning("unexpected_aws_api_response: #{inspect(response)}")
           []
       end
 

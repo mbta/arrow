@@ -17,7 +17,7 @@ defmodule ArrowWeb.TryApiTokenAuth.Keycloak do
       )
     else
       other ->
-        Logger.warn(
+        Logger.warning(
           "unexpected response when logging #{auth_token.username} in via Keycloak API: #{inspect(other)}"
         )
 
