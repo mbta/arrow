@@ -13,7 +13,7 @@
 
   <tbody>
     <%= for %{revisions: [revision]} = disruption <- @disruptions do %>
-      <tr class={if not revision.row_approved, do: 'bg-light-pink'}>
+      <tr class={if not revision.row_approved, do: "bg-light-pink"}>
         <td>
           <%= revision.title %>
         </td>
