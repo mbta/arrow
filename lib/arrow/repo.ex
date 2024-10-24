@@ -22,7 +22,7 @@ defmodule Arrow.Repo do
 
     Keyword.merge(config,
       password: token,
-      ssl_opts: [
+      ssl: [
         cacertfile: Path.join(:code.priv_dir(:arrow), "aws-cert-bundle.pem"),
         verify: :verify_peer,
         server_name_indication: String.to_charlist(hostname),
