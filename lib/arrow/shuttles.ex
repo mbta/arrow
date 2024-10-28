@@ -8,6 +8,7 @@ defmodule Arrow.Shuttles do
   alias Arrow.Repo
   alias ArrowWeb.ErrorHelpers
 
+  alias Arrow.Gtfs.Route, as: GtfsRoute
   alias Arrow.Shuttles.KML
   alias Arrow.Shuttles.Shape
   alias Arrow.Shuttles.ShapesUpload
@@ -244,7 +245,7 @@ defmodule Arrow.Shuttles do
 
   """
   def list_shuttles do
-    Repo.all(Shuttle)
+    Repo.all(Shuttle) |> Repo.preload(routes: [:shape])
   end
 
   @doc """
@@ -261,7 +262,9 @@ defmodule Arrow.Shuttles do
       ** (Ecto.NoResultsError)
 
   """
-  def get_shuttle!(id), do: Repo.get!(Shuttle, id)
+  def get_shuttle!(id) do
+    Repo.get!(Shuttle, id) |> Repo.preload(routes: [:shape])
+  end
 
   @doc """
   Creates a shuttle.
@@ -276,9 +279,15 @@ defmodule Arrow.Shuttles do
 
   """
   def create_shuttle(attrs \\ %{}) do
-    %Shuttle{}
-    |> Shuttle.changeset(attrs)
-    |> Repo.insert()
+    created_shuttle =
+      %Shuttle{}
+      |> Shuttle.changeset(attrs)
+      |> Repo.insert()
+
+    case created_shuttle do
+      {:ok, shuttle} -> {:ok, Repo.preload(shuttle, routes: [:shape])}
+      err -> err
+    end
   end
 
   @doc """
@@ -294,9 +303,15 @@ defmodule Arrow.Shuttles do
 
   """
   def update_shuttle(%Shuttle{} = shuttle, attrs) do
-    shuttle
-    |> Shuttle.changeset(attrs)
-    |> Repo.update()
+    updated_shuttle =
+      shuttle
+      |> Shuttle.changeset(attrs)
+      |> Repo.update()
+
+    case updated_shuttle do
+      {:ok, shuttle} -> {:ok, Repo.preload(shuttle, routes: [:shape])}
+      err -> err
+    end
   end
 
   @doc """
@@ -310,5 +325,10 @@ defmodule Arrow.Shuttles do
   """
   def change_shuttle(%Shuttle{} = shuttle, attrs \\ %{}) do
     Shuttle.changeset(shuttle, attrs)
+  end
+
+  def list_disruptable_routes do
+    query = from(r in GtfsRoute, where: r.type in [:light_rail, :heavy_rail])
+    Repo.all(query)
   end
 end
