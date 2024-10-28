@@ -12,6 +12,7 @@ defmodule ArrowWeb.ShuttleController do
   def new(conn, _params) do
     changeset =
       Shuttles.change_shuttle(%Shuttle{
+        status: :draft,
         routes: [%Shuttles.Route{direction_id: :"0"}, %Shuttles.Route{direction_id: :"1"}]
       })
 
