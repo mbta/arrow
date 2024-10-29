@@ -17,7 +17,7 @@ defmodule ArrowWeb.CoreComponents do
   use Phoenix.Component
 
   alias Phoenix.LiveView.JS
-  import ArrowWeb.Gettext
+  use Gettext, backend: ArrowWeb.Gettext
 
   @doc """
   Renders a modal.
