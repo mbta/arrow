@@ -24,6 +24,7 @@
 - `cp .envrc.example .envrc`
 - Update `.envrc` with your local Postgres username and password
 - Update `.envrc` with your AWS credentials or ensure they are available in your shell
+- Update `.envrc` with the Arrow Dev Keycloak client secret (found in 1Password)
 - `mix ecto.setup`
 - `brew install chromedriver`
 - Add your Arrow API key from https://arrow.mbta.com/mytoken to `.envrc`
