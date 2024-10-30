@@ -19,6 +19,7 @@ defmodule Arrow.Shuttles.RouteStop do
     route_stop
     |> cast(attrs, [:direction_id, :stop_id, :gtfs_stop_id, :stop_sequence, :time_to_next_stop])
     |> validate_required([:direction_id, :stop_sequence, :time_to_next_stop])
+    |> assoc_constraint(:shuttle_route)
     |> assoc_constraint(:stop)
     |> assoc_constraint(:gtfs_stop)
   end
