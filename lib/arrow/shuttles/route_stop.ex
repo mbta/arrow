@@ -7,9 +7,9 @@ defmodule Arrow.Shuttles.RouteStop do
     field :direction_id, Ecto.Enum, values: [:"0", :"1"]
     field :stop_sequence, :integer
     field :time_to_next_stop, :decimal
-    belongs_to :route, Arrow.Shuttles.Route
+    belongs_to :shuttle_route, Arrow.Shuttles.Route
     belongs_to :stop, Arrow.Shuttles.Stop
-    belongs_to :gtfs_stop, Arrow.Gtfs.Stop
+    belongs_to :gtfs_stop, Arrow.Gtfs.Stop, type: :string
 
     timestamps(type: :utc_datetime)
   end

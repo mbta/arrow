@@ -40,6 +40,72 @@ Repo.insert(%Gtfs.Route{
   network_id: "rapid_transit"
 })
 
+Repo.insert(%Gtfs.Stop{
+  id: "141",
+  desc: "Alewife - Busway",
+  lat: 42.395752,
+  lon: -71.141584,
+  location_type: :stop_platform,
+  municipality: "Cambridge",
+  name: "Alewife",
+  platform_name: "Busway",
+  vehicle_type: :bus,
+  wheelchair_boarding: :accessible
+})
+
+Repo.insert(%Gtfs.Stop{
+  id: "2581",
+  at_street: "Highland Avenue",
+  lat: 42.39693,
+  lon: -71.122971,
+  location_type: :stop_platform,
+  municipality: "Somerville",
+  name: "Holland St @ Dover St",
+  on_street: "Holland St",
+  vehicle_type: :bus,
+  wheelchair_boarding: :accessible
+})
+
+Repo.insert(%Gtfs.Stop{
+  id: "110",
+  at_street: "Holyoke Street",
+  lat: 42.373111,
+  lon: -71.117653,
+  location_type: :stop_platform,
+  municipality: "Cambridge",
+  name: "Massachusetts Ave opp Holyoke St",
+  on_street: "Massachusetts Avenue",
+  vehicle_type: :bus,
+  wheelchair_boarding: :accessible
+})
+
+Repo.insert(%Gtfs.Stop{
+  id: "23151",
+  at_street: "Upland Road",
+  lat: 42.388034,
+  lon: -71.119253,
+  location_type: :stop_platform,
+  municipality: "Cambridge",
+  name: "Massachusetts Ave @ Porter Red Line Sta",
+  on_street: "Massachusetts Avenue",
+  vehicle_type: :bus,
+  wheelchair_boarding: :accessible
+})
+
+Repo.insert(%Gtfs.Stop{
+  id: "5104",
+  at_street: "College Avenue",
+  desc: "Davis - Busway",
+  lat: 42.396646,
+  lon: -71.121879,
+  location_type: :stop_platform,
+  municipality: "Somerville",
+  name: "Davis",
+  on_street: "Busway",
+  vehicle_type: :bus,
+  wheelchair_boarding: :accessible
+})
+
 Repo.insert!(%Shape{
   id: 1,
   name: "AlewifeToHarvardViaBrattle-S",
@@ -85,80 +151,6 @@ Repo.insert!(%Route{
   waypoint: "Brattle"
 })
 
-#   direction_id=0
-#   route="Shuttle-AlewifeHarvardViaBrattle"
-#   start_stop="70061"
-#   end_stop="70067"
-Repo.insert!(%RouteStop{
-  direction_id: :"0",
-  stop_sequence: 0,
-  stop_id: "141",
-  time_to_next_stop: 14,
-  shuttle_route_id: 3
-})
-
-Repo.insert!(%RouteStop{
-  direction_id: :"0",
-  stop_sequence: 1,
-  stop_id: "2581",
-  time_to_next_stop: 6,
-  shuttle_route_id: 3
-})
-
-Repo.insert!(%RouteStop{
-  direction_id: :"0",
-  stop_sequence: 2,
-  stop_id: "9070065",
-  time_to_next_stop: 6,
-  shuttle_route_id: 3
-})
-
-Repo.insert!(%RouteStop{
-  direction_id: :"0",
-  stop_sequence: 3,
-  stop_id: "9070072",
-  # last shuttle stop
-  time_to_next_stop: nil,
-  shuttle_route_id: 3
-})
-
-#   direction_id=1
-#   route="Shuttle-AlewifeHarvardViaBrattle"
-#   start_stop="70068"
-#   end_stop="70061"
-Repo.insert!(%RouteStop{
-  direction_id: :"1",
-  stop_sequence: 0,
-  stop_id: "110",
-  time_to_next_stop: 8,
-  shuttle_route_id: 4
-})
-
-Repo.insert!(%RouteStop{
-  direction_id: :"1",
-  stop_sequence: 1,
-  stop_id: "23151",
-  time_to_next_stop: 6,
-  shuttle_route_id: 4
-})
-
-Repo.insert!(%RouteStop{
-  direction_id: :"1",
-  stop_sequence: 2,
-  stop_id: "5104",
-  time_to_next_stop: 13,
-  shuttle_route_id: 4
-})
-
-Repo.insert!(%RouteStop{
-  direction_id: :"1",
-  stop_sequence: 3,
-  stop_id: "141",
-  # last shuttle stop
-  time_to_next_stop: nil,
-  shuttle_route_id: 4
-})
-
 Repo.insert!(%Stop{
   id: 1,
   stop_id: "9070065",
@@ -194,4 +186,78 @@ Repo.insert!(%Stop{
   stop_address: nil,
   on_street: "Brattle Street",
   at_street: "Palmer Street"
+})
+
+#   direction_id=0
+#   route="Shuttle-AlewifeHarvardViaBrattle"
+#   start_stop="70061"
+#   end_stop="70067"
+Repo.insert!(%RouteStop{
+  direction_id: :"0",
+  stop_sequence: 0,
+  gtfs_stop_id: "141",
+  time_to_next_stop: 14,
+  shuttle_route_id: 3
+})
+
+Repo.insert!(%RouteStop{
+  direction_id: :"0",
+  stop_sequence: 1,
+  gtfs_stop_id: "2581",
+  time_to_next_stop: 6,
+  shuttle_route_id: 3
+})
+
+Repo.insert!(%RouteStop{
+  direction_id: :"0",
+  stop_sequence: 2,
+  stop_id: 1,
+  time_to_next_stop: 6,
+  shuttle_route_id: 3
+})
+
+Repo.insert!(%RouteStop{
+  direction_id: :"0",
+  stop_sequence: 3,
+  stop_id: 2,
+  # last shuttle stop
+  time_to_next_stop: nil,
+  shuttle_route_id: 3
+})
+
+#   direction_id=1
+#   route="Shuttle-AlewifeHarvardViaBrattle"
+#   start_stop="70068"
+#   end_stop="70061"
+Repo.insert!(%RouteStop{
+  direction_id: :"1",
+  stop_sequence: 0,
+  gtfs_stop_id: "110",
+  time_to_next_stop: 8,
+  shuttle_route_id: 4
+})
+
+Repo.insert!(%RouteStop{
+  direction_id: :"1",
+  stop_sequence: 1,
+  gtfs_stop_id: "23151",
+  time_to_next_stop: 6,
+  shuttle_route_id: 4
+})
+
+Repo.insert!(%RouteStop{
+  direction_id: :"1",
+  stop_sequence: 2,
+  gtfs_stop_id: "5104",
+  time_to_next_stop: 13,
+  shuttle_route_id: 4
+})
+
+Repo.insert!(%RouteStop{
+  direction_id: :"1",
+  stop_sequence: 3,
+  gtfs_stop_id: "141",
+  # last shuttle stop
+  time_to_next_stop: nil,
+  shuttle_route_id: 4
 })
