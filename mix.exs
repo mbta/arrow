@@ -14,11 +14,10 @@ defmodule Arrow.MixProject do
       releases: releases(),
       dialyzer: [
         plt_add_apps: [:mix],
-        plt_add_deps: :transitive,
+        plt_add_deps: :app_tree,
         flags: [
           :unmatched_returns
-        ],
-        ignore_warnings: ".dialyzer.ignore-warnings"
+        ]
       ],
       preferred_cli_env: ["test.integration": :test],
       test_coverage: [tool: LcovEx, ignore_paths: ["deps/"]]
@@ -60,11 +59,11 @@ defmodule Arrow.MixProject do
       {:gettext, "~> 0.11"},
       {:guardian, "~> 2.0"},
       {:hackney, "~> 1.9"},
-      {:httpoison, "~> 1.6"},
+      {:httpoison, "~> 2.2"},
       {:ja_serializer, github: "mbta/ja_serializer", branch: "master"},
       {:jason, "~> 1.0"},
       {:lcov_ex, "~> 0.2", only: [:dev, :test], runtime: false},
-      {:mox, "~> 1.0.0", only: :test},
+      {:mox, "~> 1.2", only: :test},
       {:oban, "~> 2.18"},
       {:phoenix_ecto, "~> 4.0"},
       {:phoenix_live_reload, "~> 1.5", only: :dev},
@@ -76,8 +75,8 @@ defmodule Arrow.MixProject do
       {:phoenix, "~> 1.7.12"},
       {:plug_cowboy, "~> 2.1"},
       {:telemetry, "~> 1.2", override: true},
-      {:telemetry_poller, "~> 0.4"},
-      {:telemetry_metrics, "~> 0.4"},
+      {:telemetry_poller, "~> 1.1"},
+      {:telemetry_metrics, "~> 1.0"},
       {:postgrex, ">= 0.0.0"},
       # If react_phoenix changes, check assets/src/ReactPhoenix.js, too
       {:react_phoenix, "1.3.1"},
@@ -85,8 +84,8 @@ defmodule Arrow.MixProject do
       {:ueberauth_cognito, "0.4.0"},
       {:ueberauth_oidcc, "~> 0.4.0"},
       {:ueberauth, "~> 0.10"},
-      {:wallaby, "~> 0.30.6", runtime: false, only: :test},
-      {:sentry, "~> 8.0"},
+      {:wallaby, "~> 0.30", runtime: false, only: :test},
+      {:sentry, "~> 10.7"},
       {:tailwind, "~> 0.2", runtime: Mix.env() == :dev},
       {:heroicons,
        github: "tailwindlabs/heroicons",

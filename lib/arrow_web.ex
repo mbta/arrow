@@ -32,7 +32,7 @@ defmodule ArrowWeb do
   def channel do
     quote do
       use Phoenix.Channel
-      import ArrowWeb.Gettext
+      use Gettext, backend: ArrowWeb.Gettext
     end
   end
 
@@ -41,7 +41,7 @@ defmodule ArrowWeb do
       use Phoenix.Controller, namespace: ArrowWeb
 
       import Plug.Conn
-      import ArrowWeb.Gettext
+      use Gettext, backend: ArrowWeb.Gettext
       alias ArrowWeb.Router.Helpers, as: Routes
 
       unquote(verified_routes())
@@ -63,7 +63,7 @@ defmodule ArrowWeb do
       use Phoenix.HTML
 
       import ArrowWeb.ErrorHelpers
-      import ArrowWeb.Gettext
+      use Gettext, backend: ArrowWeb.Gettext
       alias ArrowWeb.Router.Helpers, as: Routes
 
       # Import the `react_component` helper
@@ -77,7 +77,7 @@ defmodule ArrowWeb do
       import Phoenix.HTML
       # Core UI components and translation
       import ArrowWeb.CoreComponents
-      import ArrowWeb.Gettext
+      use Gettext, backend: ArrowWeb.Gettext
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS

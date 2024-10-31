@@ -1,6 +1,8 @@
 defmodule ArrowWeb.API.GtfsImportController do
   use ArrowWeb, :controller
 
+  use Plug.ErrorHandler
+
   require Logger
   import Ecto.Query
 
@@ -94,6 +96,21 @@ defmodule ArrowWeb.API.GtfsImportController do
     check_jobs(conn, %{"status_filter" => "all"})
   end
 
+  # Since all of this controller's endpoints are expected to be used exclusively
+  # by developers, in CI workflows, with authentication, we can send specific
+  # error info back so that it doesn't have to be hunted down separately in
+  # splunk. (It will still be logged to splunk as well, though.)
+  @impl Plug.ErrorHandler
+  def handle_errors(conn, %{reason: error}) when is_exception(error) do
+    send_resp(conn, conn.status, Exception.message(error))
+  end
+
+  def handle_errors(conn, error_info) do
+    # A throw or an exit--unlikely to happen.
+    details = Exception.format(error_info.kind, error_info.reason, error_info.stack)
+    send_resp(conn, conn.status, "Arrow encountered a problem:\n#{details}")
+  end
+
   @spec to_resp({:ok, term} | error_tuple, Plug.Conn.t()) :: Plug.Conn.t()
   defp to_resp(result, conn) do
     case result do
@@ -101,7 +118,7 @@ defmodule ArrowWeb.API.GtfsImportController do
         json(conn, value)
 
       {:error, status, message} ->
-        Logger.warn("GtfsImportController unsuccessful request message=#{inspect(message)}")
+        Logger.warning("GtfsImportController unsuccessful request message=#{inspect(message)}")
         send_resp(conn, status, message)
 
       {:error, message} ->
