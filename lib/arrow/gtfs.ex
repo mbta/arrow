@@ -4,10 +4,10 @@ defmodule Arrow.Gtfs do
   """
 
   require Logger
-  alias Arrow.ForeignKeyConstraint
   alias Arrow.Gtfs.Importable
   alias Arrow.Gtfs.JobHelper
   alias Arrow.Repo
+  alias Arrow.Repo.ForeignKeyConstraint
 
   @import_timeout_ms :timer.minutes(10)
 

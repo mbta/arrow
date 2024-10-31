@@ -1,4 +1,4 @@
-defmodule Arrow.ForeignKeyConstraint do
+defmodule Arrow.Repo.ForeignKeyConstraint do
   @moduledoc """
   Schema allowing Arrow to introspect its DB's foreign key constraints.
   """
@@ -44,7 +44,7 @@ defmodule Arrow.ForeignKeyConstraint do
       ]
   """
   @spec external_constraints_referencing_tables(list(String.t() | atom)) :: list(t())
-  def external_constraints_referencing_tables(tables) do
+  def external_constraints_referencing_tables(tables) when is_list(tables) do
     from(fk in __MODULE__,
       where: fk.referenced_table in ^tables,
       where: fk.origin_table not in ^tables
@@ -58,13 +58,15 @@ defmodule Arrow.ForeignKeyConstraint do
   This function should not be used to permanently drop a constraint--
   use Ecto's migration utilities to do that.
   """
-  @spec drop(t()) :: term
+  @spec drop(t()) :: :ok
   def drop(%__MODULE__{} = fk) do
     if Repo.in_transaction?() do
       Repo.query!("""
       ALTER TABLE "#{fk.origin_table}"
         DROP CONSTRAINT "#{fk.name}"
       """)
+
+      :ok
     else
       raise "must be in a transaction"
     end
@@ -78,13 +80,15 @@ defmodule Arrow.ForeignKeyConstraint do
 
   This is intended only for re-adding a previously, temporarily dropped constraint.
   """
-  @spec add(t()) :: term
+  @spec add(t()) :: :ok
   def add(%__MODULE__{} = fk) do
     if Repo.in_transaction?() do
       Repo.query!("""
       ALTER TABLE "#{fk.origin_table}"
         ADD CONSTRAINT "#{fk.name}" #{fk.definition}
       """)
+
+      :ok
     else
       raise "must be in a transaction"
     end
