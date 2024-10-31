@@ -37,7 +37,7 @@ defmodule Arrow.Telemetry do
         :error ->
           message = Exception.message(meta.reason)
           full_details = Exception.format(meta.kind, meta.reason, meta.stacktrace)
-          "message=#{message}\n#{full_details}"
+          "message=#{inspect(message)}\n#{full_details}"
 
         _other ->
           "\n#{Exception.format(meta.kind, meta.reason, meta.stacktrace)}"

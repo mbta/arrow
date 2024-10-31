@@ -49,7 +49,7 @@ defmodule Arrow.Gtfs.JobHelper do
 
     archive_version = Map.fetch!(job.args, "archive_version")
 
-    "job_id=#{job.id} archive_s3_object_key=#{s3_object_key} archive_version=\"#{archive_version}\" job_worker=#{inspect(job.worker)}"
+    "job_id=#{job.id} archive_s3_object_key=#{inspect(s3_object_key)} archive_version=#{inspect(archive_version)} job_worker=#{inspect(job.worker)}"
   end
 
   defp job_filters do
