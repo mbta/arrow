@@ -41,7 +41,7 @@ defmodule Arrow.Gtfs do
           :ok
 
         {:error, reason} = error ->
-          Logger.warn("GTFS import or validation failed reason=#{inspect(reason)} #{job_info}")
+          Logger.warning("GTFS import or validation failed reason=#{inspect(reason)} #{job_info}")
 
           error
       end
@@ -52,7 +52,7 @@ defmodule Arrow.Gtfs do
         :ok
 
       {:error, reason} = error ->
-        Logger.warn("GTFS import or validation failed reason=#{inspect(reason)} #{job_info}")
+        Logger.warning("GTFS import or validation failed reason=#{inspect(reason)} #{job_info}")
 
         error
     end

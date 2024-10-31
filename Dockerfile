@@ -1,6 +1,6 @@
-ARG ELIXIR_VERSION=1.14.5
-ARG ERLANG_VERSION=26.1.2
-ARG DEBIAN_VERSION=bullseye-20230612
+ARG ELIXIR_VERSION=1.17.3
+ARG ERLANG_VERSION=27.1.2
+ARG DEBIAN_VERSION=bullseye-20241016
 
 FROM hexpm/elixir:$ELIXIR_VERSION-erlang-$ERLANG_VERSION-debian-$DEBIAN_VERSION as elixir-builder
 
@@ -39,6 +39,7 @@ COPY config/config.exs config/
 COPY config/prod.exs config/
 
 RUN mix deps.compile
+RUN mix sentry.package_source_code
 
 COPY assets assets
 RUN npm ci --prefix assets
