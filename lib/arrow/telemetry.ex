@@ -43,7 +43,7 @@ defmodule Arrow.Telemetry do
           "\n#{Exception.format(meta.kind, meta.reason, meta.stacktrace)}"
       end
 
-    Logger.warn(
+    Logger.warning(
       "Oban job exception #{get_job_info(meta.job)} state=#{meta.state} result=#{inspect(meta.result)} duration=#{measures.duration} memory=#{measures.memory} queue_time=#{measures.queue_time} #{details}"
     )
   end
