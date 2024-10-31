@@ -5,6 +5,7 @@ defmodule Arrow.Gtfs do
 
   require Logger
   alias Arrow.Gtfs.Importable
+  alias Arrow.Gtfs.JobHelper
   alias Arrow.Repo
 
   @import_timeout_ms :timer.minutes(10)
@@ -24,51 +25,37 @@ defmodule Arrow.Gtfs do
   @spec import(Unzip.t(), String.t(), String.t() | nil, Oban.Job.t(), boolean) ::
           :ok | {:error, term}
   def import(unzip, new_version, current_version, job, dry_run? \\ false) do
-    Logger.info("GTFS import or validation job starting #{job_logging_params(job)}")
+    job_info = JobHelper.logging_params(job)
+
+    Logger.info("GTFS import or validation job starting #{job_info}")
 
     with :ok <- validate_required_files(unzip),
          :ok <- validate_version_change(new_version, current_version) do
       case import_transaction(unzip, dry_run?) do
         {:ok, _} ->
-          Logger.info("GTFS import success #{job_logging_params(job)}")
+          Logger.info("GTFS import success #{job_info}")
           :ok
 
         {:error, :dry_run_success} ->
-          Logger.info("GTFS validation success #{job_logging_params(job)}")
+          Logger.info("GTFS validation success #{job_info}")
           :ok
 
         {:error, reason} = error ->
-          Logger.warn(
-            "GTFS import or validation failed #{job_logging_params(job)} reason=#{inspect(reason)}"
-          )
+          Logger.warn("GTFS import or validation failed reason=#{inspect(reason)} #{job_info}")
 
           error
       end
     else
       :unchanged ->
-        Logger.info("GTFS import skipped due to unchanged version #{job_logging_params(job)}")
+        Logger.info("GTFS import skipped due to unchanged version #{job_info}")
 
         :ok
 
       {:error, reason} = error ->
-        Logger.warn(
-          "GTFS import or validation failed #{job_logging_params(job)} reason=#{inspect(reason)}"
-        )
+        Logger.warn("GTFS import or validation failed reason=#{inspect(reason)} #{job_info}")
 
         error
     end
-  end
-
-  defp job_logging_params(job) do
-    s3_object_key =
-      job.args
-      |> Map.fetch!("s3_uri")
-      |> URI.parse()
-      |> then(& &1.path)
-
-    archive_version = Map.fetch!(job.args, "archive_version")
-
-    "job_id=#{job.id} archive_s3_object_key=#{s3_object_key} archive_version=\"#{archive_version}\" job_worker=#{job.worker}"
   end
 
   defp import_transaction(unzip, dry_run?) do
