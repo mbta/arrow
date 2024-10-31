@@ -17,13 +17,6 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: public; Type: SCHEMA; Schema: -; Owner: -
---
-
--- *not* creating schema, since initdb creates it
-
-
---
 -- Name: day_name; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -406,6 +399,19 @@ CREATE SEQUENCE public.disruptions_id_seq1
 --
 
 ALTER SEQUENCE public.disruptions_id_seq1 OWNED BY public.disruptions.id;
+
+
+--
+-- Name: foreign_key_constraints; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.foreign_key_constraints AS
+ SELECT pgc.conname AS name,
+    ((pgc.conrelid)::regclass)::text AS origin_table,
+    ((pgc.confrelid)::regclass)::text AS referenced_table,
+    pg_get_constraintdef(pgc.oid, true) AS definition
+   FROM pg_constraint pgc
+  WHERE (pgc.contype = 'f'::"char");
 
 
 --
@@ -1731,3 +1737,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20241010164333);
 INSERT INTO public."schema_migrations" (version) VALUES (20241010164455);
 INSERT INTO public."schema_migrations" (version) VALUES (20241010164555);
 INSERT INTO public."schema_migrations" (version) VALUES (20241018202407);
+INSERT INTO public."schema_migrations" (version) VALUES (20241030181351);
