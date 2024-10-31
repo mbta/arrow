@@ -2,14 +2,4 @@ defmodule ArrowWeb.ShuttleView do
   use ArrowWeb, :html
 
   embed_templates "shuttle_html/*"
-
-  @doc """
-  Renders a shuttle form.
-  """
-  attr :changeset, Ecto.Changeset, required: true
-  attr :action, :string, required: true
-  attr :gtfs_disruptable_routes, :list, required: true
-  attr :shapes, :list, required: true
-
-  def shuttle_form(assigns)
 end

@@ -7,7 +7,10 @@ defmodule Arrow.Shuttles.Shuttle do
     field :status, Ecto.Enum, values: [:draft, :active, :inactive]
     field :shuttle_name, :string
     field :disrupted_route_id, :string
-    has_many :routes, Arrow.Shuttles.Route, preload_order: [asc: :direction_id]
+
+    has_many :routes, Arrow.Shuttles.Route,
+      preload_order: [asc: :direction_id],
+      on_replace: :delete
 
     timestamps(type: :utc_datetime)
   end
