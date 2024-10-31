@@ -4,6 +4,7 @@ defmodule Arrow.Gtfs do
   """
 
   require Logger
+  alias Arrow.ForeignKeyConstraint
   alias Arrow.Gtfs.Importable
   alias Arrow.Repo
 
@@ -73,8 +74,13 @@ defmodule Arrow.Gtfs do
 
   defp import_transaction(unzip, dry_run?) do
     transaction = fn ->
-      _ = truncate_all()
+      external_fkeys = get_external_fkeys()
+      drop_external_fkeys(external_fkeys)
+
+      truncate_all()
       import_all(unzip)
+
+      add_external_fkeys(external_fkeys)
 
       if dry_run? do
         # Set any deferred constraints to run now, instead of on transaction commit,
@@ -94,9 +100,11 @@ defmodule Arrow.Gtfs do
     result
   end
 
+  @spec truncate_all() :: :ok
   defp truncate_all do
     tables = Enum.map_join(importable_schemas(), ", ", & &1.__schema__(:source))
-    Repo.query!("TRUNCATE #{tables}")
+    _ = Repo.query!("TRUNCATE #{tables}")
+    :ok
   end
 
   defp import_all(unzip) do
@@ -153,5 +161,47 @@ defmodule Arrow.Gtfs do
     importable_schemas()
     |> Enum.flat_map(& &1.filenames())
     |> MapSet.new()
+  end
+
+  defp get_external_fkeys do
+    importable_schemas()
+    |> Enum.map(& &1.__schema__(:source))
+    |> ForeignKeyConstraint.external_constraints_referencing_tables()
+  end
+
+  @spec drop_external_fkeys(list(ForeignKeyConstraint.t())) :: :ok
+  defp drop_external_fkeys(external_fkeys) do
+    # To allow all GTFS tables to be truncated, we first need to
+    # temporarily drop all foreign key constraints referencing them
+    # from non-GTFS tables.
+    fkey_names = Enum.map_join(external_fkeys, ",", & &1.name)
+
+    Logger.info(
+      "temporarily dropping external foreign keys referencing GTFS tables fkey_names=#{fkey_names}"
+    )
+
+    Enum.each(external_fkeys, &ForeignKeyConstraint.drop/1)
+
+    Logger.info("finished dropping external foreign keys referencing GTFS tables")
+
+    :ok
+  end
+
+  @spec add_external_fkeys(list(ForeignKeyConstraint.t())) :: :ok
+  defp add_external_fkeys(external_fkeys) do
+    fkey_names = Enum.map_join(external_fkeys, ",", & &1.name)
+
+    Logger.info(
+      "re-adding external foreign keys referencing GTFS tables fkey_names=#{fkey_names}"
+    )
+
+    Enum.each(external_fkeys, fn fkey ->
+      Logger.info("re-adding foreign key fkey_name=#{fkey.name}")
+      ForeignKeyConstraint.add(fkey)
+    end)
+
+    Logger.info("finished re-adding external foreign keys referencing GTFS tables")
+
+    :ok
   end
 end
