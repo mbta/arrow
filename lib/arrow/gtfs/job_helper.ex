@@ -20,7 +20,7 @@ defmodule Arrow.Gtfs.JobHelper do
           :all | :queued | :executing | :succeeded | :failed | :cancelled | :not_done | :done
 
   @doc """
-  Returns details about GTFS import jobs.
+  Returns details about GTFS import/validation jobs in a JSON-encodable list of maps.
   """
   @spec check_jobs(module, status_filter) :: list(map)
   def check_jobs(worker_mod, status_filter) do
@@ -34,6 +34,22 @@ defmodule Arrow.Gtfs.JobHelper do
         ~w[id state queue worker args errors tags attempt attempted_by max_attempts priority inserted_at scheduled_at attempted_at completed_at discarded_at cancelled_at]a
       )
     )
+  end
+
+  @doc """
+  Returns relevant info about an import/validation job, to be included in a log message.
+  """
+  @spec logging_params(Oban.Job.t()) :: String.t()
+  def logging_params(job) do
+    s3_object_key =
+      job.args
+      |> Map.fetch!("s3_uri")
+      |> URI.parse()
+      |> then(& &1.path)
+
+    archive_version = Map.fetch!(job.args, "archive_version")
+
+    "job_id=#{job.id} archive_s3_object_key=#{inspect(s3_object_key)} archive_version=#{inspect(archive_version)} job_worker=#{inspect(job.worker)}"
   end
 
   defp job_filters do
