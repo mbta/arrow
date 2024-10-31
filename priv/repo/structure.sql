@@ -17,6 +17,13 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: public; Type: SCHEMA; Schema: -; Owner: -
+--
+
+-- *not* creating schema, since initdb creates it
+
+
+--
 -- Name: day_name; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -854,7 +861,7 @@ ALTER SEQUENCE public.shuttle_routes_id_seq OWNED BY public.shuttle_routes.id;
 CREATE TABLE public.shuttles (
     id bigint NOT NULL,
     shuttle_name character varying(255),
-    disrupted_route_id character varying(255),
+    disrupted_route_id character varying,
     status character varying(255),
     inserted_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL
@@ -1675,6 +1682,14 @@ ALTER TABLE ONLY public.shuttle_routes
 
 
 --
+-- Name: shuttles shuttles_disrupted_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shuttles
+    ADD CONSTRAINT shuttles_disrupted_route_id_fkey FOREIGN KEY (disrupted_route_id) REFERENCES public.gtfs_routes(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -1715,3 +1730,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20241003182524);
 INSERT INTO public."schema_migrations" (version) VALUES (20241010164333);
 INSERT INTO public."schema_migrations" (version) VALUES (20241010164455);
 INSERT INTO public."schema_migrations" (version) VALUES (20241010164555);
+INSERT INTO public."schema_migrations" (version) VALUES (20241018202407);

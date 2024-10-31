@@ -25,8 +25,13 @@
       <div class={"col-md-12 " <> inactive_class}>
         <div class="mb-3">
           <div class="m-disruption-details_flex align-items-center">
-            <div class="w-50"><h4>approval status</h4></div>
-            <span role="approval" class={"m-disruption-details_approval-status m-disruption-details_approval-status-info w-75 " <> inactive_class}>
+            <div class="w-50">
+              <h4>approval status</h4>
+            </div>
+            <span
+              role="approval"
+              class={"m-disruption-details_approval-status m-disruption-details_approval-status-info w-75 " <> inactive_class}
+            >
               <%= if @revision.row_approved, do: "approved", else: "pending" %>
             </span>
           </div>
@@ -36,8 +41,10 @@
           <h4>date range</h4>
 
           <div class="pl-3">
-            <%= format_date(@revision.start_date, "(no start date)") %>
-            – <%= format_date(@revision.end_date, "(no end date)") %>
+            <%= format_date(@revision.start_date, "(no start date)") %> – <%= format_date(
+              @revision.end_date,
+              "(no end date)"
+            ) %>
           </div>
         </div>
 
@@ -46,7 +53,7 @@
 
           <div class="pl-3">
             <%= for {day, times} <- DaysOfWeek.describe(@revision.days_of_week) do %>
-              <div><b><%= day %></b><br /><%= times %></div>
+              <div><b><%= day %></b> <br /><%= times %></div>
             <% end %>
           </div>
         </div>
@@ -57,8 +64,8 @@
 
             <div class="pl-3">
               <%= @revision.trip_short_names
-                  |> Enum.map(& &1.trip_short_name)
-                  |> Enum.join(", ") %>
+              |> Enum.map(& &1.trip_short_name)
+              |> Enum.join(", ") %>
             </div>
           </div>
         <% end %>
@@ -83,8 +90,10 @@
       <div class="m-disruption-details_flex align-items-center">
         <%= if Permissions.authorize?(:update_disruption, @user) do %>
           <%= form_tag Routes.disruption_path(@conn, :update_row_status, @revision.disruption_id), method: "put" do %>
-            <%= hidden_input :revision, :row_approved, value: !@revision.row_approved %>
-            <%= submit mark_as_approved_or_pending(@revision.row_approved), class: "btn btn-primary"%>
+            <%= hidden_input(:revision, :row_approved, value: !@revision.row_approved) %>
+            <%= submit(mark_as_approved_or_pending(@revision.row_approved),
+              class: "btn btn-primary"
+            ) %>
           <% end %>
           <.link class="btn btn-tertiary" navigate={Routes.disruption_path(@conn, :edit, @id)}>
             <._button_description conn={@conn} kind={:edit} />

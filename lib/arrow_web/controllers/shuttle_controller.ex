@@ -10,8 +10,20 @@ defmodule ArrowWeb.ShuttleController do
   end
 
   def new(conn, _params) do
-    changeset = Shuttles.change_shuttle(%Shuttle{})
-    render(conn, :new, changeset: changeset)
+    changeset =
+      Shuttles.change_shuttle(%Shuttle{
+        status: :draft,
+        routes: [%Shuttles.Route{direction_id: :"0"}, %Shuttles.Route{direction_id: :"1"}]
+      })
+
+    gtfs_disruptable_routes = Shuttles.list_disruptable_routes()
+    shapes = Shuttles.list_shapes()
+
+    render(conn, :new,
+      changeset: changeset,
+      gtfs_disruptable_routes: gtfs_disruptable_routes,
+      shapes: shapes
+    )
   end
 
   def create(conn, %{"shuttle" => shuttle_params}) do
@@ -22,7 +34,14 @@ defmodule ArrowWeb.ShuttleController do
         |> redirect(to: ~p"/shuttles/#{shuttle}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :new, changeset: changeset)
+        gtfs_disruptable_routes = Shuttles.list_disruptable_routes()
+        shapes = Shuttles.list_shapes()
+
+        render(conn, :new,
+          changeset: changeset,
+          gtfs_disruptable_routes: gtfs_disruptable_routes,
+          shapes: shapes
+        )
     end
   end
 
@@ -34,7 +53,15 @@ defmodule ArrowWeb.ShuttleController do
   def edit(conn, %{"id" => id}) do
     shuttle = Shuttles.get_shuttle!(id)
     changeset = Shuttles.change_shuttle(shuttle)
-    render(conn, :edit, shuttle: shuttle, changeset: changeset)
+    gtfs_disruptable_routes = Shuttles.list_disruptable_routes()
+    shapes = Shuttles.list_shapes()
+
+    render(conn, :edit,
+      shuttle: shuttle,
+      changeset: changeset,
+      gtfs_disruptable_routes: gtfs_disruptable_routes,
+      shapes: shapes
+    )
   end
 
   def update(conn, %{"id" => id, "shuttle" => shuttle_params}) do
@@ -47,7 +74,15 @@ defmodule ArrowWeb.ShuttleController do
         |> redirect(to: ~p"/shuttles/#{shuttle}")
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, :edit, shuttle: shuttle, changeset: changeset)
+        gtfs_disruptable_routes = Shuttles.list_disruptable_routes()
+        shapes = Shuttles.list_shapes()
+
+        render(conn, :edit,
+          shuttle: shuttle,
+          changeset: changeset,
+          gtfs_disruptable_routes: gtfs_disruptable_routes,
+          shapes: shapes
+        )
     end
   end
 end
