@@ -61,10 +61,11 @@ defmodule Arrow.Repo.ForeignKeyConstraint do
   @spec drop(t()) :: :ok
   def drop(%__MODULE__{} = fk) do
     if Repo.in_transaction?() do
-      Repo.query!("""
-      ALTER TABLE "#{fk.origin_table}"
-        DROP CONSTRAINT "#{fk.name}"
-      """)
+      _ =
+        Repo.query!("""
+        ALTER TABLE "#{fk.origin_table}"
+          DROP CONSTRAINT "#{fk.name}"
+        """)
 
       :ok
     else
@@ -83,10 +84,11 @@ defmodule Arrow.Repo.ForeignKeyConstraint do
   @spec add(t()) :: :ok
   def add(%__MODULE__{} = fk) do
     if Repo.in_transaction?() do
-      Repo.query!("""
-      ALTER TABLE "#{fk.origin_table}"
-        ADD CONSTRAINT "#{fk.name}" #{fk.definition}
-      """)
+      _ =
+        Repo.query!("""
+        ALTER TABLE "#{fk.origin_table}"
+          ADD CONSTRAINT "#{fk.name}" #{fk.definition}
+        """)
 
       :ok
     else
