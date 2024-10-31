@@ -1,4 +1,4 @@
-defmodule Arrow.Repo.Migrations.AddGtfsForeignKeysView do
+defmodule Arrow.Repo.Migrations.AddForeignKeysView do
   use Ecto.Migration
 
   def up do
