@@ -105,7 +105,7 @@ defmodule Arrow.Gtfs.Archive do
     get_object_op = ExAws.S3.get_object(bucket, object_key)
 
     case apply(mod, fun, [get_object_op]) do
-      {:ok, %{body: zip_data}} ->
+      {:ok, %{body: zip_data, status_code: 200}} ->
         zip_data
         |> List.wrap()
         |> from_iodata()

@@ -1,4 +1,8 @@
 defmodule ArrowWeb.Telemetry do
+  @moduledoc """
+  Provides data for the LiveDashboard "metrics" tab.
+  """
+
   use Supervisor
   import Telemetry.Metrics
 
