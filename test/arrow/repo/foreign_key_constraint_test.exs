@@ -52,6 +52,18 @@ defmodule Arrow.Repo.ForeignKeyConstraintTest do
     :ok
   end
 
+  describe "schema" do
+    test "exposes all foreign key constraints" do
+      fkeys = Repo.all(from fk in ForeignKeyConstraint, select: fk.name)
+      assert length(fkeys) >= 4
+
+      assert MapSet.subset?(
+               MapSet.new(~w[a_b_id_fkey a_c_id_fkey b_c_id_fkey c_a_id_fkey]),
+               MapSet.new(fkeys)
+             )
+    end
+  end
+
   describe "external_constraints_referencing_tables/1" do
     test "returns fkeys referencing one of the given tables from an external table" do
       assert fkeys = ForeignKeyConstraint.external_constraints_referencing_tables(["b", "c"])
