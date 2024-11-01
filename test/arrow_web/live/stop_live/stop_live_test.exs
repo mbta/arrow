@@ -4,6 +4,8 @@ defmodule ArrowWeb.StopLiveTest do
   import Phoenix.LiveViewTest
   import Arrow.StopsFixtures
 
+  alias Arrow.Shuttles.Stop
+
   @create_attrs %{
     stop_id: "some stop_id",
     stop_name: "some stop_name",
@@ -64,19 +66,20 @@ defmodule ArrowWeb.StopLiveTest do
 
   describe "create stop" do
     @tag :authenticated_admin
-    test "redirects to index when data is valid", %{conn: conn} do
+    test "creates stop and redirects to index when data is valid", %{conn: conn} do
       {:ok, new_live, _html} = live(conn, ~p"/stops/new")
 
       form =
         new_live
         |> form("#stop-form", stop: @create_attrs)
 
-      assert render_submit(form) =~ ~r/phx-trigger-action/
+      render_submit(form)
 
-      conn = follow_trigger_action(form, conn)
-      assert conn.method == "POST"
-      params = Enum.map(@create_attrs, fn {k, v} -> {"#{k}", v} end) |> Enum.into(%{})
-      assert conn.params == %{"stop" => params}
+      assert_redirected(new_live, "/stops")
+
+      stop_id = @create_attrs[:stop_id]
+
+      assert %Stop{stop_id: ^stop_id} = Arrow.Stops.get_stop_by_stop_id(stop_id)
     end
 
     @tag :authenticated_admin
@@ -110,19 +113,19 @@ defmodule ArrowWeb.StopLiveTest do
     setup [:create_stop]
 
     @tag :authenticated_admin
-    test "redirects when data is valid", %{conn: conn, stop: stop} do
+    test "updates and redirects when data is valid", %{conn: conn, stop: stop} do
       {:ok, edit_live, _html} = live(conn, ~p"/stops/#{stop}/edit")
 
       form =
         edit_live
         |> form("#stop-form", stop: @update_attrs)
+        |> render_submit()
 
-      assert render_submit(form) =~ ~r/phx-trigger-action/
+      assert_redirected(edit_live, ~p"/stops")
 
-      conn = follow_trigger_action(form, conn)
-      assert conn.method == "POST"
-      params = Enum.map(@update_attrs, fn {k, v} -> {"#{k}", v} end) |> Enum.into(%{})
-      assert conn.params == %{"stop" => params}
+      stop_id = @update_attrs[:stop_id]
+
+      assert %Stop{stop_id: ^stop_id} = Arrow.Stops.get_stop_by_stop_id(stop_id)
     end
 
     @tag :authenticated_admin

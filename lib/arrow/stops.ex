@@ -42,6 +42,24 @@ defmodule Arrow.Stops do
   def get_stop!(id), do: Repo.get!(Stop, id)
 
   @doc """
+  Gets a single stop by stop_id.
+
+  Returns nil if no stop exists with the given stop_id.
+
+  ## Examples
+
+      iex> get_stop_by_stop_id("123")
+      %Stop{}
+
+      iex> get_stop_by_stop_id("456")
+      nil
+
+  """
+  def get_stop_by_stop_id(stop_id) do
+    Repo.get_by(Stop, stop_id: stop_id)
+  end
+
+  @doc """
   Creates a stop.
 
   ## Examples
