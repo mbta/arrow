@@ -103,14 +103,13 @@ defmodule ArrowWeb.StopViewLive do
   def mount(_params, session, socket) do
     logout_url = session["logout_url"]
     form = to_form(Stops.change_stop(%Stop{}))
-    stops = Stops.list_stops()
 
     socket =
       socket
       |> assign(:form, form)
       |> assign(:form_action, "create")
       |> assign(:http_action, ~p"/stops")
-      |> assign(:stops, stops)
+      |> assign(:stop, %Stop{})
       |> assign(:title, "create shuttle stop")
       |> assign(:stop_map_props, %{})
       |> assign(:logout_url, logout_url)
@@ -130,7 +129,7 @@ defmodule ArrowWeb.StopViewLive do
   end
 
   def handle_event("validate", %{"stop" => stop_params}, socket) do
-    form = Stops.change_stop(%Stop{}, stop_params) |> to_form(action: :validate)
+    form = Stops.change_stop(socket.assigns.stop, stop_params) |> to_form(action: :validate)
 
     {:noreply,
      socket
