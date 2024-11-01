@@ -122,7 +122,7 @@ defmodule ArrowWeb.StopLiveTest do
       conn = follow_trigger_action(form, conn)
       assert conn.method == "POST"
       params = Enum.map(@update_attrs, fn {k, v} -> {"#{k}", v} end) |> Enum.into(%{})
-      assert conn.params == %{"stop" => params, "id" => "#{stop.id}"}
+      assert conn.params == %{"stop" => params}
     end
 
     @tag :authenticated_admin
