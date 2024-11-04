@@ -17,7 +17,14 @@ defmodule ArrowWeb.ShuttleViewLive do
 
   def shuttle_form(assigns) do
     ~H"""
-    <.simple_form :let={f} for={@form} as={:shuttle_route} action={@http_action} phx-submit={@action}>
+    <.simple_form
+      :let={f}
+      for={@form}
+      as={:shuttle_route}
+      action={@http_action}
+      phx-submit={@action}
+      id="shuttle-form"
+    >
       <div class="form-group">
         <a
           target="_blank"
