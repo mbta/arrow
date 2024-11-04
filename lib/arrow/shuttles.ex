@@ -9,10 +9,12 @@ defmodule Arrow.Shuttles do
   alias ArrowWeb.ErrorHelpers
 
   alias Arrow.Gtfs.Route, as: GtfsRoute
+  alias Arrow.Gtfs.Stop, as: GtfsStop
   alias Arrow.Shuttles.KML
   alias Arrow.Shuttles.Shape
   alias Arrow.Shuttles.ShapesUpload
   alias Arrow.Shuttles.ShapeUpload
+  alias Arrow.Shuttles.Stop
 
   @doc """
   Returns the list of shapes.
@@ -330,5 +332,18 @@ defmodule Arrow.Shuttles do
   def list_disruptable_routes do
     query = from(r in GtfsRoute, where: r.type in [:light_rail, :heavy_rail])
     Repo.all(query)
+  end
+
+  @doc """
+  Given a stop ID, returns either an Arrow-created stop, or a
+  stop from GTFS. Prefers the Arrow-created stop if both are
+  present.
+  """
+  @spec stop_or_gtfs_stop_for_stop_id(String.t()) :: Stop.t() | GtfsStop.t() | nil
+  def stop_or_gtfs_stop_for_stop_id(id) do
+    case Repo.get_by(Stop, stop_id: id) do
+      nil -> Repo.get(GtfsStop, id)
+      stop -> stop
+    end
   end
 end
