@@ -122,34 +122,34 @@ Repo.insert!(%Shape{
   prefix: "shape_uploads/"
 })
 
-Repo.insert!(%Shuttle{
-  id: 1,
-  status: :draft,
-  shuttle_name: "AlewifeToHarvardViaBrattle",
-  disrupted_route_id: "Red-dev"
-})
+shuttle =
+  Repo.insert!(%Shuttle{
+    status: :draft,
+    shuttle_name: "AlewifeToHarvardViaBrattle",
+    disrupted_route_id: "Red-dev"
+  })
 
-Repo.insert!(%Route{
-  id: 3,
-  shuttle_id: 1,
-  shape_id: 1,
-  destination: "Harvard",
-  direction_id: :"0",
-  direction_desc: "Southbound",
-  suffix: nil,
-  waypoint: "Brattle"
-})
+route =
+  Repo.insert!(%Route{
+    shuttle_id: shuttle.id,
+    shape_id: 1,
+    destination: "Harvard",
+    direction_id: :"0",
+    direction_desc: "Southbound",
+    suffix: nil,
+    waypoint: "Brattle"
+  })
 
-Repo.insert!(%Route{
-  id: 4,
-  shuttle_id: 1,
-  shape_id: 2,
-  destination: "Alewife",
-  direction_id: :"1",
-  direction_desc: "Northbound",
-  suffix: nil,
-  waypoint: "Brattle"
-})
+route1 =
+  Repo.insert!(%Route{
+    shuttle_id: shuttle.id,
+    shape_id: 2,
+    destination: "Alewife",
+    direction_id: :"1",
+    direction_desc: "Northbound",
+    suffix: nil,
+    waypoint: "Brattle"
+  })
 
 Repo.insert!(%Stop{
   id: 1,
@@ -197,7 +197,7 @@ Repo.insert!(%RouteStop{
   stop_sequence: 0,
   gtfs_stop_id: "141",
   time_to_next_stop: 14,
-  shuttle_route_id: 3
+  shuttle_route_id: route.id
 })
 
 Repo.insert!(%RouteStop{
@@ -205,7 +205,7 @@ Repo.insert!(%RouteStop{
   stop_sequence: 1,
   gtfs_stop_id: "2581",
   time_to_next_stop: 6,
-  shuttle_route_id: 3
+  shuttle_route_id: route.id
 })
 
 Repo.insert!(%RouteStop{
@@ -213,7 +213,7 @@ Repo.insert!(%RouteStop{
   stop_sequence: 2,
   stop_id: 1,
   time_to_next_stop: 6,
-  shuttle_route_id: 3
+  shuttle_route_id: route.id
 })
 
 Repo.insert!(%RouteStop{
@@ -222,7 +222,7 @@ Repo.insert!(%RouteStop{
   stop_id: 2,
   # last shuttle stop
   time_to_next_stop: nil,
-  shuttle_route_id: 3
+  shuttle_route_id: route.id
 })
 
 #   direction_id=1
@@ -234,7 +234,7 @@ Repo.insert!(%RouteStop{
   stop_sequence: 0,
   gtfs_stop_id: "110",
   time_to_next_stop: 8,
-  shuttle_route_id: 4
+  shuttle_route_id: route1.id
 })
 
 Repo.insert!(%RouteStop{
@@ -242,7 +242,7 @@ Repo.insert!(%RouteStop{
   stop_sequence: 1,
   gtfs_stop_id: "23151",
   time_to_next_stop: 6,
-  shuttle_route_id: 4
+  shuttle_route_id: route1.id
 })
 
 Repo.insert!(%RouteStop{
@@ -250,7 +250,7 @@ Repo.insert!(%RouteStop{
   stop_sequence: 2,
   gtfs_stop_id: "5104",
   time_to_next_stop: 13,
-  shuttle_route_id: 4
+  shuttle_route_id: route1.id
 })
 
 Repo.insert!(%RouteStop{
@@ -259,5 +259,5 @@ Repo.insert!(%RouteStop{
   gtfs_stop_id: "141",
   # last shuttle stop
   time_to_next_stop: nil,
-  shuttle_route_id: 4
+  shuttle_route_id: route1.id
 })
