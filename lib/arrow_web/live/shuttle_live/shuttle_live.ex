@@ -164,9 +164,8 @@ defmodule ArrowWeb.ShuttleViewLive do
 
   def handle_event("edit", %{"shuttle_route" => shuttle_route_params}, socket) do
     shuttle = Shuttles.get_shuttle!(socket.assigns.shuttle_route.id)
-    changeset = Shuttles.change_shuttle(shuttle, shuttle_route_params)
 
-    case Arrow.Repo.update(changeset) do
+    case Arrow.Shuttles.update_shuttle(shuttle, shuttle_route_params) do
       {:ok, shuttle} ->
         {:noreply,
          socket
@@ -179,9 +178,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   end
 
   def handle_event("create", %{"shuttle_route" => shuttle_route_params}, socket) do
-    changeset = Shuttles.change_shuttle(%Shuttle{}, shuttle_route_params)
-
-    case Arrow.Repo.insert(changeset) do
+    case Arrow.Shuttles.create_shuttle(shuttle_route_params) do
       {:ok, shuttle} ->
         {:noreply,
          socket
