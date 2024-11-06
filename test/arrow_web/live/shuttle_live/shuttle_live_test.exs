@@ -77,7 +77,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
 
       {:ok, conn} =
         new_live
-        |> form("#shuttle-form", shuttle_route: @create_attrs)
+        |> form("#shuttle-form", shuttle: @create_attrs)
         |> render_submit()
         |> follow_redirect(conn)
 
@@ -90,7 +90,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
     test "renders errors when data is invalid", %{conn: conn} do
       {:ok, new_live, _html} = live(conn, ~p"/shuttles/new")
 
-      assert new_live |> form("#shuttle-form", shuttle_route: @invalid_attrs) |> render_submit() =~
+      assert new_live |> form("#shuttle-form", shuttle: @invalid_attrs) |> render_submit() =~
                "can&#39;t be blank"
     end
   end
@@ -104,7 +104,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
 
       {:ok, conn} =
         edit_live
-        |> form("#shuttle-form", shuttle_route: @update_attrs)
+        |> form("#shuttle-form", shuttle: @update_attrs)
         |> render_submit()
         |> follow_redirect(conn)
 
@@ -115,7 +115,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
     test "renders errors when data is invalid", %{conn: conn, shuttle: shuttle} do
       {:ok, new_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
 
-      assert new_live |> form("#shuttle-form", shuttle_route: @invalid_attrs) |> render_submit() =~
+      assert new_live |> form("#shuttle-form", shuttle: @invalid_attrs) |> render_submit() =~
                "can&#39;t be blank"
     end
   end

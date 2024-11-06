@@ -20,7 +20,7 @@ defmodule ArrowWeb.ShuttleViewLive do
     <.simple_form
       :let={f}
       for={@form}
-      as={:shuttle_route}
+      as={:shuttle}
       action={@http_action}
       phx-submit={@action}
       id="shuttle-form"
@@ -120,7 +120,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> assign(:form, form)
       |> assign(:form_action, "edit")
       |> assign(:http_action, ~p"/shuttles/#{id}")
-      |> assign(:shuttle_route, shuttle)
+      |> assign(:shuttle, shuttle)
       |> assign(:title, "edit shuttle")
       |> assign(:gtfs_disruptable_routes, gtfs_disruptable_routes)
       |> assign(:shapes, shapes)
@@ -155,17 +155,17 @@ defmodule ArrowWeb.ShuttleViewLive do
     {:ok, socket}
   end
 
-  def handle_event("validate", %{"shuttle_route" => shuttle_route_params}, socket) do
+  def handle_event("validate", %{"shuttle" => shuttle_params}, socket) do
     form =
-      %Shuttle{} |> Shuttles.change_shuttle(shuttle_route_params) |> to_form(action: :validate)
+      %Shuttle{} |> Shuttles.change_shuttle(shuttle_params) |> to_form(action: :validate)
 
     {:noreply, assign(socket, form: form)}
   end
 
-  def handle_event("edit", %{"shuttle_route" => shuttle_route_params}, socket) do
-    shuttle = Shuttles.get_shuttle!(socket.assigns.shuttle_route.id)
+  def handle_event("edit", %{"shuttle" => shuttle_params}, socket) do
+    shuttle = Shuttles.get_shuttle!(socket.assigns.shuttle.id)
 
-    case Arrow.Shuttles.update_shuttle(shuttle, shuttle_route_params) do
+    case Arrow.Shuttles.update_shuttle(shuttle, shuttle_params) do
       {:ok, shuttle} ->
         {:noreply,
          socket
@@ -177,8 +177,8 @@ defmodule ArrowWeb.ShuttleViewLive do
     end
   end
 
-  def handle_event("create", %{"shuttle_route" => shuttle_route_params}, socket) do
-    case Arrow.Shuttles.create_shuttle(shuttle_route_params) do
+  def handle_event("create", %{"shuttle" => shuttle_params}, socket) do
+    case Arrow.Shuttles.create_shuttle(shuttle_params) do
       {:ok, shuttle} ->
         {:noreply,
          socket
