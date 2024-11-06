@@ -8,9 +8,7 @@ defmodule Arrow.Shuttles.Shuttle do
     field :shuttle_name, :string
     field :disrupted_route_id, :string
 
-    has_many :routes, Arrow.Shuttles.Route,
-      preload_order: [asc: :direction_id],
-      on_replace: :delete
+    has_many :routes, Arrow.Shuttles.Route, preload_order: [asc: :direction_id]
 
     timestamps(type: :utc_datetime)
   end
