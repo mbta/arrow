@@ -139,7 +139,7 @@ defmodule ArrowWeb.ShuttleViewLive do
 
     gtfs_disruptable_routes = Shuttles.list_disruptable_routes()
     shapes = Shuttles.list_shapes()
-    form = to_form(Shuttles.change_shuttle(shuttle))
+    form = shuttle |> Shuttles.change_shuttle() |> to_form()
 
     socket =
       socket
@@ -157,7 +157,8 @@ defmodule ArrowWeb.ShuttleViewLive do
 
   def handle_event("validate", %{"shuttle" => shuttle_params}, socket) do
     form =
-      Shuttles.change_shuttle(socket.assigns.shuttle, shuttle_params)
+      socket.assigns.shuttle
+      |> Shuttles.change_shuttle(shuttle_params)
       |> to_form(action: :validate)
 
     {:noreply, assign(socket, form: form)}
