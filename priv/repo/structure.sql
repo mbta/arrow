@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.8 (Homebrew)
--- Dumped by pg_dump version 15.8 (Homebrew)
+-- Dumped from database version 15.8 (Postgres.app)
+-- Dumped by pg_dump version 15.8 (Postgres.app)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -795,12 +795,13 @@ ALTER SEQUENCE public.shapes_id_seq OWNED BY public.shapes.id;
 CREATE TABLE public.shuttle_route_stops (
     id bigint NOT NULL,
     direction_id character varying(255),
-    stop_id character varying(255),
     stop_sequence integer,
     time_to_next_stop numeric,
     shuttle_route_id bigint,
     inserted_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    stop_id bigint,
+    gtfs_stop_id character varying(255)
 );
 
 
@@ -1664,11 +1665,27 @@ ALTER TABLE ONLY public.gtfs_trips
 
 
 --
+-- Name: shuttle_route_stops shuttle_route_stops_gtfs_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shuttle_route_stops
+    ADD CONSTRAINT shuttle_route_stops_gtfs_stop_id_fkey FOREIGN KEY (gtfs_stop_id) REFERENCES public.gtfs_stops(id);
+
+
+--
 -- Name: shuttle_route_stops shuttle_route_stops_shuttle_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.shuttle_route_stops
     ADD CONSTRAINT shuttle_route_stops_shuttle_route_id_fkey FOREIGN KEY (shuttle_route_id) REFERENCES public.shuttle_routes(id);
+
+
+--
+-- Name: shuttle_route_stops shuttle_route_stops_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.shuttle_route_stops
+    ADD CONSTRAINT shuttle_route_stops_stop_id_fkey FOREIGN KEY (stop_id) REFERENCES public.stops(id);
 
 
 --
@@ -1737,4 +1754,5 @@ INSERT INTO public."schema_migrations" (version) VALUES (20241010164333);
 INSERT INTO public."schema_migrations" (version) VALUES (20241010164455);
 INSERT INTO public."schema_migrations" (version) VALUES (20241010164555);
 INSERT INTO public."schema_migrations" (version) VALUES (20241018202407);
+INSERT INTO public."schema_migrations" (version) VALUES (20241029192033);
 INSERT INTO public."schema_migrations" (version) VALUES (20241030181351);

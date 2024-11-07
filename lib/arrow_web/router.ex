@@ -60,7 +60,10 @@ defmodule ArrowWeb.Router do
     get("/shapes_upload", ShapeController, :new)
     post("/shapes_upload", ShapeController, :create)
     get("/shapes/:id/download", ShapeController, :download)
-    resources("/shuttles", ShuttleController, except: [:delete])
+    live("/shuttles/new", ShuttleViewLive, :new)
+    live("/shuttles/:id/edit", ShuttleViewLive, :edit)
+    get("/shuttles", ShuttleController, :index)
+    get("/shuttles/:id", ShuttleController, :show)
 
     live_dashboard "/dashboard", ecto_repos: [Arrow.Repo], metrics: ArrowWeb.Telemetry
   end

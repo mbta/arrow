@@ -11,6 +11,7 @@ defmodule Arrow.Shuttles.Route do
     field :waypoint, :string
     belongs_to :shuttle, Arrow.Shuttles.Shuttle
     belongs_to :shape, Arrow.Shuttles.Shape
+    has_many :route_stop, Arrow.Shuttles.RouteStop, foreign_key: :shuttle_route_id
 
     timestamps(type: :utc_datetime)
   end
@@ -19,7 +20,7 @@ defmodule Arrow.Shuttles.Route do
   def changeset(route, attrs) do
     route
     |> cast(attrs, [:direction_id, :direction_desc, :destination, :waypoint, :suffix, :shape_id])
-    |> foreign_key_constraint(:shape_id)
     |> validate_required([:direction_id, :direction_desc, :destination])
+    |> assoc_constraint(:shape)
   end
 end

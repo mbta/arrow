@@ -1,10 +1,11 @@
 <.header>
-  edit shuttle <%= @shuttle.id %>
+  <%= @title %>
 </.header>
 
 <.shuttle_form
-  changeset={@changeset}
-  action={~p"/shuttles/#{@shuttle}"}
+  form={@form}
+  action={@form_action}
+  http_action={@http_action}
   gtfs_disruptable_routes={@gtfs_disruptable_routes}
   shapes={@shapes}
 />
