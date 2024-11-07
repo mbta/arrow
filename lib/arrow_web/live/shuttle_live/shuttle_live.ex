@@ -75,13 +75,7 @@ defmodule ArrowWeb.ShuttleViewLive do
             <.input field={f_route[:direction_desc]} type="text" label="Direction desc" />
           </div>
           <div class="col offset-md-1">
-            <.input
-              field={f_route[:shape_id]}
-              type="select"
-              label="Shape"
-              prompt="Choose a shape"
-              options={Enum.map(@shapes, &{&1.name, &1.id})}
-            />
+            <.live_select field={f_route[:shape_id]} label="Shape" placeholder="Choose a shape" />
           </div>
         </div>
         <div class="row">
