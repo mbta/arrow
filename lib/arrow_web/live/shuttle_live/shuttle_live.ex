@@ -132,15 +132,14 @@ defmodule ArrowWeb.ShuttleViewLive do
   def mount(%{} = _params, session, socket) do
     logout_url = session["logout_url"]
 
-    changeset =
-      Shuttles.change_shuttle(%Shuttle{
-        status: :draft,
-        routes: [%Shuttles.Route{direction_id: :"0"}, %Shuttles.Route{direction_id: :"1"}]
-      })
+    shuttle = %Shuttle{
+      status: :draft,
+      routes: [%Shuttles.Route{direction_id: :"0"}, %Shuttles.Route{direction_id: :"1"}]
+    }
 
     gtfs_disruptable_routes = Shuttles.list_disruptable_routes()
     shapes = Shuttles.list_shapes()
-    form = to_form(changeset)
+    form = shuttle |> Shuttles.change_shuttle() |> to_form()
 
     socket =
       socket
@@ -148,6 +147,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> assign(:form_action, "create")
       |> assign(:http_action, ~p"/shuttles")
       |> assign(:title, "create new replacement service shuttle")
+      |> assign(:shuttle, shuttle)
       |> assign(:gtfs_disruptable_routes, gtfs_disruptable_routes)
       |> assign(:shapes, shapes)
       |> assign(:logout_url, logout_url)
@@ -157,7 +157,9 @@ defmodule ArrowWeb.ShuttleViewLive do
 
   def handle_event("validate", %{"shuttle" => shuttle_params}, socket) do
     form =
-      %Shuttle{} |> Shuttles.change_shuttle(shuttle_params) |> to_form(action: :validate)
+      socket.assigns.shuttle
+      |> Shuttles.change_shuttle(shuttle_params)
+      |> to_form(action: :validate)
 
     {:noreply, assign(socket, form: form)}
   end
@@ -165,7 +167,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   def handle_event("edit", %{"shuttle" => shuttle_params}, socket) do
     shuttle = Shuttles.get_shuttle!(socket.assigns.shuttle.id)
 
-    case Arrow.Shuttles.update_shuttle(shuttle, shuttle_params) do
+    case Shuttles.update_shuttle(shuttle, shuttle_params) do
       {:ok, shuttle} ->
         {:noreply,
          socket
@@ -178,7 +180,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   end
 
   def handle_event("create", %{"shuttle" => shuttle_params}, socket) do
-    case Arrow.Shuttles.create_shuttle(shuttle_params) do
+    case Shuttles.create_shuttle(shuttle_params) do
       {:ok, shuttle} ->
         {:noreply,
          socket

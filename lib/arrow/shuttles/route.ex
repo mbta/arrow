@@ -22,6 +22,5 @@ defmodule Arrow.Shuttles.Route do
     |> cast(attrs, [:direction_id, :direction_desc, :destination, :waypoint, :suffix, :shape_id])
     |> validate_required([:direction_id, :direction_desc, :destination])
     |> assoc_constraint(:shape)
-    |> assoc_constraint(:shuttle)
   end
 end
