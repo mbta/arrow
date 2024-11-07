@@ -400,13 +400,19 @@ defmodule ArrowWeb.CoreComponents do
     """
   end
 
-  # LiveSelect with styling
+  @doc """
+    LiveSelect with styling
+  """
   attr :field, Phoenix.HTML.FormField,
     doc: "a form field struct retrieved from the form, for example: @form[:email]"
 
-  attr :label, :string
-  attr :placeholder, :string
   attr :class, :string, default: nil
+  attr :label, :string
+  # live-select opts
+  attr :placeholder, :string
+  attr :options, :any
+  attr :value_mapper, :any
+  attr :allow_clear, :boolean
 
   def live_select(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
     assigns =

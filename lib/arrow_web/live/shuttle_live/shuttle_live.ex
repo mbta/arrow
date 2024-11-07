@@ -75,7 +75,14 @@ defmodule ArrowWeb.ShuttleViewLive do
             <.input field={f_route[:direction_desc]} type="text" label="Direction desc" />
           </div>
           <div class="col offset-md-1">
-            <.live_select field={f_route[:shape_id]} label="Shape" placeholder="Choose a shape" />
+            <.live_select
+              field={f_route[:shape_id]}
+              label="Shape"
+              placeholder="Choose a shape"
+              options={options_mapper(@shapes)}
+              value_mapper={&value_mapper/1}
+              allow_clear={true}
+            />
           </div>
         </div>
         <div class="row">
@@ -155,6 +162,22 @@ defmodule ArrowWeb.ShuttleViewLive do
     |> Enum.reject(&(&1 == {:ok, :disabled}))
     |> Enum.map(&ShapeView.shapes_map_view/1)
     |> Enum.map(&List.first(&1.shapes))
+  end
+
+  defp options_mapper(shapes) do
+    Enum.map(shapes, &option_mapper/1)
+  end
+
+  def option_mapper(%{name: name, id: id}) do
+    {name, value_mapper(id)}
+  end
+
+  def value_mapper(id) when is_integer(id) do
+    Integer.to_string(id)
+  end
+
+  def value_mapper(id) do
+    id
   end
 
   def mount(%{"id" => id} = _params, session, socket) do
@@ -342,5 +365,16 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> to_form(action: :validate)
 
     {:noreply, assign(socket, form: form)}
+  end
+
+  def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
+    shapes =
+      Shuttles.list_shapes()
+      |> Enum.filter(&(String.downcase(&1.name) |> String.contains?(String.downcase(text))))
+      |> Enum.map(&option_mapper/1)
+
+    send_update(LiveSelect.Component, id: live_select_id, options: shapes)
+
+    {:noreply, socket}
   end
 end
