@@ -100,6 +100,24 @@ defmodule ArrowWeb.ShuttleViewLive do
           </div>
         </div>
       </.inputs_for>
+      <h2>define stops</h2>
+      <.inputs_for :let={f_route} field={f[:routes]} as={:routes_with_stops}>
+        <h4>direction <%= input_value(f_route, :direction_id) %></h4>
+        <.inputs_for :let={f_route_stop} field={f_route[:route_stops]}>
+          <.input field={f_route_stop[:display_stop_id]} label="Stop ID" />
+          <.input field={f_route_stop[:time_to_next_stop]} type="number" label="Time to next stop" />
+          <input
+            value={input_value(f_route_stop, :direction_id)}
+            type="hidden"
+            name={input_name(f_route_stop, :direction_id)}
+          />
+          <input
+            value={input_value(f_route_stop, :stop_sequence)}
+            type="hidden"
+            name={input_name(f_route_stop, :stop_sequence)}
+          />
+        </.inputs_for>
+      </.inputs_for>
       <:actions>
         <.button>Save Shuttle</.button>
       </:actions>
@@ -155,7 +173,9 @@ defmodule ArrowWeb.ShuttleViewLive do
     {:ok, socket}
   end
 
-  def handle_event("validate", %{"shuttle" => shuttle_params}, socket) do
+  def handle_event("validate", params, socket) do
+    shuttle_params = params |> combine_params()
+
     form =
       socket.assigns.shuttle
       |> Shuttles.change_shuttle(shuttle_params)
@@ -164,7 +184,9 @@ defmodule ArrowWeb.ShuttleViewLive do
     {:noreply, assign(socket, form: form)}
   end
 
-  def handle_event("edit", %{"shuttle" => shuttle_params}, socket) do
+  def handle_event("edit", params, socket) do
+    shuttle_params = params |> combine_params()
+
     shuttle = Shuttles.get_shuttle!(socket.assigns.shuttle.id)
 
     case Shuttles.update_shuttle(shuttle, shuttle_params) do
@@ -179,7 +201,9 @@ defmodule ArrowWeb.ShuttleViewLive do
     end
   end
 
-  def handle_event("create", %{"shuttle" => shuttle_params}, socket) do
+  def handle_event("create", params, socket) do
+    shuttle_params = params |> combine_params()
+
     case Shuttles.create_shuttle(shuttle_params) do
       {:ok, shuttle} ->
         {:noreply,
@@ -190,5 +214,25 @@ defmodule ArrowWeb.ShuttleViewLive do
       {:error, changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
     end
+  end
+
+  defp combine_params(%{
+         "shuttle" => shuttle_params,
+         "routes_with_stops" => routes_with_stops_params
+       }) do
+    %{
+      shuttle_params
+      | "routes" =>
+          shuttle_params
+          |> Map.get("routes")
+          |> Map.new(fn {route_index, route} ->
+            {route_index,
+             Map.put(
+               route,
+               "route_stops",
+               routes_with_stops_params[route_index]["route_stops"] || []
+             )}
+          end)
+    }
   end
 end

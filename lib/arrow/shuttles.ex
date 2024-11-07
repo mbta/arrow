@@ -11,10 +11,13 @@ defmodule Arrow.Shuttles do
   alias Arrow.Gtfs.Route, as: GtfsRoute
   alias Arrow.Gtfs.Stop, as: GtfsStop
   alias Arrow.Shuttles.KML
+  alias Arrow.Shuttles.RouteStop
   alias Arrow.Shuttles.Shape
   alias Arrow.Shuttles.ShapesUpload
   alias Arrow.Shuttles.ShapeUpload
   alias Arrow.Shuttles.Stop
+
+  @preloads [routes: [:shape, route_stops: [:stop, :gtfs_stop]]]
 
   @doc """
   Returns the list of shapes.
@@ -247,7 +250,7 @@ defmodule Arrow.Shuttles do
 
   """
   def list_shuttles do
-    Repo.all(Shuttle) |> Repo.preload(routes: [:shape, :route_stops])
+    Repo.all(Shuttle) |> Repo.preload(@preloads)
   end
 
   @doc """
@@ -265,7 +268,7 @@ defmodule Arrow.Shuttles do
 
   """
   def get_shuttle!(id) do
-    Repo.get!(Shuttle, id) |> Repo.preload(routes: [:shape, :route_stops])
+    Repo.get!(Shuttle, id) |> Repo.preload(@preloads) |> populate_display_stop_ids()
   end
 
   @doc """
@@ -287,7 +290,7 @@ defmodule Arrow.Shuttles do
       |> Repo.insert()
 
     case created_shuttle do
-      {:ok, shuttle} -> {:ok, Repo.preload(shuttle, routes: [:shape, :route_stops])}
+      {:ok, shuttle} -> {:ok, shuttle |> Repo.preload(@preloads) |> populate_display_stop_ids()}
       err -> err
     end
   end
@@ -311,7 +314,7 @@ defmodule Arrow.Shuttles do
       |> Repo.update()
 
     case updated_shuttle do
-      {:ok, shuttle} -> {:ok, Repo.preload(shuttle, routes: [:shape, :route_stops])}
+      {:ok, shuttle} -> {:ok, shuttle |> Repo.preload(@preloads) |> populate_display_stop_ids()}
       err -> err
     end
   end
@@ -327,6 +330,30 @@ defmodule Arrow.Shuttles do
   """
   def change_shuttle(%Shuttle{} = shuttle, attrs \\ %{}) do
     Shuttle.changeset(shuttle, attrs)
+  end
+
+  @spec populate_display_stop_ids(map()) :: map()
+  defp populate_display_stop_ids(shuttle) do
+    %{
+      shuttle
+      | routes:
+          Enum.map(shuttle.routes, fn route ->
+            %{
+              route
+              | route_stops:
+                  Enum.map(route.route_stops, fn route_stop ->
+                    Map.put(
+                      route_stop,
+                      :display_stop_id,
+                      case route_stop do
+                        %RouteStop{stop: %Stop{stop_id: stop_id}} -> stop_id
+                        %RouteStop{gtfs_stop_id: gtfs_stop_id} -> gtfs_stop_id
+                      end
+                    )
+                  end)
+            }
+          end)
+    }
   end
 
   def list_disruptable_routes do

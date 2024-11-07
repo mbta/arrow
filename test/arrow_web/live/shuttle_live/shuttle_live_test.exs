@@ -2,6 +2,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
   use ArrowWeb.ConnCase
 
   import Phoenix.LiveViewTest
+  import Arrow.Factory
   import Arrow.ShuttlesFixtures
 
   @create_attrs %{
@@ -105,6 +106,42 @@ defmodule ArrowWeb.ShuttleLiveTest do
       {:ok, conn} =
         edit_live
         |> form("#shuttle-form", shuttle: @update_attrs)
+        |> render_submit()
+        |> follow_redirect(conn)
+
+      assert html_response(conn, 200) =~ ~r/shuttle updated successfully/i
+    end
+
+    @tag :authenticated_admin
+    test "can edit a stop ID", %{conn: conn, shuttle: shuttle} do
+      direction_0_route = Enum.find(shuttle.routes, fn route -> route.direction_id == :"0" end)
+      gtfs_stop = insert(:gtfs_stop)
+      new_gtfs_stop = insert(:gtfs_stop)
+
+      direction_0_route
+      |> Arrow.Shuttles.Route.changeset(%{
+        "route_stops" => [
+          %{
+            "direction_id" => "0",
+            "stop_sequence" => "1",
+            "display_stop_id" => gtfs_stop.id
+          }
+        ]
+      })
+      |> Arrow.Repo.update()
+
+      shuttle = Arrow.Shuttles.get_shuttle!(shuttle.id)
+
+      {:ok, edit_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
+
+      {:ok, conn} =
+        edit_live
+        |> form("#shuttle-form",
+          shuttle: @update_attrs,
+          routes_with_stops: %{
+            "0" => %{route_stops: %{"0" => %{display_stop_id: new_gtfs_stop.id}}}
+          }
+        )
         |> render_submit()
         |> follow_redirect(conn)
 
