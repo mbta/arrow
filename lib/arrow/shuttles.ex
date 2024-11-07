@@ -247,7 +247,7 @@ defmodule Arrow.Shuttles do
 
   """
   def list_shuttles do
-    Repo.all(Shuttle) |> Repo.preload(routes: [:shape])
+    Repo.all(Shuttle) |> Repo.preload(routes: [:shape, :route_stops])
   end
 
   @doc """
@@ -265,7 +265,7 @@ defmodule Arrow.Shuttles do
 
   """
   def get_shuttle!(id) do
-    Repo.get!(Shuttle, id) |> Repo.preload(routes: [:shape])
+    Repo.get!(Shuttle, id) |> Repo.preload(routes: [:shape, :route_stops])
   end
 
   @doc """
@@ -287,7 +287,7 @@ defmodule Arrow.Shuttles do
       |> Repo.insert()
 
     case created_shuttle do
-      {:ok, shuttle} -> {:ok, Repo.preload(shuttle, routes: [:shape])}
+      {:ok, shuttle} -> {:ok, Repo.preload(shuttle, routes: [:shape, :route_stops])}
       err -> err
     end
   end
@@ -311,7 +311,7 @@ defmodule Arrow.Shuttles do
       |> Repo.update()
 
     case updated_shuttle do
-      {:ok, shuttle} -> {:ok, Repo.preload(shuttle, routes: [:shape])}
+      {:ok, shuttle} -> {:ok, Repo.preload(shuttle, routes: [:shape, :route_stops])}
       err -> err
     end
   end

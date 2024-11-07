@@ -11,7 +11,7 @@ defmodule Arrow.Shuttles.Route do
     field :waypoint, :string
     belongs_to :shuttle, Arrow.Shuttles.Shuttle
     belongs_to :shape, Arrow.Shuttles.Shape
-    has_many :route_stop, Arrow.Shuttles.RouteStop, foreign_key: :shuttle_route_id
+    has_many :route_stops, Arrow.Shuttles.RouteStop, foreign_key: :shuttle_route_id
 
     timestamps(type: :utc_datetime)
   end
