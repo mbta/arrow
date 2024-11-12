@@ -431,6 +431,14 @@ defmodule ArrowWeb.CoreComponents do
             @errors != [] && "is-invalid",
             @class
           ]}
+          clear_button_class={[
+            "btn",
+            "btn-link",
+            "close"
+          ]}
+          dropdown_extra_class={[
+            "list-unstyled"
+          ]}
           {@live_select_opts}
         />
 
