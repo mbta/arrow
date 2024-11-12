@@ -39,7 +39,6 @@ defmodule ArrowWeb.ShuttleLiveTest do
         destination: "Broadway",
         direction_desc: "Southbound",
         direction_id: "0",
-        shape_id: "",
         suffix: "",
         waypoint: ""
       },
@@ -48,13 +47,25 @@ defmodule ArrowWeb.ShuttleLiveTest do
         destination: "Harvard",
         direction_desc: "Northbound",
         direction_id: "1",
-        shape_id: "",
         suffix: "",
         waypoint: ""
       }
     },
     shuttle_name: "Meh",
     status: "draft"
+  }
+
+  @update_hidden_attrs %{
+    routes: %{
+      "0" => %{
+        shape_id: "",
+        shape_id_text_input: ""
+      },
+      "1" => %{
+        shape_id: "",
+        shape_id_text_input: ""
+      }
+    }
   }
 
   @invalid_attrs %{
@@ -106,7 +117,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       {:ok, conn} =
         edit_live
         |> form("#shuttle-form", shuttle: @update_attrs)
-        |> render_submit()
+        |> render_submit(@update_hidden_attrs)
         |> follow_redirect(conn)
 
       assert html_response(conn, 200) =~ ~r/shuttle updated successfully/i
