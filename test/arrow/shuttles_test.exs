@@ -24,7 +24,7 @@ defmodule Arrow.ShuttlesTest do
     end
 
     test "create_shape/1 with name that does not end in -S adds it" do
-      Application.put_env(:arrow, :shape_storage_enabled?, true)
+      reassign_env(:shape_storage_enabled?, true)
       Application.put_env(:arrow, :shape_storage_prefix, "prefix/#{Ecto.UUID.generate()}/")
 
       assert {:ok, %Shape{} = shape} =
@@ -62,6 +62,17 @@ defmodule Arrow.ShuttlesTest do
     test "get_shape!/1 returns the shape with given id" do
       shape = shape_fixture()
       assert Shuttles.get_shape!(shape.id) == shape
+    end
+
+    test "get_shapes returns all shapes with matching ids" do
+      shapes = [shape_fixture(), shape_fixture()]
+      shape_ids = Enum.map(shapes, fn shape -> shape.id end)
+      assert MapSet.new(Shuttles.get_shapes(shape_ids)) == MapSet.new(shapes)
+    end
+
+    test "get_shapes returns empty list when no shapes match" do
+      shape_ids = [1, 2, 3]
+      assert [] == Shuttles.get_shapes(shape_ids)
     end
 
     test "create_shapes/1 with valid data creates a shape" do

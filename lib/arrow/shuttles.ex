@@ -49,6 +49,14 @@ defmodule Arrow.Shuttles do
   def get_shape!(id), do: Repo.get!(Shape, id)
 
   @doc """
+  Gets the shapes specifiied by a list of ids. Does not raise if any of the ids are missing,
+  meaning the resulting list may be shorter than the input list.
+  """
+  def get_shapes(ids) do
+    Repo.all(from s in Shape, where: s.id in ^ids)
+  end
+
+  @doc """
   Gets a shapes upload struct associated with a given shape.
 
   ## Examples
