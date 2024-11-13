@@ -15,7 +15,7 @@ RUN mix local.hex --force && \
 
 RUN curl https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
   -o /root/aws-cert-bundle.pem
-RUN echo "ed2b625ceeca0ebacf413972c33acbeb65a6c6b94d0c6434f1bb006cd4904ede /root/aws-cert-bundle.pem" | sha256sum -c -
+RUN echo "390fdc813e2e58ec5a0def8ce6422b83d75032899167052ab981d8e1b3b14ff2 /root/aws-cert-bundle.pem" | sha256sum -c -
 
 # Instructions from:
 # https://github.com/nodesource/distributions#debian-versions
