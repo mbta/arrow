@@ -4,7 +4,9 @@ config :arrow,
   shape_storage_enabled?: false,
   shape_storage_request_fn: {Arrow.Mock.ExAws.Request, :request},
   gtfs_archive_storage_enabled?: false,
-  gtfs_archive_storage_request_fn: {Arrow.Mock.ExAws.Request, :request}
+  gtfs_archive_storage_request_fn: {Arrow.Mock.ExAws.Request, :request},
+  ueberauth_provider: :cognito,
+  api_login_module: ArrowWeb.TryApiTokenAuth.Cognito
 
 # Configure your database
 config :arrow, Arrow.Repo,

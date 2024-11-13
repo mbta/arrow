@@ -171,5 +171,14 @@ defmodule Arrow.StopsTest do
       stop = stop_fixture()
       assert %Ecto.Changeset{} = Stops.change_stop(stop)
     end
+
+    test "get_stop_by_stop_id/1 returns stop when found" do
+      stop = stop_fixture()
+      assert Stops.get_stop_by_stop_id(stop.stop_id) == stop
+    end
+
+    test "get_stop_by_stop_id/1 returns nil when stop not found" do
+      assert Stops.get_stop_by_stop_id("nonexistent") == nil
+    end
   end
 end
