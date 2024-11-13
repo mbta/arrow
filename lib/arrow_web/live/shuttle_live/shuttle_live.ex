@@ -106,6 +106,19 @@ defmodule ArrowWeb.ShuttleViewLive do
         <.inputs_for :let={f_route_stop} field={f_route[:route_stops]}>
           <.input field={f_route_stop[:display_stop_id]} label="Stop ID" />
           <.input field={f_route_stop[:time_to_next_stop]} type="number" label="Time to next stop" />
+          <button
+            type="button"
+            name={input_name(f_route, :route_stops_drop) <> "[]"}
+            value={f_route_stop.index}
+            phx-click={JS.dispatch("change")}
+          >
+            Delete stop
+          </button>
+          <input
+            value={f_route_stop.index}
+            type="hidden"
+            name={input_name(f_route, :route_stops_sort) <> "[]"}
+          />
           <input
             value={input_value(f_route_stop, :direction_id)}
             type="hidden"
@@ -117,6 +130,15 @@ defmodule ArrowWeb.ShuttleViewLive do
             name={input_name(f_route_stop, :stop_sequence)}
           />
         </.inputs_for>
+        <input type="hidden" name={input_name(f_route, :route_stops_drop) <> "[]"} />
+        <button
+          type="button"
+          name={input_name(f_route, :route_stops_sort) <> "[]"}
+          value="new"
+          phx-click={JS.dispatch("change")}
+        >
+          Add Another Stop
+        </button>
       </.inputs_for>
       <:actions>
         <.button>Save Shuttle</.button>
@@ -226,12 +248,14 @@ defmodule ArrowWeb.ShuttleViewLive do
           shuttle_params
           |> Map.get("routes")
           |> Map.new(fn {route_index, route} ->
-            {route_index,
-             Map.put(
-               route,
-               "route_stops",
-               routes_with_stops_params[route_index]["route_stops"] || []
-             )}
+            route_stop_fields =
+              Map.take(routes_with_stops_params[route_index], [
+                "route_stops",
+                "route_stops_drop",
+                "route_stops_sort"
+              ])
+
+            {route_index, Map.merge(route, route_stop_fields)}
           end)
     }
   end

@@ -366,7 +366,9 @@ defmodule Arrow.Shuttles do
   stop from GTFS. Prefers the Arrow-created stop if both are
   present.
   """
-  @spec stop_or_gtfs_stop_for_stop_id(String.t()) :: Stop.t() | GtfsStop.t() | nil
+  @spec stop_or_gtfs_stop_for_stop_id(String.t() | nil) :: Stop.t() | GtfsStop.t() | nil
+  def stop_or_gtfs_stop_for_stop_id(nil), do: nil
+
   def stop_or_gtfs_stop_for_stop_id(id) do
     case Repo.get_by(Stop, stop_id: id) do
       nil -> Repo.get(GtfsStop, id)
