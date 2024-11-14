@@ -189,6 +189,38 @@ defmodule ArrowWeb.ShuttleLiveTest do
     end
 
     @tag :authenticated_admin
+    test "can add a stop", %{conn: conn, shuttle: shuttle} do
+      gtfs_stop = insert(:gtfs_stop)
+      stop_id = gtfs_stop.id
+
+      {:ok, edit_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
+
+      edit_live
+      |> element("#shuttle-form > button[value=\"0\"]")
+      |> render_click()
+
+      {:ok, conn} =
+        edit_live
+        |> form("#shuttle-form",
+          shuttle: @update_attrs,
+          routes_with_stops: %{
+            "0" => %{route_stops: %{"0" => %{display_stop_id: stop_id}}}
+          }
+        )
+        |> render_submit()
+        |> follow_redirect(conn)
+
+      assert html_response(conn, 200) =~ ~r/shuttle updated successfully/i
+
+      updated_shuttle = Arrow.Shuttles.get_shuttle!(shuttle.id)
+
+      direction_0_route =
+        Enum.find(updated_shuttle.routes, fn route -> route.direction_id == :"0" end)
+
+      assert [%{gtfs_stop_id: ^stop_id}] = direction_0_route.route_stops
+    end
+
+    @tag :authenticated_admin
     test "renders errors when data is invalid", %{conn: conn, shuttle: shuttle} do
       {:ok, new_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
 
