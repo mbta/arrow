@@ -149,6 +149,46 @@ defmodule ArrowWeb.ShuttleLiveTest do
     end
 
     @tag :authenticated_admin
+    test "can remove a stop", %{conn: conn, shuttle: shuttle} do
+      direction_0_route = Enum.find(shuttle.routes, fn route -> route.direction_id == :"0" end)
+      gtfs_stop = insert(:gtfs_stop)
+
+      direction_0_route
+      |> Arrow.Shuttles.Route.changeset(%{
+        "route_stops" => [
+          %{
+            "direction_id" => "0",
+            "stop_sequence" => "1",
+            "display_stop_id" => gtfs_stop.id
+          }
+        ]
+      })
+      |> Arrow.Repo.update()
+
+      shuttle = Arrow.Shuttles.get_shuttle!(shuttle.id)
+
+      {:ok, edit_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
+
+      edit_live
+      |> element("#shuttle-form")
+      |> render_change(%{
+        routes_with_stops: %{"0" => %{"route_stops_drop" => ["0"]}}
+      })
+
+      {:ok, conn} =
+        edit_live
+        |> element("#shuttle-form")
+        |> render_submit()
+        |> follow_redirect(conn)
+
+      assert html_response(conn, 200) =~ ~r/shuttle updated successfully/i
+
+      updated_shuttle = Arrow.Shuttles.get_shuttle!(shuttle.id)
+
+      assert Enum.all?(updated_shuttle.routes, fn route -> route.route_stops == [] end)
+    end
+
+    @tag :authenticated_admin
     test "renders errors when data is invalid", %{conn: conn, shuttle: shuttle} do
       {:ok, new_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
 
