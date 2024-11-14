@@ -103,33 +103,43 @@ defmodule ArrowWeb.ShuttleViewLive do
       <h2>define stops</h2>
       <.inputs_for :let={f_route} field={f[:routes]} as={:routes_with_stops}>
         <h4>direction <%= input_value(f_route, :direction_id) %></h4>
-        <.inputs_for :let={f_route_stop} field={f_route[:route_stops]}>
-          <.input field={f_route_stop[:display_stop_id]} label="Stop ID" />
-          <.input field={f_route_stop[:time_to_next_stop]} type="number" label="Time to next stop" />
-          <button
-            type="button"
-            name={input_name(f_route, :route_stops_drop) <> "[]"}
-            value={f_route_stop.index}
-            phx-click={JS.dispatch("change")}
-          >
-            Delete stop
-          </button>
-          <input
-            value={f_route_stop.index}
-            type="hidden"
-            name={input_name(f_route, :route_stops_sort) <> "[]"}
-          />
-          <input
-            value={input_value(f_route_stop, :direction_id)}
-            type="hidden"
-            name={input_name(f_route_stop, :direction_id)}
-          />
-          <input
-            value={input_value(f_route_stop, :stop_sequence)}
-            type="hidden"
-            name={input_name(f_route_stop, :stop_sequence)}
-          />
-        </.inputs_for>
+        <div class="container">
+          <.inputs_for :let={f_route_stop} field={f_route[:route_stops]}>
+            <div class="row">
+              <.input field={f_route_stop[:display_stop_id]} label="Stop ID" class="col-lg-7" />
+              <.input
+                field={f_route_stop[:time_to_next_stop]}
+                type="number"
+                label="Time to next stop"
+                class="col-lg-4"
+              />
+              <button
+                type="button"
+                name={input_name(f_route, :route_stops_drop) <> "[]"}
+                value={f_route_stop.index}
+                phx-click={JS.dispatch("change")}
+                class="col-lg-1"
+              >
+                <.icon name="hero-x-mark-solid" class="h-4 w-4" />
+              </button>
+              <input
+                value={f_route_stop.index}
+                type="hidden"
+                name={input_name(f_route, :route_stops_sort) <> "[]"}
+              />
+              <input
+                value={input_value(f_route_stop, :direction_id)}
+                type="hidden"
+                name={input_name(f_route_stop, :direction_id)}
+              />
+              <input
+                value={input_value(f_route_stop, :stop_sequence)}
+                type="hidden"
+                name={input_name(f_route_stop, :stop_sequence)}
+              />
+            </div>
+          </.inputs_for>
+        </div>
         <input type="hidden" name={input_name(f_route, :route_stops_drop) <> "[]"} />
         <button type="button" value={input_value(f_route, :direction_id)} phx-click="add_stop">
           Add Another Stop
