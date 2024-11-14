@@ -131,12 +131,7 @@ defmodule ArrowWeb.ShuttleViewLive do
           />
         </.inputs_for>
         <input type="hidden" name={input_name(f_route, :route_stops_drop) <> "[]"} />
-        <button
-          type="button"
-          name={input_name(f_route, :route_stops_sort) <> "[]"}
-          value="new"
-          phx-click={JS.dispatch("change")}
-        >
+        <button type="button" value={input_value(f_route, :direction_id)} phx-click="add_stop">
           Add Another Stop
         </button>
       </.inputs_for>
@@ -238,6 +233,26 @@ defmodule ArrowWeb.ShuttleViewLive do
     end
   end
 
+  def handle_event("add_stop", %{"value" => direction_id}, socket) do
+    direction_id = String.to_existing_atom(direction_id)
+
+    socket =
+      update(socket, :form, fn %{source: changeset} ->
+        existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
+
+        new_routes =
+          Enum.map(existing_routes, fn route_changeset ->
+            update_route_changeset_with_new_stop(route_changeset, direction_id)
+          end)
+
+        changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
+
+        to_form(changeset)
+      end)
+
+    {:noreply, socket}
+  end
+
   defp combine_params(%{
          "shuttle" => shuttle_params,
          "routes_with_stops" => routes_with_stops_params
@@ -258,5 +273,27 @@ defmodule ArrowWeb.ShuttleViewLive do
             {route_index, Map.merge(route, route_stop_fields)}
           end)
     }
+  end
+
+  defp update_route_changeset_with_new_stop(route_changeset, direction_id) do
+    if Ecto.Changeset.get_field(route_changeset, :direction_id) == direction_id do
+      existing_stops = Ecto.Changeset.get_field(route_changeset, :route_stops)
+
+      max_stop_sequence =
+        existing_stops |> Enum.map(& &1.stop_sequence) |> Enum.max(fn -> 0 end)
+
+      new_route_stop = %Arrow.Shuttles.RouteStop{
+        direction_id: direction_id,
+        stop_sequence: max_stop_sequence + 1
+      }
+
+      Ecto.Changeset.put_assoc(
+        route_changeset,
+        :route_stops,
+        existing_stops ++ [new_route_stop]
+      )
+    else
+      route_changeset
+    end
   end
 end
