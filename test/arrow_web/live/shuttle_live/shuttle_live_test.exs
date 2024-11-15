@@ -240,6 +240,53 @@ defmodule ArrowWeb.ShuttleLiveTest do
     end
   end
 
+  describe "shape select" do
+    setup [:create_shuttle]
+
+    @tag :authenticated_admin
+    test "sets the selected shape via hidden input values", %{conn: conn, shuttle: shuttle} do
+      {:ok, edit_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
+
+      first_route = List.first(shuttle.routes)
+      second_route = Enum.at(shuttle.routes, 1)
+
+      update_first_shape_attrs = %{
+        routes: %{
+          "0" => %{
+            shape_id: second_route.shape_id,
+            shape_id_text_input: second_route.shape.name
+          }
+        }
+      }
+
+      # `#` and escaping the brackets doesn't seem to work with this selector format (unlike $() in the browser)
+      live_component_selector = ~s{[id="shuttle[routes][0]_shape_id_live_select_component"]}
+      hidden_input_selector = ~s{#shuttle-form_routes_0_shape_id}
+      displayed_value_selector = ~s{#shuttle-form_routes_0_shape_id_text_input}
+
+      # initially set to original shape
+      assert edit_live
+             |> element(live_component_selector)
+             |> render() =~ ~s{value="#{first_route.shape_id}"}
+
+      assert edit_live
+             |> element(displayed_value_selector)
+             |> render() =~ ~s{value="#{first_route.shape.name}"}
+
+      assert edit_live
+             |> element(hidden_input_selector)
+             |> render() =~ ~s{value="#{first_route.shape_id}"}
+
+      rendered =
+        edit_live
+        |> element("#shuttle-form")
+        |> render_change(%{shuttle: update_first_shape_attrs})
+
+      refute rendered =~ "#{first_route.shape.name}"
+      refute rendered =~ "#{first_route.shape_id}"
+    end
+  end
+
   defp create_shuttle(_) do
     shuttle = shuttle_fixture()
     %{shuttle: shuttle}
