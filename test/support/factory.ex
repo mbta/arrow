@@ -67,4 +67,28 @@ defmodule Arrow.Factory do
       municipality: "Boston"
     }
   end
+
+  def gtfs_stop_factory do
+    %Arrow.Gtfs.Stop{
+      id: sequence(:source_label, &"gtfs-stop-#{&1}"),
+      code: nil,
+      name: "Test Stop",
+      desc: nil,
+      platform_code: nil,
+      platform_name: nil,
+      lat: 72.0,
+      lon: 43.0,
+      zone_id: nil,
+      address: nil,
+      url: nil,
+      level: nil,
+      location_type: :stop_platform,
+      parent_station: nil,
+      wheelchair_boarding: :accessible,
+      municipality: "Boston",
+      on_street: nil,
+      at_street: nil,
+      vehicle_type: :bus
+    }
+  end
 end

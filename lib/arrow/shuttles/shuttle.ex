@@ -28,21 +28,19 @@ defmodule Arrow.Shuttles.Shuttle do
     # Placeholder validation until form is complete
     status = get_field(changeset, :status)
     # Set error on status field for now
-    fields = [:status]
 
     case status do
       :active ->
-        message = "can't be set to active when required fields are missing"
+        routes = get_assoc(changeset, :routes)
 
-        %{
+        enough_stops? =
+          routes |> Enum.map(&get_assoc(&1, :route_stops)) |> Enum.all?(&(length(&1) >= 2))
+
+        if enough_stops? do
           changeset
-          | errors:
-              Enum.map(
-                fields,
-                &{&1, {message, [validation: :required]}}
-              ),
-            valid?: false
-        }
+        else
+          add_error(changeset, :status, "must have at least two stops in each direction")
+        end
 
       _ ->
         changeset

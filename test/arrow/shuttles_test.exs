@@ -1,9 +1,11 @@
 defmodule Arrow.ShuttlesTest do
   use Arrow.DataCase
 
+  import Arrow.Factory
   alias Arrow.Shuttles
   alias Arrow.Shuttles.Shape
   import Arrow.ShuttlesFixtures
+  import Arrow.StopsFixtures
   import Test.Support.Helpers
 
   describe "shapes with s3 functionality enabled (mocked)" do
@@ -212,6 +214,36 @@ defmodule Arrow.ShuttlesTest do
     test "change_shuttle/1 returns a shuttle changeset" do
       shuttle = shuttle_fixture()
       assert %Ecto.Changeset{} = Shuttles.change_shuttle(shuttle)
+    end
+  end
+
+  describe "stop_or_gtfs_stop_for_stop_id/1" do
+    test "fetches Arrow stop" do
+      stop = stop_fixture()
+      stop_id = stop.stop_id
+
+      assert %Arrow.Shuttles.Stop{stop_id: ^stop_id} =
+               Shuttles.stop_or_gtfs_stop_for_stop_id(stop_id)
+    end
+
+    test "fetches GTFS stop" do
+      gtfs_stop = insert(:gtfs_stop)
+      stop_id = gtfs_stop.id
+
+      assert %Arrow.Gtfs.Stop{id: ^stop_id} = Shuttles.stop_or_gtfs_stop_for_stop_id(stop_id)
+    end
+
+    test "prefers the Arrow stop if there are both Arrow and Gtfs stops" do
+      stop = stop_fixture()
+      _gtfs_stop = insert(:gtfs_stop)
+      stop_id = stop.stop_id
+
+      assert %Arrow.Shuttles.Stop{stop_id: ^stop_id} =
+               Shuttles.stop_or_gtfs_stop_for_stop_id(stop_id)
+    end
+
+    test "returns nil if no stops are found" do
+      assert is_nil(Shuttles.stop_or_gtfs_stop_for_stop_id("nonexistent-stop"))
     end
   end
 end
