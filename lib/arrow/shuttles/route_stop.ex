@@ -32,7 +32,14 @@ defmodule Arrow.Shuttles.RouteStop do
 
     change =
       route_stop
-      |> cast(attrs, [:direction_id, :stop_id, :gtfs_stop_id, :stop_sequence, :time_to_next_stop])
+      |> cast(attrs, [
+        :direction_id,
+        :stop_id,
+        :gtfs_stop_id,
+        :stop_sequence,
+        :time_to_next_stop,
+        :display_stop_id
+      ])
       |> change(stop_id: stop_id)
       |> change(gtfs_stop_id: gtfs_stop_id)
       |> validate_required([:direction_id, :stop_sequence])
