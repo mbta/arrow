@@ -283,7 +283,10 @@ defmodule ArrowWeb.ShuttleLiveTest do
         |> render_change(%{shuttle: update_first_shape_attrs})
 
       refute rendered =~ "#{first_route.shape.name}"
-      refute rendered =~ "#{first_route.shape_id}"
+      assert rendered =~ "#{second_route.shape.name}"
+
+      assert rendered =~
+               "name=\"shuttle[routes][0][shape_id]\" type=\"hidden\" value=\"#{second_route.shape_id}\"/>"
     end
   end
 
