@@ -364,6 +364,74 @@ defmodule Arrow.Shuttles do
     }
   end
 
+  @spec get_stop_coords(%Stop{} | %GtfsStop{}) :: {:ok, map()} | {:error, any}
+  def get_stop_coords(%GtfsStop{lat: lat, lon: lon}) do
+    {:ok, %{lat: lat, lon: lon}}
+  end
+
+  def get_stop_coords(%Stop{stop_lat: lat, stop_lon: lon}) do
+    {:ok, %{lat: lat, lon: lon}}
+  end
+
+  def get_stop_coords(stop) do
+    {:error, "Missing lat/lon data for stop #{inspect(stop)}"}
+  end
+
+  defp handle_otp_response(result) do
+    cond do
+      Enum.count(result["plan"]["routingErrors"]) > 0 ->
+        message =
+          "Error: Could not find route"
+
+        {:error, [message, Enum.map(result["plan"]["routingErrors"], & &1["description"])]}
+
+      Enum.count(result["plan"]["itineraries"]) == 0 ->
+        {:ok, 0}
+
+      true ->
+        {:ok, List.first(result["plan"]["itineraries"])["duration"]}
+    end
+  end
+
+  @spec get_travel_time(%Stop{} | %GtfsStop{}, %Stop{} | %GtfsStop{}) ::
+          {:ok, number()} | {:error, any}
+  def get_travel_time(from_stop, to_stop) do
+    {:ok, from_coords} = get_stop_coords(from_stop)
+    {:ok, to_coords} = get_stop_coords(to_stop)
+
+    otp_base_url = "http://otp2-local.mbtace.com"
+    otp_url = otp_base_url <> "/otp/gtfs/v1"
+
+    query = """
+      query Plan($from: InputCoordinates, $to: InputCoordinates, $modes: [TransportMode]) {
+                  plan(from: $from, to: $to, transportModes: $modes) {
+                      itineraries {
+                          duration
+                      }
+                      routingErrors {
+                          code
+                          inputField
+                          description
+                      }
+                  }
+              }
+    """
+
+    with {:ok, %Neuron.Response{body: body}} <-
+           Neuron.query(
+             query,
+             %{
+               from: from_coords,
+               to: to_coords,
+               modes: [%{mode: "CAR"}]
+             },
+             url: otp_url
+           ),
+         {:ok, result} <- Map.fetch(body, "data") do
+      handle_otp_response(result)
+    end
+  end
+
   def list_disruptable_routes do
     query = from(r in GtfsRoute, where: r.type in [:light_rail, :heavy_rail])
     Repo.all(query)
