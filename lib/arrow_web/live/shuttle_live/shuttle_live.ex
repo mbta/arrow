@@ -3,6 +3,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   import Phoenix.HTML.Form
   alias Arrow.Shuttles
   alias Arrow.Shuttles.Shuttle
+  alias ArrowWeb.ShapeView
 
   embed_templates "shuttle_live/*"
 
@@ -14,6 +15,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   attr :http_action, :string
   attr :gtfs_disruptable_routes, :list, required: true
   attr :shapes, :list, required: true
+  attr :map_props, :map, required: false, default: %{}
 
   def shuttle_form(assigns) do
     ~H"""
@@ -60,6 +62,7 @@ defmodule ArrowWeb.ShuttleViewLive do
           />
         </div>
       </div>
+      <%= live_react_component("Components.ShapeViewMap", @map_props, id: "shuttle-view-map") %>
       <hr />
       <h2>define route</h2>
       <.inputs_for :let={f_route} field={f[:routes]}>
@@ -152,6 +155,14 @@ defmodule ArrowWeb.ShuttleViewLive do
     """
   end
 
+  defp shapes_to_shapeviews(shapes) do
+    shapes
+    |> Enum.map(&Shuttles.get_shapes_upload/1)
+    |> Enum.reject(&(&1 == {:ok, :disabled}))
+    |> Enum.map(&ShapeView.shapes_map_view/1)
+    |> Enum.map(&List.first(&1.shapes))
+  end
+
   def mount(%{"id" => id} = _params, session, socket) do
     logout_url = session["logout_url"]
     shuttle = Shuttles.get_shuttle!(id)
@@ -159,6 +170,14 @@ defmodule ArrowWeb.ShuttleViewLive do
     gtfs_disruptable_routes = Shuttles.list_disruptable_routes()
     shapes = Shuttles.list_shapes()
     form = to_form(changeset)
+
+    shuttle_shapes =
+      shuttle
+      |> Map.get(:routes)
+      |> Enum.map(&Map.get(&1, :shape))
+      |> Enum.reject(&is_nil/1)
+
+    shapes_map_view = shapes_to_shapeviews(shuttle_shapes)
 
     socket =
       socket
@@ -170,6 +189,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> assign(:gtfs_disruptable_routes, gtfs_disruptable_routes)
       |> assign(:shapes, shapes)
       |> assign(:logout_url, logout_url)
+      |> assign(:map_props, %{shapes: shapes_map_view})
 
     {:ok, socket}
   end
@@ -196,19 +216,31 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> assign(:gtfs_disruptable_routes, gtfs_disruptable_routes)
       |> assign(:shapes, shapes)
       |> assign(:logout_url, logout_url)
+      |> assign(:map_props, %{shapes: []})
 
     {:ok, socket}
   end
 
+  # A new shape is selected
+  def handle_event(
+        "validate",
+        %{"_target" => ["shuttle", "routes", _direction_id, "shape_id"]} = params,
+        socket
+      ) do
+    shapes =
+      [
+        params["shuttle"]["routes"]["0"]["shape_id"],
+        params["shuttle"]["routes"]["1"]["shape_id"]
+      ]
+      |> Enum.reject(&(&1 == ""))
+      |> Shuttles.get_shapes()
+      |> shapes_to_shapeviews()
+
+    validate(params, assign(socket, :map_props, %{socket.assigns.map_props | shapes: shapes}))
+  end
+
   def handle_event("validate", params, socket) do
-    shuttle_params = params |> combine_params()
-
-    form =
-      socket.assigns.shuttle
-      |> Shuttles.change_shuttle(shuttle_params)
-      |> to_form(action: :validate)
-
-    {:noreply, assign(socket, form: form)}
+    validate(params, socket)
   end
 
   def handle_event("edit", params, socket) do
@@ -305,5 +337,16 @@ defmodule ArrowWeb.ShuttleViewLive do
     else
       route_changeset
     end
+  end
+
+  defp validate(params, socket) do
+    shuttle_params = params |> combine_params()
+
+    form =
+      socket.assigns.shuttle
+      |> Shuttles.change_shuttle(shuttle_params)
+      |> to_form(action: :validate)
+
+    {:noreply, assign(socket, form: form)}
   end
 end
