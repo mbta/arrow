@@ -65,6 +65,7 @@ defmodule Arrow.MixProject do
       {:live_select, "~> 1.4"},
       {:lcov_ex, "~> 0.2", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.2", only: :test},
+      {:neuron, "~> 5.1.0"},
       {:oban, "~> 2.18"},
       {:phoenix_ecto, "~> 4.0"},
       {:phoenix_live_reload, "~> 1.5", only: :dev},
