@@ -80,11 +80,8 @@ defmodule Arrow.MixProject do
       {:telemetry_poller, "~> 1.1"},
       {:telemetry_metrics, "~> 1.0"},
       {:postgrex, ">= 0.0.0"},
-      # TODO: Update meagharty/react-phoenix to mbta/react-phoenix once updated
       # If react_phoenix changes, check assets/src/ReactPhoenix.js, too
-      {:react_phoenix,
-       git: "https://github.com/meagharty/react-phoenix.git",
-       branch: "meag/use-phoenix-html-helpers"},
+      {:react_phoenix, git: "https://github.com/mbta/react-phoenix.git"},
       {:tzdata, "~> 1.1"},
       {:ueberauth_cognito, "0.4.0"},
       {:ueberauth_oidcc, "~> 0.4.0"},
