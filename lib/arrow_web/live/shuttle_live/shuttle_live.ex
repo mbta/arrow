@@ -292,6 +292,17 @@ defmodule ArrowWeb.ShuttleViewLive do
     end
   end
 
+  def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
+    shapes =
+      Shuttles.list_shapes()
+      |> Enum.filter(&(String.downcase(&1.name) |> String.contains?(String.downcase(text))))
+      |> Enum.map(&option_mapper/1)
+
+    send_update(LiveSelect.Component, id: live_select_id, options: shapes)
+
+    {:noreply, socket}
+  end
+
   def handle_event("add_stop", %{"value" => direction_id}, socket) do
     direction_id = String.to_existing_atom(direction_id)
 
@@ -365,16 +376,5 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> to_form(action: :validate)
 
     {:noreply, assign(socket, form: form)}
-  end
-
-  def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
-    shapes =
-      Shuttles.list_shapes()
-      |> Enum.filter(&(String.downcase(&1.name) |> String.contains?(String.downcase(text))))
-      |> Enum.map(&option_mapper/1)
-
-    send_update(LiveSelect.Component, id: live_select_id, options: shapes)
-
-    {:noreply, socket}
   end
 end
