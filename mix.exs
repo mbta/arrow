@@ -70,9 +70,7 @@ defmodule Arrow.MixProject do
       {:phoenix_live_reload, "~> 1.5", only: :dev},
       {:phoenix_html, "~> 4.0"},
       {:phoenix_html_helpers, "~> 1.0"},
-      {:phoenix_live_react,
-       git: "https://github.com/meagharty/phoenix_live_react.git",
-       branch: "meag/upgrade-phoenix-html"},
+      {:phoenix_live_react, git: "https://github.com/meagharty/phoenix_live_react.git"},
       {:phoenix_live_view, "~> 0.20.14"},
       {:phoenix_live_dashboard, "~> 0.7"},
       {:phoenix_pubsub, "~> 2.0"},
@@ -82,6 +80,7 @@ defmodule Arrow.MixProject do
       {:telemetry_poller, "~> 1.1"},
       {:telemetry_metrics, "~> 1.0"},
       {:postgrex, ">= 0.0.0"},
+      # TODO: Update meagharty/react-phoenix to mbta/react-phoenix once updated
       # If react_phoenix changes, check assets/src/ReactPhoenix.js, too
       {:react_phoenix,
        git: "https://github.com/meagharty/react-phoenix.git",
