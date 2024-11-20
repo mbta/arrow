@@ -10,6 +10,7 @@ defmodule Arrow.Application do
     run_migrations_at_startup? = Application.get_env(:arrow, :run_migrations_at_startup?)
 
     Arrow.Telemetry.setup_telemetry()
+    Neuron.Config.set(connection_module: Arrow.Neuron.Connection.Http)
 
     # List all child processes to be supervised
     children =

@@ -257,4 +257,20 @@ defmodule Arrow.ShuttlesTest do
       assert is_nil(Shuttles.stop_or_gtfs_stop_for_stop_id("nonexistent-stop"))
     end
   end
+
+  describe "get_travel_time/2" do
+    test "calculates travel time between two Arrow stops" do
+      stop1 = stop_fixture(%{stop_lat: 42.38758, stop_lon: -71.11934})
+      stop2 = stop_fixture(%{stop_lat: 42.373396, stop_lon: -71.1202})
+
+      duration = Shuttles.get_travel_time(stop1, stop2)
+      assert duration == {:ok, 150}
+    end
+
+    test "calculates travel time between an Arrow stop and a GTFS stops" do
+    end
+
+    test "calculates travel time between two GTFS stops" do
+    end
+  end
 end
