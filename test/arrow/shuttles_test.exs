@@ -4,9 +4,13 @@ defmodule Arrow.ShuttlesTest do
   import Arrow.Factory
   alias Arrow.Shuttles
   alias Arrow.Shuttles.Shape
+  alias Arrow.HTTPMock
   import Arrow.ShuttlesFixtures
   import Arrow.StopsFixtures
   import Test.Support.Helpers
+  import Mox
+
+  setup :verify_on_exit!
 
   describe "shapes with s3 functionality enabled (mocked)" do
     @valid_shape %{
@@ -259,18 +263,141 @@ defmodule Arrow.ShuttlesTest do
   end
 
   describe "get_travel_time/2" do
+    @mock_success_response %{
+      "data" => %{
+        "plan" => %{
+          "itineraries" => [%{"duration" => 300}],
+          "routingErrors" => []
+        }
+      }
+    }
+
+    @mock_out_of_bounds_response %{
+      "data" => %{
+        "plan" => %{
+          "itineraries" => [],
+          "routingErrors" => [
+            %{
+              "code" => "OUTSIDE_BOUNDS",
+              "description" =>
+                "Trip is not possible. You might be trying to plan a trip outside the map data boundary.",
+              "inputField" => "TO"
+            }
+          ]
+        }
+      }
+    }
+
+    @mock_empty_response %{
+      "data" => %{
+        "plan" => %{
+          "itineraries" => [],
+          "routingErrors" => []
+        }
+      }
+    }
+
     test "calculates travel time between two Arrow stops" do
+      expect(HTTPMock, :post, fn url, query, _headers, _opts ->
+        assert url == "http://otp2-local.mbtace.com/otp/gtfs/v1"
+
+        assert {_,
+                %{
+                  "query" =>
+                    "  query Plan($from: InputCoordinates, $to: InputCoordinates, $modes: [TransportMode]) {\n              plan(from: $from, to: $to, transportModes: $modes) {\n                  itineraries {\n                      duration\n                  }\n                  routingErrors {\n                      code\n                      inputField\n                      description\n                  }\n              }\n          }\n",
+                  "variables" => %{
+                    "from" => %{"lat" => 42.38758, "lon" => -71.11934},
+                    "modes" => [%{"mode" => "CAR"}],
+                    "to" => %{"lat" => 42.373396, "lon" => -71.1202}
+                  }
+                }} = Jason.decode(query)
+
+        {:ok,
+         %HTTPoison.Response{
+           status_code: 200,
+           body: Jason.encode!(@mock_success_response)
+         }}
+      end)
+
       stop1 = stop_fixture(%{stop_lat: 42.38758, stop_lon: -71.11934})
       stop2 = stop_fixture(%{stop_lat: 42.373396, stop_lon: -71.1202})
 
       duration = Shuttles.get_travel_time(stop1, stop2)
-      assert duration == {:ok, 150}
+      assert duration == {:ok, 300}
+    end
+
+    test "errors if it cannot travel time between two stops due to bounds" do
+      expect(HTTPMock, :post, fn _url, _query, _headers, _opts ->
+        {:ok,
+         %HTTPoison.Response{
+           status_code: 200,
+           body: Jason.encode!(@mock_out_of_bounds_response)
+         }}
+      end)
+
+      stop1 = stop_fixture(%{stop_lat: 42.38758, stop_lon: -71.11934})
+      stop2 = stop_fixture(%{stop_lat: 42.373396, stop_lon: -70.1202})
+
+      duration = Shuttles.get_travel_time(stop1, stop2)
+      assert {:error, ["Error: Could not find route" <> _rest | _]} = duration
+    end
+
+    test "returns 0 for travel time if OTP doesn't return any itineraries or errors" do
+      expect(HTTPMock, :post, fn _url, _query, _headers, _opts ->
+        {:ok,
+         %HTTPoison.Response{
+           status_code: 200,
+           body: Jason.encode!(@mock_empty_response)
+         }}
+      end)
+
+      stop1 = stop_fixture(%{stop_lat: 42.38758, stop_lon: -71.11934})
+      stop2 = stop_fixture(%{stop_lat: 42.373396, stop_lon: -70.1202})
+
+      duration = Shuttles.get_travel_time(stop1, stop2)
+      assert {:ok, 0} = duration
     end
 
     test "calculates travel time between an Arrow stop and a GTFS stops" do
+      stop1 = stop_fixture(%{stop_lat: 42.38758, stop_lon: -71.11934})
+      [stop_lat, stop_lon] = [stop1.stop_lat, stop1.stop_lon]
+      gtfs_stop = insert(:gtfs_stop)
+      [gtfs_lat, gtfs_lon] = [gtfs_stop.lat, gtfs_stop.lon]
+
+      expect(HTTPMock, :post, fn _url, query, _headers, _opts ->
+        assert {_,
+                %{
+                  "query" =>
+                    "  query Plan($from: InputCoordinates, $to: InputCoordinates, $modes: [TransportMode]) {\n              plan(from: $from, to: $to, transportModes: $modes) {\n                  itineraries {\n                      duration\n                  }\n                  routingErrors {\n                      code\n                      inputField\n                      description\n                  }\n              }\n          }\n",
+                  "variables" => %{
+                    "from" => %{"lat" => ^stop_lat, "lon" => ^stop_lon},
+                    "modes" => [%{"mode" => "CAR"}],
+                    "to" => %{"lat" => ^gtfs_lat, "lon" => ^gtfs_lon}
+                  }
+                }} = Jason.decode(query)
+
+        {:ok,
+         %HTTPoison.Response{
+           status_code: 200,
+           body: Jason.encode!(@mock_success_response)
+         }}
+      end)
+
+      duration = Shuttles.get_travel_time(stop1, gtfs_stop)
+      assert duration == {:ok, 300}
     end
 
-    test "calculates travel time between two GTFS stops" do
+    test "raises if a stop has missing lat/lon data" do
+      stop1 = stop_fixture(%{stop_lat: 42.38758, stop_lon: -71.11934})
+
+      stop2 =
+        %{stop_lat: 42.373396, stop_lon: -70.1202}
+        |> stop_fixture
+        |> Map.drop([:stop_lat, :stop_lon])
+
+      assert_raise MatchError, ~r/Missing lat\/lon/, fn ->
+        Shuttles.get_travel_time(stop1, stop2)
+      end
     end
   end
 end

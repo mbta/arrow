@@ -3,3 +3,4 @@
 Application.put_env(:wallaby, :base_url, ArrowWeb.Endpoint.url())
 ExUnit.start(exclude: [:integration])
 Ecto.Adapters.SQL.Sandbox.mode(Arrow.Repo, :manual)
+Neuron.Config.set(connection_module: Arrow.Neuron.Connection.Http)
