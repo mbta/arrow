@@ -7,6 +7,8 @@ defmodule Arrow.Shuttles do
 
   alias Arrow.Repo
   alias ArrowWeb.ErrorHelpers
+  alias Arrow.OpenRouteServiceAPI
+  alias Arrow.OpenRouteServiceAPI.DirectionsResponse
 
   alias Arrow.Gtfs.Route, as: GtfsRoute
   alias Arrow.Gtfs.Stop, as: GtfsStop
@@ -364,20 +366,28 @@ defmodule Arrow.Shuttles do
     }
   end
 
-  @spec get_stop_coords(%Stop{} | %GtfsStop{}) :: {:ok, map()} | {:error, any}
-  def get_stop_coords(%GtfsStop{lat: lat, lon: lon}) do
+  @spec get_stop_coordinates(%RouteStop{} | %Stop{} | %GtfsStop{}) :: {:ok, map()} | {:error, any}
+  def get_stop_coordinates(%RouteStop{gtfs_stop: stop, stop: nil}) do
+    get_stop_coordinates(stop)
+  end
+
+  def get_stop_coordinates(%RouteStop{gtfs_stop: nil, stop: stop}) do
+    get_stop_coordinates(stop)
+  end
+
+  def get_stop_coordinates(%GtfsStop{lat: lat, lon: lon}) do
     {:ok, %{lat: lat, lon: lon}}
   end
 
-  def get_stop_coords(%Stop{stop_lat: lat, stop_lon: lon}) do
+  def get_stop_coordinates(%Stop{stop_lat: lat, stop_lon: lon}) do
     {:ok, %{lat: lat, lon: lon}}
   end
 
-  def get_stop_coords(stop) do
+  def get_stop_coordinates(stop) do
     {:error, "Missing lat/lon data for stop #{inspect(stop)}"}
   end
 
-  defp handle_otp_response(result) do
+  defp handle_response(result) do
     cond do
       Enum.count(result["plan"]["routingErrors"]) > 0 ->
         message =
@@ -393,43 +403,11 @@ defmodule Arrow.Shuttles do
     end
   end
 
-  @spec get_travel_time(%Stop{} | %GtfsStop{}, %Stop{} | %GtfsStop{}) ::
+  @spec get_travel_times(list(%{lat: number(), lon: number()})) ::
           {:ok, number()} | {:error, any}
-  def get_travel_time(from_stop, to_stop) do
-    {:ok, from_coords} = get_stop_coords(from_stop)
-    {:ok, to_coords} = get_stop_coords(to_stop)
-
-    otp_base_url = "http://otp2-local.mbtace.com"
-    otp_url = otp_base_url <> "/otp/gtfs/v1"
-
-    query = """
-      query Plan($from: InputCoordinates, $to: InputCoordinates, $modes: [TransportMode]) {
-                  plan(from: $from, to: $to, transportModes: $modes) {
-                      itineraries {
-                          duration
-                      }
-                      routingErrors {
-                          code
-                          inputField
-                          description
-                      }
-                  }
-              }
-    """
-
-    with {:ok, %Neuron.Response{body: body}} <-
-           Neuron.query(
-             query,
-             %{
-               from: from_coords,
-               to: to_coords,
-               modes: [%{mode: "CAR"}]
-             },
-             url: otp_url
-           ),
-         {:ok, result} <- Map.fetch(body, "data") do
-      handle_otp_response(result)
-    end
+  def get_travel_times(coordinates) do
+    {:ok, %DirectionsResponse{segments: segments}} = OpenRouteServiceAPI.directions(coordinates)
+    segments |> Enum.map(&round(&1.duration))
   end
 
   def list_disruptable_routes do

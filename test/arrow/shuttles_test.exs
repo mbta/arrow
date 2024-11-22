@@ -263,6 +263,7 @@ defmodule Arrow.ShuttlesTest do
   end
 
   describe "get_travel_time/2" do
+    # TODO: update mock responses and query handling
     @mock_success_response %{
       "data" => %{
         "plan" => %{
@@ -298,19 +299,17 @@ defmodule Arrow.ShuttlesTest do
     }
 
     test "calculates travel time between two Arrow stops" do
-      expect(HTTPMock, :post, fn url, query, _headers, _opts ->
-        assert url == "http://otp2-local.mbtace.com/otp/gtfs/v1"
+      expect(HTTPMock, :post, fn url, body, _headers ->
+        assert url == "https://api.openrouteservice.org/v2/directions/driving-car/json"
 
-        assert {_,
+        assert {:ok,
                 %{
-                  "query" =>
-                    "  query Plan($from: InputCoordinates, $to: InputCoordinates, $modes: [TransportMode]) {\n              plan(from: $from, to: $to, transportModes: $modes) {\n                  itineraries {\n                      duration\n                  }\n                  routingErrors {\n                      code\n                      inputField\n                      description\n                  }\n              }\n          }\n",
-                  "variables" => %{
-                    "from" => %{"lat" => 42.38758, "lon" => -71.11934},
-                    "modes" => [%{"mode" => "CAR"}],
-                    "to" => %{"lat" => 42.373396, "lon" => -71.1202}
-                  }
-                }} = Jason.decode(query)
+                  "coordinates" => [
+                    %{"lat" => 42.38758, "lon" => -71.11934},
+                    %{"lat" => 42.373396, "lon" => -71.1202}
+                  ],
+                  "units" => "mi"
+                }} = Jason.decode(body)
 
         {:ok,
          %HTTPoison.Response{
@@ -327,7 +326,7 @@ defmodule Arrow.ShuttlesTest do
     end
 
     test "errors if it cannot travel time between two stops due to bounds" do
-      expect(HTTPMock, :post, fn _url, _query, _headers, _opts ->
+      expect(HTTPMock, :post, fn _url, _query, _headers ->
         {:ok,
          %HTTPoison.Response{
            status_code: 200,
@@ -343,7 +342,7 @@ defmodule Arrow.ShuttlesTest do
     end
 
     test "returns 0 for travel time if OTP doesn't return any itineraries or errors" do
-      expect(HTTPMock, :post, fn _url, _query, _headers, _opts ->
+      expect(HTTPMock, :post, fn _url, _query, _headers ->
         {:ok,
          %HTTPoison.Response{
            status_code: 200,
@@ -364,17 +363,15 @@ defmodule Arrow.ShuttlesTest do
       gtfs_stop = insert(:gtfs_stop)
       [gtfs_lat, gtfs_lon] = [gtfs_stop.lat, gtfs_stop.lon]
 
-      expect(HTTPMock, :post, fn _url, query, _headers, _opts ->
-        assert {_,
+      expect(HTTPMock, :post, fn _url, body, _headers ->
+        assert {:ok,
                 %{
-                  "query" =>
-                    "  query Plan($from: InputCoordinates, $to: InputCoordinates, $modes: [TransportMode]) {\n              plan(from: $from, to: $to, transportModes: $modes) {\n                  itineraries {\n                      duration\n                  }\n                  routingErrors {\n                      code\n                      inputField\n                      description\n                  }\n              }\n          }\n",
-                  "variables" => %{
-                    "from" => %{"lat" => ^stop_lat, "lon" => ^stop_lon},
-                    "modes" => [%{"mode" => "CAR"}],
-                    "to" => %{"lat" => ^gtfs_lat, "lon" => ^gtfs_lon}
-                  }
-                }} = Jason.decode(query)
+                  "coordinates" => [
+                    %{"lat" => ^stop_lat, "lon" => ^stop_lon},
+                    %{"lat" => ^gtfs_lat, "lon" => ^gtfs_lon}
+                  ],
+                  "units" => "mi"
+                }} = Jason.decode(body)
 
         {:ok,
          %HTTPoison.Response{

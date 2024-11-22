@@ -2,6 +2,7 @@ defmodule Arrow.Factory do
   @moduledoc false
 
   use ExMachina.Ecto, repo: Arrow.Repo
+  use Arrow.OpenRouteServiceFactory
 
   def adjustment_factory do
     %Arrow.Adjustment{
