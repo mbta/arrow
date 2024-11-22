@@ -70,7 +70,7 @@ defmodule Arrow.MixProject do
       {:phoenix_live_reload, "~> 1.5", only: :dev},
       {:phoenix_html, "~> 4.0"},
       {:phoenix_html_helpers, "~> 1.0"},
-      {:phoenix_live_react, git: "https://github.com/meagharty/phoenix_live_react.git"},
+      {:phoenix_live_react, "~> 0.6"},
       {:phoenix_live_view, "~> 0.20.14"},
       {:phoenix_live_dashboard, "~> 0.7"},
       {:phoenix_pubsub, "~> 2.0"},
