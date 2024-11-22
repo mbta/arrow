@@ -3,4 +3,8 @@
 Application.put_env(:wallaby, :base_url, ArrowWeb.Endpoint.url())
 ExUnit.start(exclude: [:integration])
 Ecto.Adapters.SQL.Sandbox.mode(Arrow.Repo, :manual)
-Neuron.Config.set(connection_module: Arrow.Neuron.Connection.Http)
+Mox.defmock(Arrow.OpenRouteServiceAPI.MockClient, for: Arrow.OpenRouteServiceAPI.Client)
+
+Application.put_env(:arrow, Arrow.OpenRouteServiceAPI,
+  client: Arrow.OpenRouteServiceAPI.MockClient
+)
