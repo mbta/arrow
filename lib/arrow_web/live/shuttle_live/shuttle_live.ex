@@ -173,6 +173,13 @@ defmodule ArrowWeb.ShuttleViewLive do
       <button type="button" value={input_value(f_route, :direction_id)} phx-click="add_stop">
         Add Another Stop
       </button>
+      <button
+        type="button"
+        value={input_value(f_route, :direction_id)}
+        phx-click="get_time_to_next_stop"
+      >
+        Retrieve Estimates
+      </button>
     </.inputs_for>
     <div class="mt-8 flex items-center space-x-4">
       <span>If you'd like to create a stop:</span>
@@ -373,6 +380,26 @@ defmodule ArrowWeb.ShuttleViewLive do
     {:noreply, socket}
   end
 
+  def handle_event("get_time_to_next_stop", %{"value" => direction_id}, socket) do
+    direction_id = String.to_existing_atom(direction_id)
+
+    socket =
+      update(socket, :form, fn %{source: changeset} ->
+        existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
+
+        new_routes =
+          Enum.map(existing_routes, fn route_changeset ->
+            update_route_changeset_with_stop_time_estimates(route_changeset, direction_id)
+          end)
+
+        changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
+
+        to_form(changeset)
+      end)
+
+    {:noreply, socket}
+  end
+
   defp combine_params(%{
          "shuttle" => shuttle_params,
          "routes_with_stops" => routes_with_stops_params
@@ -393,6 +420,46 @@ defmodule ArrowWeb.ShuttleViewLive do
             {route_index, Map.merge(route, route_stop_fields)}
           end)
     }
+  end
+
+  defp update_route_changeset_with_stop_time_estimates(route_changeset, direction_id) do
+    if Ecto.Changeset.get_field(route_changeset, :direction_id) == direction_id do
+      existing_stops_changeset = Ecto.Changeset.get_assoc(route_changeset, :route_stops)
+      existing_stops_data = Ecto.Changeset.get_field(route_changeset, :route_stops)
+
+      stop_coordinates = existing_stops_data |> Enum.map(&Shuttles.get_stop_coordinates/1)
+
+      case Enum.all?(stop_coordinates, &match?({:ok, _}, &1)) do
+        true ->
+          stop_durations =
+            stop_coordinates
+            |> Enum.map(fn {:ok, c} -> %{"lat" => c.lat, "lon" => c.lon} end)
+            |> Shuttles.get_travel_times()
+
+          updated_stops =
+            existing_stops_changeset
+            |> Enum.zip(stop_durations ++ [nil])
+            |> Enum.map(fn {stop_changeset, duration} ->
+              Ecto.Changeset.put_change(stop_changeset, :time_to_next_stop, duration)
+            end)
+
+          Ecto.Changeset.put_assoc(
+            route_changeset,
+            :route_stops,
+            updated_stops
+          )
+
+        false ->
+          missing_coordinate_errors =
+            stop_coordinates
+            |> Enum.filter(&match?({:error, _}, &1))
+            |> Enum.map(fn {:error, msg} -> "#{msg}" end)
+
+          route_changeset |> Ecto.Changeset.add_error(:route_stops, missing_coordinate_errors)
+      end
+    else
+      route_changeset
+    end
   end
 
   defp update_route_changeset_with_new_stop(route_changeset, direction_id) do
