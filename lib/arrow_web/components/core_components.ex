@@ -401,6 +401,54 @@ defmodule ArrowWeb.CoreComponents do
   end
 
   @doc """
+    LiveSelect with styling
+  """
+  attr :field, Phoenix.HTML.FormField,
+    doc: "a form field struct retrieved from the form, for example: @form[:email]"
+
+  attr :class, :string, default: nil
+  attr :label, :string
+  # live-select opts
+  attr :placeholder, :string
+  attr :options, :any
+  attr :value_mapper, :any
+  attr :allow_clear, :boolean
+
+  def live_select(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+    assigns =
+      assigns
+      |> assign(:errors, Enum.map(field.errors, &translate_error(&1)))
+      |> assign(:live_select_opts, assigns_to_attributes(assigns, [:errors, :label, :class]))
+
+    ~H"""
+    <div class="form-group">
+      <div phx-feedback-for={@field.name}>
+        <.label for={@field.id}><%= @label %></.label>
+        <LiveSelect.live_select
+          field={@field}
+          text_input_class={[
+            "form-control",
+            @errors != [] && "is-invalid",
+            @class
+          ]}
+          clear_button_class={[
+            "btn",
+            "btn-link",
+            "close"
+          ]}
+          dropdown_extra_class={[
+            "list-unstyled"
+          ]}
+          {@live_select_opts}
+        />
+
+        <.error :for={msg <- @errors}><%= msg %></.error>
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
   Renders a label.
   """
   attr :for, :string, default: nil

@@ -39,7 +39,6 @@ defmodule ArrowWeb.ShuttleLiveTest do
         destination: "Broadway",
         direction_desc: "Southbound",
         direction_id: "0",
-        shape_id: "",
         suffix: "",
         waypoint: ""
       },
@@ -48,13 +47,25 @@ defmodule ArrowWeb.ShuttleLiveTest do
         destination: "Harvard",
         direction_desc: "Northbound",
         direction_id: "1",
-        shape_id: "",
         suffix: "",
         waypoint: ""
       }
     },
     shuttle_name: "Meh",
     status: "draft"
+  }
+
+  @update_hidden_attrs %{
+    routes: %{
+      "0" => %{
+        shape_id: "",
+        shape_id_text_input: ""
+      },
+      "1" => %{
+        shape_id: "",
+        shape_id_text_input: ""
+      }
+    }
   }
 
   @invalid_attrs %{
@@ -106,7 +117,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       {:ok, conn} =
         edit_live
         |> form("#shuttle-form", shuttle: @update_attrs)
-        |> render_submit()
+        |> render_submit(@update_hidden_attrs)
         |> follow_redirect(conn)
 
       assert html_response(conn, 200) =~ ~r/shuttle updated successfully/i
@@ -226,6 +237,56 @@ defmodule ArrowWeb.ShuttleLiveTest do
 
       assert new_live |> form("#shuttle-form", shuttle: @invalid_attrs) |> render_submit() =~
                "can&#39;t be blank"
+    end
+  end
+
+  describe "shape select" do
+    setup [:create_shuttle]
+
+    @tag :authenticated_admin
+    test "sets the selected shape via hidden input values", %{conn: conn, shuttle: shuttle} do
+      {:ok, edit_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
+
+      first_route = List.first(shuttle.routes)
+      second_route = Enum.at(shuttle.routes, 1)
+
+      update_first_shape_attrs = %{
+        routes: %{
+          "0" => %{
+            shape_id: second_route.shape_id,
+            shape_id_text_input: second_route.shape.name
+          }
+        }
+      }
+
+      # `#` and escaping the brackets doesn't seem to work with this selector format (unlike $() in the browser)
+      live_component_selector = ~s{[id="shuttle[routes][0]_shape_id_live_select_component"]}
+      hidden_input_selector = ~s{#shuttle-form_routes_0_shape_id}
+      displayed_value_selector = ~s{#shuttle-form_routes_0_shape_id_text_input}
+
+      # initially set to original shape
+      assert edit_live
+             |> element(live_component_selector)
+             |> render() =~ ~s{value="#{first_route.shape_id}"}
+
+      assert edit_live
+             |> element(displayed_value_selector)
+             |> render() =~ ~s{value="#{first_route.shape.name}"}
+
+      assert edit_live
+             |> element(hidden_input_selector)
+             |> render() =~ ~s{value="#{first_route.shape_id}"}
+
+      rendered =
+        edit_live
+        |> element("#shuttle-form")
+        |> render_change(%{shuttle: update_first_shape_attrs})
+
+      refute rendered =~ "#{first_route.shape.name}"
+      assert rendered =~ "#{second_route.shape.name}"
+
+      assert rendered =~
+               "name=\"shuttle[routes][0][shape_id]\" type=\"hidden\" value=\"#{second_route.shape_id}\"/>"
     end
   end
 

@@ -3,7 +3,10 @@ defmodule ArrowWeb.ErrorHelpers do
   Conveniences for translating and building error messages.
   """
 
-  use Phoenix.HTML
+  # https://hexdocs.pm/phoenix_html/changelog.html#v4-0-0-2023-12-19
+  # Use all HTML functionality (forms, tags, etc)
+  # Still needed for old style Phoenix HTML like <link>, <content_tag>
+  use PhoenixHTMLHelpers
 
   @doc """
   Generates tag for inlined form input errors.
