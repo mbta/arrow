@@ -103,6 +103,18 @@ defmodule ArrowWeb.ShuttleViewLive do
           </div>
         </div>
       </.inputs_for>
+      <div class="flex items-center space-x-4">
+        <span>If you'd like to upload a shape: </span>
+        <.link_button
+          class="btn-primary"
+          href={~p"/shapes_upload"}
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          Upload Shape
+        </.link_button>
+      </div>
+      <hr />
       <h2>define stops</h2>
       <.inputs_for :let={f_route} field={f[:routes]} as={:routes_with_stops}>
         <h4>direction <%= input_value(f_route, :direction_id) %></h4>
