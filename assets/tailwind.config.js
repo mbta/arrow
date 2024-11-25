@@ -6,7 +6,12 @@ const fs = require("fs")
 const path = require("path")
 
 module.exports = {
-  content: ["./js/**/*.js", "../lib/arrow_web.ex", "../lib/arrow_web/**/*.*ex"],
+  content: [
+    "./js/**/*.js",
+    "../lib/arrow_web.ex",
+    "../lib/arrow_web/**/*.*ex",
+    "../deps/live_select/lib/live_select/component.*ex",
+  ],
   theme: {
     extend: {
       colors: {

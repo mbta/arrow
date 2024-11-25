@@ -1,6 +1,7 @@
 // Include phoenix_html to handle method=PUT/DELETE in forms and buttons.
 import "phoenix_html"
 import LiveReact from "./LiveReactPhoenix"
+import live_select from "live_select"
 // Establish Phoenix Socket and LiveView configuration.
 import { Socket } from "phoenix"
 import { LiveSocket } from "phoenix_live_view"
@@ -21,7 +22,7 @@ declare global {
 }
 
 // https://github.com/fidr/phoenix_live_react
-const hooks = { LiveReact }
+const hooks = { LiveReact, ...live_select }
 
 const csrfToken = document
   .querySelector("meta[name='csrf-token']")!

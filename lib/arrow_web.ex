@@ -58,9 +58,12 @@ defmodule ArrowWeb do
       # Include general helpers for rendering HTML
       unquote(html_helpers())
 
+      # https://hexdocs.pm/phoenix_html/changelog.html#v4-0-0-2023-12-19
       # Use all HTML functionality (forms, tags, etc)
       # Still needed for old style Phoenix HTML like <link>, <content_tag>
-      use Phoenix.HTML
+      import Phoenix.HTML
+      import Phoenix.HTML.Form
+      use PhoenixHTMLHelpers
 
       import ArrowWeb.ErrorHelpers
       use Gettext, backend: ArrowWeb.Gettext
