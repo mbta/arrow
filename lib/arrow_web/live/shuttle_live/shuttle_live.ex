@@ -149,6 +149,12 @@ defmodule ArrowWeb.ShuttleViewLive do
           Add Another Stop
         </button>
       </.inputs_for>
+      <div class="mt-8 flex items-center space-x-4">
+        <span>If you'd like to create a stop:</span>
+        <.link_button class="btn-primary" href={~p"/stops/new"} target="_blank">
+          Create Stop
+        </.link_button>
+      </div>
       <:actions>
         <.button>Save Shuttle</.button>
       </:actions>
