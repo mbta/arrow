@@ -104,13 +104,8 @@ defmodule ArrowWeb.ShuttleViewLive do
         </div>
       </.inputs_for>
       <div class="flex items-center space-x-4">
-        <span>If you'd like to upload a shape: </span>
-        <.link_button
-          class="btn-primary"
-          href={~p"/shapes_upload"}
-          target="_blank"
-          rel="noreferrer noopener"
-        >
+        <span>If you'd like to upload a shape:</span>
+        <.link_button class="btn-primary" href={~p"/shapes_upload"} target="_blank">
           Upload Shape
         </.link_button>
       </div>
