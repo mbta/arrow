@@ -126,10 +126,16 @@ defmodule ArrowWeb.ShuttleViewLive do
     ~H"""
     <.inputs_for :let={f_route} field={@f[:routes]} as={:routes_with_stops}>
       <h4>direction <%= input_value(f_route, :direction_id) %></h4>
-      <div class="container" id={"stops-dir-#{input_value(f_route, :direction_id)}"}>
+      <div
+        class="container"
+        id={"stops-dir-#{input_value(f_route, :direction_id)}"}
+        phx-hook="sortable"
+        data-direction_id={input_value(f_route, :direction_id)}
+      >
         <.inputs_for :let={f_route_stop} field={f_route[:route_stops]}>
-          <div class="row">
-            <.input field={f_route_stop[:display_stop_id]} label="Stop ID" class="col-lg-7" />
+          <div class="row item" data-stop_sequence={input_value(f_route_stop, :stop_sequence)}>
+            <.icon name="hero-bars-3" class="h-4 w-4 drag-handle col-lg-1 cursor-grab" />
+            <.input field={f_route_stop[:display_stop_id]} label="Stop ID" class="col-lg-6" />
             <.input
               field={f_route_stop[:time_to_next_stop]}
               type="number"
@@ -344,6 +350,34 @@ defmodule ArrowWeb.ShuttleViewLive do
     {:noreply, socket}
   end
 
+  def handle_event(
+        "reorder_stops",
+        %{
+          "direction_id" => direction_id,
+          "old" => old,
+          "new" => new
+        },
+        socket
+      ) do
+    direction_id = String.to_existing_atom(direction_id)
+
+    socket =
+      update(socket, :form, fn %{source: changeset} ->
+        existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
+
+        new_routes =
+          Enum.map(existing_routes, fn route_changeset ->
+            update_route_changeset_with_reordered_stops(route_changeset, direction_id, old, new)
+          end)
+
+        changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
+
+        to_form(changeset)
+      end)
+
+    {:noreply, socket}
+  end
+
   defp combine_params(%{
          "shuttle" => shuttle_params,
          "routes_with_stops" => routes_with_stops_params
@@ -386,6 +420,51 @@ defmodule ArrowWeb.ShuttleViewLive do
     else
       route_changeset
     end
+  end
+
+  defp update_route_changeset_with_reordered_stops(route_changeset, direction_id, old, new) do
+    if Ecto.Changeset.get_field(route_changeset, :direction_id) == direction_id do
+      existing_stops = Ecto.Changeset.get_field(route_changeset, :route_stops)
+
+      moved_route_stop = Enum.at(existing_stops, old)
+
+      new_route_stop_changes =
+        existing_stops
+        |> List.delete_at(old)
+        |> List.insert_at(new, moved_route_stop)
+        |> ensure_stop_sequence_order()
+
+      Ecto.Changeset.put_assoc(
+        route_changeset,
+        :route_stops,
+        new_route_stop_changes
+      )
+    else
+      route_changeset
+    end
+  end
+
+  defp ensure_stop_sequence_order(route_stops) do
+    {new_route_stop_changes, _max_stop_sequence} =
+      Enum.reduce(route_stops, {[], 0}, fn route_stop, {route_stop_changes, prev_stop_sequence} ->
+        current_stop_sequence = route_stop.stop_sequence
+
+        if current_stop_sequence > prev_stop_sequence do
+          {route_stop_changes ++ [Arrow.Shuttles.RouteStop.changeset(route_stop, %{})],
+           current_stop_sequence}
+        else
+          new_stop_sequence = prev_stop_sequence + 1
+
+          {route_stop_changes ++
+             [
+               Arrow.Shuttles.RouteStop.changeset(route_stop, %{
+                 stop_sequence: new_stop_sequence
+               })
+             ], new_stop_sequence}
+        end
+      end)
+
+    new_route_stop_changes
   end
 
   defp validate(params, socket) do
