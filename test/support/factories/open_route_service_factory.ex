@@ -8,15 +8,15 @@ defmodule Arrow.OpenRouteServiceFactory do
     quote do
       def ors_directions_summary_json_factory do
         %{
-          "distance" => sequence("ors_summary_distance"),
-          "duration" => sequence("ors_summary_duration")
+          "distance" => sequence("ors_summary_distance", & &1),
+          "duration" => sequence("ors_summary_duration", & &1)
         }
       end
 
       def ors_directions_distance_factory do
         %{
-          "distance" => sequence("ors_segment_distance"),
-          "duration" => sequence("ors_segment_duration")
+          "distance" => sequence("ors_segment_distance", & &1),
+          "duration" => sequence("ors_segment_duration", & &1)
         }
       end
 
