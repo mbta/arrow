@@ -4,7 +4,6 @@ defmodule Arrow.ShuttlesTest do
   import Arrow.Factory
   alias Arrow.Shuttles
   alias Arrow.Shuttles.Shape
-  alias Arrow.HTTPMock
   import Arrow.ShuttlesFixtures
   import Arrow.StopsFixtures
   import Test.Support.Helpers
@@ -262,139 +261,108 @@ defmodule Arrow.ShuttlesTest do
     end
   end
 
-  describe "get_travel_time/2" do
-    # TODO: update mock responses and query handling
-    @mock_success_response %{
-      "data" => %{
-        "plan" => %{
-          "itineraries" => [%{"duration" => 300}],
-          "routingErrors" => []
-        }
-      }
-    }
+  describe "get_travel_times/2" do
+    test "get_travel_times/1 calculates travel time between coordinates" do
+      expect(
+        Arrow.OpenRouteServiceAPI.MockClient,
+        :get_directions,
+        fn %Arrow.OpenRouteServiceAPI.DirectionsRequest{
+             coordinates: [[-71.11934, 42.38758], [-71.1202, 42.373396]] = coordinates
+           } ->
+          {:ok,
+           build(
+             :ors_directions_json,
+             %{
+               coordinates: coordinates,
+               segments: [
+                 %{
+                   "duration" => 100,
+                   "distance" => 0.20
+                 },
+                 %{
+                   "duration" => 100,
+                   "distance" => 0.20
+                 }
+               ]
+             }
+           )}
+        end
+      )
 
-    @mock_out_of_bounds_response %{
-      "data" => %{
-        "plan" => %{
-          "itineraries" => [],
-          "routingErrors" => [
-            %{
-              "code" => "OUTSIDE_BOUNDS",
-              "description" =>
-                "Trip is not possible. You might be trying to plan a trip outside the map data boundary.",
-              "inputField" => "TO"
-            }
-          ]
-        }
-      }
-    }
+      coord1 = %{"lat" => 42.38758, "lon" => -71.11934}
+      coord2 = %{"lat" => 42.373396, "lon" => -71.1202}
 
-    @mock_empty_response %{
-      "data" => %{
-        "plan" => %{
-          "itineraries" => [],
-          "routingErrors" => []
-        }
-      }
-    }
-
-    test "calculates travel time between two Arrow stops" do
-      expect(HTTPMock, :post, fn url, body, _headers ->
-        assert url == "https://api.openrouteservice.org/v2/directions/driving-car/json"
-
-        assert {:ok,
-                %{
-                  "coordinates" => [
-                    %{"lat" => 42.38758, "lon" => -71.11934},
-                    %{"lat" => 42.373396, "lon" => -71.1202}
-                  ],
-                  "units" => "mi"
-                }} = Jason.decode(body)
-
-        {:ok,
-         %HTTPoison.Response{
-           status_code: 200,
-           body: Jason.encode!(@mock_success_response)
-         }}
-      end)
-
-      stop1 = stop_fixture(%{stop_lat: 42.38758, stop_lon: -71.11934})
-      stop2 = stop_fixture(%{stop_lat: 42.373396, stop_lon: -71.1202})
-
-      duration = Shuttles.get_travel_time(stop1, stop2)
-      assert duration == {:ok, 300}
+      {:ok, [100, 100]} = Shuttles.get_travel_times([coord1, coord2])
     end
 
-    test "errors if it cannot travel time between two stops due to bounds" do
-      expect(HTTPMock, :post, fn _url, _query, _headers ->
-        {:ok,
-         %HTTPoison.Response{
-           status_code: 200,
-           body: Jason.encode!(@mock_out_of_bounds_response)
-         }}
-      end)
+    test "errors if it cannot determine a route between the coordinates" do
+      expect(Arrow.OpenRouteServiceAPI.MockClient,
+        :get_directions,
+        fn %Arrow.OpenRouteServiceAPI.DirectionsRequest{} -> {:error, %{"code" => 2010}} end)
 
-      stop1 = stop_fixture(%{stop_lat: 42.38758, stop_lon: -71.11934})
-      stop2 = stop_fixture(%{stop_lat: 42.373396, stop_lon: -70.1202})
+      coord1 = %{"lat" => 42.38758, "lon" => -71.11934}
+      coord2 = %{"lat" => 42.373396, "lon" => -70.1202}
 
-      duration = Shuttles.get_travel_time(stop1, stop2)
-      assert {:error, ["Error: Could not find route" <> _rest | _]} = duration
+      assert {:error, %{type: :no_route}} = Shuttles.get_travel_times([coord1, coord2])
     end
 
-    test "returns 0 for travel time if OTP doesn't return any itineraries or errors" do
-      expect(HTTPMock, :post, fn _url, _query, _headers ->
-        {:ok,
-         %HTTPoison.Response{
-           status_code: 200,
-           body: Jason.encode!(@mock_empty_response)
-         }}
-      end)
+    test "errors if OpenRouteService returns an unknown error" do
+      expect(Arrow.OpenRouteServiceAPI.MockClient,
+        :get_directions,
+        fn %Arrow.OpenRouteServiceAPI.DirectionsRequest{} -> {:error, %{"code" => -1}} end)
 
-      stop1 = stop_fixture(%{stop_lat: 42.38758, stop_lon: -71.11934})
-      stop2 = stop_fixture(%{stop_lat: 42.373396, stop_lon: -70.1202})
+      coord1 = %{"lat" => 42.38758, "lon" => -71.11934}
+      coord2 = %{"lat" => 42.373396, "lon" => -70.1202}
 
-      duration = Shuttles.get_travel_time(stop1, stop2)
-      assert {:ok, 0} = duration
+      assert {:error, %{type: :unknown}} = Shuttles.get_travel_times([coord1, coord2])
+    end
+  end
+
+  describe "get_stop_coordinates/1" do
+    test "gets the stop coordinates for an Arrow stop from a RouteStop" do
+      lat = 42.38758
+      lon = -71.11934
+      stop = %Shuttles.RouteStop{
+        stop: stop_fixture(%{stop_lat: lat, stop_lon: lon}),
+        gtfs_stop: nil
+      }
+      coordinates = %{lat: lat, lon: lon}
+
+      assert {:ok, ^coordinates} = Shuttles.get_stop_coordinates(stop)
     end
 
-    test "calculates travel time between an Arrow stop and a GTFS stops" do
-      stop1 = stop_fixture(%{stop_lat: 42.38758, stop_lon: -71.11934})
-      [stop_lat, stop_lon] = [stop1.stop_lat, stop1.stop_lon]
+    test "gets the stop coordinates for an gtfs stop from a RouteStop" do
       gtfs_stop = insert(:gtfs_stop)
-      [gtfs_lat, gtfs_lon] = [gtfs_stop.lat, gtfs_stop.lon]
+      coordinates = %{lat: gtfs_stop.lat, lon: gtfs_stop.lon}
+      stop = %Shuttles.RouteStop{gtfs_stop: gtfs_stop, stop: nil}
 
-      expect(HTTPMock, :post, fn _url, body, _headers ->
-        assert {:ok,
-                %{
-                  "coordinates" => [
-                    %{"lat" => ^stop_lat, "lon" => ^stop_lon},
-                    %{"lat" => ^gtfs_lat, "lon" => ^gtfs_lon}
-                  ],
-                  "units" => "mi"
-                }} = Jason.decode(body)
+      assert {:ok, ^coordinates} = Shuttles.get_stop_coordinates(stop)
+    end
 
-        {:ok,
-         %HTTPoison.Response{
-           status_code: 200,
-           body: Jason.encode!(@mock_success_response)
-         }}
-      end)
+    test "gets the stop coordinates for an Arrow stop" do
+      lat = 42.38758
+      lon = -71.11934
+      stop = stop_fixture(%{stop_lat: lat, stop_lon: lon})
+      coordinates = %{lat: lat, lon: lon}
 
-      duration = Shuttles.get_travel_time(stop1, gtfs_stop)
-      assert duration == {:ok, 300}
+      assert {:ok, ^coordinates} = Shuttles.get_stop_coordinates(stop)
+    end
+
+    test "gets the stop coordinates for a GTFS stop" do
+      gtfs_stop = insert(:gtfs_stop)
+      coordinates = %{lat: gtfs_stop.lat, lon: gtfs_stop.lon}
+
+      assert {:ok, ^coordinates} = Shuttles.get_stop_coordinates(gtfs_stop)
     end
 
     test "raises if a stop has missing lat/lon data" do
-      stop1 = stop_fixture(%{stop_lat: 42.38758, stop_lon: -71.11934})
-
       stop2 =
         %{stop_lat: 42.373396, stop_lon: -70.1202}
         |> stop_fixture
         |> Map.drop([:stop_lat, :stop_lon])
 
-      assert_raise MatchError, ~r/Missing lat\/lon/, fn ->
-        Shuttles.get_travel_time(stop1, stop2)
-      end
+      assert {:error, error_message} = Shuttles.get_stop_coordinates(stop2)
+      assert error_message =~ ~r/Missing lat\/lon/
     end
   end
 end
