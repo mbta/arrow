@@ -449,16 +449,33 @@ defmodule ArrowWeb.ShuttleViewLive do
           updated_stops
         )
       else
+        # TODO: dialyzer error with/else
+        # lib/arrow_web/live/shuttle_live/shuttle_live.ex:388:pattern_match
+        # The pattern can never match the type.
+
+        # Pattern:
+        # {:ok, _stop_durations}
+
+        # Type:
+        # {:error, %{:type => :no_route | :unknown}}
+        {:error, %{type: :no_route}} ->
+          route_changeset
+          |> Ecto.Changeset.add_error(
+            :route_stops,
+            "Unable to retrieve estimates: no route between stops found"
+          )
+
+        {:error, %{type: :unknown}} ->
+          route_changeset
+          |> Ecto.Changeset.add_error(:route_stops, "Unable to retrieve estimates: unknown error")
+
         false ->
           coordinate_errors =
             stop_coordinates
             |> Enum.filter(&match?({:error, _}, &1))
-            |> Enum.map(fn {:error, msg} -> "#{msg}" end)
+            |> Enum.map_join(", ", fn {:error, msg} -> "#{msg}" end)
 
           route_changeset |> Ecto.Changeset.add_error(:route_stops, coordinate_errors)
-
-        {:error, error} ->
-          route_changeset |> Ecto.Changeset.add_error(:route_stops, error)
       end
     else
       route_changeset
