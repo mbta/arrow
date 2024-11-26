@@ -387,27 +387,16 @@ defmodule Arrow.Shuttles do
     {:error, "Missing lat/lon data for stop #{inspect(stop)}"}
   end
 
-  defp handle_response(result) do
-    cond do
-      Enum.count(result["plan"]["routingErrors"]) > 0 ->
-        message =
-          "Error: Could not find route"
-
-        {:error, [message, Enum.map(result["plan"]["routingErrors"], & &1["description"])]}
-
-      Enum.count(result["plan"]["itineraries"]) == 0 ->
-        {:ok, 0}
-
-      true ->
-        {:ok, List.first(result["plan"]["itineraries"])["duration"]}
-    end
-  end
-
   @spec get_travel_times(list(%{lat: number(), lon: number()})) ::
           {:ok, number()} | {:error, any}
   def get_travel_times(coordinates) do
-    {:ok, %DirectionsResponse{segments: segments}} = OpenRouteServiceAPI.directions(coordinates)
-    segments |> Enum.map(&round(&1.duration))
+    case OpenRouteServiceAPI.directions(coordinates) do
+      {:ok, %DirectionsResponse{segments: segments}} ->
+        {:ok, segments |> Enum.map(&round(&1.duration))}
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   def list_disruptable_routes do
