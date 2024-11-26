@@ -4,6 +4,9 @@ defmodule ArrowWeb.ShuttleLiveTest do
   import Phoenix.LiveViewTest
   import Arrow.Factory
   import Arrow.ShuttlesFixtures
+  import Mox
+
+  setup :verify_on_exit!
 
   @create_attrs %{
     disrupted_route_id: "",
@@ -294,6 +297,60 @@ defmodule ArrowWeb.ShuttleLiveTest do
     end
   end
 
+  describe "retrieve estimates" do
+    setup [:create_shuttle_with_stops]
+    @tag :authenticated_admin
+    test "can retrieve stop duration estimates for stops", %{conn: conn, shuttle: shuttle} do
+      expect(Arrow.OpenRouteServiceAPI.MockClient, :get_directions, fn
+        %Arrow.OpenRouteServiceAPI.DirectionsRequest{
+          coordinates:
+            [
+              [-71.0589, 42.3601],
+              [-71.0589, 42.3601],
+              [-71.0589, 42.3601],
+              [-71.0589, 42.3601]
+            ] = coordinates
+        } ->
+          {:ok,
+           build(:ors_directions_json, %{
+             coordinates: coordinates,
+             segments: [
+               %{
+                 "duration" => 100,
+                 "distance" => 0.20
+               },
+               %{
+                 "duration" => 300,
+                 "distance" => 0.20
+               },
+               %{
+                 "duration" => 100,
+                 "distance" => 0.20
+               },
+               %{
+                 "duration" => 100,
+                 "distance" => 0.20
+               }
+             ]
+           })}
+      end)
+
+      {:ok, edit_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
+
+      refute edit_live
+             |> element(~s{#shuttle-form_routes_0_route_stops_1_time_to_next_stop"})
+             |> render() =~ "value"
+
+      edit_live
+      |> element("#shuttle-form > button[value=\"0\"]", "Retrieve Estimates")
+      |> render_click()
+
+      assert edit_live
+             |> element(~s{#shuttle-form_routes_0_route_stops_1_time_to_next_stop"})
+             |> render() =~ "value=\"300\""
+    end
+  end
+
   describe "shape select" do
     setup [:create_shuttle]
 
@@ -342,6 +399,11 @@ defmodule ArrowWeb.ShuttleLiveTest do
       assert rendered =~
                "name=\"shuttle[routes][0][shape_id]\" type=\"hidden\" value=\"#{second_route.shape_id}\"/>"
     end
+  end
+
+  defp create_shuttle_with_stops(_) do
+    shuttle = shuttle_fixture(%{}, true)
+    %{shuttle: shuttle}
   end
 
   defp create_shuttle(_) do
