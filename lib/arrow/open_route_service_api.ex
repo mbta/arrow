@@ -91,5 +91,5 @@ defmodule Arrow.OpenRouteServiceAPI do
 
   defp parse_error(_error), do: {:error, %{type: :unknown}}
 
-  defp client(), do: Application.get_env(:arrow, Arrow.OpenRouteServiceAPI)[:client]
+  defp client, do: Application.get_env(:arrow, Arrow.OpenRouteServiceAPI)[:client]
 end

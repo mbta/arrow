@@ -5,10 +5,10 @@ defmodule Arrow.Shuttles do
 
   import Ecto.Query, warn: false
 
-  alias Arrow.Repo
-  alias ArrowWeb.ErrorHelpers
   alias Arrow.OpenRouteServiceAPI
   alias Arrow.OpenRouteServiceAPI.DirectionsResponse
+  alias Arrow.Repo
+  alias ArrowWeb.ErrorHelpers
 
   alias Arrow.Gtfs.Route, as: GtfsRoute
   alias Arrow.Gtfs.Stop, as: GtfsStop

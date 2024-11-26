@@ -1,6 +1,6 @@
 defmodule Arrow.OpenRouteServiceAPITest do
-  alias Arrow.OpenRouteServiceAPI.DirectionsResponse
   alias Arrow.OpenRouteServiceAPI.DirectionsRequest
+  alias Arrow.OpenRouteServiceAPI.DirectionsResponse
   use ExUnit.Case, async: false
 
   import Mox

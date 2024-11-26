@@ -449,15 +449,6 @@ defmodule ArrowWeb.ShuttleViewLive do
           updated_stops
         )
       else
-        # TODO: dialyzer error with/else
-        # lib/arrow_web/live/shuttle_live/shuttle_live.ex:388:pattern_match
-        # The pattern can never match the type.
-
-        # Pattern:
-        # {:ok, _stop_durations}
-
-        # Type:
-        # {:error, %{:type => :no_route | :unknown}}
         {:error, %{type: :no_route}} ->
           route_changeset
           |> Ecto.Changeset.add_error(
