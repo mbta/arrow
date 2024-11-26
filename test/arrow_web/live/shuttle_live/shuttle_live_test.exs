@@ -207,7 +207,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       {:ok, edit_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
 
       edit_live
-      |> element("#shuttle-form > button[value=\"0\"]")
+      |> element("#shuttle-form > button[value=\"0\"]", "Add")
       |> render_click()
 
       {:ok, conn} =
