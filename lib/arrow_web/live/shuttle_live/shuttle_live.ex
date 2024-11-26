@@ -422,40 +422,43 @@ defmodule ArrowWeb.ShuttleViewLive do
     }
   end
 
+  defp get_stop_durations(stop_coordinates) do
+    stop_coordinates
+    |> Enum.map(fn {:ok, c} -> c end)
+    |> Shuttles.get_travel_times()
+  end
+
   defp update_route_changeset_with_stop_time_estimates(route_changeset, direction_id) do
     if Ecto.Changeset.get_field(route_changeset, :direction_id) == direction_id do
       existing_stops_changeset = Ecto.Changeset.get_assoc(route_changeset, :route_stops)
       existing_stops_data = Ecto.Changeset.get_field(route_changeset, :route_stops)
+      stop_coordinates = Enum.map(existing_stops_data, &Shuttles.get_stop_coordinates/1)
 
-      stop_coordinates = existing_stops_data |> Enum.map(&Shuttles.get_stop_coordinates/1)
+      with true <- Enum.all?(stop_coordinates, &match?({:ok, _}, &1)),
+           {:ok, stop_durations} <- get_stop_durations(stop_coordinates) do
+        updated_stops =
+          existing_stops_changeset
+          |> Enum.zip(stop_durations ++ [nil])
+          |> Enum.map(fn {stop_changeset, duration} ->
+            Ecto.Changeset.put_change(stop_changeset, :time_to_next_stop, duration)
+          end)
 
-      case Enum.all?(stop_coordinates, &match?({:ok, _}, &1)) do
-        true ->
-          stop_durations =
-            stop_coordinates
-            |> Enum.map(fn {:ok, c} -> %{"lat" => c.lat, "lon" => c.lon} end)
-            |> Shuttles.get_travel_times()
-
-          updated_stops =
-            existing_stops_changeset
-            |> Enum.zip(stop_durations ++ [nil])
-            |> Enum.map(fn {stop_changeset, duration} ->
-              Ecto.Changeset.put_change(stop_changeset, :time_to_next_stop, duration)
-            end)
-
-          Ecto.Changeset.put_assoc(
-            route_changeset,
-            :route_stops,
-            updated_stops
-          )
-
+        Ecto.Changeset.put_assoc(
+          route_changeset,
+          :route_stops,
+          updated_stops
+        )
+      else
         false ->
-          missing_coordinate_errors =
+          coordinate_errors =
             stop_coordinates
             |> Enum.filter(&match?({:error, _}, &1))
             |> Enum.map(fn {:error, msg} -> "#{msg}" end)
 
-          route_changeset |> Ecto.Changeset.add_error(:route_stops, missing_coordinate_errors)
+          route_changeset |> Ecto.Changeset.add_error(:route_stops, coordinate_errors)
+
+        {:error, error} ->
+          route_changeset |> Ecto.Changeset.add_error(:route_stops, error)
       end
     else
       route_changeset

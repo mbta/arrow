@@ -366,7 +366,8 @@ defmodule Arrow.Shuttles do
     }
   end
 
-  @spec get_stop_coordinates(%RouteStop{} | %Stop{} | %GtfsStop{}) :: {:ok, map()} | {:error, any}
+  @spec get_stop_coordinates(RouteStop.t() | Stop.t() | GtfsStop.t()) ::
+          {:ok, map()} | {:error, any}
   def get_stop_coordinates(%RouteStop{gtfs_stop: stop, stop: nil}) do
     get_stop_coordinates(stop)
   end
@@ -390,6 +391,8 @@ defmodule Arrow.Shuttles do
   @spec get_travel_times(list(%{lat: number(), lon: number()})) ::
           {:ok, number()} | {:error, any}
   def get_travel_times(coordinates) do
+    coordinates = coordinates |> Enum.map(&Map.new(&1, fn {k, v} -> {to_string(k), v} end))
+
     case OpenRouteServiceAPI.directions(coordinates) do
       {:ok, %DirectionsResponse{segments: segments}} ->
         {:ok, segments |> Enum.map(&round(&1.duration))}

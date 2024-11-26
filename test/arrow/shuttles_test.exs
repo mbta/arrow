@@ -261,8 +261,8 @@ defmodule Arrow.ShuttlesTest do
     end
   end
 
-  describe "get_travel_times/2" do
-    test "get_travel_times/1 calculates travel time between coordinates" do
+  describe "get_travel_times/1" do
+    test "calculates travel time between coordinates" do
       expect(
         Arrow.OpenRouteServiceAPI.MockClient,
         :get_directions,
@@ -295,10 +295,45 @@ defmodule Arrow.ShuttlesTest do
       {:ok, [100, 100]} = Shuttles.get_travel_times([coord1, coord2])
     end
 
-    test "errors if it cannot determine a route between the coordinates" do
-      expect(Arrow.OpenRouteServiceAPI.MockClient,
+    test "handles atom keys for coordinates" do
+      expect(
+        Arrow.OpenRouteServiceAPI.MockClient,
         :get_directions,
-        fn %Arrow.OpenRouteServiceAPI.DirectionsRequest{} -> {:error, %{"code" => 2010}} end)
+        fn %Arrow.OpenRouteServiceAPI.DirectionsRequest{
+             coordinates: [[-71.11934, 42.38758], [-71.1202, 42.373396]] = coordinates
+           } ->
+          {:ok,
+           build(
+             :ors_directions_json,
+             %{
+               coordinates: coordinates,
+               segments: [
+                 %{
+                   "duration" => 100,
+                   "distance" => 0.20
+                 },
+                 %{
+                   "duration" => 100,
+                   "distance" => 0.20
+                 }
+               ]
+             }
+           )}
+        end
+      )
+
+      coord1 = %{lat: 42.38758, lon: -71.11934}
+      coord2 = %{lat: 42.373396, lon: -71.1202}
+
+      {:ok, [100, 100]} = Shuttles.get_travel_times([coord1, coord2])
+    end
+
+    test "errors if it cannot determine a route between the coordinates" do
+      expect(
+        Arrow.OpenRouteServiceAPI.MockClient,
+        :get_directions,
+        fn %Arrow.OpenRouteServiceAPI.DirectionsRequest{} -> {:error, %{"code" => 2010}} end
+      )
 
       coord1 = %{"lat" => 42.38758, "lon" => -71.11934}
       coord2 = %{"lat" => 42.373396, "lon" => -70.1202}
@@ -307,9 +342,11 @@ defmodule Arrow.ShuttlesTest do
     end
 
     test "errors if OpenRouteService returns an unknown error" do
-      expect(Arrow.OpenRouteServiceAPI.MockClient,
+      expect(
+        Arrow.OpenRouteServiceAPI.MockClient,
         :get_directions,
-        fn %Arrow.OpenRouteServiceAPI.DirectionsRequest{} -> {:error, %{"code" => -1}} end)
+        fn %Arrow.OpenRouteServiceAPI.DirectionsRequest{} -> {:error, %{"code" => -1}} end
+      )
 
       coord1 = %{"lat" => 42.38758, "lon" => -71.11934}
       coord2 = %{"lat" => 42.373396, "lon" => -70.1202}
@@ -322,10 +359,12 @@ defmodule Arrow.ShuttlesTest do
     test "gets the stop coordinates for an Arrow stop from a RouteStop" do
       lat = 42.38758
       lon = -71.11934
+
       stop = %Shuttles.RouteStop{
         stop: stop_fixture(%{stop_lat: lat, stop_lon: lon}),
         gtfs_stop: nil
       }
+
       coordinates = %{lat: lat, lon: lon}
 
       assert {:ok, ^coordinates} = Shuttles.get_stop_coordinates(stop)
