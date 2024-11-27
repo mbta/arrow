@@ -389,7 +389,7 @@ defmodule Arrow.Shuttles do
   end
 
   @spec get_travel_times(list(%{lat: number(), lon: number()})) ::
-          {:ok, number()} | {:error, any}
+          {:ok, list(number())} | {:error, any()}
   def get_travel_times(coordinates) do
     coordinates = coordinates |> Enum.map(&Map.new(&1, fn {k, v} -> {to_string(k), v} end))
 
