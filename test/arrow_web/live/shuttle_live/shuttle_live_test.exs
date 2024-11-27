@@ -210,7 +210,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       {:ok, edit_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
 
       edit_live
-      |> element("#shuttle-form > button[value=\"0\"]", "Add")
+      |> element("#shuttle-form #add_stop[value=\"0\"]", "Add")
       |> render_click()
 
       {:ok, conn} =
@@ -342,7 +342,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
              |> render() =~ "value"
 
       edit_live
-      |> element("#shuttle-form > button[value=\"0\"]", "Retrieve Estimates")
+      |> element("#shuttle-form #get_time[value=\"0\"]", "Retrieve Estimates")
       |> render_click()
 
       assert edit_live
