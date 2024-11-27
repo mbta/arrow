@@ -16,6 +16,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   attr :gtfs_disruptable_routes, :list, required: true
   attr :shapes, :list, required: true
   attr :map_props, :map, required: false, default: %{}
+  attr :errors, :map, required: false, default: %{route_stops: %{}}
 
   def shuttle_form(assigns) do
     ~H"""
@@ -112,7 +113,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       </div>
       <hr />
       <h2>define stops</h2>
-      <.shuttle_form_stops_section f={f} />
+      <.shuttle_form_stops_section f={f} errors={@errors} />
       <:actions>
         <.button>Save Shuttle</.button>
       </:actions>
@@ -121,6 +122,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   end
 
   attr :f, :any, required: true
+  attr :errors, :map, required: false, default: %{route_stops: %{}}
 
   defp shuttle_form_stops_section(assigns) do
     ~H"""
@@ -170,16 +172,35 @@ defmodule ArrowWeb.ShuttleViewLive do
         </.inputs_for>
       </div>
       <input type="hidden" name={input_name(f_route, :route_stops_drop) <> "[]"} />
-      <button type="button" value={input_value(f_route, :direction_id)} phx-click="add_stop">
-        Add Another Stop
-      </button>
-      <button
-        type="button"
-        value={input_value(f_route, :direction_id)}
-        phx-click="get_time_to_next_stop"
-      >
-        Retrieve Estimates
-      </button>
+      <div class="row">
+        <div class="col-lg-7">
+          <button
+            type="button"
+            id="add_stop"
+            value={input_value(f_route, :direction_id)}
+            phx-click="add_stop"
+          >
+            Add Another Stop
+          </button>
+        </div>
+        <div class="col-lg">
+          <button
+            type="button"
+            id="get_time"
+            value={input_value(f_route, :direction_id)}
+            phx-click="get_time_to_next_stop"
+          >
+            Retrieve Estimates
+          </button>
+          <aside
+            :if={@errors[:route_stops][input_value(f_route, :direction_id)]}
+            class="text-sm alert alert-danger"
+            role="alert"
+          >
+            <%= @errors[:route_stops][input_value(f_route, :direction_id)] %>
+          </aside>
+        </div>
+      </div>
     </.inputs_for>
     <div class="mt-8 flex items-center space-x-4">
       <span>If you'd like to create a stop:</span>
@@ -239,6 +260,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> assign(:gtfs_disruptable_routes, gtfs_disruptable_routes)
       |> assign(:shapes, shapes)
       |> assign(:map_props, %{shapes: shapes_map_view})
+      |> assign(:errors, %{route_stops: %{}})
 
     {:ok, socket}
   end
@@ -263,6 +285,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> assign(:gtfs_disruptable_routes, gtfs_disruptable_routes)
       |> assign(:shapes, shapes)
       |> assign(:map_props, %{shapes: []})
+      |> assign(:errors, %{route_stops: %{}})
 
     {:ok, socket}
   end
@@ -383,21 +406,42 @@ defmodule ArrowWeb.ShuttleViewLive do
   def handle_event("get_time_to_next_stop", %{"value" => direction_id}, socket) do
     direction_id = String.to_existing_atom(direction_id)
 
-    socket =
-      update(socket, :form, fn %{source: changeset} ->
-        existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
+    changeset = socket.assigns.form.source
 
-        new_routes =
-          Enum.map(existing_routes, fn route_changeset ->
-            update_route_changeset_with_stop_time_estimates(route_changeset, direction_id)
+    {routes, other_routes} =
+      changeset
+      |> Ecto.Changeset.get_assoc(:routes)
+      |> Enum.split_with(&(Ecto.Changeset.get_field(&1, :direction_id) == direction_id))
+
+    new_route =
+      routes
+      |> Enum.find(&(Ecto.Changeset.get_field(&1, :direction_id) == direction_id))
+      |> update_route_changeset_with_stop_time_estimates()
+
+    case new_route do
+      {:ok, new_route_changeset} ->
+        changeset =
+          Ecto.Changeset.put_assoc(
+            changeset,
+            :routes,
+            Enum.sort_by(
+              other_routes ++ [new_route_changeset],
+              &Ecto.Changeset.get_field(&1, :direction_id)
+            )
+          )
+
+        {:noreply,
+         socket
+         |> assign(:form, to_form(changeset))}
+
+      {:error, error} ->
+        socket =
+          update(socket, :errors, fn errors ->
+            put_in(errors, [:route_stops, Access.key(direction_id, [])], error)
           end)
 
-        changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
-
-        to_form(changeset)
-      end)
-
-    {:noreply, socket}
+        {:noreply, socket}
+    end
   end
 
   defp combine_params(%{
@@ -430,48 +474,40 @@ defmodule ArrowWeb.ShuttleViewLive do
     |> Shuttles.get_travel_times()
   end
 
-  defp update_route_changeset_with_stop_time_estimates(route_changeset, direction_id) do
-    if Ecto.Changeset.get_field(route_changeset, :direction_id) == direction_id do
-      existing_stops_changeset = Ecto.Changeset.get_assoc(route_changeset, :route_stops)
-      existing_stops_data = Ecto.Changeset.get_field(route_changeset, :route_stops)
-      stop_coordinates = Enum.map(existing_stops_data, &Shuttles.get_stop_coordinates/1)
+  defp update_route_changeset_with_stop_time_estimates(route_changeset) do
+    existing_stops_changeset = Ecto.Changeset.get_assoc(route_changeset, :route_stops)
+    existing_stops_data = Ecto.Changeset.get_field(route_changeset, :route_stops)
+    stop_coordinates = Enum.map(existing_stops_data, &Shuttles.get_stop_coordinates/1)
 
-      with true <- Enum.all?(stop_coordinates, &match?({:ok, _}, &1)),
-           {:ok, stop_durations} <- get_stop_travel_times(stop_coordinates) do
-        updated_stops =
-          existing_stops_changeset
-          |> Enum.zip(stop_durations ++ [nil])
-          |> Enum.map(fn {stop_changeset, duration} ->
-            Ecto.Changeset.put_change(stop_changeset, :time_to_next_stop, duration)
-          end)
+    with true <- Enum.all?(stop_coordinates, &match?({:ok, _}, &1)),
+         {:ok, stop_durations} <- get_stop_travel_times(stop_coordinates) do
+      updated_stops =
+        existing_stops_changeset
+        |> Enum.zip(stop_durations ++ [nil])
+        |> Enum.map(fn {stop_changeset, duration} ->
+          Ecto.Changeset.put_change(stop_changeset, :time_to_next_stop, duration)
+        end)
 
-        Ecto.Changeset.put_assoc(
-          route_changeset,
-          :route_stops,
-          updated_stops
-        )
-      else
-        {:error, %{type: :no_route}} ->
-          route_changeset
-          |> Ecto.Changeset.add_error(
-            :route_stops,
-            "Unable to retrieve estimates: no route between stops found"
-          )
-
-        {:error, %{type: :unknown}} ->
-          route_changeset
-          |> Ecto.Changeset.add_error(:route_stops, "Unable to retrieve estimates: unknown error")
-
-        false ->
-          coordinate_errors =
-            stop_coordinates
-            |> Enum.filter(&match?({:error, _}, &1))
-            |> Enum.map_join(", ", fn {:error, msg} -> "#{msg}" end)
-
-          route_changeset |> Ecto.Changeset.add_error(:route_stops, coordinate_errors)
-      end
+      {:ok,
+       Ecto.Changeset.put_assoc(
+         route_changeset,
+         :route_stops,
+         updated_stops
+       )}
     else
-      route_changeset
+      {:error, %{type: :no_route}} ->
+        {:error, "Unable to retrieve estimates: no route between stops found"}
+
+      {:error, %{type: :unknown}} ->
+        {:error, "Unable to retrieve estimates: unknown error"}
+
+      false ->
+        coordinate_errors =
+          stop_coordinates
+          |> Enum.filter(&match?({:error, _}, &1))
+          |> Enum.map_join(", ", fn {:error, msg} -> "#{msg}" end)
+
+        {:error, coordinate_errors}
     end
   end
 

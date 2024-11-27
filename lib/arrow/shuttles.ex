@@ -384,6 +384,10 @@ defmodule Arrow.Shuttles do
     {:ok, %{lat: lat, lon: lon}}
   end
 
+  def get_stop_coordinates(%RouteStop{id: nil, display_stop_id: id}) do
+    {:error, "Missing lat/lon data for stop #{id}"}
+  end
+
   def get_stop_coordinates(stop) do
     {:error, "Missing lat/lon data for stop #{inspect(stop)}"}
   end
