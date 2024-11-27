@@ -422,6 +422,8 @@ defmodule ArrowWeb.ShuttleViewLive do
     }
   end
 
+  @spec get_stop_durations(list({:ok, any()})) ::
+          {:ok, list(number())} | {:error, any()}
   defp get_stop_durations(stop_coordinates) do
     stop_coordinates
     |> Enum.map(fn {:ok, c} -> c end)
