@@ -422,9 +422,9 @@ defmodule ArrowWeb.ShuttleViewLive do
     }
   end
 
-  @spec get_stop_durations(list({:ok, any()})) ::
+  @spec get_stop_travel_times(list({:ok, any()})) ::
           {:ok, list(number())} | {:error, any()}
-  defp get_stop_durations(stop_coordinates) do
+  defp get_stop_travel_times(stop_coordinates) do
     stop_coordinates
     |> Enum.map(fn {:ok, c} -> c end)
     |> Shuttles.get_travel_times()
@@ -437,7 +437,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       stop_coordinates = Enum.map(existing_stops_data, &Shuttles.get_stop_coordinates/1)
 
       with true <- Enum.all?(stop_coordinates, &match?({:ok, _}, &1)),
-           {:ok, stop_durations} <- get_stop_durations(stop_coordinates) do
+           {:ok, stop_durations} <- get_stop_travel_times(stop_coordinates) do
         updated_stops =
           existing_stops_changeset
           |> Enum.zip(stop_durations ++ [nil])
