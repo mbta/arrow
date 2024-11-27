@@ -116,10 +116,9 @@ defmodule ArrowWeb.StopLiveTest do
     test "updates and redirects when data is valid", %{conn: conn, stop: stop} do
       {:ok, edit_live, _html} = live(conn, ~p"/stops/#{stop}/edit")
 
-      form =
-        edit_live
-        |> form("#stop-form", stop: @update_attrs)
-        |> render_submit()
+      edit_live
+      |> form("#stop-form", stop: @update_attrs)
+      |> render_submit()
 
       assert_redirected(edit_live, ~p"/stops")
 
