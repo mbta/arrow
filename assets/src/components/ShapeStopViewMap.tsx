@@ -1,0 +1,228 @@
+import React, { useMemo } from "react"
+import { divIcon, icon, LatLngBoundsExpression, LatLngExpression } from "leaflet"
+import {
+    CircleMarker,
+    LayersControl,
+    LayerGroup,
+    MapContainer,
+    Polyline,
+    TileLayer,
+    Marker,
+    Popup,
+} from "react-leaflet"
+
+interface Shape {
+    name: string
+    coordinates: number[][]
+}
+
+interface Stop {
+    stop_id: string
+    stop_name: string
+    stop_desc: string
+    stop_lat: number
+    stop_lon: number
+}
+
+interface Layer {
+    name: string
+    color: string
+    shape: Shape | null
+    stops: Stop[]
+}
+
+interface ShapeStopViewMapProps {
+    layers: Layer[]
+}
+
+const COLORS = [
+    "da291c",
+    "003da5",
+    "ffc72c",
+    "00843d",
+    "ed8b00",
+    "7c878e",
+    "494f5c",
+    "003383",
+    "80276c",
+    "008eaa",
+    "52bbc5",
+]
+
+const markerIcon = icon({
+    iconUrl: "/images/marker-icon.png",
+    iconRetinaUrl: "/images/marker-icon-2x.png",
+    shadowUrl: "/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+})
+
+function genIcon(color: string, text: string) {
+    const markerHtmlStyles = `
+  background-color: #${color};
+  display: block;
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  position: relative;
+  transform: rotate(-45deg);
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);`
+
+    const innerContentStyles = `
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);`
+    return divIcon({
+        className: "",
+        iconSize: [30, 42.4264],
+        iconAnchor: [15, 42.4264],
+        html: `<div><span style="${markerHtmlStyles}"><span style="${innerContentStyles}">${text}</span></span></div>`,
+    })
+}
+
+const defaultCenter: LatLngExpression = [42.360718, -71.05891]
+
+const generateNameField = (name: string, color: string) =>
+    `<div class="legend-square color-${color}"></div> ${name}`
+
+const MapLayers = ({ layers }: { layers: Layer[] }) =>
+    layers.map((layer: Layer, index: number) => {
+        return <MapLayer layer={layer} index={index} key={index} keyPrefix={index.toString()} />
+    })
+
+
+const MapLayer = ({ layer, index, keyPrefix }: { layer: Layer; index: number, keyPrefix: string }) => {
+    const colorValue = COLORS[index]
+    const color = `#${colorValue}`
+    return (
+        <LayersControl.Overlay
+            checked
+            name={generateNameField(layer.name, colorValue)}
+            key={`${keyPrefix}-control-overlay`}
+        >
+            <LayerGroup key={`${keyPrefix}-control-group`}>
+                {layer.shape && <PolyLine shape={layer.shape} color={color} keyPrefix={keyPrefix} />}
+                {layer.stops.map((stop, index) => (
+                    stop.stop_lat && stop.stop_lon && (
+                        <>
+                            <Marker key={stop.stop_id} position={[stop.stop_lat, stop.stop_lon]} icon={genIcon(colorValue, index.toString())}>
+                                <Popup>{stop.stop_name}</Popup>
+                            </Marker>
+                        </>
+                    )
+                ))}
+            </LayerGroup>
+        </LayersControl.Overlay>
+    )
+}
+
+const PolyLine = ({
+    shape,
+    color,
+    keyPrefix,
+}: {
+    shape: Shape
+    color: string
+    keyPrefix: string
+}) => {
+    const start = shape.coordinates[0]
+    const end = shape.coordinates.slice(-1)[0]
+
+    return (
+        <>
+            <Polyline
+                positions={shape.coordinates as LatLngExpression[]}
+                color={color}
+                key={`${keyPrefix}-line`}
+            />
+            <CircleMarker
+                center={start as LatLngExpression}
+                pathOptions={{ color }}
+                radius={10}
+                key={`${keyPrefix}-line-start`}
+            />
+            <CircleMarker
+                center={end as LatLngExpression}
+                pathOptions={{ color, fillColor: color, fillOpacity: 1.0 }}
+                radius={10}
+                key={`${keyPrefix}-line-end`}
+            />
+        </>
+    )
+}
+
+const getMapBounds = (layers: Layer[]): LatLngBoundsExpression => {
+    const lats: number[] = []
+    const longs: number[] = []
+    layers.forEach((layer: Layer) => {
+        if (layer.shape) {
+            layer.shape.coordinates.forEach((coordinate) => {
+                lats.push(coordinate[0])
+                longs.push(coordinate[1])
+            })
+        }
+        layer.stops.forEach((stop: Stop) => {
+            lats.push(stop.stop_lat)
+            longs.push(stop.stop_lon)
+        })
+    })
+
+    return [
+        [Math.max(...lats), Math.max(...longs)],
+        [Math.min(...lats), Math.min(...longs)],
+    ] as LatLngBoundsExpression
+}
+
+const ShapeStopViewMap = ({ layers }: ShapeStopViewMapProps) => {
+
+    const mapLayers = useMemo(() => {
+        if (layers && layers.length > 0) {
+            return (
+                <LayersControl
+                    position="bottomright"
+                    key="layer-control"
+                    collapsed={false}
+                >
+                    <MapLayers layers={layers} key="layer-map" />
+                </LayersControl>
+            )
+        } else {
+            return []
+        }
+    }, [layers])
+
+    const mapProps = useMemo(() => {
+        if (layers && layers.length > 0) {
+            return { bounds: getMapBounds(layers) }
+        } else {
+            return { center: defaultCenter }
+        }
+    }, [layers])
+
+    return (
+        <MapContainer
+            {...mapProps}
+            data-testid="shape-view-map-container"
+            style={{ height: "800px" }}
+            zoom={13}
+            scrollWheelZoom={true}
+        >
+            <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {mapLayers}
+            {/* {polyLines}
+            {stops && stops.map(stop => (
+                stop.stop_lat && stop.stop_lon && (
+                    <Marker key={stop.stop_id} position={[stop.stop_lat, stop.stop_lon]} icon={markerIcon}>
+                        <Popup>{stop.stop_name}</Popup>
+                    </Marker>
+                )
+            ))} */}
+        </MapContainer>
+    )
+}
+
+export default ShapeStopViewMap

@@ -62,7 +62,7 @@ defmodule ArrowWeb.ShuttleViewLive do
           />
         </div>
       </div>
-      <%= live_react_component("Components.ShapeViewMap", @map_props, id: "shuttle-view-map") %>
+      <%= live_react_component("Components.ShapeStopViewMap", @map_props, id: "shuttle-view-map") %>
       <hr />
       <h2>define route</h2>
       <.inputs_for :let={f_route} field={f[:routes]}>
@@ -177,6 +177,43 @@ defmodule ArrowWeb.ShuttleViewLive do
     |> Enum.map(&List.first(&1.shapes))
   end
 
+  defp shape_to_shapeview(nil), do: nil
+
+  defp shape_to_shapeview(shape) do
+    shape
+    |> Shuttles.get_shapes_upload()
+    |> ShapeView.shapes_map_view()
+    |> Map.get(:shapes)
+    |> List.first()
+  end
+
+  defp gtfs_stop_to_map(stop) do
+    %{
+      stop_id: stop.id,
+      stop_name: stop.name,
+      stop_desc: stop.desc,
+      stop_lat: stop.lat,
+      stop_lon: stop.lon
+    }
+  end
+
+  defp direction_to_layer(direction) do
+    shape = shape_to_shapeview(direction.shape)
+    Enum.each(direction.route_stops, &IO.inspect/1)
+
+    stops =
+      Enum.map(
+        direction.route_stops,
+        &(Map.get(&1, :stop) || gtfs_stop_to_map(Map.get(&1, :gtfs_stop)))
+      )
+
+    %{
+      name: direction.direction_desc,
+      shape: shape,
+      stops: stops
+    }
+  end
+
   defp options_mapper(shapes) do
     Enum.map(shapes, &option_mapper/1)
   end
@@ -201,13 +238,8 @@ defmodule ArrowWeb.ShuttleViewLive do
     shapes = Shuttles.list_shapes()
     form = to_form(changeset)
 
-    shuttle_shapes =
-      shuttle
-      |> Map.get(:routes)
-      |> Enum.map(&Map.get(&1, :shape))
-      |> Enum.reject(&is_nil/1)
-
-    shapes_map_view = shapes_to_shapeviews(shuttle_shapes)
+    layers = Enum.map(shuttle.routes, &direction_to_layer/1)
+    IO.inspect(layers)
 
     socket =
       socket
@@ -219,7 +251,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> assign(:gtfs_disruptable_routes, gtfs_disruptable_routes)
       |> assign(:shapes, shapes)
       |> assign(:logout_url, logout_url)
-      |> assign(:map_props, %{shapes: shapes_map_view})
+      |> assign(:map_props, %{layers: layers})
 
     {:ok, socket}
   end
