@@ -21,15 +21,6 @@ defmodule Arrow.Shuttles.RouteStop do
 
   @doc false
   def changeset(route_stop, attrs) do
-    {stop_id, gtfs_stop_id, error} =
-      case Shuttles.stop_or_gtfs_stop_for_stop_id(
-             attrs["display_stop_id"] || route_stop.display_stop_id
-           ) do
-        %Stop{id: id} -> {id, nil, nil}
-        %GtfsStop{id: id} -> {nil, id, nil}
-        nil -> {nil, nil, "not a valid stop ID"}
-      end
-
     change =
       route_stop
       |> cast(attrs, [
@@ -40,17 +31,34 @@ defmodule Arrow.Shuttles.RouteStop do
         :time_to_next_stop,
         :display_stop_id
       ])
-      |> change(stop_id: stop_id)
-      |> change(gtfs_stop_id: gtfs_stop_id)
-      |> validate_required([:direction_id, :stop_sequence])
-      |> assoc_constraint(:shuttle_route)
-      |> assoc_constraint(:stop)
-      |> assoc_constraint(:gtfs_stop)
 
-    if is_nil(error) do
-      change
-    else
-      add_error(change, :display_stop_id, error)
-    end
+    change =
+      if display_stop_id = Ecto.Changeset.get_change(change, :display_stop_id) do
+        {stop_id, gtfs_stop_id, error} =
+          case Shuttles.stop_or_gtfs_stop_for_stop_id(display_stop_id) do
+            %Stop{id: id} -> {id, nil, nil}
+            %GtfsStop{id: id} -> {nil, id, nil}
+            nil -> {nil, nil, "not a valid stop ID"}
+          end
+
+        change =
+          change
+          |> change(stop_id: stop_id)
+          |> change(gtfs_stop_id: gtfs_stop_id)
+
+        if is_nil(error) do
+          change
+        else
+          add_error(change, :display_stop_id, error)
+        end
+      else
+        change
+      end
+
+    change
+    |> validate_required([:direction_id, :stop_sequence])
+    |> assoc_constraint(:shuttle_route)
+    |> assoc_constraint(:stop)
+    |> assoc_constraint(:gtfs_stop)
   end
 end
