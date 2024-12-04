@@ -6,7 +6,7 @@ config :arrow,
   gtfs_archive_storage_enabled?: false,
   gtfs_archive_storage_request_fn: {Arrow.Mock.ExAws.Request, :request},
   ueberauth_provider: :cognito,
-  api_login_module: ArrowWeb.TryApiTokenAuth.Cognito
+  api_login_module: ArrowWeb.TryApiTokenAuth.Keycloak
 
 # Configure your database
 config :arrow, Arrow.Repo,

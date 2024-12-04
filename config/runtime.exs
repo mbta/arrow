@@ -58,12 +58,6 @@ if config_env() == :prod do
 
   config :arrow, ArrowWeb.Endpoint, secret_key_base: System.fetch_env!("SECRET_KEY_BASE")
 
-  config :ueberauth, Ueberauth,
-    providers: [
-      cognito:
-        {Ueberauth.Strategy.Cognito, [client_secret: System.fetch_env!("COGNITO_CLIENT_SECRET")]}
-    ]
-
   pool_size =
     case System.get_env("DATABASE_POOL_SIZE") do
       nil -> 10

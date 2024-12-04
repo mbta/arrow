@@ -35,11 +35,6 @@ defmodule ArrowWeb.TryApiTokenAuth do
 
   defp api_login_module_for_token(auth_token)
 
-  defp api_login_module_for_token(%Arrow.AuthToken{username: "ActiveDirectory" <> _}) do
-    # These users are always from Cognito
-    ArrowWeb.TryApiTokenAuth.Cognito
-  end
-
   defp api_login_module_for_token(%Arrow.AuthToken{username: "gtfs_creator_ci@mbta.com"}) do
     ArrowWeb.TryApiTokenAuth.Local
   end
