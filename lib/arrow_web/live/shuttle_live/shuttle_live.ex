@@ -428,11 +428,15 @@ defmodule ArrowWeb.ShuttleViewLive do
 
       moved_route_stop = Enum.at(existing_stops, old)
 
-      new_route_stop_changes =
+      {new_route_stop_changes, _stop_sequence} =
         existing_stops
         |> List.delete_at(old)
         |> List.insert_at(new, moved_route_stop)
-        |> ensure_stop_sequence_order()
+        |> Enum.reduce({[], 0}, fn route_stop, {route_stop_changes, stop_sequence} ->
+          {route_stop_changes ++
+             [Arrow.Shuttles.RouteStop.changeset(route_stop, %{stop_sequence: stop_sequence})],
+           stop_sequence + 1}
+        end)
 
       Ecto.Changeset.put_assoc(
         route_changeset,
@@ -442,29 +446,6 @@ defmodule ArrowWeb.ShuttleViewLive do
     else
       route_changeset
     end
-  end
-
-  defp ensure_stop_sequence_order(route_stops) do
-    {new_route_stop_changes, _max_stop_sequence} =
-      Enum.reduce(route_stops, {[], 0}, fn route_stop, {route_stop_changes, prev_stop_sequence} ->
-        current_stop_sequence = route_stop.stop_sequence
-
-        if current_stop_sequence > prev_stop_sequence do
-          {route_stop_changes ++ [Arrow.Shuttles.RouteStop.changeset(route_stop, %{})],
-           current_stop_sequence}
-        else
-          new_stop_sequence = prev_stop_sequence + 1
-
-          {route_stop_changes ++
-             [
-               Arrow.Shuttles.RouteStop.changeset(route_stop, %{
-                 stop_sequence: new_stop_sequence
-               })
-             ], new_stop_sequence}
-        end
-      end)
-
-    new_route_stop_changes
   end
 
   defp validate(params, socket) do
