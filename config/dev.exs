@@ -66,7 +66,7 @@ config :arrow, ArrowWeb.Endpoint,
 
 config :ueberauth, Ueberauth,
   providers: [
-    cognito: {Arrow.Ueberauth.Strategy.Fake, []}
+    keycloak: {Arrow.Ueberauth.Strategy.Fake, [groups: ["admin"]]}
   ]
 
 config :arrow, :redirect_http?, false
@@ -76,7 +76,6 @@ config :arrow, dev_routes: true
 
 # Set prefix env for s3 uploads
 config :arrow,
-  ueberauth_provider: :cognito,
   api_login_module: ArrowWeb.TryApiTokenAuth.Local,
   shape_storage_enabled?: true,
   shape_storage_prefix_env: "dev/local/",

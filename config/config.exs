@@ -16,10 +16,6 @@ config :arrow,
   # Run migrations synchronously before anything else. Must finish in <5 seconds
   migrate_synchronously?: true,
   redirect_http?: true,
-  cognito_groups: %{
-    # map cognito groups to roles
-    "arrow-admin" => "admin"
-  },
   ueberauth_provider: :keycloak,
   api_login_module: ArrowWeb.TryApiTokenAuth.Keycloak,
   required_roles: %{
@@ -114,7 +110,6 @@ config :arrow, ArrowWeb.AuthManager,
 
 config :ueberauth, Ueberauth,
   providers: [
-    cognito: {Ueberauth.Strategy.Cognito, []},
     keycloak:
       {Ueberauth.Strategy.Oidcc,
        issuer: :keycloak_issuer,
