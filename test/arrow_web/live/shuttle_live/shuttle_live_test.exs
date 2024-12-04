@@ -232,6 +232,60 @@ defmodule ArrowWeb.ShuttleLiveTest do
     end
 
     @tag :authenticated_admin
+    test "can reorder stops", %{conn: conn, shuttle: shuttle} do
+      direction_0_route = Enum.find(shuttle.routes, fn route -> route.direction_id == :"0" end)
+      [gtfs_stop1, gtfs_stop2, gtfs_stop3] = insert_list(3, :gtfs_stop)
+
+      direction_0_route
+      |> Arrow.Shuttles.Route.changeset(%{
+        "route_stops" => [
+          %{
+            "direction_id" => "0",
+            "stop_sequence" => "1",
+            "display_stop_id" => gtfs_stop1.id
+          },
+          %{
+            "direction_id" => "0",
+            "stop_sequence" => "2",
+            "display_stop_id" => gtfs_stop2.id
+          },
+          %{
+            "direction_id" => "0",
+            "stop_sequence" => "3",
+            "display_stop_id" => gtfs_stop3.id
+          }
+        ]
+      })
+      |> Arrow.Repo.update()
+
+      shuttle = Arrow.Shuttles.get_shuttle!(shuttle.id)
+
+      {:ok, edit_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
+
+      edit_live
+      |> element("#shuttle-form > div[data-direction_id=\"0\"]")
+      |> render_hook(:reorder_stops, %{"direction_id" => "0", "old" => 1, "new" => 0})
+
+      {:ok, conn} =
+        edit_live
+        |> element("#shuttle-form")
+        |> render_submit()
+        |> follow_redirect(conn)
+
+      assert html_response(conn, 200) =~ ~r/shuttle updated successfully/i
+
+      updated_shuttle = Arrow.Shuttles.get_shuttle!(shuttle.id)
+
+      direction_0_route =
+        Enum.find(updated_shuttle.routes, fn route -> route.direction_id == :"0" end)
+
+      [%{id: stop_id1}, %{id: stop_id2}, %{id: stop_id3}] = [gtfs_stop1, gtfs_stop2, gtfs_stop3]
+
+      assert [%{gtfs_stop_id: ^stop_id2}, %{gtfs_stop_id: ^stop_id1}, %{gtfs_stop_id: ^stop_id3}] =
+               direction_0_route.route_stops
+    end
+
+    @tag :authenticated_admin
     test "renders errors when data is invalid", %{conn: conn, shuttle: shuttle} do
       {:ok, new_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
 

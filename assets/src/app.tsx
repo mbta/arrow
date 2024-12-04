@@ -4,7 +4,8 @@ import LiveReact from "./LiveReactPhoenix"
 import live_select from "live_select"
 // Establish Phoenix Socket and LiveView configuration.
 import { Socket } from "phoenix"
-import { LiveSocket } from "phoenix_live_view"
+import { LiveSocket, ViewHook } from "phoenix_live_view"
+import Sortable from "sortablejs"
 
 import ReactPhoenix from "./ReactPhoenix"
 import DisruptionCalendar from "./components/DisruptionCalendar"
@@ -21,8 +22,34 @@ declare global {
   }
 }
 
+const sortable = {
+  mounted() {
+    new Sortable(this.el, {
+      animation: 150,
+      handle: ".drag-handle",
+      draggable: ".item",
+      dragClass: "drag-item",
+      ghostClass: "drag-ghost",
+      forceFallback: true,
+      onEnd: (e) => {
+        const params = {
+          old: e.oldDraggableIndex,
+          new: e.newDraggableIndex,
+          ...e.item.dataset,
+          ...this.el.dataset,
+        }
+        this.pushEventTo(this.el, "reorder_stops", params)
+      },
+    })
+  },
+} as ViewHook
+
 // https://github.com/fidr/phoenix_live_react
-const hooks = { LiveReact, ...live_select }
+const hooks = {
+  LiveReact,
+  sortable,
+  ...live_select,
+}
 
 const csrfToken = document
   .querySelector("meta[name='csrf-token']")!

@@ -112,60 +112,74 @@ defmodule ArrowWeb.ShuttleViewLive do
       </div>
       <hr />
       <h2>define stops</h2>
-      <.inputs_for :let={f_route} field={f[:routes]} as={:routes_with_stops}>
-        <h4>direction <%= input_value(f_route, :direction_id) %></h4>
-        <div class="container">
-          <.inputs_for :let={f_route_stop} field={f_route[:route_stops]}>
-            <div class="row">
-              <.input field={f_route_stop[:display_stop_id]} label="Stop ID" class="col-lg-7" />
-              <.input
-                field={f_route_stop[:time_to_next_stop]}
-                type="number"
-                label="Time to next stop"
-                class="col-lg-4"
-              />
-              <button
-                type="button"
-                name={input_name(f_route, :route_stops_drop) <> "[]"}
-                value={f_route_stop.index}
-                phx-click={JS.dispatch("change")}
-                class="col-lg-1"
-              >
-                <.icon name="hero-x-mark-solid" class="h-4 w-4" />
-              </button>
-              <input
-                value={f_route_stop.index}
-                type="hidden"
-                name={input_name(f_route, :route_stops_sort) <> "[]"}
-              />
-              <input
-                value={input_value(f_route_stop, :direction_id)}
-                type="hidden"
-                name={input_name(f_route_stop, :direction_id)}
-              />
-              <input
-                value={input_value(f_route_stop, :stop_sequence)}
-                type="hidden"
-                name={input_name(f_route_stop, :stop_sequence)}
-              />
-            </div>
-          </.inputs_for>
-        </div>
-        <input type="hidden" name={input_name(f_route, :route_stops_drop) <> "[]"} />
-        <button type="button" value={input_value(f_route, :direction_id)} phx-click="add_stop">
-          Add Another Stop
-        </button>
-      </.inputs_for>
-      <div class="mt-8 flex items-center space-x-4">
-        <span>If you'd like to create a stop:</span>
-        <.link_button class="btn-primary" href={~p"/stops/new"} target="_blank">
-          Create Stop
-        </.link_button>
-      </div>
+      <.shuttle_form_stops_section f={f} />
       <:actions>
         <.button>Save Shuttle</.button>
       </:actions>
     </.simple_form>
+    """
+  end
+
+  attr :f, :any, required: true
+
+  defp shuttle_form_stops_section(assigns) do
+    ~H"""
+    <.inputs_for :let={f_route} field={@f[:routes]} as={:routes_with_stops}>
+      <h4>direction <%= input_value(f_route, :direction_id) %></h4>
+      <div
+        class="container"
+        id={"stops-dir-#{input_value(f_route, :direction_id)}"}
+        phx-hook="sortable"
+        data-direction_id={input_value(f_route, :direction_id)}
+      >
+        <.inputs_for :let={f_route_stop} field={f_route[:route_stops]}>
+          <div class="row item" data-stop_sequence={input_value(f_route_stop, :stop_sequence)}>
+            <.icon name="hero-bars-3" class="h-4 w-4 drag-handle col-lg-1 cursor-grab" />
+            <.input field={f_route_stop[:display_stop_id]} label="Stop ID" class="col-lg-6" />
+            <.input
+              field={f_route_stop[:time_to_next_stop]}
+              type="number"
+              label="Time to next stop"
+              class="col-lg-4"
+            />
+            <button
+              type="button"
+              name={input_name(f_route, :route_stops_drop) <> "[]"}
+              value={f_route_stop.index}
+              phx-click={JS.dispatch("change")}
+              class="col-lg-1"
+            >
+              <.icon name="hero-x-mark-solid" class="h-4 w-4" />
+            </button>
+            <input
+              value={f_route_stop.index}
+              type="hidden"
+              name={input_name(f_route, :route_stops_sort) <> "[]"}
+            />
+            <input
+              value={input_value(f_route_stop, :direction_id)}
+              type="hidden"
+              name={input_name(f_route_stop, :direction_id)}
+            />
+            <input
+              value={input_value(f_route_stop, :stop_sequence)}
+              type="hidden"
+              name={input_name(f_route_stop, :stop_sequence)}
+            />
+          </div>
+        </.inputs_for>
+      </div>
+      <input type="hidden" name={input_name(f_route, :route_stops_drop) <> "[]"} />
+      <button type="button" value={input_value(f_route, :direction_id)} phx-click="add_stop">
+        Add Another Stop
+      </button>
+    </.inputs_for>
+    <div class="mt-8 flex items-center space-x-4">
+      <span>If you'd like to create a stop:</span>
+      <.link_button class="btn-primary" href={~p"/stops/new"} target="_blank">
+        Create Stop
+      </.link_button>
+    </div>
     """
   end
 
@@ -336,6 +350,34 @@ defmodule ArrowWeb.ShuttleViewLive do
     {:noreply, socket}
   end
 
+  def handle_event(
+        "reorder_stops",
+        %{
+          "direction_id" => direction_id,
+          "old" => old,
+          "new" => new
+        },
+        socket
+      ) do
+    direction_id = String.to_existing_atom(direction_id)
+
+    socket =
+      update(socket, :form, fn %{source: changeset} ->
+        existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
+
+        new_routes =
+          Enum.map(existing_routes, fn route_changeset ->
+            update_route_changeset_with_reordered_stops(route_changeset, direction_id, old, new)
+          end)
+
+        changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
+
+        to_form(changeset)
+      end)
+
+    {:noreply, socket}
+  end
+
   defp combine_params(%{
          "shuttle" => shuttle_params,
          "routes_with_stops" => routes_with_stops_params
@@ -374,6 +416,32 @@ defmodule ArrowWeb.ShuttleViewLive do
         route_changeset,
         :route_stops,
         existing_stops ++ [new_route_stop]
+      )
+    else
+      route_changeset
+    end
+  end
+
+  defp update_route_changeset_with_reordered_stops(route_changeset, direction_id, old, new) do
+    if Ecto.Changeset.get_field(route_changeset, :direction_id) == direction_id do
+      existing_stops = Ecto.Changeset.get_field(route_changeset, :route_stops)
+
+      moved_route_stop = Enum.at(existing_stops, old)
+
+      {new_route_stop_changes, _stop_sequence} =
+        existing_stops
+        |> List.delete_at(old)
+        |> List.insert_at(new, moved_route_stop)
+        |> Enum.reduce({[], 0}, fn route_stop, {route_stop_changes, stop_sequence} ->
+          {route_stop_changes ++
+             [Arrow.Shuttles.RouteStop.changeset(route_stop, %{stop_sequence: stop_sequence})],
+           stop_sequence + 1}
+        end)
+
+      Ecto.Changeset.put_assoc(
+        route_changeset,
+        :route_stops,
+        new_route_stop_changes
       )
     else
       route_changeset
