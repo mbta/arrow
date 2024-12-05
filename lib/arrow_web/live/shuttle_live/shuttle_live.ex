@@ -1,11 +1,12 @@
 defmodule ArrowWeb.ShuttleViewLive do
   use ArrowWeb, :live_view
   import Phoenix.HTML.Form
+
   alias Arrow.Shuttles
-  alias Arrow.Shuttles.Shuttle
-  alias Arrow.Shuttles.Shape
   alias Arrow.Shuttles.Route
   alias Arrow.Shuttles.RouteStop
+  alias Arrow.Shuttles.Shape
+  alias Arrow.Shuttles.Shuttle
   alias ArrowWeb.ShapeView
 
   embed_templates "shuttle_live/*"
