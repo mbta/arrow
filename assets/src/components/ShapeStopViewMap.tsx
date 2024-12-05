@@ -22,10 +22,12 @@ interface Stop {
     stop_desc: string
     stop_lat: number
     stop_lon: number
+    stop_sequence: number
 }
 
 interface Layer {
     name: string
+    direction_id: string
     color: string
     shape: Shape | null
     stops: Stop[]
@@ -48,14 +50,6 @@ const COLORS = [
     "008eaa",
     "52bbc5",
 ]
-
-const markerIcon = icon({
-    iconUrl: "/images/marker-icon.png",
-    iconRetinaUrl: "/images/marker-icon-2x.png",
-    shadowUrl: "/images/marker-shadow.png",
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-})
 
 function genIcon(color: string, text: string) {
     const markerHtmlStyles = `
@@ -86,11 +80,11 @@ const defaultCenter: LatLngExpression = [42.360718, -71.05891]
 const generateNameField = (name: string, color: string) =>
     `<div class="legend-square color-${color}"></div> ${name}`
 
-const MapLayers = ({ layers }: { layers: Layer[] }) =>
-    layers.map((layer: Layer, index: number) => {
+const MapLayers = ({ layers }: { layers: Layer[] }) => {
+    return layers.map((layer: Layer, index: number) => {
         return <MapLayer layer={layer} index={index} key={index} keyPrefix={index.toString()} />
     })
-
+}
 
 const MapLayer = ({ layer, index, keyPrefix }: { layer: Layer; index: number, keyPrefix: string }) => {
     const colorValue = COLORS[index]
@@ -98,7 +92,7 @@ const MapLayer = ({ layer, index, keyPrefix }: { layer: Layer; index: number, ke
     return (
         <LayersControl.Overlay
             checked
-            name={generateNameField(layer.name, colorValue)}
+            name={generateNameField(`Direction ${layer.direction_id}`, colorValue)}
             key={`${keyPrefix}-control-overlay`}
         >
             <LayerGroup key={`${keyPrefix}-control-group`}>
@@ -106,7 +100,7 @@ const MapLayer = ({ layer, index, keyPrefix }: { layer: Layer; index: number, ke
                 {layer.stops.map((stop, index) => (
                     stop.stop_lat && stop.stop_lon && (
                         <>
-                            <Marker key={stop.stop_id} position={[stop.stop_lat, stop.stop_lon]} icon={genIcon(colorValue, index.toString())}>
+                            <Marker key={stop.stop_id} position={[stop.stop_lat, stop.stop_lon]} icon={genIcon(colorValue, stop.stop_sequence.toString())}>
                                 <Popup>{stop.stop_name}</Popup>
                             </Marker>
                         </>
@@ -152,7 +146,7 @@ const PolyLine = ({
     )
 }
 
-const getMapBounds = (layers: Layer[]): LatLngBoundsExpression => {
+const getMapBounds = (layers: Layer[]): LatLngBoundsExpression | null => {
     const lats: number[] = []
     const longs: number[] = []
     layers.forEach((layer: Layer) => {
@@ -168,6 +162,9 @@ const getMapBounds = (layers: Layer[]): LatLngBoundsExpression => {
         })
     })
 
+    if (lats.length === 0 || longs.length === 0) {
+        return null;
+    }
     return [
         [Math.max(...lats), Math.max(...longs)],
         [Math.min(...lats), Math.min(...longs)],
@@ -175,32 +172,21 @@ const getMapBounds = (layers: Layer[]): LatLngBoundsExpression => {
 }
 
 const ShapeStopViewMap = ({ layers }: ShapeStopViewMapProps) => {
-
-    const mapLayers = useMemo(() => {
-        if (layers && layers.length > 0) {
-            return (
-                <LayersControl
-                    position="bottomright"
-                    key="layer-control"
-                    collapsed={false}
-                >
-                    <MapLayers layers={layers} key="layer-map" />
-                </LayersControl>
-            )
-        } else {
-            return []
-        }
-    }, [layers])
-
     const mapProps = useMemo(() => {
         if (layers && layers.length > 0) {
-            return { bounds: getMapBounds(layers) }
+            let bounds = getMapBounds(layers)
+            if (bounds) {
+                return { bounds: bounds }
+            } else {
+                return { center: defaultCenter }
+            }
         } else {
             return { center: defaultCenter }
         }
     }, [layers])
 
     return (
+
         <MapContainer
             {...mapProps}
             data-testid="shape-view-map-container"
@@ -212,15 +198,13 @@ const ShapeStopViewMap = ({ layers }: ShapeStopViewMapProps) => {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            {mapLayers}
-            {/* {polyLines}
-            {stops && stops.map(stop => (
-                stop.stop_lat && stop.stop_lon && (
-                    <Marker key={stop.stop_id} position={[stop.stop_lat, stop.stop_lon]} icon={markerIcon}>
-                        <Popup>{stop.stop_name}</Popup>
-                    </Marker>
-                )
-            ))} */}
+            <LayersControl
+                position="bottomright"
+                key="layer-control"
+                collapsed={false}
+            >
+                <MapLayers layers={layers} key="layer-map" />
+            </LayersControl>
         </MapContainer>
     )
 }
