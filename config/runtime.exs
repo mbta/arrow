@@ -16,7 +16,6 @@ keycloak_issuer =
 
 if is_binary(keycloak_issuer) and not is_test? do
   config :arrow,
-    ueberauth_provider: :keycloak,
     keycloak_client_uuid: System.fetch_env!("KEYCLOAK_CLIENT_UUID"),
     keycloak_api_base: System.fetch_env!("KEYCLOAK_API_BASE")
 
