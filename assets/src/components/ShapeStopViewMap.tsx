@@ -1,4 +1,4 @@
-import React, { useMemo } from "react"
+import React, { useEffect, useMemo } from "react"
 import { divIcon, icon, LatLngBoundsExpression, LatLngExpression } from "leaflet"
 import {
     CircleMarker,
@@ -9,6 +9,7 @@ import {
     TileLayer,
     Marker,
     Popup,
+    useMap,
 } from "react-leaflet"
 
 interface Shape {
@@ -171,6 +172,25 @@ const getMapBounds = (layers: Layer[]): LatLngBoundsExpression | null => {
     ] as LatLngBoundsExpression
 }
 
+const MapUpdater = ({ layers }: ShapeStopViewMapProps) => {
+    const map = useMap();
+
+    useEffect(() => {
+        if (layers && layers.length > 0) {
+            const bounds = getMapBounds(layers);
+            if (bounds) {
+                map.fitBounds(bounds);
+            } else {
+                map.setView(defaultCenter, 13);
+            }
+        } else {
+            map.setView(defaultCenter, 13);
+        }
+    }, [layers, map]);
+
+    return null;
+};
+
 const ShapeStopViewMap = ({ layers }: ShapeStopViewMapProps) => {
     const mapProps = useMemo(() => {
         if (layers && layers.length > 0) {
@@ -194,6 +214,7 @@ const ShapeStopViewMap = ({ layers }: ShapeStopViewMapProps) => {
             zoom={13}
             scrollWheelZoom={true}
         >
+            <MapUpdater layers={layers} />
             <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
