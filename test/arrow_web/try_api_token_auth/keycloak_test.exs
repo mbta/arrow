@@ -1,6 +1,7 @@
 defmodule ArrowWeb.TryApiTokenAuth.KeycloakTest do
   use ArrowWeb.ConnCase
   import ExUnit.CaptureLog
+  import Test.Support.Helpers
 
   alias Arrow.HTTPMock
   alias ArrowWeb.TryApiTokenAuth.Keycloak
@@ -8,6 +9,16 @@ defmodule ArrowWeb.TryApiTokenAuth.KeycloakTest do
   import Mox
 
   setup :verify_on_exit!
+
+  setup do
+    reassign_env(:ueberauth,
+      Ueberauth: [
+        providers: [
+          keycloak: {Ueberauth.Strategy.Oidcc, []}
+        ]
+      ]
+    )
+  end
 
   describe "sign_in/2" do
     test "signs in an admin", %{conn: conn} do

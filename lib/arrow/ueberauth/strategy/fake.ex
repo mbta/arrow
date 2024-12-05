@@ -6,7 +6,7 @@ defmodule Arrow.Ueberauth.Strategy.Fake do
   @impl Ueberauth.Strategy
   def handle_request!(conn) do
     conn
-    |> redirect!("/auth/cognito/callback")
+    |> redirect!("/auth/keycloak/callback")
     |> halt()
   end
 
@@ -37,10 +37,15 @@ defmodule Arrow.Ueberauth.Strategy.Fake do
   end
 
   @impl Ueberauth.Strategy
-  def extra(_conn) do
+  def extra(conn) do
     %Ueberauth.Auth.Extra{
-      raw_info: %{
-        "iat" => System.system_time(:second)
+      raw_info: %UeberauthOidcc.RawInfo{
+        claims: %{
+          "iat" => System.system_time(:second)
+        },
+        userinfo: %{
+          "roles" => Ueberauth.Strategy.Helpers.options(conn)[:groups]
+        }
       }
     }
   end

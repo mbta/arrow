@@ -83,7 +83,6 @@ defmodule Arrow.MixProject do
       # If react_phoenix changes, check assets/src/ReactPhoenix.js, too
       {:react_phoenix, git: "https://github.com/mbta/react-phoenix.git"},
       {:tzdata, "~> 1.1"},
-      {:ueberauth_cognito, "0.4.0"},
       {:ueberauth_oidcc, "~> 0.4.0"},
       {:ueberauth, "~> 0.10"},
       {:wallaby, "~> 0.30", runtime: false, only: :test},

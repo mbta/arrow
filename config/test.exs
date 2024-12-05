@@ -4,9 +4,7 @@ config :arrow,
   shape_storage_enabled?: false,
   shape_storage_request_fn: {Arrow.Mock.ExAws.Request, :request},
   gtfs_archive_storage_enabled?: false,
-  gtfs_archive_storage_request_fn: {Arrow.Mock.ExAws.Request, :request},
-  ueberauth_provider: :cognito,
-  api_login_module: ArrowWeb.TryApiTokenAuth.Cognito
+  gtfs_archive_storage_request_fn: {Arrow.Mock.ExAws.Request, :request}
 
 # Configure your database
 config :arrow, Arrow.Repo,
@@ -28,8 +26,7 @@ config :arrow, Oban, testing: :inline
 
 config :ueberauth, Ueberauth,
   providers: [
-    cognito: {Arrow.Ueberauth.Strategy.Fake, []},
-    keycloak: {Ueberauth.Strategy.Oidcc, []}
+    keycloak: {Arrow.Ueberauth.Strategy.Fake, [groups: ["admin"]]}
   ]
 
 # Configure Keycloak
