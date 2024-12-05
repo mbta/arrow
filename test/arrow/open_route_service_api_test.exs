@@ -136,4 +136,20 @@ defmodule Arrow.OpenRouteServiceAPITest do
                %{"lat" => 0, "lon" => 1}
              ])
   end
+
+  test "route not found errors from ORS return `type: :no_route`" do
+    expect(
+      Arrow.OpenRouteServiceAPI.MockClient,
+      :get_directions,
+      fn _ ->
+        {:error, %{"code" => 2009}}
+      end
+    )
+
+    assert {:error, %{type: :no_route}} =
+             Arrow.OpenRouteServiceAPI.directions([
+               %{"lat" => 0, "lon" => 0},
+               %{"lat" => 0, "lon" => 1}
+             ])
+  end
 end
