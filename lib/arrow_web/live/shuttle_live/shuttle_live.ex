@@ -191,7 +191,7 @@ defmodule ArrowWeb.ShuttleViewLive do
     if route_stop.stop do
       %{
         stop_sequence: route_stop.stop_sequence,
-        stop_id: route_stop.stop.id,
+        stop_id: route_stop.stop.stop_id,
         stop_name: route_stop.stop.stop_name,
         stop_desc: route_stop.stop.stop_desc,
         stop_lat: route_stop.stop.stop_lat,
@@ -200,7 +200,7 @@ defmodule ArrowWeb.ShuttleViewLive do
     end
   end
 
-  defp render_route_stop(%RouteStop{stop_id: gtfs_stop_id} = route_stop)
+  defp render_route_stop(%RouteStop{gtfs_stop_id: gtfs_stop_id} = route_stop)
        when not is_nil(gtfs_stop_id) do
     route_stop =
       if !Ecto.assoc_loaded?(route_stop.gtfs_stop) or route_stop.gtfs_stop.id != gtfs_stop_id,

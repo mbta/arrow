@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo } from "react"
-import { divIcon, icon, LatLngBoundsExpression, LatLngExpression } from "leaflet"
+import React, { useEffect } from "react"
+import { divIcon, LatLngBoundsExpression, LatLngExpression } from "leaflet"
 import {
     CircleMarker,
     LayersControl,
@@ -192,23 +192,10 @@ const MapUpdater = ({ layers }: ShapeStopViewMapProps) => {
 };
 
 const ShapeStopViewMap = ({ layers }: ShapeStopViewMapProps) => {
-    const mapProps = useMemo(() => {
-        if (layers && layers.length > 0) {
-            let bounds = getMapBounds(layers)
-            if (bounds) {
-                return { bounds: bounds }
-            } else {
-                return { center: defaultCenter }
-            }
-        } else {
-            return { center: defaultCenter }
-        }
-    }, [layers])
-
     return (
 
         <MapContainer
-            {...mapProps}
+            center={defaultCenter}
             data-testid="shape-view-map-container"
             style={{ height: "800px" }}
             zoom={13}
@@ -219,11 +206,7 @@ const ShapeStopViewMap = ({ layers }: ShapeStopViewMapProps) => {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <LayersControl
-                position="bottomright"
-                key="layer-control"
-                collapsed={false}
-            >
+            <LayersControl position="bottomright" key="layer-control" collapsed={false}>
                 <MapLayers layers={layers} key="layer-map" />
             </LayersControl>
         </MapContainer>
