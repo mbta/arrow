@@ -86,6 +86,9 @@ defmodule Arrow.OpenRouteServiceAPI do
   # Convert API Error codes into specific errors
   # https://giscience.github.io/openrouteservice/api-reference/error-codes
 
+  # 2009: Route was not found.
+  defp parse_error(%{"code" => 2009}), do: {:error, %{type: :no_route}}
+
   # 2010: Point was not found.
   defp parse_error(%{"code" => 2010}), do: {:error, %{type: :no_route}}
 
