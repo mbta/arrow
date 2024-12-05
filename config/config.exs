@@ -17,7 +17,6 @@ config :arrow,
   migrate_synchronously?: true,
   redirect_http?: true,
   ueberauth_provider: :keycloak,
-  api_login_module: ArrowWeb.TryApiTokenAuth.Keycloak,
   required_roles: %{
     view_disruption: ["read-only", "admin"],
     create_disruption: ["admin"],

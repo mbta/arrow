@@ -40,6 +40,6 @@ defmodule ArrowWeb.TryApiTokenAuth do
   end
 
   defp api_login_module_for_token(_token) do
-    Application.get_env(:arrow, :api_login_module)
+    ArrowWeb.TryApiTokenAuth.Keycloak
   end
 end
