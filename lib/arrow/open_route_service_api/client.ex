@@ -19,7 +19,6 @@ defmodule Arrow.OpenRouteServiceAPI.Client do
       HTTPoison.post(
         directions_api(),
         Jason.encode!(request),
-        Authorization: api_key(),
         "Content-Type": "application/json"
       )
 
@@ -93,6 +92,4 @@ defmodule Arrow.OpenRouteServiceAPI.Client do
 
   defp directions_path,
     do: "v2/directions/driving-hgv/geojson"
-
-  defp api_key, do: Application.get_env(:arrow, Arrow.OpenRouteServiceAPI)[:api_key]
 end
