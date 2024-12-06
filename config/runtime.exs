@@ -14,6 +14,10 @@ keycloak_issuer =
       nil
   end
 
+config :arrow, Arrow.OpenRouteServiceAPI,
+  api_base_url: System.get_env("OPEN_ROUTE_SERVICE_API_URL"),
+  client: Arrow.OpenRouteServiceAPI.Client
+
 if is_binary(keycloak_issuer) and not is_test? do
   config :arrow,
     keycloak_client_uuid: System.fetch_env!("KEYCLOAK_CLIENT_UUID"),
