@@ -16,12 +16,7 @@ config :arrow,
   # Run migrations synchronously before anything else. Must finish in <5 seconds
   migrate_synchronously?: true,
   redirect_http?: true,
-  cognito_groups: %{
-    # map cognito groups to roles
-    "arrow-admin" => "admin"
-  },
   ueberauth_provider: :keycloak,
-  api_login_module: ArrowWeb.TryApiTokenAuth.Keycloak,
   required_roles: %{
     view_disruption: ["read-only", "admin"],
     create_disruption: ["admin"],
@@ -114,7 +109,6 @@ config :arrow, ArrowWeb.AuthManager,
 
 config :ueberauth, Ueberauth,
   providers: [
-    cognito: {Ueberauth.Strategy.Cognito, []},
     keycloak:
       {Ueberauth.Strategy.Oidcc,
        issuer: :keycloak_issuer,
@@ -124,13 +118,6 @@ config :ueberauth, Ueberauth,
        authorization_params: %{max_age: "#{max_session_time}"},
        authorization_params_passthrough: ~w"prompt login_hint"}
   ]
-
-config :ueberauth, Ueberauth.Strategy.Cognito,
-  auth_domain: {System, :get_env, ["COGNITO_DOMAIN"]},
-  client_id: {System, :get_env, ["COGNITO_CLIENT_ID"]},
-  client_secret: {System, :get_env, ["COGNITO_CLIENT_SECRET"]},
-  user_pool_id: {System, :get_env, ["COGNITO_USER_POOL_ID"]},
-  aws_region: {System, :get_env, ["COGNITO_AWS_REGION"]}
 
 # Configures Elixir's Logger
 config :logger, :console,

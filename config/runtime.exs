@@ -16,8 +16,6 @@ keycloak_issuer =
 
 if is_binary(keycloak_issuer) and not is_test? do
   config :arrow,
-    ueberauth_provider: :keycloak,
-    api_login_module: ArrowWeb.TryApiTokenAuth.Keycloak,
     keycloak_client_uuid: System.fetch_env!("KEYCLOAK_CLIENT_UUID"),
     keycloak_api_base: System.fetch_env!("KEYCLOAK_API_BASE")
 
@@ -57,12 +55,6 @@ if config_env() == :prod do
   end
 
   config :arrow, ArrowWeb.Endpoint, secret_key_base: System.fetch_env!("SECRET_KEY_BASE")
-
-  config :ueberauth, Ueberauth,
-    providers: [
-      cognito:
-        {Ueberauth.Strategy.Cognito, [client_secret: System.fetch_env!("COGNITO_CLIENT_SECRET")]}
-    ]
 
   pool_size =
     case System.get_env("DATABASE_POOL_SIZE") do

@@ -73,7 +73,7 @@ ENV MIX_ENV=prod TERM=xterm LANG="C.UTF-8" PORT=4000 PHX_SERVER=true
 COPY --from=elixir-builder --chown=nobody:root /app/_build/prod/rel/arrow .
 
 # Ensure SSL support is enabled
-RUN env SECRET_KEY_BASE=fake COGNITO_CLIENT_SECRET=fake DATABASE_PORT=0 \
+RUN env SECRET_KEY_BASE=fake DATABASE_PORT=0 \
   sh -c ' \
   /app/bin/arrow eval ":crypto.supports()" && \
   /app/bin/arrow eval ":ok = :public_key.cacerts_load"'
