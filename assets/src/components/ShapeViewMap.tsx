@@ -137,8 +137,8 @@ const ShapeViewMap = ({ shapes }: ShapeViewMapProps) => {
     >
       {polyLines}
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.mass.gov/info-details/massgis-data-2021-aerial-imagery">MassGIS 2021</a>'
+        url="https://mbta-map-tiles.s3.amazonaws.com/skate_osm_tiles/{z}/{x}/{y}.png"
       />
     </MapContainer>
   )
