@@ -10,7 +10,9 @@
   - Add `erlang`, `elixir`, and `nodejs` plugins
   - Install [additional requirements][nodejs-reqs] for `nodejs` plugin
 - [`direnv`](https://github.com/direnv/direnv)
-- PostgreSQL 11 (using Homebrew: `brew install postgresql@11`)
+- PostgreSQL 15
+  - Can be run as a container via docker-compose by running `docker-compose up -d` in this repository (see `docker-compose.yml`)
+  - Using Homebrew: `brew install postgresql@15`
 
 [nodejs-reqs]: https://github.com/asdf-vm/asdf-nodejs#requirements
 

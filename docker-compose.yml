@@ -1,7 +1,7 @@
 # docker compose for running locally
 services:
   postgres:
-    image: postgres:14.1-alpine
+    image: postgres:15
     restart: always
     environment:
       # only for local
