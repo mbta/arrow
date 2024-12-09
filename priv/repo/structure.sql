@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.8 (Postgres.app)
--- Dumped by pg_dump version 15.8 (Postgres.app)
+-- Dumped from database version 15.8 (Homebrew)
+-- Dumped by pg_dump version 15.8 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -90,12 +90,12 @@ CREATE TYPE public.oban_job_state AS ENUM (
 --
 
 CREATE TYPE public.route_desc AS ENUM (
-    'Commuter Rail',
+    'Regional Rail',
     'Rapid Transit',
     'Local Bus',
-    'Key Bus',
+    'Frequent Bus',
     'Supplemental Bus',
-    'Community Bus',
+    'Coverage Bus',
     'Commuter Bus',
     'Ferry',
     'Rail Replacement Bus'
@@ -1756,3 +1756,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20241010164555);
 INSERT INTO public."schema_migrations" (version) VALUES (20241018202407);
 INSERT INTO public."schema_migrations" (version) VALUES (20241029192033);
 INSERT INTO public."schema_migrations" (version) VALUES (20241030181351);
+INSERT INTO public."schema_migrations" (version) VALUES (20241209204043);
