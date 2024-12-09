@@ -19,7 +19,7 @@ defmodule Arrow.OpenRouteServiceAPI.Client do
       HTTPoison.post(
         directions_api(),
         Jason.encode!(request),
-        "Content-Type": "application/json"
+        headers(api_key())
       )
 
     parse_response(response)
@@ -92,4 +92,22 @@ defmodule Arrow.OpenRouteServiceAPI.Client do
 
   defp directions_path,
     do: "v2/directions/driving-hgv/geojson"
+
+  defp headers(nil) do
+    headers()
+  end
+
+  defp headers(api_key) do
+    [
+      {"Authorization", api_key}
+      | headers()
+    ]
+  end
+
+  defp headers do
+    [{"Content-Type", "application/json"}]
+  end
+
+  # For use with https://api.openrouteservice.org/, you can request an API key from their console
+  defp api_key, do: Application.get_env(:arrow, Arrow.OpenRouteServiceAPI)[:api_key]
 end
