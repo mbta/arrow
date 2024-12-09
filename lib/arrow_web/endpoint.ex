@@ -1,4 +1,5 @@
 defmodule ArrowWeb.Endpoint do
+  require Logger
   use Sentry.PlugCapture
   use Phoenix.Endpoint, otp_app: :arrow
 
@@ -22,6 +23,10 @@ defmodule ArrowWeb.Endpoint do
       check_origin: Application.compile_env(:arrow, :websocket_check_origin, false)
     ],
     longpoll: [connect_info: [session: @session_options]]
+
+  Logger.warning(
+    "websocket_check_origin=#{inspect(Application.compile_env(:arrow, :websocket_check_origin, false))}"
+  )
 
   # Serve at "/" the static files from "priv/static" directory.
   #
