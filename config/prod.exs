@@ -21,7 +21,7 @@ config :arrow, :websocket_check_origin, [
 
 config :arrow, ArrowWeb.Endpoint,
   http: [:inet6, port: 4000],
-  url: [host: "arrow-dev.mbtace.com", port: 443],
+  url: [host: "example.com", port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json",
   server: true
 
