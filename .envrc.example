@@ -9,4 +9,4 @@ export KEYCLOAK_API_BASE=https://login-dev.mbtace.com/auth/admin/realms/MBTA/
 export KEYCLOAK_CLIENT_ID=arrow-dev
 export KEYCLOAK_CLIENT_UUID=bd84a8e2-2fce-4c7a-bfe3-3c7ac71fb5b2
 export KEYCLOAK_CLIENT_SECRET=
-export OPEN_ROUTE_SERVICE_API_URL=http://localhost:8082/
+export OPEN_ROUTE_SERVICE_API_URL=http://localhost:8082/ors/
