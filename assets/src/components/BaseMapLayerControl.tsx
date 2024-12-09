@@ -16,8 +16,8 @@ const BaseMapLayerControl = () => {
       </LayersControl.BaseLayer>
       <LayersControl.BaseLayer name="Satellite">
         <TileLayer
-          attribution='&copy; <a href="https://www.mass.gov/info-details/massgis-data-2021-aerial-imagery">MassGIS 2021</a>'
-          url="https://tiles.arcgis.com/tiles/hGdibHYSPO59RG1h/arcgis/rest/services/orthos2021/MapServer/tile/{z}/{y}/{x}"
+          attribution='&copy; <a href="https://www.mass.gov/info-details/massgis-data-2023-aerial-imagery">MassGIS 2023</a>'
+          url="https://tiles.arcgis.com/tiles/hGdibHYSPO59RG1h/arcgis/rest/services/orthos2023/MapServer/tile/{z}/{y}/{x}"
         />
       </LayersControl.BaseLayer>
     </LayersControl>
