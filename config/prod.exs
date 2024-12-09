@@ -15,8 +15,8 @@ config :arrow,
   gtfs_archive_storage_enabled?: true
 
 config :arrow, :websocket_check_origin, [
-  "https://*.mbta.com",
-  "https://*.mbtace.com"
+  "https://arrow.mbta.com",
+  "https://arrow-dev.mbtace.com"
 ]
 
 config :arrow, ArrowWeb.Endpoint,
