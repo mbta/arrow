@@ -1,8 +1,5 @@
 import React from "react"
-import {
-  LayersControl,
-  TileLayer,
-} from "react-leaflet"
+import { LayersControl, TileLayer } from "react-leaflet"
 
 const BaseMapLayerControl = () => {
   return (
@@ -21,7 +18,6 @@ const BaseMapLayerControl = () => {
         <TileLayer
           attribution='&copy; <a href="https://www.mass.gov/info-details/massgis-data-2021-aerial-imagery">MassGIS 2021</a>'
           url="https://tiles.arcgis.com/tiles/hGdibHYSPO59RG1h/arcgis/rest/services/orthos2021/MapServer/tile/{z}/{y}/{x}"
-
         />
       </LayersControl.BaseLayer>
     </LayersControl>
