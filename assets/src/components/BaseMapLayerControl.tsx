@@ -16,7 +16,7 @@ const BaseMapLayerControl = () => {
       </LayersControl.BaseLayer>
       <LayersControl.BaseLayer name="Satellite">
         <TileLayer
-          attribution='&copy; <a href="https://www.mass.gov/info-details/massgis-data-2023-aerial-imagery">MassGIS 2023</a>'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://tiles.arcgis.com/tiles/hGdibHYSPO59RG1h/arcgis/rest/services/orthos2023/MapServer/tile/{z}/{y}/{x}"
         />
       </LayersControl.BaseLayer>
