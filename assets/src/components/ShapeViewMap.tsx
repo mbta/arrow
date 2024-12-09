@@ -5,8 +5,7 @@ import {
   LayersControl,
   LayerGroup,
   MapContainer,
-  Polyline,
-  TileLayer,
+  Polyline
 } from "react-leaflet"
 import BaseMapLayerControl from "./BaseMapLayerControl"
 
