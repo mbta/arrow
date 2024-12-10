@@ -74,7 +74,7 @@ jobs:
         run: |
           sudo apt install -y postgresql-common
           sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
-          sudo apt-get install postgresql-client-15
+          sudo apt-get install -y postgresql-client-15
       - uses: actions/checkout@v2
       - name: ASDF cache
         uses: actions/cache@v2
@@ -138,7 +138,7 @@ jobs:
         run: |
           sudo apt install -y postgresql-common
           sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
-          sudo apt-get install postgresql-client-15
+          sudo apt-get -y install postgresql-client-15
       - uses: actions/checkout@v2
       - name: ASDF cache
         uses: actions/cache@v2
