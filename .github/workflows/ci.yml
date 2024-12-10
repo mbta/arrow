@@ -9,7 +9,7 @@ on:
 jobs:
   asdf:
     name: ASDF
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v2
@@ -26,7 +26,7 @@ jobs:
 
   build:
     name: Build Elixir
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: asdf
     steps:
       - uses: actions/checkout@v2
@@ -52,7 +52,7 @@ jobs:
 
   elixir:
     name: Test Elixir
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build
     env:
       DATABASE_POSTGRESQL_PASSWORD: postgres
@@ -70,6 +70,9 @@ jobs:
           POSTGRES_DB: ${{env.DATABASE_NAME}}
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
+      - name: Update pg_dump to v15
+        sudo apt update && sudo apt upgrade
+        sudo apt install postgresql-client postgresql-client-common libpq-dev
       - uses: actions/checkout@v2
       - name: ASDF cache
         uses: actions/cache@v2
@@ -111,7 +114,7 @@ jobs:
 
   elixir-integration:
     name: Elixir integration tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build
     env:
       DATABASE_POSTGRESQL_PASSWORD: postgres
@@ -129,6 +132,9 @@ jobs:
           POSTGRES_DB: ${{env.DATABASE_NAME}}
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
+      - name: Update pg_dump to v15
+        sudo apt update && sudo apt upgrade
+        sudo apt install postgresql-client postgresql-client-common libpq-dev
       - uses: actions/checkout@v2
       - name: ASDF cache
         uses: actions/cache@v2
@@ -156,7 +162,7 @@ jobs:
 
   nodejs:
     name: Test Node
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build
     steps:
       - uses: actions/checkout@v2
