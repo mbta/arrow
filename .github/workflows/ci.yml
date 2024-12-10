@@ -72,9 +72,9 @@ jobs:
     steps:
       - name: Update Postgres client
         run: |
-        sudo apt install -y postgresql-common
-        sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
-        sudo apt-get install postgresql-client-15
+          sudo apt install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+          sudo apt-get install postgresql-client-15
       - uses: actions/checkout@v2
       - name: ASDF cache
         uses: actions/cache@v2
@@ -136,9 +136,9 @@ jobs:
     steps:
       - name: Update Postgres client
         run: |
-        sudo apt install -y postgresql-common
-        sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
-        sudo apt-get install postgresql-client-15
+          sudo apt install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+          sudo apt-get install postgresql-client-15
       - uses: actions/checkout@v2
       - name: ASDF cache
         uses: actions/cache@v2
