@@ -43,7 +43,6 @@ defmodule ArrowWeb.Router do
   scope "/", ArrowWeb do
     pipe_through([:redirect_prod_http, :browser, :authenticate])
 
-    get("/logout", AuthController, :logout)
     get("/unauthorized", UnauthorizedController, :index)
     get("/feed", FeedController, :index)
     get("/mytoken", MyTokenController, :show)
@@ -77,6 +76,7 @@ defmodule ArrowWeb.Router do
 
     get("/:provider", AuthController, :request)
     get("/:provider/callback", AuthController, :callback)
+    get("/:provider/logout", AuthController, :logout)
   end
 
   scope "/api", as: :api, alias: ArrowWeb.API do

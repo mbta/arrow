@@ -207,8 +207,7 @@ defmodule ArrowWeb.ShuttleViewLive do
     id
   end
 
-  def mount(%{"id" => id} = _params, session, socket) do
-    logout_url = session["logout_url"]
+  def mount(%{"id" => id} = _params, _session, socket) do
     shuttle = Shuttles.get_shuttle!(id)
     changeset = Shuttles.change_shuttle(shuttle)
     gtfs_disruptable_routes = Shuttles.list_disruptable_routes()
@@ -232,15 +231,12 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> assign(:title, "edit shuttle")
       |> assign(:gtfs_disruptable_routes, gtfs_disruptable_routes)
       |> assign(:shapes, shapes)
-      |> assign(:logout_url, logout_url)
       |> assign(:map_props, %{shapes: shapes_map_view})
 
     {:ok, socket}
   end
 
-  def mount(%{} = _params, session, socket) do
-    logout_url = session["logout_url"]
-
+  def mount(%{} = _params, _session, socket) do
     shuttle = %Shuttle{
       status: :draft,
       routes: [%Shuttles.Route{direction_id: :"0"}, %Shuttles.Route{direction_id: :"1"}]
@@ -259,7 +255,6 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> assign(:shuttle, shuttle)
       |> assign(:gtfs_disruptable_routes, gtfs_disruptable_routes)
       |> assign(:shapes, shapes)
-      |> assign(:logout_url, logout_url)
       |> assign(:map_props, %{shapes: []})
 
     {:ok, socket}

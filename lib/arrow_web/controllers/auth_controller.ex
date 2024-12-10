@@ -6,14 +6,17 @@ defmodule ArrowWeb.AuthController do
 
   @spec logout(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def logout(conn, _params) do
-    logout_url = get_session(conn, :logout_url)
-    conn = configure_session(conn, drop: true)
+    redirect_opts =
+      if logout_url = get_session(conn, :logout_url) do
+        [external: logout_url]
+      else
+        [to: "/"]
+      end
 
-    if logout_url do
-      redirect(conn, external: logout_url)
-    else
-      redirect(conn, to: "/")
-    end
+    conn
+    |> Guardian.Plug.sign_out(Arrow.AuthManager)
+    |> configure_session(drop: true)
+    |> redirect(redirect_opts)
   end
 
   def callback(%{assigns: %{ueberauth_auth: %{provider: :keycloak} = auth}} = conn, _params) do

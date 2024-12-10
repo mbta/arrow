@@ -81,8 +81,7 @@ defmodule ArrowWeb.StopViewLive do
     """
   end
 
-  def mount(%{"id" => id} = _params, session, socket) do
-    logout_url = session["logout_url"]
+  def mount(%{"id" => id} = _params, _session, socket) do
     stop = Stops.get_stop!(id)
     form = to_form(Stops.change_stop(stop))
 
@@ -94,14 +93,12 @@ defmodule ArrowWeb.StopViewLive do
       |> assign(:stop, stop)
       |> assign(:title, "edit shuttle stop")
       |> assign(:stop_map_props, stop)
-      |> assign(:logout_url, logout_url)
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
   end
 
-  def mount(_params, session, socket) do
-    logout_url = session["logout_url"]
+  def mount(_params, _session, socket) do
     form = to_form(Stops.change_stop(%Stop{}))
 
     socket =
@@ -112,7 +109,6 @@ defmodule ArrowWeb.StopViewLive do
       |> assign(:stop, %Stop{})
       |> assign(:title, "create shuttle stop")
       |> assign(:stop_map_props, %{})
-      |> assign(:logout_url, logout_url)
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
