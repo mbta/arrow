@@ -61,7 +61,7 @@ jobs:
       DATABASE_HOST: localhost
     services:
       postgres:
-        image: postgres:14
+        image: postgres:15
         ports:
           - 5432:5432
         env:
@@ -70,6 +70,11 @@ jobs:
           POSTGRES_DB: ${{env.DATABASE_NAME}}
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
+      - name: Update Postgres client
+        run: |
+        sudo apt install -y postgresql-common
+        sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+        sudo apt-get install postgresql-client-15
       - uses: actions/checkout@v2
       - name: ASDF cache
         uses: actions/cache@v2
@@ -120,7 +125,7 @@ jobs:
       DATABASE_HOST: localhost
     services:
       postgres:
-        image: postgres:11
+        image: postgres:15
         ports:
           - 5432:5432
         env:
@@ -129,6 +134,11 @@ jobs:
           POSTGRES_DB: ${{env.DATABASE_NAME}}
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
+      - name: Update Postgres client
+        run: |
+        sudo apt install -y postgresql-common
+        sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+        sudo apt-get install postgresql-client-15
       - uses: actions/checkout@v2
       - name: ASDF cache
         uses: actions/cache@v2
