@@ -61,7 +61,7 @@ jobs:
       DATABASE_HOST: localhost
     services:
       postgres:
-        image: postgres:15
+        image: postgres:14
         ports:
           - 5432:5432
         env:
@@ -70,10 +70,6 @@ jobs:
           POSTGRES_DB: ${{env.DATABASE_NAME}}
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
-      - name: Update pg_dump to v15
-        run: |
-          sudo apt update && sudo apt upgrade
-          sudo apt install postgresql-client postgresql-client-common libpq-dev
       - uses: actions/checkout@v2
       - name: ASDF cache
         uses: actions/cache@v2
@@ -124,7 +120,7 @@ jobs:
       DATABASE_HOST: localhost
     services:
       postgres:
-        image: postgres:15
+        image: postgres:14
         ports:
           - 5432:5432
         env:
@@ -133,10 +129,6 @@ jobs:
           POSTGRES_DB: ${{env.DATABASE_NAME}}
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
-      - name: Update pg_dump to v15
-        run: |
-          sudo apt update && sudo apt upgrade
-          sudo apt install postgresql-client postgresql-client-common libpq-dev
       - uses: actions/checkout@v2
       - name: ASDF cache
         uses: actions/cache@v2
