@@ -90,15 +90,18 @@ CREATE TYPE public.oban_job_state AS ENUM (
 --
 
 CREATE TYPE public.route_desc AS ENUM (
-    'Regional Rail',
+    'Commuter Rail',
     'Rapid Transit',
     'Local Bus',
-    'Frequent Bus',
+    'Key Bus',
     'Supplemental Bus',
-    'Coverage Bus',
+    'Community Bus',
     'Commuter Bus',
     'Ferry',
-    'Rail Replacement Bus'
+    'Rail Replacement Bus',
+    'Regional Rail',
+    'Coverage Bus',
+    'Frequent Bus'
 );
 
 
