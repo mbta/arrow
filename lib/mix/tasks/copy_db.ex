@@ -31,15 +31,14 @@ defmodule Mix.Tasks.CopyDb do
              Enum.map(data, fn map ->
                Map.new(map, fn {key, value} ->
                  parsed_value = parse_json_value(value)
-
                  {String.to_existing_atom(key), parsed_value}
                end)
              end)}
           end)
-
         :ok = Arrow.DBStructure.load_data(repo, data)
       else
         err ->
+          IO.inspect(err)
           Logger.error("Error parsing response data: #{get_error(err)}")
       end
     end)

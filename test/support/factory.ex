@@ -97,5 +97,13 @@ defmodule Arrow.Factory do
       at_street: nil,
       vehicle_type: :bus
     }
+end
+
+  def shuttle_factory() do
+    %Arrow.Shuttles.Shuttle{
+      status: :active,
+      shuttle_name: sequence(:source_label, &"Sheldon the Test Shuttle #{&1}"),
+      disrupted_route_id: "Red"
+    }
   end
 end
