@@ -71,8 +71,9 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - name: Update pg_dump to v15
-        sudo apt update && sudo apt upgrade
-        sudo apt install postgresql-client postgresql-client-common libpq-dev
+        run: |
+          sudo apt update && sudo apt upgrade
+          sudo apt install postgresql-client postgresql-client-common libpq-dev
       - uses: actions/checkout@v2
       - name: ASDF cache
         uses: actions/cache@v2
@@ -133,8 +134,9 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - name: Update pg_dump to v15
-        sudo apt update && sudo apt upgrade
-        sudo apt install postgresql-client postgresql-client-common libpq-dev
+        run: |
+          sudo apt update && sudo apt upgrade
+          sudo apt install postgresql-client postgresql-client-common libpq-dev
       - uses: actions/checkout@v2
       - name: ASDF cache
         uses: actions/cache@v2
