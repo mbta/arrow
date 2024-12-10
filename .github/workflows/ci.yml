@@ -61,7 +61,7 @@ jobs:
       DATABASE_HOST: localhost
     services:
       postgres:
-        image: postgres:15
+        image: postgres:14
         ports:
           - 5432:5432
         env:
