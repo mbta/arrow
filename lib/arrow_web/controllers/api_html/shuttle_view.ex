@@ -7,4 +7,8 @@ defmodule ArrowWeb.API.ShuttleView do
   has_many :routes,
     serializer: ArrowWeb.API.ShuttleRouteView,
     include: true
+
+  has_many :route_stops,
+    serializer: ArrowWeb.API.ShuttleStopView,
+    include: true
 end
