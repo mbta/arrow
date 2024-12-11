@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.8 (Postgres.app)
--- Dumped by pg_dump version 15.8 (Postgres.app)
+-- Dumped from database version 15.8 (Homebrew)
+-- Dumped by pg_dump version 15.8 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -98,7 +98,10 @@ CREATE TYPE public.route_desc AS ENUM (
     'Community Bus',
     'Commuter Bus',
     'Ferry',
-    'Rail Replacement Bus'
+    'Rail Replacement Bus',
+    'Regional Rail',
+    'Coverage Bus',
+    'Frequent Bus'
 );
 
 
@@ -1756,3 +1759,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20241010164555);
 INSERT INTO public."schema_migrations" (version) VALUES (20241018202407);
 INSERT INTO public."schema_migrations" (version) VALUES (20241029192033);
 INSERT INTO public."schema_migrations" (version) VALUES (20241030181351);
+INSERT INTO public."schema_migrations" (version) VALUES (20241209204043);
