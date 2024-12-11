@@ -2,6 +2,7 @@ defmodule Arrow.Factory do
   @moduledoc false
 
   use ExMachina.Ecto, repo: Arrow.Repo
+  use Arrow.OpenRouteServiceFactory
 
   def adjustment_factory do
     %Arrow.Adjustment{
@@ -83,8 +84,8 @@ defmodule Arrow.Factory do
       desc: nil,
       platform_code: nil,
       platform_name: nil,
-      lat: 72.0,
-      lon: 43.0,
+      lat: 42.3601,
+      lon: -71.0589,
       zone_id: nil,
       address: nil,
       url: nil,
