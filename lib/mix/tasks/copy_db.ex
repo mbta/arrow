@@ -38,7 +38,6 @@ defmodule Mix.Tasks.CopyDb do
         :ok = Arrow.DBStructure.load_data(repo, data)
       else
         err ->
-          IO.inspect(err)
           Logger.error("Error parsing response data: #{get_error(err)}")
       end
     end)

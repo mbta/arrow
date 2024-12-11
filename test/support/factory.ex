@@ -57,12 +57,11 @@ defmodule Arrow.Factory do
     %Arrow.Disruption.Note{author: "An author", body: "This is the body."}
   end
 
-  def route_stop_factory(attrs \\ %{}) do
+  def route_stop_factory() do
     %Arrow.Shuttles.RouteStop{
       direction_id: :"0",
       stop_sequence: sequence(:route_stop_stop_sequence, & &1)
     }
-    |> merge_attributes(attrs)
   end
 
   def stop_factory do
@@ -97,14 +96,6 @@ defmodule Arrow.Factory do
       on_street: nil,
       at_street: nil,
       vehicle_type: :bus
-    }
-end
-
-  def shuttle_factory() do
-    %Arrow.Shuttles.Shuttle{
-      status: :active,
-      shuttle_name: sequence(:source_label, &"Sheldon the Test Shuttle #{&1}"),
-      disrupted_route_id: "Red"
     }
   end
 end
