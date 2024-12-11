@@ -111,25 +111,6 @@ defmodule Arrow.ShuttlesFixtures do
         routes: shuttle_routes()
       })
       |> Arrow.Shuttles.create_shuttle()
-    dbg()
-    if attrs[:status] == :active do
-      shuttle.routes |> Arrow.Shuttles.Route.changeset(%{
-        "route_stops" => [
-          %{
-            "direction_id" => "0",
-            "stop_sequence" => "1",
-            "display_stop_id" => "1"
-          },
-          %{
-            "direction_id" => "0",
-            "stop_sequence" => "2",
-            "display_stop_id" => "2" 
-          }
-        ]
-      })
-
-    else
       shuttle
-    end
   end
 end
