@@ -1,6 +1,7 @@
 import React from "react"
 import { LatLngExpression, icon } from "leaflet"
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet"
+import { MapContainer, Marker, Popup } from "react-leaflet"
+import BaseMapLayerControl from "./BaseMapLayerControl"
 
 type Stop = {
   stop_name: string
@@ -28,10 +29,7 @@ const StopViewMap = ({ stop }: { stop?: Stop }) => {
       zoom={13}
       scrollWheelZoom={true}
     >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+      <BaseMapLayerControl />
       {stop && stop.stop_lat && stop.stop_lon && (
         <Marker position={[stop.stop_lat, stop.stop_lon]} icon={markerIcon}>
           <Popup>{stop.stop_name}</Popup>

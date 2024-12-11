@@ -6,8 +6,8 @@ import {
   LayerGroup,
   MapContainer,
   Polyline,
-  TileLayer,
 } from "react-leaflet"
+import BaseMapLayerControl from "./BaseMapLayerControl"
 
 interface Shape {
   name: string
@@ -136,10 +136,7 @@ const ShapeViewMap = ({ shapes }: ShapeViewMapProps) => {
       scrollWheelZoom={true}
     >
       {polyLines}
-      <TileLayer
-        attribution='&copy; <a href="https://www.mass.gov/info-details/massgis-data-2021-aerial-imagery">MassGIS 2021</a>'
-        url="https://mbta-map-tiles.s3.amazonaws.com/skate_osm_tiles/{z}/{x}/{y}.png"
-      />
+      <BaseMapLayerControl />
     </MapContainer>
   )
 }
