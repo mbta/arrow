@@ -3,5 +3,4 @@ defmodule ArrowWeb.API.GtfsStopView do
   use JaSerializer.PhoenixView
 
   attributes([:lat, :lon, :name])
-
 end
