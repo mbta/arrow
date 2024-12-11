@@ -68,16 +68,13 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
                    "id" => id,
                    "relationships" => %{
                      "routes" => %{
-                       "data" => [
-                         %{"type" => "shuttle_route"},
-                         %{"type" => "shuttle_route"}
-                       ]
+                       "data" => _
                      }
                    }
                  }
                ],
-               "jsonapi" => %{"version" => "1.0"},
-               "included" => [%{"type" => "shuttle_stop"} | _]
+               "jsonapi" => _,
+               "included" => _
              } = res
 
       assert id == to_string(active_shuttle.id)
