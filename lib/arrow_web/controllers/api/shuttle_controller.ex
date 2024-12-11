@@ -2,8 +2,8 @@ defmodule ArrowWeb.API.ShuttleController do
   use ArrowWeb, :controller
   import Ecto.Query, only: [from: 2]
 
-  alias Arrow.Shuttles.Shuttle
   alias Arrow.Repo
+  alias Arrow.Shuttles.Shuttle
 
   def index(conn, _params) do
     data =

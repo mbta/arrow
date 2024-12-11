@@ -57,7 +57,7 @@ defmodule Arrow.Factory do
     %Arrow.Disruption.Note{author: "An author", body: "This is the body."}
   end
 
-  def route_stop_factory() do
+  def route_stop_factory do
     %Arrow.Shuttles.RouteStop{
       direction_id: :"0",
       stop_sequence: sequence(:route_stop_stop_sequence, & &1)
