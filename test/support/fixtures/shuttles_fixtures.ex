@@ -105,6 +105,7 @@ defmodule Arrow.ShuttlesFixtures do
         routes: shuttle_routes()
       })
       |> Arrow.Shuttles.create_shuttle()
-      shuttle
+
+    shuttle
   end
 end
