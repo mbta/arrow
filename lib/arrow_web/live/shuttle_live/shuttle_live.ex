@@ -16,6 +16,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   attr :gtfs_disruptable_routes, :list, required: true
   attr :shapes, :list, required: true
   attr :map_props, :map, required: false, default: %{}
+  attr :uploads, :any
 
   def shuttle_form(assigns) do
     ~H"""
@@ -24,6 +25,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       for={@form}
       as={:shuttle}
       action={@http_action}
+      phx-change="validate"
       phx-submit={@action}
       id="shuttle-form"
     >
@@ -60,6 +62,18 @@ defmodule ArrowWeb.ShuttleViewLive do
             prompt="Choose a value"
             options={Ecto.Enum.values(Arrow.Shuttles.Shuttle, :status)}
           />
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col">
+          <.link_button
+            class="btn-primary"
+            phx-click={JS.dispatch("click", to: "##{@uploads.definition.ref}")}
+            target="_blank"
+          >
+            <.live_file_input upload={@uploads.definition} class="hidden" />
+            Upload Shuttle Definition XLSX
+          </.link_button>
         </div>
       </div>
       <%= live_react_component("Components.ShapeViewMap", @map_props, id: "shuttle-view-map") %>
@@ -232,6 +246,11 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> assign(:gtfs_disruptable_routes, gtfs_disruptable_routes)
       |> assign(:shapes, shapes)
       |> assign(:map_props, %{shapes: shapes_map_view})
+      |> allow_upload(:definition,
+        accept: ~w(.xlsx),
+        progress: &handle_progress/3,
+        auto_upload: true
+      )
 
     {:ok, socket}
   end
@@ -256,6 +275,11 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> assign(:gtfs_disruptable_routes, gtfs_disruptable_routes)
       |> assign(:shapes, shapes)
       |> assign(:map_props, %{shapes: []})
+      |> allow_upload(:definition,
+        accept: ~w(.xlsx),
+        progress: &handle_progress/3,
+        auto_upload: true
+      )
 
     {:ok, socket}
   end
@@ -276,6 +300,10 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> shapes_to_shapeviews()
 
     validate(params, assign(socket, :map_props, %{socket.assigns.map_props | shapes: shapes}))
+  end
+
+  def handle_event("validate", %{"_target" => ["definition"]}, socket) do
+    {:noreply, socket}
   end
 
   def handle_event("validate", params, socket) do
@@ -395,6 +423,29 @@ defmodule ArrowWeb.ShuttleViewLive do
     }
   end
 
+  defp update_route_changeset_with_uploaded_stops(route_changeset, stop_ids, direction_id) do
+    if Ecto.Changeset.get_field(route_changeset, :direction_id) == direction_id do
+      new_route_stops =
+        stop_ids
+        |> Enum.with_index()
+        |> Enum.map(fn {stop_id, i} ->
+          %Arrow.Shuttles.RouteStop{
+            direction_id: direction_id,
+            stop_sequence: i,
+            display_stop_id: stop_id
+          }
+        end)
+
+      Ecto.Changeset.put_assoc(
+        route_changeset,
+        :route_stops,
+        new_route_stops
+      )
+    else
+      route_changeset
+    end
+  end
+
   defp update_route_changeset_with_new_stop(route_changeset, direction_id) do
     if Ecto.Changeset.get_field(route_changeset, :direction_id) == direction_id do
       existing_stops = Ecto.Changeset.get_field(route_changeset, :route_stops)
@@ -452,5 +503,54 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> to_form(action: :validate)
 
     {:noreply, assign(socket, form: form)}
+  end
+
+  defp handle_progress(:definition, entry, socket) do
+    if entry.done? do
+      {d0, d1} = extract_stop_ids_from_upload(socket, entry)
+
+      socket =
+        update(socket, :form, fn %{source: changeset} ->
+          existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
+
+          new_routes =
+            Enum.map(existing_routes, fn route_changeset ->
+              if Ecto.Changeset.get_field(route_changeset, :direction_id) == :"0" do
+                update_route_changeset_with_uploaded_stops(route_changeset, d0, :"0")
+              else
+                update_route_changeset_with_uploaded_stops(route_changeset, d1, :"1")
+              end
+            end)
+
+          changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
+
+          to_form(changeset)
+        end)
+
+      {:noreply, socket}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  defp extract_stop_ids_from_upload(socket, entry) do
+    consume_uploaded_entry(socket, entry, fn %{path: path} ->
+      %{"Direction 0 STOPS" => direction_0, "Direction 1 STOPS" => direction_1} =
+        path
+        |> Xlsxir.multi_extract()
+        |> Enum.map(fn {:ok, pid} -> {Xlsxir.get_info(pid, :name), pid} end)
+        |> Map.new()
+
+      {:ok, {parse_direction_sheet(direction_0), parse_direction_sheet(direction_1)}}
+    end)
+  end
+
+  defp parse_direction_sheet(table_id) do
+    table_id
+    |> Xlsxir.get_list()
+    |> Enum.reject(fn list -> Enum.all?(list, &is_nil/1) end)
+    |> Enum.drop(1)
+    |> Enum.map(fn [_, stop_id | _] -> stop_id end)
+    |> tap(fn _ -> Xlsxir.close(table_id) end)
   end
 end
