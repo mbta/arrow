@@ -93,12 +93,6 @@ defmodule Arrow.ShuttlesFixtures do
     ]
   end
 
-  defp shuttle_stops do
-    [
-      %{}
-    ]
-  end
-
   @doc """
   Generate a shuttle.
   """
