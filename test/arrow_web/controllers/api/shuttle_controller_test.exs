@@ -60,7 +60,9 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
         Arrow.Shuttles.Shuttle.changeset(shuttle, %{status: :active})
         |> Arrow.Repo.update()
 
-      res = json_response(get(conn, "/api/shuttles"), 200)
+      res =
+        get(conn, "/api/shuttles")
+        |> json_response(200)
 
       assert %{
                "data" => [

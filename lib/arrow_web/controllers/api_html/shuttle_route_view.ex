@@ -5,6 +5,6 @@ defmodule ArrowWeb.API.ShuttleRouteView do
   attributes([:suffix, :destination, :direction_id, :direction_desc, :waypoint])
 
   has_many :route_stops,
-    serializer: ArrowWeb.API.ShuttleStopView,
+    serializer: ArrowWeb.API.ShuttleRouteStopView,
     include: true
 end

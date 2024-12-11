@@ -11,7 +11,8 @@ defmodule ArrowWeb.API.ShuttleController do
         where: s.status == :active,
         join: r in assoc(s, :routes),
         join: rs in assoc(r, :route_stops),
-        preload: [routes: {r, route_stops: rs}]
+        left_join: gs in assoc(rs, :gtfs_stop),
+        preload: [routes: {r, route_stops: {rs, :gtfs_stop}}]
       )
       |> Repo.all()
 
