@@ -414,12 +414,16 @@ defmodule ArrowWeb.CoreComponents do
   attr :options, :any
   attr :value_mapper, :any
   attr :allow_clear, :boolean
+  attr :target, :any, default: nil
 
   def live_select(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
     assigns =
       assigns
       |> assign(:errors, Enum.map(field.errors, &translate_error(&1)))
-      |> assign(:live_select_opts, assigns_to_attributes(assigns, [:errors, :label, :class]))
+      |> assign(
+        :live_select_opts,
+        assigns_to_attributes(assigns, [:errors, :label, :class, :target])
+      )
 
     ~H"""
     <div class="form-group">
@@ -440,6 +444,7 @@ defmodule ArrowWeb.CoreComponents do
           dropdown_extra_class={[
             "list-unstyled"
           ]}
+          phx-target={@target}
           {@live_select_opts}
         />
 
