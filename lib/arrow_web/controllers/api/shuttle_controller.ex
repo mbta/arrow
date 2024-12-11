@@ -14,6 +14,7 @@ defmodule ArrowWeb.API.ShuttleController do
         preload: [routes: {r, route_stops: rs}]
       )
       |> Repo.all()
+
     render(conn, "index.json-api", data: data)
   end
 end

@@ -35,6 +35,7 @@ defmodule Mix.Tasks.CopyDb do
                end)
              end)}
           end)
+
         :ok = Arrow.DBStructure.load_data(repo, data)
       else
         err ->
