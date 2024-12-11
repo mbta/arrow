@@ -25,7 +25,6 @@ defmodule ArrowWeb.ShuttleViewLive do
       for={@form}
       as={:shuttle}
       action={@http_action}
-      phx-change="validate"
       phx-submit={@action}
       id="shuttle-form"
     >
@@ -302,10 +301,6 @@ defmodule ArrowWeb.ShuttleViewLive do
     validate(params, assign(socket, :map_props, %{socket.assigns.map_props | shapes: shapes}))
   end
 
-  def handle_event("validate", %{"_target" => ["definition"]}, socket) do
-    {:noreply, socket}
-  end
-
   def handle_event("validate", params, socket) do
     validate(params, socket)
   end
@@ -429,11 +424,14 @@ defmodule ArrowWeb.ShuttleViewLive do
         stop_ids
         |> Enum.with_index()
         |> Enum.map(fn {stop_id, i} ->
-          %Arrow.Shuttles.RouteStop{
-            direction_id: direction_id,
-            stop_sequence: i,
-            display_stop_id: stop_id
-          }
+          Arrow.Shuttles.RouteStop.changeset(
+            %Arrow.Shuttles.RouteStop{},
+            %{
+              direction_id: direction_id,
+              stop_sequence: i,
+              display_stop_id: Integer.to_string(stop_id)
+            }
+          )
         end)
 
       Ecto.Changeset.put_assoc(
@@ -506,51 +504,120 @@ defmodule ArrowWeb.ShuttleViewLive do
   end
 
   defp handle_progress(:definition, entry, socket) do
+    socket = clear_flash(socket)
+
     if entry.done? do
-      {d0, d1} = extract_stop_ids_from_upload(socket, entry)
+      case extract_stop_ids_from_upload(socket, entry) do
+        {:error, errors} ->
+          {:noreply, put_flash(socket, :errors, {"Failed to upload definition:", errors})}
 
-      socket =
-        update(socket, :form, fn %{source: changeset} ->
-          existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
+        stop_ids ->
+          socket = add_stop_ids(socket, stop_ids)
 
-          new_routes =
-            Enum.map(existing_routes, fn route_changeset ->
-              if Ecto.Changeset.get_field(route_changeset, :direction_id) == :"0" do
-                update_route_changeset_with_uploaded_stops(route_changeset, d0, :"0")
-              else
-                update_route_changeset_with_uploaded_stops(route_changeset, d1, :"1")
-              end
-            end)
-
-          changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
-
-          to_form(changeset)
-        end)
-
-      {:noreply, socket}
+          {:noreply, socket}
+      end
     else
       {:noreply, socket}
     end
   end
 
-  defp extract_stop_ids_from_upload(socket, entry) do
-    consume_uploaded_entry(socket, entry, fn %{path: path} ->
-      %{"Direction 0 STOPS" => direction_0, "Direction 1 STOPS" => direction_1} =
-        path
-        |> Xlsxir.multi_extract()
-        |> Enum.map(fn {:ok, pid} -> {Xlsxir.get_info(pid, :name), pid} end)
-        |> Map.new()
+  defp add_stop_ids(socket, stop_ids) do
+    update(socket, :form, fn %{source: changeset} ->
+      existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
 
-      {:ok, {parse_direction_sheet(direction_0), parse_direction_sheet(direction_1)}}
+      new_routes =
+        Enum.map(existing_routes, fn route_changeset ->
+          direction_id = Ecto.Changeset.get_field(route_changeset, :direction_id)
+
+          update_route_changeset_with_uploaded_stops(
+            route_changeset,
+            Enum.at(stop_ids, direction_id |> Atom.to_string() |> String.to_integer()),
+            direction_id
+          )
+        end)
+
+      changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
+
+      to_form(changeset)
     end)
   end
 
-  defp parse_direction_sheet(table_id) do
-    table_id
-    |> Xlsxir.get_list()
-    |> Enum.reject(fn list -> Enum.all?(list, &is_nil/1) end)
-    |> Enum.drop(1)
-    |> Enum.map(fn [_, stop_id | _] -> stop_id end)
-    |> tap(fn _ -> Xlsxir.close(table_id) end)
+  defp extract_stop_ids_from_upload(socket, entry) do
+    consume_uploaded_entry(socket, entry, fn %{path: path} ->
+      with pids when is_list(pids) <- Xlsxir.multi_extract(path),
+           {:ok, {direction_0_tab_pid, direction_1_tab_pid}} <- get_xlsx_tab_pids(pids),
+           {:ok, direction_0_stop_ids} <- parse_direction_tab(direction_0_tab_pid),
+           {:ok, direction_1_stop_ids} <- parse_direction_tab(direction_1_tab_pid) do
+        {:ok, [direction_0_stop_ids, direction_1_stop_ids]}
+      else
+        {:error, error} -> {:ok, {:error, [error]}}
+        {:errors, errors} -> {:ok, {:error, errors}}
+      end
+    end)
+  end
+
+  defp get_xlsx_tab_pids(tab_pids) do
+    tab_map =
+      tab_pids
+      |> Enum.map(fn {:ok, pid} -> {Xlsxir.get_info(pid, :name), pid} end)
+      |> Map.new()
+
+    case {tab_map["Direction 0 STOPS"], tab_map["Direction 1 STOPS"]} do
+      {nil, nil} -> {:error, "Missing tabs for both directions"}
+      {nil, _} -> {:error, "Missing Direction 0 STOPS tab"}
+      {_, nil} -> {:error, "Missing Direction 1 STOPS tab"}
+      {d0, d1} -> {:ok, {d0, d1}}
+    end
+  end
+
+  defp parse_direction_tab(table_id) do
+    data =
+      table_id
+      |> Xlsxir.get_list()
+      |> Enum.reject(fn list -> Enum.all?(list, &is_nil/1) end)
+
+    case validate_sheet(data) do
+      :ok ->
+        stop_ids =
+          data
+          |> Enum.drop(1)
+          |> Enum.map(fn [_, stop_id | _] -> stop_id end)
+          |> tap(fn _ -> Xlsxir.close(table_id) end)
+
+        {:ok, stop_ids}
+
+      errors ->
+        errors
+    end
+  end
+
+  defp validate_sheet([headers | _] = data) do
+    errors =
+      data
+      |> Enum.with_index()
+      |> Enum.reduce([], fn {row, i}, acc ->
+        stop_id = Enum.at(row, 1)
+        row_number = i + 1
+
+        acc
+        |> append_if(
+          length(row) < 2,
+          "Invalid/missing columns on row #{row_number}"
+        )
+        |> append_if(
+          stop_id != "Stop ID" and (is_nil(stop_id) or not is_integer(stop_id)),
+          "Missing/invalid stop ID on row #{row_number}"
+        )
+      end)
+      |> append_if(
+        headers != ["Stop Name", "Stop ID", "Notes"],
+        "Invalid/missing headers"
+      )
+
+    if Enum.empty?(errors), do: :ok, else: {:errors, errors}
+  end
+
+  defp append_if(list, condition, item) do
+    if condition, do: list ++ [item], else: list
   end
 end
