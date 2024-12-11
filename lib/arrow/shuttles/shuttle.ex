@@ -36,7 +36,6 @@ defmodule Arrow.Shuttles.Shuttle do
         enough_stops? =
           routes |> Enum.map(&get_assoc(&1, :route_stops)) |> Enum.all?(&(length(&1) >= 2))
 
-        dbg()
         if enough_stops? do
           changeset
         else

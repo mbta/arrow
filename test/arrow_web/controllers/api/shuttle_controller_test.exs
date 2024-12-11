@@ -2,26 +2,85 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
   use ArrowWeb.ConnCase
 
   import Arrow.ShuttlesFixtures
-
-
-  defp create_shuttles(_) do
-    active_shuttle = shuttle_fixture(status: :active)
-    inactive_shuttle = shuttle_fixture(status: :active)
-    %{active_shuttle: active_shuttle, inactive_shuttle: inactive_shuttle}
-  end
+  import Arrow.Factory
 
   describe "index/2" do
-    setup [:create_shuttles]
     @tag :authenticated
 
     test "non-admin user can access the shuttle API", %{conn: conn} do
-      assert %{status: 200} = get(conn, "/api/shuttle")
+      assert %{status: 200} = get(conn, "/api/shuttles")
     end
-    
-    test "shuttle API only shows active shuttles", %{conn: conn} do
-      shuttles = get(conn, "/api/shuttle")
-      dbg()
 
+    test "shuttle API only shows active shuttles", %{conn: conn} do
+      shuttle_fixture(%{status: :inactive})
+      shuttle_fixture()
+      shuttle = shuttle_fixture()
+
+      [route0, route1] = shuttle.routes
+
+      [stop1, stop2, stop3, stop4] = insert_list(4, :gtfs_stop)
+
+      route0
+      |> Arrow.Shuttles.Route.changeset(%{
+        "route_stops" => [
+          %{
+            "direction_id" => "0",
+            "stop_sequence" => "1",
+            "display_stop_id" => stop1.id
+          },
+          %{
+            "direction_id" => "0",
+            "stop_sequence" => "2",
+            "display_stop_id" => stop2.id
+          }
+        ]
+      })
+      |> Arrow.Repo.update()
+
+      route1
+      |> Arrow.Shuttles.Route.changeset(%{
+        "route_stops" => [
+          %{
+            "direction_id" => "1",
+            "stop_sequence" => "1",
+            "display_stop_id" => stop3.id
+          },
+          %{
+            "direction_id" => "0",
+            "stop_sequence" => "1",
+            "display_stop_id" => stop4.id
+          }
+        ]
+      })
+      |> Arrow.Repo.update()
+
+      shuttle = Arrow.Shuttles.get_shuttle!(shuttle.id)
+
+      {:ok, active_shuttle} =
+        Arrow.Shuttles.Shuttle.changeset(shuttle, %{status: :active})
+        |> Arrow.Repo.update()
+
+      res = json_response(get(conn, "/api/shuttles"), 200)
+
+      assert %{
+               "data" => [
+                 %{
+                   "id" => id,
+                   "relationships" => %{
+                     "routes" => %{
+                       "data" => [
+                         %{"type" => "shuttle_route"},
+                         %{"type" => "shuttle_route"}
+                       ]
+                     }
+                   }
+                 }
+               ],
+               "jsonapi" => %{"version" => "1.0"},
+               "included" => [%{"type" => "shuttle_stop"} | _]
+             } = res
+
+      assert id == to_string(active_shuttle.id)
     end
   end
 end
