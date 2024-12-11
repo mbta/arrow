@@ -6,11 +6,11 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
 
   describe "index/2" do
     @tag :authenticated
-
     test "non-admin user can access the shuttle API", %{conn: conn} do
       assert %{status: 200} = get(conn, "/api/shuttles")
     end
 
+    @tag :authenticated
     test "shuttle API only shows active shuttles", %{conn: conn} do
       shuttle_fixture(%{status: :inactive})
       shuttle_fixture()
