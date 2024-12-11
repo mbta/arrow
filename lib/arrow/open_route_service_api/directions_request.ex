@@ -9,12 +9,13 @@ defmodule Arrow.OpenRouteServiceAPI.DirectionsRequest do
     defmodule ProfileParams do
       @moduledoc false
       defmodule HgvRestrictions do
+        @derive Jason.Encoder
         @moduledoc false
-        @type t :: %{length: float(), width: float(), height: float()}
+        @type t :: %__MODULE__{length: float(), width: float(), height: float()}
         defstruct [:length, :width, :height]
 
         def bus_40ft,
-          do: %{
+          do: %HgvRestrictions{
             length: 12.192,
             width: 3.2004,
             height: 3.5052
@@ -22,11 +23,9 @@ defmodule Arrow.OpenRouteServiceAPI.DirectionsRequest do
       end
 
       @type t :: %{restrictions: HgvRestrictions.t()}
-      defstruct [:restrictions]
     end
 
     @type t :: %{profile_params: ProfileParams.t(), vehicle_type: String.t()}
-    defstruct [:profile_params, :vehicle_type]
   end
 
   @typedoc """
