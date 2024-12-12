@@ -2,7 +2,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   use ArrowWeb, :live_view
   import Phoenix.HTML.Form
   alias Arrow.Shuttles
-  alias Arrow.Shuttles.Shuttle
+  alias Arrow.Shuttles.{DefinitionUpload, Shuttle}
   alias ArrowWeb.ShapeView
 
   embed_templates "shuttle_live/*"
@@ -507,7 +507,7 @@ defmodule ArrowWeb.ShuttleViewLive do
     socket = clear_flash(socket)
 
     if entry.done? do
-      case extract_stop_ids_from_upload(socket, entry) do
+      case consume_uploaded_entry(socket, entry, &DefinitionUpload.extract_stop_ids_from_upload/1) do
         {:error, errors} ->
           {:noreply, put_flash(socket, :errors, {"Failed to upload definition:", errors})}
 
@@ -531,7 +531,7 @@ defmodule ArrowWeb.ShuttleViewLive do
 
           update_route_changeset_with_uploaded_stops(
             route_changeset,
-            Enum.at(stop_ids, direction_id |> Atom.to_string() |> String.to_integer()),
+            elem(stop_ids, direction_id |> Atom.to_string() |> String.to_integer()),
             direction_id
           )
         end)
@@ -540,100 +540,5 @@ defmodule ArrowWeb.ShuttleViewLive do
 
       to_form(changeset)
     end)
-  end
-
-  defp extract_stop_ids_from_upload(socket, entry) do
-    consume_uploaded_entry(socket, entry, fn %{path: path} ->
-      with pids when is_list(pids) <- Xlsxir.multi_extract(path),
-           {:ok,
-            %{
-              "Direction 0 STOPS" => direction_0_tab_pid,
-              "Direction 1 STOPS" => direction_1_tab_pid
-            }} <- get_xlsx_tab_pids(pids),
-           {:ok, direction_0_stop_ids} <- parse_direction_tab(direction_0_tab_pid),
-           {:ok, direction_1_stop_ids} <- parse_direction_tab(direction_1_tab_pid) do
-        {:ok, [direction_0_stop_ids, direction_1_stop_ids]}
-      else
-        {:error, error} -> {:ok, {:error, [error]}}
-        {:errors, errors} -> {:ok, {:error, errors}}
-      end
-    end)
-  end
-
-  defp get_xlsx_tab_pids(tab_pids) do
-    tab_map =
-      tab_pids
-      |> Enum.map(fn {:ok, pid} ->
-        name = Xlsxir.get_info(pid, :name)
-
-        if name in ["Direction 0 STOPS", "Direction 1 STOPS"] do
-          {name, pid}
-        else
-          Xlsxir.close(pid)
-          nil
-        end
-      end)
-      |> Enum.reject(&is_nil/1)
-      |> Map.new()
-
-    case {tab_map["Direction 0 STOPS"], tab_map["Direction 1 STOPS"]} do
-      {nil, nil} -> {:error, "Missing tabs for both directions"}
-      {nil, _} -> {:error, "Missing Direction 0 STOPS tab"}
-      {_, nil} -> {:error, "Missing Direction 1 STOPS tab"}
-      _ -> {:ok, tab_map}
-    end
-  end
-
-  defp parse_direction_tab(table_id) do
-    tab_data =
-      table_id
-      |> Xlsxir.get_list()
-      # Cells that have been touched but are empty can return nil
-      |> Enum.reject(fn list -> Enum.all?(list, &is_nil/1) end)
-      |> tap(fn _ -> Xlsxir.close(table_id) end)
-
-    case validate_sheet(tab_data) do
-      :ok ->
-        stop_ids =
-          tab_data
-          # Drop header row
-          |> Enum.drop(1)
-          |> Enum.map(fn [_, stop_id | _] -> stop_id end)
-
-        {:ok, stop_ids}
-
-      errors ->
-        errors
-    end
-  end
-
-  defp validate_sheet([headers | _] = data) do
-    errors =
-      data
-      |> Enum.with_index()
-      |> Enum.reduce([], fn {row, i}, acc ->
-        stop_id = Enum.at(row, 1)
-        row_number = i + 1
-
-        acc
-        |> append_if(
-          length(row) < 2,
-          "Invalid/missing columns on row #{row_number}"
-        )
-        |> append_if(
-          stop_id != "Stop ID" and (is_nil(stop_id) or not is_integer(stop_id)),
-          "Missing/invalid stop ID on row #{row_number}"
-        )
-      end)
-      |> append_if(
-        headers != ["Stop Name", "Stop ID", "Notes"],
-        "Invalid/missing headers"
-      )
-
-    if Enum.empty?(errors), do: :ok, else: {:errors, errors}
-  end
-
-  defp append_if(list, condition, item) do
-    if condition, do: list ++ [item], else: list
   end
 end
