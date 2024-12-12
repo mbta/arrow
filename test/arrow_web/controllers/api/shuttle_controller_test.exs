@@ -83,24 +83,34 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
                "included" => included
              } = res
 
-      route0_id = route0.id
-      route1_id = route1.id
+      route0_id = to_string(route0.id)
+      route1_id = to_string(route1.id)
 
       assert [
-               %{"id" => route0_id, "type" => "shuttle_route"},
-               %{"id" => route1_id, "type" => "shuttle_route"}
+               %{"id" => ^route0_id, "type" => "shuttle_route"},
+               %{"id" => ^route1_id, "type" => "shuttle_route"}
              ] = route_data
 
-      included
-      |> Enum.each(fn datum ->
+      Enum.each(included, fn datum ->
         case datum do
           %{"type" => "shuttle_route", "attributes" => attributes, "id" => id} ->
-            assert match?(attributes, route_map[id |> String.to_integer()])
+            route = route_map[id |> String.to_integer()]
+            assert to_string(route.destination) == attributes["destination"]
+            assert to_string(route.direction_id) == attributes["direction_id"]
 
           %{"type" => "gtfs_stop", "attributes" => attributes, "id" => id} ->
-            assert match?(attributes, stop_map[id])
+            stop = stop_map[id]
+            assert stop.lat == attributes["lat"]
+            assert stop.lon == attributes["lon"]
+            assert to_string(stop.name) == attributes["name"]
 
-          %{"type" => "shuttle_route_stop", "relationships" => %{"gtfs_stop" => %{"data" => %{"id" => gtfs_stop_id}}}} ->
+          %{
+            "type" => "shuttle_route_stop",
+            "relationships" => %{
+              "gtfs_stop" => %{"data" => %{"id" => gtfs_stop_id}},
+            },
+            "attributes" => %{"time_to_next_stop" => _}
+          } ->
             assert Map.has_key?(stop_map, gtfs_stop_id)
         end
       end)
