@@ -357,7 +357,30 @@ defmodule ArrowWeb.ShuttleLiveTest do
           }
         ])
 
-      assert render_upload(definition, "valid.xlsx") =~ "9328"
+      direction_0_stop_sequence = ~w(9328 5327 5271)
+      direction_1_stop_sequence = ~w(5271 5072 9328)
+      html = render_upload(definition, "valid.xlsx")
+
+      direction_0_stop_rows = Floki.find(html, "#stops-dir-0 > .row")
+      direction_1_stop_rows = Floki.find(html, "#stops-dir-1 > .row")
+
+      for {stop_id, index} <- Enum.with_index(direction_0_stop_sequence) do
+        assert [^stop_id] =
+                 Floki.attribute(
+                   direction_0_stop_rows,
+                   "[data-stop_sequence=#{index}] > div.form-group > input[type=text]",
+                   "value"
+                 )
+      end
+
+      for {stop_id, index} <- Enum.with_index(direction_1_stop_sequence) do
+        assert [^stop_id] =
+                 Floki.attribute(
+                   direction_1_stop_rows,
+                   "[data-stop_sequence=#{index}] > div.form-group > input[type=text]",
+                   "value"
+                 )
+      end
     end
 
     @tag :authenticated_admin
