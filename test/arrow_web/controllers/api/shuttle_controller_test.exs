@@ -68,13 +68,19 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
         get(conn, "/api/shuttles")
         |> json_response(200)
 
+      route0_id = to_string(route0.id)
+      route1_id = to_string(route1.id)
+
       assert %{
                "data" => [
                  %{
                    "id" => id,
                    "relationships" => %{
                      "routes" => %{
-                       "data" => route_data
+                       "data" => [
+                         %{"id" => ^route0_id, "type" => "shuttle_route"},
+                         %{"id" => ^route1_id, "type" => "shuttle_route"}
+                       ]
                      }
                    }
                  }
@@ -83,36 +89,26 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
                "included" => included
              } = res
 
-      route0_id = to_string(route0.id)
-      route1_id = to_string(route1.id)
+      Enum.each(included, fn
+        %{"type" => "shuttle_route", "attributes" => attributes, "id" => id} ->
+          route = route_map[id |> String.to_integer()]
+          assert to_string(route.destination) == attributes["destination"]
+          assert to_string(route.direction_id) == attributes["direction_id"]
 
-      assert [
-               %{"id" => ^route0_id, "type" => "shuttle_route"},
-               %{"id" => ^route1_id, "type" => "shuttle_route"}
-             ] = route_data
+        %{"type" => "gtfs_stop", "attributes" => attributes, "id" => id} ->
+          stop = stop_map[id]
+          assert stop.lat == attributes["lat"]
+          assert stop.lon == attributes["lon"]
+          assert to_string(stop.name) == attributes["name"]
 
-      Enum.each(included, fn datum ->
-        case datum do
-          %{"type" => "shuttle_route", "attributes" => attributes, "id" => id} ->
-            route = route_map[id |> String.to_integer()]
-            assert to_string(route.destination) == attributes["destination"]
-            assert to_string(route.direction_id) == attributes["direction_id"]
-
-          %{"type" => "gtfs_stop", "attributes" => attributes, "id" => id} ->
-            stop = stop_map[id]
-            assert stop.lat == attributes["lat"]
-            assert stop.lon == attributes["lon"]
-            assert to_string(stop.name) == attributes["name"]
-
-          %{
-            "type" => "shuttle_route_stop",
-            "relationships" => %{
-              "gtfs_stop" => %{"data" => %{"id" => gtfs_stop_id}}
-            },
-            "attributes" => %{"time_to_next_stop" => _}
-          } ->
-            assert Map.has_key?(stop_map, gtfs_stop_id)
-        end
+        %{
+          "type" => "shuttle_route_stop",
+          "relationships" => %{
+            "gtfs_stop" => %{"data" => %{"id" => gtfs_stop_id}}
+          },
+          "attributes" => %{"time_to_next_stop" => _}
+        } ->
+          assert Map.has_key?(stop_map, gtfs_stop_id)
       end)
 
       assert id == to_string(active_shuttle.id)
