@@ -20,7 +20,7 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
       route_map = %{route0.id => route0, route1.id => route1}
 
       [stop1, stop2, stop3, stop4] = insert_list(4, :gtfs_stop)
-      stop_map = %{stop1.id => stop1, stop2.id => stop2, stop3.id => stop3}
+      stop_map = %{stop1.id => stop1, stop2.id => stop2, stop3.id => stop3, stop4.id => stop4}
 
       route0
       |> Arrow.Shuttles.Route.changeset(%{
@@ -61,9 +61,8 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
       {:ok, active_shuttle} =
         shuttle.id
         |> Arrow.Shuttles.get_shuttle!()
-
-      Arrow.Shuttles.Shuttle.changeset(shuttle, %{status: :active})
-      |> Arrow.Repo.update()
+        |> Arrow.Shuttles.Shuttle.changeset(%{status: :active})
+        |> Arrow.Repo.update()
 
       res =
         get(conn, "/api/shuttles")
@@ -100,6 +99,9 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
 
           %{"type" => "gtfs_stop", "attributes" => attributes, "id" => id} ->
             assert match?(attributes, stop_map[id])
+
+          %{"type" => "shuttle_route_stop", "relationships" => %{"gtfs_stop" => %{"data" => %{"id" => gtfs_stop_id}}}} ->
+            assert Map.has_key?(stop_map, gtfs_stop_id)
         end
       end)
 
