@@ -414,8 +414,25 @@ defmodule ArrowWeb.ShuttleLiveTest do
 
       page = render_upload(definition, "invalid_missing_data.xlsx")
       assert page =~ "Failed to upload definition:"
-      assert page =~ "Invalid/missing headers"
-      assert page =~ "Missing/invalid stop ID on row 4"
+      assert page =~ "Missing/invalid stop ID on row 3"
+    end
+
+    @tag :authenticated_admin
+
+    test "displays error for missing headers", %{conn: conn} do
+      {:ok, new_live, _html} = live(conn, ~p"/shuttles/new")
+
+      definition =
+        file_input(new_live, "#shuttle-form", :definition, [
+          %{
+            name: "invalid_missing_headers.xlsx",
+            content: File.read!("test/support/fixtures/xlsx/invalid_missing_headers.xlsx")
+          }
+        ])
+
+      page = render_upload(definition, "invalid_missing_headers.xlsx")
+      assert page =~ "Failed to upload definition:"
+      assert page =~ "Unable to parse Stop ID column"
     end
   end
 

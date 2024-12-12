@@ -55,45 +55,28 @@ defmodule Arrow.Shuttles.DefinitionUpload do
       |> Enum.reject(fn list -> Enum.all?(list, &is_nil/1) end)
       |> tap(fn _ -> Xlsxir.close(table_id) end)
 
-    case validate_sheet(tab_data) do
-      :ok ->
-        stop_ids =
-          tab_data
-          # Drop header row
-          |> Enum.drop(1)
-          |> Enum.map(fn [_, stop_id | _] -> stop_id end)
-
-        {:ok, stop_ids}
-
-      errors ->
-        errors
-    end
+    parse_stop_ids(tab_data)
   end
 
-  defp validate_sheet([headers | _] = data) do
-    errors =
-      data
-      |> Enum.with_index()
-      |> Enum.reduce([], fn {row, i}, acc ->
-        stop_id = Enum.at(row, 1)
-        row_number = i + 1
+  defp parse_stop_ids([headers | _] = data) do
+    if stop_id_col_index = Enum.find_index(headers, &(&1 === "Stop ID")) do
+      stop_ids = data |> Enum.drop(1) |> Enum.map(&Enum.at(&1, stop_id_col_index))
 
-        acc
-        |> append_if(
-          length(row) < 2,
-          "Invalid/missing columns on row #{row_number}"
-        )
-        |> append_if(
-          stop_id != "Stop ID" and (is_nil(stop_id) or not is_integer(stop_id)),
-          "Missing/invalid stop ID on row #{row_number}"
-        )
-      end)
-      |> append_if(
-        headers != ["Stop Name", "Stop ID", "Notes"],
-        "Invalid/missing headers"
-      )
+      errors =
+        stop_ids
+        |> Enum.with_index(1)
+        |> Enum.reduce([], fn {stop_id, i}, acc ->
+          append_if(
+            acc,
+            is_nil(stop_id) or not is_integer(stop_id),
+            "Missing/invalid stop ID on row #{i + 1}"
+          )
+        end)
 
-    if Enum.empty?(errors), do: :ok, else: {:errors, errors}
+      if Enum.empty?(errors), do: {:ok, stop_ids}, else: {:errors, errors}
+    else
+      {:errors, ["Unable to parse Stop ID column"]}
+    end
   end
 
   defp append_if(list, condition, item) do
