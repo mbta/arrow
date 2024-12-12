@@ -5,6 +5,7 @@ defmodule ArrowWeb.API.ShuttleController do
   alias Arrow.Repo
   alias Arrow.Shuttles.Shuttle
 
+  @spec index(Conn.t(), map()) :: Conn.t()
   def index(conn, _params) do
     data =
       from(s in Shuttle,
@@ -12,7 +13,8 @@ defmodule ArrowWeb.API.ShuttleController do
         join: r in assoc(s, :routes),
         join: rs in assoc(r, :route_stops),
         left_join: gs in assoc(rs, :gtfs_stop),
-        preload: [routes: {r, route_stops: {rs, :gtfs_stop}}]
+        left_join: st in assoc(rs, :stop),
+        preload: [routes: {r, route_stops: {rs, [:gtfs_stop, :stop]}}]
       )
       |> Repo.all()
 

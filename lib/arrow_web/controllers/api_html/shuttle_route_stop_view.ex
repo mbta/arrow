@@ -7,4 +7,8 @@ defmodule ArrowWeb.API.ShuttleRouteStopView do
   has_one :gtfs_stop,
     serializer: ArrowWeb.API.GtfsStopView,
     include: true
+
+  has_one :stop,
+    serializer: ArrowWeb.API.StopsView,
+    include: true
 end
