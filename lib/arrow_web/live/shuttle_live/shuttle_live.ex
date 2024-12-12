@@ -512,7 +512,7 @@ defmodule ArrowWeb.ShuttleViewLive do
           {:noreply, put_flash(socket, :errors, {"Failed to upload definition:", errors})}
 
         stop_ids ->
-          socket = add_stop_ids(socket, stop_ids)
+          socket = populate_stop_ids(socket, stop_ids)
 
           {:noreply, socket}
       end
@@ -521,7 +521,7 @@ defmodule ArrowWeb.ShuttleViewLive do
     end
   end
 
-  defp add_stop_ids(socket, stop_ids) do
+  defp populate_stop_ids(socket, stop_ids) do
     update(socket, :form, fn %{source: changeset} ->
       existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
 
@@ -545,9 +545,14 @@ defmodule ArrowWeb.ShuttleViewLive do
   defp extract_stop_ids_from_upload(socket, entry) do
     consume_uploaded_entry(socket, entry, fn %{path: path} ->
       with pids when is_list(pids) <- Xlsxir.multi_extract(path),
-           {:ok, {direction_0_tab_pid, direction_1_tab_pid}} <- get_xlsx_tab_pids(pids),
+           {:ok,
+            %{
+              "Direction 0 STOPS" => direction_0_tab_pid,
+              "Direction 1 STOPS" => direction_1_tab_pid
+            } = tab_pid_map} <- get_xlsx_tab_pids(pids),
            {:ok, direction_0_stop_ids} <- parse_direction_tab(direction_0_tab_pid),
-           {:ok, direction_1_stop_ids} <- parse_direction_tab(direction_1_tab_pid) do
+           {:ok, direction_1_stop_ids} <- parse_direction_tab(direction_1_tab_pid),
+           :ok <- Enum.each(tab_pid_map, &Xlsxir.close/1) do
         {:ok, [direction_0_stop_ids, direction_1_stop_ids]}
       else
         {:error, error} -> {:ok, {:error, [error]}}
@@ -566,23 +571,24 @@ defmodule ArrowWeb.ShuttleViewLive do
       {nil, nil} -> {:error, "Missing tabs for both directions"}
       {nil, _} -> {:error, "Missing Direction 0 STOPS tab"}
       {_, nil} -> {:error, "Missing Direction 1 STOPS tab"}
-      {d0, d1} -> {:ok, {d0, d1}}
+      _ -> {:ok, tab_map}
     end
   end
 
   defp parse_direction_tab(table_id) do
-    data =
+    tab_data =
       table_id
       |> Xlsxir.get_list()
+      # Cells that have been touched but are empty can return nil
       |> Enum.reject(fn list -> Enum.all?(list, &is_nil/1) end)
 
-    case validate_sheet(data) do
+    case validate_sheet(tab_data) do
       :ok ->
         stop_ids =
-          data
+          tab_data
+          # Drop header row
           |> Enum.drop(1)
           |> Enum.map(fn [_, stop_id | _] -> stop_id end)
-          |> tap(fn _ -> Xlsxir.close(table_id) end)
 
         {:ok, stop_ids}
 
