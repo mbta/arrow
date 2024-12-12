@@ -549,10 +549,9 @@ defmodule ArrowWeb.ShuttleViewLive do
             %{
               "Direction 0 STOPS" => direction_0_tab_pid,
               "Direction 1 STOPS" => direction_1_tab_pid
-            } = tab_pid_map} <- get_xlsx_tab_pids(pids),
+            }} <- get_xlsx_tab_pids(pids),
            {:ok, direction_0_stop_ids} <- parse_direction_tab(direction_0_tab_pid),
-           {:ok, direction_1_stop_ids} <- parse_direction_tab(direction_1_tab_pid),
-           :ok <- Enum.each(tab_pid_map, &Xlsxir.close/1) do
+           {:ok, direction_1_stop_ids} <- parse_direction_tab(direction_1_tab_pid) do
         {:ok, [direction_0_stop_ids, direction_1_stop_ids]}
       else
         {:error, error} -> {:ok, {:error, [error]}}
@@ -564,7 +563,17 @@ defmodule ArrowWeb.ShuttleViewLive do
   defp get_xlsx_tab_pids(tab_pids) do
     tab_map =
       tab_pids
-      |> Enum.map(fn {:ok, pid} -> {Xlsxir.get_info(pid, :name), pid} end)
+      |> Enum.map(fn {:ok, pid} ->
+        name = Xlsxir.get_info(pid, :name)
+
+        if name in ["Direction 0 STOPS", "Direction 1 STOPS"] do
+          {name, pid}
+        else
+          Xlsxir.close(pid)
+          nil
+        end
+      end)
+      |> Enum.reject(&is_nil/1)
       |> Map.new()
 
     case {tab_map["Direction 0 STOPS"], tab_map["Direction 1 STOPS"]} do
@@ -581,6 +590,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> Xlsxir.get_list()
       # Cells that have been touched but are empty can return nil
       |> Enum.reject(fn list -> Enum.all?(list, &is_nil/1) end)
+      |> tap(fn _ -> Xlsxir.close(table_id) end)
 
     case validate_sheet(tab_data) do
       :ok ->
