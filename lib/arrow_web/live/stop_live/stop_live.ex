@@ -1,8 +1,11 @@
 defmodule ArrowWeb.StopViewLive do
   use ArrowWeb, :live_view
 
+  alias Arrow.Gtfs.Stop, as: GtfsStop
+  alias Arrow.Repo
   alias Arrow.Shuttles.Stop
   alias Arrow.Stops
+  import Ecto.Query
   embed_templates "stop_live/*"
 
   @doc """
@@ -85,6 +88,19 @@ defmodule ArrowWeb.StopViewLive do
     stop = Stops.get_stop!(id)
     form = to_form(Stops.change_stop(stop))
 
+    # get stops from arrow DB and gtfs, excluding current stop
+    existing_stops =
+      from(s in Stop,
+        where: s.stop_id != ^stop.stop_id
+      )
+      |> Repo.all()
+
+    existing_gtfs_stops =
+      from(g in GtfsStop,
+        where: g.id != ^stop.stop_id
+      )
+      |> Repo.all()
+
     socket =
       socket
       |> assign(:form, form)
@@ -93,6 +109,8 @@ defmodule ArrowWeb.StopViewLive do
       |> assign(:stop, stop)
       |> assign(:title, "edit shuttle stop")
       |> assign(:stop_map_props, stop)
+      |> assign(:existing_stops, existing_stops)
+      |> assign(:existing_gtfs_stops, existing_gtfs_stops)
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
@@ -100,6 +118,11 @@ defmodule ArrowWeb.StopViewLive do
 
   def mount(_params, _session, socket) do
     form = to_form(Stops.change_stop(%Stop{}))
+
+    # eventually we should only load a limited number of stops to avoid performance issues
+    # but this should be fine while the cardinality of stops is low
+    existing_stops = Stops.list_stops()
+    existing_gtfs_stops = Repo.all(GtfsStop)
 
     socket =
       socket
@@ -109,6 +132,8 @@ defmodule ArrowWeb.StopViewLive do
       |> assign(:stop, %Stop{})
       |> assign(:title, "create shuttle stop")
       |> assign(:stop_map_props, %{})
+      |> assign(:existing_stops, existing_stops)
+      |> assign(:existing_gtfs_stops, existing_gtfs_stops)
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
