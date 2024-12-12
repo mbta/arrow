@@ -4,6 +4,7 @@ defmodule ArrowWeb.API.ShuttleController do
 
   alias Arrow.Repo
   alias Arrow.Shuttles.Shuttle
+  alias Plug.Conn
 
   @spec index(Conn.t(), map()) :: Conn.t()
   def index(conn, _params) do
