@@ -12,7 +12,13 @@
         trigger_submit={@trigger_submit}
       />
     </div>
-    <%= live_react_component("Components.StopViewMap", [stop: @stop_map_props],
+    <%= live_react_component(
+      "Components.StopViewMap",
+      [
+        stop: @stop_map_props,
+        existingShuttleStops: @existing_stops,
+        existingBusStops: @existing_gtfs_stops
+      ],
       id: "stop-view-map",
       container: [class: "col-lg-6"]
     ) %>
