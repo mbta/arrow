@@ -107,7 +107,7 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
           %{
             "type" => "shuttle_route_stop",
             "relationships" => %{
-              "gtfs_stop" => %{"data" => %{"id" => gtfs_stop_id}},
+              "gtfs_stop" => %{"data" => %{"id" => gtfs_stop_id}}
             },
             "attributes" => %{"time_to_next_stop" => _}
           } ->
