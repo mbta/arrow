@@ -31,6 +31,7 @@ defmodule Mix.Tasks.CopyDb do
              Enum.map(data, fn map ->
                Map.new(map, fn {key, value} ->
                  parsed_value = parse_json_value(value)
+
                  {String.to_existing_atom(key), parsed_value}
                end)
              end)}
