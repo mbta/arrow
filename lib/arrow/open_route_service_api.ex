@@ -5,6 +5,7 @@ defmodule Arrow.OpenRouteServiceAPI do
 
   alias Arrow.OpenRouteServiceAPI.DirectionsRequest
   alias Arrow.OpenRouteServiceAPI.DirectionsResponse
+  alias Arrow.OpenRouteServiceAPI.ErrorResponse
 
   @doc """
   Returns a response from OpenRouteService containing coordinates of a route shape.
@@ -26,7 +27,7 @@ defmodule Arrow.OpenRouteServiceAPI do
 
   ## Examples
       iex> Arrow.OpenRouteServiceAPI.directions([%{"lat" => 0, "lon" => 10}, %{"lat" => 1, "lon" => 10}])
-      {:error, %{type: :unknown}}
+      {:error, %Arrow.OpenRouteServiceAPI.ErrorResponse{type: :unknown}}
   """
   @spec directions(list()) :: {:ok, DirectionsResponse.t()} | {:error, any()}
   def directions([]), do: {:ok, %DirectionsResponse{}}
@@ -87,12 +88,13 @@ defmodule Arrow.OpenRouteServiceAPI do
   # https://giscience.github.io/openrouteservice/api-reference/error-codes
 
   # 2009: Route was not found.
-  defp parse_error(%{"code" => 2009}), do: {:error, %{type: :no_route}}
+  @spec parse_error(any()) :: {:error, ErrorResponse.t()}
+  defp parse_error(%{"code" => 2009}), do: {:error, %ErrorResponse{type: :no_route}}
 
   # 2010: Point was not found.
-  defp parse_error(%{"code" => 2010}), do: {:error, %{type: :no_route}}
+  defp parse_error(%{"code" => 2010}), do: {:error, %ErrorResponse{type: :no_route}}
 
-  defp parse_error(_error), do: {:error, %{type: :unknown}}
+  defp parse_error(_error), do: {:error, %ErrorResponse{type: :unknown}}
 
   defp client, do: Application.get_env(:arrow, Arrow.OpenRouteServiceAPI)[:client]
 end

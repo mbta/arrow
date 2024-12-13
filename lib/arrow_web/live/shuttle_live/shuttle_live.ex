@@ -495,11 +495,8 @@ defmodule ArrowWeb.ShuttleViewLive do
          updated_stops
        )}
     else
-      {:error, %{type: :no_route}} ->
-        {:error, "Unable to retrieve estimates: no route between stops found"}
-
-      {:error, %{type: :unknown}} ->
-        {:error, "Unable to retrieve estimates: unknown error"}
+      {:error, error} ->
+        {:error, error}
 
       false ->
         coordinate_errors =

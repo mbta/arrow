@@ -338,7 +338,8 @@ defmodule Arrow.ShuttlesTest do
       coord1 = %{"lat" => 42.38758, "lon" => -71.11934}
       coord2 = %{"lat" => 42.373396, "lon" => -70.1202}
 
-      assert {:error, %{type: :no_route}} = Shuttles.get_travel_times([coord1, coord2])
+      assert {:error, "Unable to retrieve estimates: no route between stops found"} =
+               Shuttles.get_travel_times([coord1, coord2])
     end
 
     test "errors if OpenRouteService returns an unknown error" do
@@ -351,7 +352,8 @@ defmodule Arrow.ShuttlesTest do
       coord1 = %{"lat" => 42.38758, "lon" => -71.11934}
       coord2 = %{"lat" => 42.373396, "lon" => -70.1202}
 
-      assert {:error, %{type: :unknown}} = Shuttles.get_travel_times([coord1, coord2])
+      assert {:error, "Unable to retrieve estimates: unknown error"} =
+               Shuttles.get_travel_times([coord1, coord2])
     end
   end
 

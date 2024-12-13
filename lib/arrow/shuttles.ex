@@ -7,6 +7,7 @@ defmodule Arrow.Shuttles do
 
   alias Arrow.OpenRouteServiceAPI
   alias Arrow.OpenRouteServiceAPI.DirectionsResponse
+  alias Arrow.OpenRouteServiceAPI.ErrorResponse
   alias Arrow.Repo
   alias ArrowWeb.ErrorHelpers
 
@@ -401,8 +402,11 @@ defmodule Arrow.Shuttles do
       {:ok, %DirectionsResponse{segments: segments}} ->
         {:ok, segments |> Enum.map(&round(&1.duration))}
 
-      {:error, error} ->
-        {:error, error}
+      {:error, %ErrorResponse{type: :no_route}} ->
+        {:error, "Unable to retrieve estimates: no route between stops found"}
+
+      {:error, %ErrorResponse{type: :unknown}} ->
+        {:error, "Unable to retrieve estimates: unknown error"}
     end
   end
 
