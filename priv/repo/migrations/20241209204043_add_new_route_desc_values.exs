@@ -41,7 +41,6 @@ defmodule Arrow.Repo.Migrations.AddNewRouteDescValues do
     ])
 
     # 3. Convert gtfs_routes.desc to route_desc_v1 type.
-    # execute("ALTER TABLE gtfs_routes ALTER COLUMN desc TYPE route_desc_v1 USING (desc::text::route_desc_v1)")
     execute("""
     ALTER TABLE gtfs_routes ALTER COLUMN "desc" TYPE route_desc_v1  USING ("desc"::text::route_desc_v1)
     """)
