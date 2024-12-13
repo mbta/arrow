@@ -200,7 +200,7 @@ defmodule ArrowWeb.ShuttleViewLive do
           </button>
           <aside
             :if={@errors[:route_stops][input_value(f_route, :direction_id)]}
-            class="text-sm alert alert-danger"
+            class="mt-2 text-sm alert alert-danger"
             role="alert"
           >
             <%= @errors[:route_stops][input_value(f_route, :direction_id)] %>
