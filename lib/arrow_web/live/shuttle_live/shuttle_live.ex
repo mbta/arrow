@@ -122,7 +122,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   end
 
   attr :f, :any, required: true
-  attr :errors, :map, required: false, default: %{route_stops: %{}}
+  attr :errors, :map, required: true
 
   defp shuttle_form_stops_section(assigns) do
     ~H"""
@@ -425,7 +425,7 @@ defmodule ArrowWeb.ShuttleViewLive do
             changeset,
             :routes,
             Enum.sort_by(
-              other_routes ++ [new_route_changeset],
+              [new_route_changeset | other_routes],
               &Ecto.Changeset.get_field(&1, :direction_id)
             )
           )

@@ -8,7 +8,7 @@ defmodule Arrow.Shuttles.RouteStop do
   alias Arrow.Shuttles.Stop
 
   @type t :: %__MODULE__{
-          direction_id: atom(),
+          direction_id: :"0" | :"1",
           stop_sequence: integer(),
           time_to_next_stop: float(),
           display_stop_id: String.t(),
