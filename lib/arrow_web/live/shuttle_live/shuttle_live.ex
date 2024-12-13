@@ -129,14 +129,18 @@ defmodule ArrowWeb.ShuttleViewLive do
     <.inputs_for :let={f_route} field={@f[:routes]} as={:routes_with_stops}>
       <h4>direction <%= input_value(f_route, :direction_id) %></h4>
       <div
-        class="container"
         id={"stops-dir-#{input_value(f_route, :direction_id)}"}
         phx-hook="sortable"
         data-direction_id={input_value(f_route, :direction_id)}
       >
         <.inputs_for :let={f_route_stop} field={f_route[:route_stops]}>
-          <div class="row item" data-stop_sequence={input_value(f_route_stop, :stop_sequence)}>
-            <.icon name="hero-bars-3" class="h-4 w-4 drag-handle col-lg-1 cursor-grab" />
+          <div
+            class="row item align-items-center"
+            data-stop_sequence={input_value(f_route_stop, :stop_sequence)}
+          >
+            <div class="col-lg-1">
+              <.icon name="hero-bars-3" class="h-4 w-4 drag-handle cursor-grab" />
+            </div>
             <.input field={f_route_stop[:display_stop_id]} label="Stop ID" class="col-lg-6" />
             <.input
               field={f_route_stop[:time_to_next_stop]}
@@ -145,11 +149,11 @@ defmodule ArrowWeb.ShuttleViewLive do
               class="col-lg-4"
             />
             <button
+              class="btn"
               type="button"
               name={input_name(f_route, :route_stops_drop) <> "[]"}
               value={f_route_stop.index}
               phx-click={JS.dispatch("change")}
-              class="col-lg-1"
             >
               <.icon name="hero-x-mark-solid" class="h-4 w-4" />
             </button>
@@ -172,11 +176,12 @@ defmodule ArrowWeb.ShuttleViewLive do
         </.inputs_for>
       </div>
       <input type="hidden" name={input_name(f_route, :route_stops_drop) <> "[]"} />
-      <div class="row">
-        <div class="col-lg-7">
+      <div class="row form-group">
+        <div class="offset-lg-1 col-lg-6">
           <button
+            class="btn btn-primary"
             type="button"
-            id="add_stop"
+            id={"add_stop-#{input_value(f_route, :direction_id)}"}
             value={input_value(f_route, :direction_id)}
             phx-click="add_stop"
           >
@@ -185,8 +190,9 @@ defmodule ArrowWeb.ShuttleViewLive do
         </div>
         <div class="col-lg">
           <button
+            class="btn btn-primary"
             type="button"
-            id="get_time"
+            id={"get_time-#{input_value(f_route, :direction_id)}"}
             value={input_value(f_route, :direction_id)}
             phx-click="get_time_to_next_stop"
           >
