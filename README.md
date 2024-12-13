@@ -13,6 +13,9 @@
 - PostgreSQL 15
   - Can be run as a container via docker-compose by running `docker-compose up -d` in this repository (see `docker-compose.yml`)
   - Using Homebrew: `brew install postgresql@15`
+- OpenRouteService
+  - Can use https://api.openrouteservice.org/ with an API key requested through their console
+  - Or the docker-compose setup [with Docker Desktop alternative](https://github.com/mbta/technology-docs/blob/main/rfcs/accepted/0010-docker-desktop-replacement.md), no API key needed
 
 [nodejs-reqs]: https://github.com/asdf-vm/asdf-nodejs#requirements
 
@@ -26,6 +29,7 @@
 - `cp .envrc.example .envrc`
 - Update `.envrc` with your local Postgres username and password
 - Update `.envrc` with your AWS credentials or ensure they are available in your shell
+- Update `.envrc` with OpenRouteService setup
 - Update `.envrc` with the Arrow Dev Keycloak client secret (found in 1Password)
 - `mix ecto.setup`
 - `brew install chromedriver`

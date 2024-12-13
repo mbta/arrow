@@ -5,6 +5,9 @@ defmodule Arrow.Shuttles do
 
   import Ecto.Query, warn: false
 
+  alias Arrow.OpenRouteServiceAPI
+  alias Arrow.OpenRouteServiceAPI.DirectionsResponse
+  alias Arrow.OpenRouteServiceAPI.ErrorResponse
   alias Arrow.Repo
   alias ArrowWeb.ErrorHelpers
 
@@ -362,6 +365,49 @@ defmodule Arrow.Shuttles do
             }
           end)
     }
+  end
+
+  @spec get_stop_coordinates(RouteStop.t() | Stop.t() | GtfsStop.t()) ::
+          {:ok, map()} | {:error, any}
+  def get_stop_coordinates(%RouteStop{gtfs_stop: stop, stop: nil}) do
+    get_stop_coordinates(stop)
+  end
+
+  def get_stop_coordinates(%RouteStop{gtfs_stop: nil, stop: stop}) do
+    get_stop_coordinates(stop)
+  end
+
+  def get_stop_coordinates(%GtfsStop{lat: lat, lon: lon}) do
+    {:ok, %{lat: lat, lon: lon}}
+  end
+
+  def get_stop_coordinates(%Stop{stop_lat: lat, stop_lon: lon}) do
+    {:ok, %{lat: lat, lon: lon}}
+  end
+
+  def get_stop_coordinates(%RouteStop{id: nil, display_stop_id: id}) do
+    {:error, "Missing lat/lon data for stop #{id}"}
+  end
+
+  def get_stop_coordinates(stop) do
+    {:error, "Missing lat/lon data for stop #{inspect(stop)}"}
+  end
+
+  @spec get_travel_times(list(%{lat: number(), lon: number()})) ::
+          {:ok, list(number())} | {:error, any()}
+  def get_travel_times(coordinates) do
+    coordinates = coordinates |> Enum.map(&Map.new(&1, fn {k, v} -> {to_string(k), v} end))
+
+    case OpenRouteServiceAPI.directions(coordinates) do
+      {:ok, %DirectionsResponse{segments: segments}} ->
+        {:ok, segments |> Enum.map(&round(&1.duration))}
+
+      {:error, %ErrorResponse{type: :no_route}} ->
+        {:error, "Unable to retrieve estimates: no route between stops found"}
+
+      {:error, %ErrorResponse{type: :unknown}} ->
+        {:error, "Unable to retrieve estimates: unknown error"}
+    end
   end
 
   def list_disruptable_routes do

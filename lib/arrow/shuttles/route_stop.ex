@@ -7,6 +7,18 @@ defmodule Arrow.Shuttles.RouteStop do
   alias Arrow.Shuttles
   alias Arrow.Shuttles.Stop
 
+  @type t :: %__MODULE__{
+          direction_id: :"0" | :"1",
+          stop_sequence: integer(),
+          time_to_next_stop: float(),
+          display_stop_id: String.t(),
+          inserted_at: DateTime.t() | nil,
+          updated_at: DateTime.t() | nil,
+          shuttle_route: Arrow.Gtfs.Level.t() | Ecto.Association.NotLoaded.t() | nil,
+          stop: Arrow.Shuttles.Stop.t() | Ecto.Association.NotLoaded.t() | nil,
+          gtfs_stop: Arrow.Gtfs.Stop.t() | Ecto.Association.NotLoaded.t() | nil
+        }
+
   schema "shuttle_route_stops" do
     field :direction_id, Ecto.Enum, values: [:"0", :"1"]
     field :stop_sequence, :integer
