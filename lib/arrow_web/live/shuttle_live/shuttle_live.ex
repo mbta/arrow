@@ -699,23 +699,22 @@ defmodule ArrowWeb.ShuttleViewLive do
   end
 
   defp populate_stop_ids(socket, stop_ids) do
-    update(socket, :form, fn %{source: changeset} ->
-      existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
+    changeset = socket.assigns.form.source
+    existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
 
-      new_routes =
-        Enum.map(existing_routes, fn route_changeset ->
-          direction_id = Ecto.Changeset.get_field(route_changeset, :direction_id)
+    new_routes =
+      Enum.map(existing_routes, fn route_changeset ->
+        direction_id = Ecto.Changeset.get_field(route_changeset, :direction_id)
 
-          update_route_changeset_with_uploaded_stops(
-            route_changeset,
-            elem(stop_ids, direction_id |> Atom.to_string() |> String.to_integer()),
-            direction_id
-          )
-        end)
+        update_route_changeset_with_uploaded_stops(
+          route_changeset,
+          elem(stop_ids, direction_id |> Atom.to_string() |> String.to_integer()),
+          direction_id
+        )
+      end)
 
-      changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
+    changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
 
-      to_form(changeset)
-    end)
+    socket |> assign(:form, to_form(changeset)) |> update_map(changeset)
   end
 end
