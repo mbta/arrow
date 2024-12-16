@@ -7,6 +7,9 @@ defmodule Arrow.ShuttlesTest do
   import Arrow.ShuttlesFixtures
   import Arrow.StopsFixtures
   import Test.Support.Helpers
+  import Mox
+
+  setup :verify_on_exit!
 
   describe "shapes with s3 functionality enabled (mocked)" do
     @valid_shape %{
@@ -255,6 +258,152 @@ defmodule Arrow.ShuttlesTest do
 
     test "returns nil if no stops are found" do
       assert is_nil(Shuttles.stop_or_gtfs_stop_for_stop_id("nonexistent-stop"))
+    end
+  end
+
+  describe "get_travel_times/1" do
+    test "calculates travel time between coordinates" do
+      expect(
+        Arrow.OpenRouteServiceAPI.MockClient,
+        :get_directions,
+        fn %Arrow.OpenRouteServiceAPI.DirectionsRequest{
+             coordinates: [[-71.11934, 42.38758], [-71.1202, 42.373396]] = coordinates
+           } ->
+          {:ok,
+           build(
+             :ors_directions_json,
+             %{
+               coordinates: coordinates,
+               segments: [
+                 %{
+                   "duration" => 100,
+                   "distance" => 0.20
+                 },
+                 %{
+                   "duration" => 100,
+                   "distance" => 0.20
+                 }
+               ]
+             }
+           )}
+        end
+      )
+
+      coord1 = %{"lat" => 42.38758, "lon" => -71.11934}
+      coord2 = %{"lat" => 42.373396, "lon" => -71.1202}
+
+      {:ok, [100, 100]} = Shuttles.get_travel_times([coord1, coord2])
+    end
+
+    test "handles atom keys for coordinates" do
+      expect(
+        Arrow.OpenRouteServiceAPI.MockClient,
+        :get_directions,
+        fn %Arrow.OpenRouteServiceAPI.DirectionsRequest{
+             coordinates: [[-71.11934, 42.38758], [-71.1202, 42.373396]] = coordinates
+           } ->
+          {:ok,
+           build(
+             :ors_directions_json,
+             %{
+               coordinates: coordinates,
+               segments: [
+                 %{
+                   "duration" => 100,
+                   "distance" => 0.20
+                 },
+                 %{
+                   "duration" => 100,
+                   "distance" => 0.20
+                 }
+               ]
+             }
+           )}
+        end
+      )
+
+      coord1 = %{lat: 42.38758, lon: -71.11934}
+      coord2 = %{lat: 42.373396, lon: -71.1202}
+
+      {:ok, [100, 100]} = Shuttles.get_travel_times([coord1, coord2])
+    end
+
+    test "errors if it cannot determine a route between the coordinates" do
+      expect(
+        Arrow.OpenRouteServiceAPI.MockClient,
+        :get_directions,
+        fn %Arrow.OpenRouteServiceAPI.DirectionsRequest{} -> {:error, %{"code" => 2010}} end
+      )
+
+      coord1 = %{"lat" => 42.38758, "lon" => -71.11934}
+      coord2 = %{"lat" => 42.373396, "lon" => -70.1202}
+
+      assert {:error, "Unable to retrieve estimates: no route between stops found"} =
+               Shuttles.get_travel_times([coord1, coord2])
+    end
+
+    test "errors if OpenRouteService returns an unknown error" do
+      expect(
+        Arrow.OpenRouteServiceAPI.MockClient,
+        :get_directions,
+        fn %Arrow.OpenRouteServiceAPI.DirectionsRequest{} -> {:error, %{"code" => -1}} end
+      )
+
+      coord1 = %{"lat" => 42.38758, "lon" => -71.11934}
+      coord2 = %{"lat" => 42.373396, "lon" => -70.1202}
+
+      assert {:error, "Unable to retrieve estimates: unknown error"} =
+               Shuttles.get_travel_times([coord1, coord2])
+    end
+  end
+
+  describe "get_stop_coordinates/1" do
+    test "gets the stop coordinates for an Arrow stop from a RouteStop" do
+      lat = 42.38758
+      lon = -71.11934
+
+      stop = %Shuttles.RouteStop{
+        stop: stop_fixture(%{stop_lat: lat, stop_lon: lon}),
+        gtfs_stop: nil
+      }
+
+      coordinates = %{lat: lat, lon: lon}
+
+      assert {:ok, ^coordinates} = Shuttles.get_stop_coordinates(stop)
+    end
+
+    test "gets the stop coordinates for an gtfs stop from a RouteStop" do
+      gtfs_stop = insert(:gtfs_stop)
+      coordinates = %{lat: gtfs_stop.lat, lon: gtfs_stop.lon}
+      stop = %Shuttles.RouteStop{gtfs_stop: gtfs_stop, stop: nil}
+
+      assert {:ok, ^coordinates} = Shuttles.get_stop_coordinates(stop)
+    end
+
+    test "gets the stop coordinates for an Arrow stop" do
+      lat = 42.38758
+      lon = -71.11934
+      stop = stop_fixture(%{stop_lat: lat, stop_lon: lon})
+      coordinates = %{lat: lat, lon: lon}
+
+      assert {:ok, ^coordinates} = Shuttles.get_stop_coordinates(stop)
+    end
+
+    test "gets the stop coordinates for a GTFS stop" do
+      gtfs_stop = insert(:gtfs_stop)
+      coordinates = %{lat: gtfs_stop.lat, lon: gtfs_stop.lon}
+
+      assert {:ok, ^coordinates} = Shuttles.get_stop_coordinates(gtfs_stop)
+    end
+
+    test "raises if a stop has missing lat/lon data" do
+      stop2 =
+        %{stop_lat: 42.373396, stop_lon: -70.1202}
+        |> stop_fixture
+        |> Map.drop([:stop_lat, :stop_lon])
+
+      assert {:error, error_message} = Shuttles.get_stop_coordinates(stop2)
+      assert error_message =~ ~r/Missing lat\/lon/
     end
   end
 end
