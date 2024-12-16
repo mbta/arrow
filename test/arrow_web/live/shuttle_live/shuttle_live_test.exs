@@ -437,7 +437,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
         assert [^stop_id] =
                  Floki.attribute(
                    direction_0_stop_rows,
-                   "[data-stop_sequence=#{index}] > div.form-group > input[type=text]",
+                   "[data-stop_sequence=#{index}] > div > div.form-group > div > div > div > input[type=text]",
                    "value"
                  )
       end
@@ -446,7 +446,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
         assert [^stop_id] =
                  Floki.attribute(
                    direction_1_stop_rows,
-                   "[data-stop_sequence=#{index}] > div.form-group > input[type=text]",
+                   "[data-stop_sequence=#{index}] > div > div.form-group > div > div > div > input[type=text]",
                    "value"
                  )
       end
