@@ -24,7 +24,8 @@ defmodule ArrowWeb.StopInput do
           Phoenix.HTML.Form.input_value(assigns.field.form, :gtfs_stop)
       )
 
-    # This should only change if the value actually changes
+    # This should only change if the selected value actually changes,
+    # not just when a user is typing and options change.
     assigns =
       assign(
         assigns,
@@ -51,12 +52,9 @@ defmodule ArrowWeb.StopInput do
   end
 
   def handle_event("live_select_change", %{"id" => live_select_id, "text" => text}, socket) do
-    # Two cases:
-    # 1. If <= 2 characters, check if it's a stop ID. If yes, just add it as an option.
-    # 2. If > 2 characters, query all stops to find matching ones and set as options
-
     new_opts =
       if String.length(text) < 2 do
+        # We only start autocomplete at 2 characters, but there are some 1-character stop IDs
         case Shuttles.stop_or_gtfs_stop_for_stop_id(text) do
           nil -> []
           stop -> [option_for_stop(stop)]
