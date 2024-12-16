@@ -7,6 +7,8 @@ defmodule Arrow.ShuttlesFixtures do
   alias Arrow.Repo
   alias Arrow.Shuttles.Shape
 
+  import Arrow.Factory
+
   @doc """
   Generate valid coords
   """
@@ -67,9 +69,37 @@ defmodule Arrow.ShuttlesFixtures do
   def unique_shuttle_route_destination,
     do: "some shuttle_route_destination#{System.unique_integer([:positive])}"
 
-  defp shuttle_routes do
+  defp shuttle_route_stops do
+    [stop1, stop2, stop3, stop4] = insert_list(4, :gtfs_stop)
+
+    [
+      %{
+        "direction_id" => "0",
+        "stop_sequence" => "1",
+        "display_stop_id" => stop1.id
+      },
+      %{
+        "direction_id" => "0",
+        "stop_sequence" => "2",
+        "display_stop_id" => stop2.id
+      },
+      %{
+        "direction_id" => "0",
+        "stop_sequence" => "3",
+        "display_stop_id" => stop3.id
+      },
+      %{
+        "direction_id" => "0",
+        "stop_sequence" => "4",
+        "display_stop_id" => stop4.id
+      }
+    ]
+  end
+
+  defp shuttle_routes(include_stops) do
     shape1 = shape_fixture()
     shape2 = shape_fixture()
+    route_stops = if include_stops, do: shuttle_route_stops(), else: []
 
     [
       %{
@@ -79,7 +109,8 @@ defmodule Arrow.ShuttlesFixtures do
         direction_id: :"0",
         direction_desc: "Southbound",
         suffix: nil,
-        waypoint: "Brattle"
+        waypoint: "Brattle",
+        route_stops: route_stops
       },
       %{
         shape_id: shape2.id,
@@ -88,7 +119,8 @@ defmodule Arrow.ShuttlesFixtures do
         direction_id: :"1",
         direction_desc: "Northbound",
         suffix: nil,
-        waypoint: "Brattle"
+        waypoint: "Brattle",
+        route_stops: route_stops
       }
     ]
   end
@@ -96,13 +128,13 @@ defmodule Arrow.ShuttlesFixtures do
   @doc """
   Generate a shuttle.
   """
-  def shuttle_fixture(attrs \\ %{}) do
+  def shuttle_fixture(attrs \\ %{}, include_stops \\ false) do
     {:ok, shuttle} =
       attrs
       |> Enum.into(%{
         shuttle_name: unique_shuttle_shuttle_name(),
         status: :draft,
-        routes: shuttle_routes()
+        routes: shuttle_routes(include_stops)
       })
       |> Arrow.Shuttles.create_shuttle()
 
