@@ -12,6 +12,7 @@ import DisruptionCalendar from "./components/DisruptionCalendar"
 import DisruptionForm from "./components/DisruptionForm"
 import ShapeViewMap from "./components/ShapeViewMap"
 import StopViewMap from "./components/StopViewMap"
+import ShapeStopViewMap from "./components/ShapeStopViewMap"
 
 declare global {
   interface Window {
@@ -74,6 +75,7 @@ window.Components = {
   DisruptionForm,
   ShapeViewMap,
   StopViewMap,
+  ShapeStopViewMap,
 }
 
 ReactPhoenix.init()
