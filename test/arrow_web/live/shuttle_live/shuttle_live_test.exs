@@ -401,6 +401,98 @@ defmodule ArrowWeb.ShuttleLiveTest do
     end
   end
 
+  describe "upload definition" do
+    @tag :authenticated_admin
+    test "sets route_stops using uploaded stop IDs", %{conn: conn} do
+      {:ok, new_live, _html} = live(conn, ~p"/shuttles/new")
+
+      definition =
+        file_input(new_live, "#shuttle-form", :definition, [
+          %{
+            name: "valid.xlsx",
+            content: File.read!("test/support/fixtures/xlsx/valid.xlsx")
+          }
+        ])
+
+      direction_0_stop_sequence = ~w(9328 5327 5271)
+      direction_1_stop_sequence = ~w(5271 5072 9328)
+      html = render_upload(definition, "valid.xlsx")
+
+      direction_0_stop_rows = Floki.find(html, "#stops-dir-0 > .row")
+      direction_1_stop_rows = Floki.find(html, "#stops-dir-1 > .row")
+
+      for {stop_id, index} <- Enum.with_index(direction_0_stop_sequence) do
+        assert [^stop_id] =
+                 Floki.attribute(
+                   direction_0_stop_rows,
+                   "[data-stop_sequence=#{index}] > div.form-group > input[type=text]",
+                   "value"
+                 )
+      end
+
+      for {stop_id, index} <- Enum.with_index(direction_1_stop_sequence) do
+        assert [^stop_id] =
+                 Floki.attribute(
+                   direction_1_stop_rows,
+                   "[data-stop_sequence=#{index}] > div.form-group > input[type=text]",
+                   "value"
+                 )
+      end
+    end
+
+    @tag :authenticated_admin
+    test "displays error for missing/invalid tabs", %{conn: conn} do
+      {:ok, new_live, _html} = live(conn, ~p"/shuttles/new")
+
+      definition =
+        file_input(new_live, "#shuttle-form", :definition, [
+          %{
+            name: "invalid_missing_tab.xlsx",
+            content: File.read!("test/support/fixtures/xlsx/invalid_missing_tab.xlsx")
+          }
+        ])
+
+      page = render_upload(definition, "invalid_missing_tab.xlsx")
+      assert page =~ "Failed to upload definition:"
+      assert page =~ "Missing Direction 0 STOPS tab"
+    end
+
+    @tag :authenticated_admin
+    test "displays error for missing/invalid data", %{conn: conn} do
+      {:ok, new_live, _html} = live(conn, ~p"/shuttles/new")
+
+      definition =
+        file_input(new_live, "#shuttle-form", :definition, [
+          %{
+            name: "invalid_missing_data.xlsx",
+            content: File.read!("test/support/fixtures/xlsx/invalid_missing_data.xlsx")
+          }
+        ])
+
+      page = render_upload(definition, "invalid_missing_data.xlsx")
+      assert page =~ "Failed to upload definition:"
+      assert page =~ "Missing/invalid stop ID on row 3"
+    end
+
+    @tag :authenticated_admin
+
+    test "displays error for missing headers", %{conn: conn} do
+      {:ok, new_live, _html} = live(conn, ~p"/shuttles/new")
+
+      definition =
+        file_input(new_live, "#shuttle-form", :definition, [
+          %{
+            name: "invalid_missing_headers.xlsx",
+            content: File.read!("test/support/fixtures/xlsx/invalid_missing_headers.xlsx")
+          }
+        ])
+
+      page = render_upload(definition, "invalid_missing_headers.xlsx")
+      assert page =~ "Failed to upload definition:"
+      assert page =~ "Unable to parse Stop ID column"
+    end
+  end
+
   defp create_shuttle_with_stops(_) do
     shuttle = shuttle_fixture(%{}, true)
     %{shuttle: shuttle}

@@ -3,7 +3,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   import Phoenix.HTML.Form
 
   alias Arrow.Shuttles
-  alias Arrow.Shuttles.{Route, RouteStop, Shape, Shuttle}
+  alias Arrow.Shuttles.{DefinitionUpload, Route, RouteStop, Shape, Shuttle}
   alias ArrowWeb.ShapeView
 
   embed_templates "shuttle_live/*"
@@ -18,6 +18,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   attr :shapes, :list, required: true
   attr :map_props, :map, required: false, default: %{}
   attr :errors, :map, required: false, default: %{route_stops: %{}}
+  attr :uploads, :any
 
   def shuttle_form(assigns) do
     ~H"""
@@ -62,6 +63,18 @@ defmodule ArrowWeb.ShuttleViewLive do
             prompt="Choose a value"
             options={Ecto.Enum.values(Arrow.Shuttles.Shuttle, :status)}
           />
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col">
+          <.link_button
+            class="btn-primary"
+            phx-click={JS.dispatch("click", to: "##{@uploads.definition.ref}")}
+            target="_blank"
+          >
+            <.live_file_input upload={@uploads.definition} class="hidden" />
+            Upload Shuttle Definition XLSX
+          </.link_button>
         </div>
       </div>
       <%= live_react_component("Components.ShapeStopViewMap", @map_props, id: "shuttle-view-map") %>
@@ -337,6 +350,11 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> assign(:shapes, shapes)
       |> assign(:map_props, %{layers: routes_to_layers(shuttle.routes)})
       |> assign(:errors, %{route_stops: %{}})
+      |> allow_upload(:definition,
+        accept: ~w(.xlsx),
+        progress: &handle_progress/3,
+        auto_upload: true
+      )
 
     {:ok, socket}
   end
@@ -362,6 +380,11 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> assign(:shapes, shapes)
       |> assign(:map_props, %{layers: routes_to_layers(shuttle.routes)})
       |> assign(:errors, %{route_stops: %{}})
+      |> allow_upload(:definition,
+        accept: ~w(.xlsx),
+        progress: &handle_progress/3,
+        auto_upload: true
+      )
 
     {:ok, socket}
   end
@@ -522,6 +545,32 @@ defmodule ArrowWeb.ShuttleViewLive do
     }
   end
 
+  defp update_route_changeset_with_uploaded_stops(route_changeset, stop_ids, direction_id) do
+    if Ecto.Changeset.get_field(route_changeset, :direction_id) == direction_id do
+      new_route_stops =
+        stop_ids
+        |> Enum.with_index()
+        |> Enum.map(fn {stop_id, i} ->
+          Arrow.Shuttles.RouteStop.changeset(
+            %Arrow.Shuttles.RouteStop{},
+            %{
+              direction_id: direction_id,
+              stop_sequence: i,
+              display_stop_id: Integer.to_string(stop_id)
+            }
+          )
+        end)
+
+      Ecto.Changeset.put_assoc(
+        route_changeset,
+        :route_stops,
+        new_route_stops
+      )
+    else
+      route_changeset
+    end
+  end
+
   @spec get_stop_travel_times(list({:ok, any()})) ::
           {:ok, list(number())} | {:error, any()}
   defp get_stop_travel_times(stop_coordinates) do
@@ -629,5 +678,43 @@ defmodule ArrowWeb.ShuttleViewLive do
     form = to_form(change, action: :validate)
 
     {:noreply, socket |> assign(form: form) |> update_map(change)}
+  end
+
+  defp handle_progress(:definition, entry, socket) do
+    socket = clear_flash(socket)
+
+    if entry.done? do
+      case consume_uploaded_entry(socket, entry, &DefinitionUpload.extract_stop_ids_from_upload/1) do
+        {:error, errors} ->
+          {:noreply, put_flash(socket, :errors, {"Failed to upload definition:", errors})}
+
+        stop_ids ->
+          socket = populate_stop_ids(socket, stop_ids)
+
+          {:noreply, socket}
+      end
+    else
+      {:noreply, socket}
+    end
+  end
+
+  defp populate_stop_ids(socket, stop_ids) do
+    changeset = socket.assigns.form.source
+    existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
+
+    new_routes =
+      Enum.map(existing_routes, fn route_changeset ->
+        direction_id = Ecto.Changeset.get_field(route_changeset, :direction_id)
+
+        update_route_changeset_with_uploaded_stops(
+          route_changeset,
+          elem(stop_ids, direction_id |> Atom.to_string() |> String.to_integer()),
+          direction_id
+        )
+      end)
+
+    changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
+
+    socket |> assign(:form, to_form(changeset)) |> update_map(changeset)
   end
 end
