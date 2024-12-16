@@ -1,8 +1,9 @@
 defmodule ArrowWeb.ShuttleViewLive do
   use ArrowWeb, :live_view
   import Phoenix.HTML.Form
+
   alias Arrow.Shuttles
-  alias Arrow.Shuttles.{DefinitionUpload, Shuttle}
+  alias Arrow.Shuttles.{DefinitionUpload, Route, RouteStop, Shape, Shuttle}
   alias ArrowWeb.ShapeView
 
   embed_templates "shuttle_live/*"
@@ -76,7 +77,7 @@ defmodule ArrowWeb.ShuttleViewLive do
           </.link_button>
         </div>
       </div>
-      <%= live_react_component("Components.ShapeViewMap", @map_props, id: "shuttle-view-map") %>
+      <%= live_react_component("Components.ShapeStopViewMap", @map_props, id: "shuttle-view-map") %>
       <hr />
       <h2>define route</h2>
       <.inputs_for :let={f_route} field={f[:routes]}>
@@ -230,12 +231,89 @@ defmodule ArrowWeb.ShuttleViewLive do
     """
   end
 
-  defp shapes_to_shapeviews(shapes) do
-    shapes
-    |> Enum.map(&Shuttles.get_shapes_upload/1)
-    |> Enum.reject(&(&1 == {:ok, :disabled}))
-    |> Enum.map(&ShapeView.shapes_map_view/1)
-    |> Enum.map(&List.first(&1.shapes))
+  defp shape_to_shapeview(%Shape{bucket: "disabled"}), do: nil
+
+  defp shape_to_shapeview(%Shape{} = shape) do
+    shape
+    |> Shuttles.get_shapes_upload()
+    |> ShapeView.shapes_map_view()
+    |> Map.get(:shapes)
+    |> List.first()
+  end
+
+  defp shape_to_shapeview(_), do: nil
+
+  defp render_route_stop(%RouteStop{stop_id: stop_id} = route_stop) when not is_nil(stop_id) do
+    route_stop =
+      if !Ecto.assoc_loaded?(route_stop.stop) or route_stop.stop.id != stop_id,
+        do: Arrow.Repo.preload(route_stop, :stop, force: true),
+        else: route_stop
+
+    if route_stop.stop do
+      %{
+        stop_sequence: route_stop.stop_sequence,
+        stop_id: route_stop.stop.stop_id,
+        stop_name: route_stop.stop.stop_name,
+        stop_desc: route_stop.stop.stop_desc,
+        stop_lat: route_stop.stop.stop_lat,
+        stop_lon: route_stop.stop.stop_lon
+      }
+    end
+  end
+
+  defp render_route_stop(%RouteStop{gtfs_stop_id: gtfs_stop_id} = route_stop)
+       when not is_nil(gtfs_stop_id) do
+    route_stop =
+      if !Ecto.assoc_loaded?(route_stop.gtfs_stop) or route_stop.gtfs_stop.id != gtfs_stop_id,
+        do: Arrow.Repo.preload(route_stop, :gtfs_stop, force: true),
+        else: route_stop
+
+    if route_stop.gtfs_stop do
+      %{
+        stop_sequence: route_stop.stop_sequence,
+        stop_id: route_stop.gtfs_stop.id,
+        stop_name: route_stop.gtfs_stop.name,
+        stop_desc: route_stop.gtfs_stop.desc,
+        stop_lat: route_stop.gtfs_stop.lat,
+        stop_lon: route_stop.gtfs_stop.lon
+      }
+    end
+  end
+
+  defp render_route_stop(_), do: nil
+
+  defp render_route_stops([_ | _] = route_stops) do
+    route_stops |> Enum.map(&render_route_stop/1) |> Enum.filter(& &1)
+  end
+
+  defp render_route_stops(_), do: []
+
+  defp direction_to_layer(%Route{} = direction, existing_props) do
+    matching_shape =
+      existing_props.layers
+      |> Enum.map(& &1.shape)
+      |> Enum.find(&(&1 && direction.shape_id && &1.name == direction.shape.name))
+
+    shape = if matching_shape, do: matching_shape, else: shape_to_shapeview(direction.shape)
+
+    stops = render_route_stops(direction.route_stops)
+
+    %{
+      name: direction.direction_desc,
+      direction_id: direction.direction_id,
+      shape: shape,
+      stops: stops
+    }
+  end
+
+  defp routes_to_layers(routes, existing_props) do
+    routes
+    |> Enum.sort_by(& &1.direction_id)
+    |> Enum.map(&direction_to_layer(&1, existing_props))
+  end
+
+  defp routes_to_layers(routes) do
+    routes_to_layers(routes, %{layers: []})
   end
 
   defp options_mapper(shapes) do
@@ -261,14 +339,6 @@ defmodule ArrowWeb.ShuttleViewLive do
     shapes = Shuttles.list_shapes()
     form = to_form(changeset)
 
-    shuttle_shapes =
-      shuttle
-      |> Map.get(:routes)
-      |> Enum.map(&Map.get(&1, :shape))
-      |> Enum.reject(&is_nil/1)
-
-    shapes_map_view = shapes_to_shapeviews(shuttle_shapes)
-
     socket =
       socket
       |> assign(:form, form)
@@ -278,7 +348,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> assign(:title, "edit shuttle")
       |> assign(:gtfs_disruptable_routes, gtfs_disruptable_routes)
       |> assign(:shapes, shapes)
-      |> assign(:map_props, %{shapes: shapes_map_view})
+      |> assign(:map_props, %{layers: routes_to_layers(shuttle.routes)})
       |> assign(:errors, %{route_stops: %{}})
       |> allow_upload(:definition,
         accept: ~w(.xlsx),
@@ -308,7 +378,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> assign(:shuttle, shuttle)
       |> assign(:gtfs_disruptable_routes, gtfs_disruptable_routes)
       |> assign(:shapes, shapes)
-      |> assign(:map_props, %{shapes: []})
+      |> assign(:map_props, %{layers: routes_to_layers(shuttle.routes)})
       |> assign(:errors, %{route_stops: %{}})
       |> allow_upload(:definition,
         accept: ~w(.xlsx),
@@ -317,24 +387,6 @@ defmodule ArrowWeb.ShuttleViewLive do
       )
 
     {:ok, socket}
-  end
-
-  # A new shape is selected
-  def handle_event(
-        "validate",
-        %{"_target" => ["shuttle", "routes", _direction_id, "shape_id"]} = params,
-        socket
-      ) do
-    shapes =
-      [
-        params["shuttle"]["routes"]["0"]["shape_id"],
-        params["shuttle"]["routes"]["1"]["shape_id"]
-      ]
-      |> Enum.reject(&(&1 == ""))
-      |> Shuttles.get_shapes()
-      |> shapes_to_shapeviews()
-
-    validate(params, assign(socket, :map_props, %{socket.assigns.map_props | shapes: shapes}))
   end
 
   def handle_event("validate", params, socket) do
@@ -415,19 +467,17 @@ defmodule ArrowWeb.ShuttleViewLive do
       ) do
     direction_id = String.to_existing_atom(direction_id)
 
-    socket =
-      update(socket, :form, fn %{source: changeset} ->
-        existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
+    changeset = socket.assigns.form.source
+    existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
 
-        new_routes =
-          Enum.map(existing_routes, fn route_changeset ->
-            update_route_changeset_with_reordered_stops(route_changeset, direction_id, old, new)
-          end)
-
-        changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
-
-        to_form(changeset)
+    new_routes =
+      Enum.map(existing_routes, fn route_changeset ->
+        update_route_changeset_with_reordered_stops(route_changeset, direction_id, old, new)
       end)
+
+    changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
+
+    socket = socket |> assign(:form, to_form(changeset)) |> update_map(changeset)
 
     {:noreply, socket}
   end
@@ -611,15 +661,23 @@ defmodule ArrowWeb.ShuttleViewLive do
     end
   end
 
+  defp update_map(socket, changeset) do
+    layers =
+      changeset
+      |> Ecto.Changeset.get_assoc(:routes, :struct)
+      |> Enum.map(&Arrow.Repo.preload(&1, :shape, force: true))
+      |> routes_to_layers(socket.assigns.map_props)
+
+    assign(socket, :map_props, %{layers: layers})
+  end
+
   defp validate(params, socket) do
     shuttle_params = params |> combine_params()
 
-    form =
-      socket.assigns.shuttle
-      |> Shuttles.change_shuttle(shuttle_params)
-      |> to_form(action: :validate)
+    change = Shuttles.change_shuttle(socket.assigns.shuttle, shuttle_params)
+    form = to_form(change, action: :validate)
 
-    {:noreply, assign(socket, form: form)}
+    {:noreply, socket |> assign(form: form) |> update_map(change)}
   end
 
   defp handle_progress(:definition, entry, socket) do
