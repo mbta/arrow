@@ -38,11 +38,10 @@ defmodule ArrowWeb.StopInput do
       )
 
     ~H"""
-    <div id={@id}>
+    <div id={@id} class={@class}>
       <.live_select
         field={@field}
         label={@label}
-        class={@class}
         allow_clear={true}
         target={@myself}
         options={@options}
