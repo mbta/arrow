@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.8 (Homebrew)
--- Dumped by pg_dump version 15.8 (Homebrew)
+-- Dumped from database version 15.8 (Postgres.app)
+-- Dumped by pg_dump version 15.8 (Postgres.app)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1760,3 +1760,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20241018202407);
 INSERT INTO public."schema_migrations" (version) VALUES (20241029192033);
 INSERT INTO public."schema_migrations" (version) VALUES (20241030181351);
 INSERT INTO public."schema_migrations" (version) VALUES (20241209204043);
+INSERT INTO public."schema_migrations" (version) VALUES (20241210155455);

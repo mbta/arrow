@@ -62,6 +62,7 @@ defmodule Arrow.MixProject do
       {:httpoison, "~> 2.2"},
       {:ja_serializer, "~> 0.18.0"},
       {:jason, "~> 1.0"},
+      {:live_isolated_component, "~> 0.8.0", only: [:test]},
       {:live_select, "~> 1.4"},
       {:lcov_ex, "~> 0.2", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.2", only: :test},

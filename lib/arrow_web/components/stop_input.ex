@@ -50,7 +50,9 @@ defmodule ArrowWeb.StopInput do
     """
   end
 
-  def handle_event("live_select_change", %{"id" => live_select_id, "text" => text}, socket) do
+  def handle_event("live_select_change", %{"id" => live_select_id, "text" => text} = opts, socket) do
+    IO.inspect(opts)
+
     # Two cases:
     # 1. If <= 2 characters, check if it's a stop ID. If yes, just add it as an option.
     # 2. If > 2 characters, query all stops to find matching ones and set as options
