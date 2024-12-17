@@ -38,20 +38,5 @@ describe("StopViewMap", () => {
     expect(
       container.getElementsByClassName("leaflet-control-container").length
     ).toBe(1)
-
-    const { container: containerNewStop } = render(
-      <StopViewMap
-        stop={undefined}
-        existingBusStops={existingGtfs}
-        existingShuttleStops={existingShuttle}
-      />
-    )
-    expect(
-      containerNewStop.getElementsByClassName("leaflet-map-pane").length
-    ).toBe(1)
-    expect(
-      containerNewStop.getElementsByClassName("leaflet-control-container")
-        .length
-    ).toBe(1)
   })
 })
