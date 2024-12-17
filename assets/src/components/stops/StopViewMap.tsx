@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"
-import { LatLngExpression } from "leaflet"
+import { canvas, LatLngExpression } from "leaflet"
 import { MapContainer, useMap } from "react-leaflet"
 import BaseMapLayerControl from "../BaseMapLayerControl"
 import { Stop, GtfsStop } from "./types"
@@ -42,6 +42,7 @@ const StopViewMap = ({
       center={defaultCenter}
       zoom={13}
       scrollWheelZoom={true}
+      renderer={canvas()}
     >
       <MapUpdater stop={stop} />
       <BaseMapLayerControl />
