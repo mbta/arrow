@@ -96,7 +96,8 @@ defmodule Arrow.MixProject do
        compile: false,
        depth: 1},
       {:sax_map, "~> 1.2"},
-      {:unzip, "~> 0.12.0"}
+      {:unzip, "~> 0.12.0"},
+      {:xlsxir, "~> 1.6"}
     ]
   end
 
