@@ -47,11 +47,13 @@ const StopViewMap = ({
     >
       <MapUpdater stop={stop} />
       <BaseMapLayerControl />
-      {stop?.stop_lat && stop?.stop_lon && (<StopLayerControl
-        selectedStop={stop}
-        existingShuttleStops={existingShuttleStops}
-        existingBusStops={existingBusStops}
-      />)}
+      {stop?.stop_lat && stop?.stop_lon && (
+        <StopLayerControl
+          selectedStop={stop}
+          existingShuttleStops={existingShuttleStops}
+          existingBusStops={existingBusStops}
+        />
+      )}
     </MapContainer>
   )
 }
