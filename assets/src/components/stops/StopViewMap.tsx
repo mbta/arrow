@@ -9,7 +9,7 @@ import StopLayerControl from "./StopLayerControl"
 const defaultCenter: LatLngExpression = [42.360718, -71.05891]
 
 interface StopViewMapProps {
-  stop?: Stop
+  stop: Stop
   existingShuttleStops?: Stop[]
   existingBusStops?: GtfsStop[]
 }
@@ -20,6 +20,7 @@ const MapUpdater = ({ stop }: { stop?: Stop }) => {
     const bounds = getMapBounds(
       stop?.stop_lat && stop?.stop_lon ? [[stop?.stop_lat, stop?.stop_lon]] : []
     )
+
     if (bounds) {
       map.setMaxBounds(bounds)
     } else {
@@ -46,11 +47,11 @@ const StopViewMap = ({
     >
       <MapUpdater stop={stop} />
       <BaseMapLayerControl />
-      <StopLayerControl
-        stop={stop}
+      {stop?.stop_lat && stop?.stop_lon && (<StopLayerControl
+        selectedStop={stop}
         existingShuttleStops={existingShuttleStops}
         existingBusStops={existingBusStops}
-      />
+      />)}
     </MapContainer>
   )
 }
