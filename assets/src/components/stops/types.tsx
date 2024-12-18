@@ -3,6 +3,7 @@ type Stop = {
   stop_desc: string
   stop_lat: number
   stop_lon: number
+  stop_id?: string
 }
 
 type GtfsStop = {
@@ -10,6 +11,7 @@ type GtfsStop = {
   desc: string
   lat: number
   lon: number
+  id: string
 }
 
 export { Stop, GtfsStop }

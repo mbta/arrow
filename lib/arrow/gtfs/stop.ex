@@ -8,7 +8,7 @@ defmodule Arrow.Gtfs.Stop do
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 
-  @derive {Jason.Encoder, only: [:name, :desc, :lat, :lon]}
+  @derive {Jason.Encoder, only: [:name, :desc, :lat, :lon, :id]}
 
   @type t :: %__MODULE__{
           id: String.t(),
