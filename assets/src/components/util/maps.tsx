@@ -20,7 +20,8 @@ const getMapBounds = (
 }
 
 // Generates a google map style maps pin for marking a location on a map
-const generateMapPin = (color: string) => {
+// Give the stop an ID corresponding to the GTFS / arrow stop ID
+const generateMapPin = (color: string, stopId: string) => {
   const markerHtmlStyles = `
   background-color: #${color};
   display: block;
@@ -46,7 +47,7 @@ const generateMapPin = (color: string) => {
     className: "",
     iconSize: [30, 42.4264],
     iconAnchor: [15, 42.4264],
-    html: `<div><span style="${markerHtmlStyles}"><span style="${innerCircleStyles}"></span></div>`,
+    html: `<div id="${stopId}"><span style="${markerHtmlStyles}"><span style="${innerCircleStyles}"></span></div>`,
   })
 }
 
@@ -54,4 +55,32 @@ const generateMapPin = (color: string) => {
 const generateLegend = (color: string, name: string) =>
   `<div class="legend-square" style="background-color: #${color}"></div> ${name}`
 
-export { generateMapPin as genIcon, getMapBounds, generateLegend }
+// Calculates the distance in miles between two latitude / longitude pairs
+const haversineDistanceMiles = (
+  pos: [number, number],
+  otherPos: [number, number]
+) => {
+  // radius in miles
+  const earthRadius = 3963.1
+
+  const deltaLatitude = ((otherPos[0] - pos[0]) * Math.PI) / 180
+  const deltaLongitude = ((otherPos[1] - pos[1]) * Math.PI) / 180
+
+  // https://en.wikipedia.org/wiki/Haversine_formula
+  const arc =
+    Math.cos((pos[0] * Math.PI) / 180) *
+      Math.cos((otherPos[0] * Math.PI) / 180) *
+      Math.sin(deltaLongitude / 2) *
+      Math.sin(deltaLongitude / 2) +
+    Math.sin(deltaLatitude / 2) * Math.sin(deltaLatitude / 2)
+  const line = 2 * Math.atan2(Math.sqrt(arc), Math.sqrt(1 - arc))
+
+  return earthRadius * line
+}
+
+export {
+  generateMapPin as genIcon,
+  getMapBounds,
+  generateLegend,
+  haversineDistanceMiles,
+}
