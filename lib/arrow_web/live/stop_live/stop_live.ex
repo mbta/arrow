@@ -139,12 +139,96 @@ defmodule ArrowWeb.StopViewLive do
     {:ok, socket}
   end
 
+  # // Calculates the distance in miles between two latitude / longitude pairs
+  # const haversineDistanceMiles = (
+  #   pos: [number, number],
+  #   otherPos: [number, number]
+  # ) => {
+  #   // radius in miles
+  #   const earthRadius = 3963.1
+  #
+  #   const deltaLatitude = ((otherPos[0] - pos[0]) * Math.PI) / 180
+  #   const deltaLongitude = ((otherPos[1] - pos[1]) * Math.PI) / 180
+  #
+  #   // https://en.wikipedia.org/wiki/Haversine_formula
+  #   const arc =
+  #     Math.cos((pos[0] * Math.PI) / 180) *
+  #       Math.cos((otherPos[0] * Math.PI) / 180) *
+  #       Math.sin(deltaLongitude / 2) *
+  #       Math.sin(deltaLongitude / 2) +
+  #     Math.sin(deltaLatitude / 2) * Math.sin(deltaLatitude / 2)
+  #   const line = 2 * Math.atan2(Math.sqrt(arc), Math.sqrt(1 - arc))
+  #
+  #   return earthRadius * line
+  # }
+
+  def degrees_to_radians(degrees) do
+    degrees * :math.pi() / 180
+  end
+
+  def haversine_distance({lat, lon}, {other_lat, other_lon}) do
+    earth_radius_miles = 3963.1
+
+    delta_lat_rads = degrees_to_radians(other_lat - lat)
+    delta_lon_rads = degrees_to_radians(other_lon - lon)
+
+    arc =
+      :math.cos(degrees_to_radians(lat)) *
+        :math.cos(degrees_to_radians(other_lat)) *
+        :math.sin(delta_lon_rads / 2) *
+        :math.sin(delta_lon_rads / 2) +
+        :math.sin(delta_lat_rads / 2) *
+          :math.sin(delta_lat_rads / 2)
+
+    line = 2 * :math.atan2(:math.sqrt(arc), :math.sqrt(1 - arc))
+
+    earth_radius_miles * line
+  end
+
   def handle_event("validate", %{"stop" => stop_params}, socket) do
     form = Stops.change_stop(socket.assigns.stop, stop_params) |> to_form(action: :validate)
 
+    %{"stop_lat" => lat, "stop_lon" => lon} = stop_params
+
+    stop_id = Map.get(stop_params, "id")
+
+    {lat, lon} =
+      try do
+        {String.to_float(lat), String.to_float(lon)}
+      rescue
+        _ -> {nil, nil}
+      end
+
+    existing_stops =
+      if is_float(lat) and is_float(lon) and !is_nil(stop_id) do
+        from(s in Stop,
+          where: s.stop_id != ^stop_id
+        )
+        |> Repo.all()
+        |> Enum.filter(&haversine_distance({&1.stop_lat, &1.stop_lon}, {lat, lon})) <= 1
+      else
+        nil
+      end
+
+    existing_gtfs_stops =
+      if is_float(lat) and is_float(lon) and !is_nil(stop_id) do
+        from(s in GtfsStop,
+          where: s.stop_id != ^stop_id
+        )
+        |> Repo.all()
+        |> Enum.filter(&haversine_distance({&1.lat, &1.lon}, {lat, lon})) <= 1
+      else
+        nil
+      end
+
     {:noreply,
      socket
-     |> assign(stop_map_props: stop_params, form: form)}
+     |> assign(
+       stop_map_props: stop_params,
+       form: form,
+       existing_stops: existing_stops,
+       existing_gtfs_stops: existing_gtfs_stops
+     )}
   end
 
   def handle_event("edit", %{"stop" => stop_params}, socket) do
