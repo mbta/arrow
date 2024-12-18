@@ -26,7 +26,6 @@ const StopLayerControl = ({
   existingShuttleStops: Stop[] | undefined
   existingBusStops: GtfsStop[] | undefined
 }) => {
-
   return (
     <LayersControl
       position="bottomright"

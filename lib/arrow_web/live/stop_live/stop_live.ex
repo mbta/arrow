@@ -139,29 +139,6 @@ defmodule ArrowWeb.StopViewLive do
     {:ok, socket}
   end
 
-  # // Calculates the distance in miles between two latitude / longitude pairs
-  # const haversineDistanceMiles = (
-  #   pos: [number, number],
-  #   otherPos: [number, number]
-  # ) => {
-  #   // radius in miles
-  #   const earthRadius = 3963.1
-  #
-  #   const deltaLatitude = ((otherPos[0] - pos[0]) * Math.PI) / 180
-  #   const deltaLongitude = ((otherPos[1] - pos[1]) * Math.PI) / 180
-  #
-  #   // https://en.wikipedia.org/wiki/Haversine_formula
-  #   const arc =
-  #     Math.cos((pos[0] * Math.PI) / 180) *
-  #       Math.cos((otherPos[0] * Math.PI) / 180) *
-  #       Math.sin(deltaLongitude / 2) *
-  #       Math.sin(deltaLongitude / 2) +
-  #     Math.sin(deltaLatitude / 2) * Math.sin(deltaLatitude / 2)
-  #   const line = 2 * Math.atan2(Math.sqrt(arc), Math.sqrt(1 - arc))
-  #
-  #   return earthRadius * line
-  # }
-
   def degrees_to_radians(degrees) do
     degrees * :math.pi() / 180
   end
