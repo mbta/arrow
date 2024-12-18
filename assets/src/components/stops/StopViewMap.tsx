@@ -34,8 +34,9 @@ const MapUpdater = ({ stop }: { stop?: Stop }) => {
 const StopViewMap = ({
   stop,
   existingShuttleStops,
-  existingBusStops,
+  existingBusStops
 }: StopViewMapProps) => {
+
   return (
     <MapContainer
       data-testid="stop-view-map-container"
