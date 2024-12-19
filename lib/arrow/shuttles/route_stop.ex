@@ -12,6 +12,7 @@ defmodule Arrow.Shuttles.RouteStop do
           stop_sequence: integer(),
           time_to_next_stop: float(),
           display_stop_id: String.t(),
+          display_stop: Arrow.Shuttles.Stop.t() | Arrow.Gtfs.Stop.t() | nil,
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil,
           shuttle_route: Arrow.Gtfs.Level.t() | Ecto.Association.NotLoaded.t() | nil,
@@ -24,6 +25,7 @@ defmodule Arrow.Shuttles.RouteStop do
     field :stop_sequence, :integer
     field :time_to_next_stop, :decimal
     field :display_stop_id, :string, virtual: true
+    field :display_stop, :map, virtual: true
     belongs_to :shuttle_route, Arrow.Shuttles.Route
     belongs_to :stop, Arrow.Shuttles.Stop
     belongs_to :gtfs_stop, Arrow.Gtfs.Stop, type: :string
@@ -46,17 +48,18 @@ defmodule Arrow.Shuttles.RouteStop do
 
     change =
       if display_stop_id = Ecto.Changeset.get_change(change, :display_stop_id) do
-        {stop_id, gtfs_stop_id, error} =
+        {stop_id, gtfs_stop_id, stop, error} =
           case Shuttles.stop_or_gtfs_stop_for_stop_id(display_stop_id) do
-            %Stop{id: id} -> {id, nil, nil}
-            %GtfsStop{id: id} -> {nil, id, nil}
-            nil -> {nil, nil, "not a valid stop ID"}
+            %Stop{id: id} = stop -> {id, nil, stop, nil}
+            %GtfsStop{id: id} = stop -> {nil, id, stop, nil}
+            nil -> {nil, nil, nil, "not a valid stop ID"}
           end
 
         change =
           change
           |> change(stop_id: stop_id)
           |> change(gtfs_stop_id: gtfs_stop_id)
+          |> change(display_stop: stop)
 
         if is_nil(error) do
           change
