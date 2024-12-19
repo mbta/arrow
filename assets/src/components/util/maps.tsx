@@ -3,9 +3,9 @@ import { divIcon, LatLngBoundsExpression, LatLngTuple } from "leaflet"
 // Generates minimum and maximum coordinate pairs given a list of coordinate pairs
 const getMapBounds = (
   coords: LatLngTuple[]
-): LatLngBoundsExpression | undefined => {
+): LatLngBoundsExpression | null => {
   if (coords.length === 0) {
-    return undefined
+    return null
   }
 
   coords = coords.filter((c) => c[0] && c[1])
