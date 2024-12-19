@@ -369,11 +369,49 @@ defmodule Arrow.Shuttles do
 
   @spec get_stop_coordinates(RouteStop.t() | Stop.t() | GtfsStop.t()) ::
           {:ok, map()} | {:error, any}
+  def get_stop_coordinates(%RouteStop{display_stop: nil, display_stop_id: nil}) do
+    {:error, "Incomplete stop data, please check your input"}
+  end
+
+  def get_stop_coordinates(%RouteStop{id: nil, display_stop: nil, display_stop_id: id}) do
+    {:error, "Missing lat/lon data for stop #{id}"}
+  end
+
+  def get_stop_coordinates(%RouteStop{id: nil, display_stop: display_stop, display_stop_id: id}) do
+    if id,
+      do: get_stop_coordinates(display_stop),
+      else: {:error, "Missing id for stop"}
+  end
+
+  def get_stop_coordinates(%RouteStop{
+        display_stop: %Stop{} = display_stop,
+        display_stop_id: _display_stop_id
+      }) do
+    get_stop_coordinates(display_stop)
+  end
+
+  def get_stop_coordinates(%RouteStop{
+        display_stop: %GtfsStop{} = display_stop,
+        display_stop_id: _display_stop_id
+      }) do
+    get_stop_coordinates(display_stop)
+  end
+
   def get_stop_coordinates(%RouteStop{gtfs_stop: stop, stop: nil}) do
+    stop =
+      if Ecto.assoc_loaded?(stop),
+        do: stop,
+        else: Arrow.Repo.preload(stop, :gtfs_stop, force: true)
+
     get_stop_coordinates(stop)
   end
 
   def get_stop_coordinates(%RouteStop{gtfs_stop: nil, stop: stop}) do
+    stop =
+      if Ecto.assoc_loaded?(stop),
+        do: stop,
+        else: Arrow.Repo.preload(stop, :stop, force: true)
+
     get_stop_coordinates(stop)
   end
 
@@ -383,10 +421,6 @@ defmodule Arrow.Shuttles do
 
   def get_stop_coordinates(%Stop{stop_lat: lat, stop_lon: lon}) do
     {:ok, %{lat: lat, lon: lon}}
-  end
-
-  def get_stop_coordinates(%RouteStop{id: nil, display_stop_id: id}) do
-    {:error, "Missing lat/lon data for stop #{id}"}
   end
 
   def get_stop_coordinates(stop) do
