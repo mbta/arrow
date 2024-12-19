@@ -111,7 +111,9 @@ defmodule Arrow.Gtfs.Stop do
       )
 
     conditions =
-      if not is_nil(arrow_stop_id) do
+      if is_nil(arrow_stop_id) do
+        conditions
+      else
         dynamic([s], s.id != ^arrow_stop_id and ^conditions)
       end
 

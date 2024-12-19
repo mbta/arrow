@@ -22,4 +22,21 @@ defmodule Arrow.Gtfs.StopTest do
     [stop] = res
     assert stop.id == near_harvard_stop_id
   end
+
+  test "get_stops_within_mile/2 works when nil stop ID passed" do
+    harvard_lat = 42.3744
+    harvard_lon = -71.1182
+    near_harvard_stop_id = "near-harvard"
+
+    _stop_close_to_harvard =
+      insert(:gtfs_stop, %{id: near_harvard_stop_id, lat: 42.3741, lon: -71.1181})
+
+    _stop_stony_brook = insert(:gtfs_stop, %{id: "jp!!", lat: 42.3172, lon: -71.1043})
+
+    res = Stop.get_stops_within_mile(nil, {harvard_lat, harvard_lon})
+
+    assert length(res) == 1
+    [stop] = res
+    assert stop.id == near_harvard_stop_id
+  end
 end

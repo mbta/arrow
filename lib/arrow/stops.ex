@@ -151,7 +151,9 @@ defmodule Arrow.Stops do
       )
 
     conditions =
-      if not is_nil(stop_id) do
+      if is_nil(stop_id) do
+        conditions
+      else
         dynamic([s], s.stop_id != ^stop_id and ^conditions)
       end
 

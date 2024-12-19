@@ -202,5 +202,22 @@ defmodule Arrow.StopsTest do
       [stop] = res
       assert stop.stop_id == near_harvard_stop_id
     end
+
+    test "get_stops_within_mile/2 returns stops when nil stop_id is passed" do
+      harvard_lat = 42.3744
+      harvard_lon = -71.1182
+      near_harvard_stop_id = "near-harvard"
+
+      _stop_close_to_harvard =
+        stop_fixture(%{stop_id: near_harvard_stop_id, stop_lat: 42.3741, stop_lon: -71.1181})
+
+      _stop_stony_brook = stop_fixture(%{stop_id: "jp!!", stop_lat: 42.3172, stop_lon: -71.1043})
+
+      res = Stops.get_stops_within_mile(nil, {harvard_lat, harvard_lon})
+
+      assert length(res) == 1
+      [stop] = res
+      assert stop.stop_id == near_harvard_stop_id
+    end
   end
 end
