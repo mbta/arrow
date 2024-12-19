@@ -1382,6 +1382,13 @@ CREATE INDEX disruption_trip_short_names_disruption_id_index ON public.disruptio
 
 
 --
+-- Name: gtfs_stops_lat_lon_vehicle_type_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX gtfs_stops_lat_lon_vehicle_type_id_index ON public.gtfs_stops USING btree (lat, lon, vehicle_type, id);
+
+
+--
 -- Name: oban_jobs_args_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1442,6 +1449,13 @@ CREATE UNIQUE INDEX shuttles_shuttle_name_index ON public.shuttles USING btree (
 --
 
 CREATE UNIQUE INDEX stops_stop_id_index ON public.stops USING btree (stop_id);
+
+
+--
+-- Name: stops_stop_lat_stop_lon_stop_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX stops_stop_lat_stop_lon_stop_id_index ON public.stops USING btree (stop_lat, stop_lon, stop_id);
 
 
 --
@@ -1761,3 +1775,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20241029192033);
 INSERT INTO public."schema_migrations" (version) VALUES (20241030181351);
 INSERT INTO public."schema_migrations" (version) VALUES (20241209204043);
 INSERT INTO public."schema_migrations" (version) VALUES (20241210155455);
+INSERT INTO public."schema_migrations" (version) VALUES (20241219160941);

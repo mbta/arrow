@@ -91,9 +91,10 @@ defmodule Arrow.Gtfs.Stop do
     from(s in Arrow.Gtfs.Stop,
       where:
         s.lat <= ^lat + @latitude_degrees_per_mile and
-          s.lat >= ^lat - @latitude_degrees_per_mile and
-          s.lon <= ^lon + @longitude_degrees_per_mile and
-          s.lon >= ^lon - @latitude_degrees_per_mile
+        s.lat >= ^lat - @latitude_degrees_per_mile and
+        s.lon <= ^lon + @longitude_degrees_per_mile and
+        s.lon >= ^lon - @latitude_degrees_per_mile and
+        s.vehicle_type == :bus  
     )
     |> Repo.all()
   end
