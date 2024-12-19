@@ -148,7 +148,8 @@ defmodule Arrow.Stops do
       iex> Arrow.Stops.Stop.get_stops_within_mile(nil, {42.3774, -72.1189})
       [%Arrow.Shuttles.Stop{}, ...]
   """
-  @spec get_stops_within_mile(String.t() | nil, {float(), float()}) :: list(Arrow.Shuttles.Stop.t())
+  @spec get_stops_within_mile(String.t() | nil, {float(), float()}) ::
+          list(Arrow.Shuttles.Stop.t())
   def get_stops_within_mile(stop_id, {lat, lon}) do
     from(s in Stop,
       where:
