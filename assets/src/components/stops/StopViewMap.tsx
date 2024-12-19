@@ -10,15 +10,15 @@ const defaultCenter: LatLngExpression = [42.360718, -71.05891]
 
 interface StopViewMapProps {
   stop: Stop
-  existingShuttleStops?: Stop[]
-  existingBusStops?: GtfsStop[]
+  existingShuttleStops: Stop[]
+  existingBusStops: GtfsStop[]
 }
 
-const MapUpdater = ({ stop }: { stop?: Stop }) => {
+const MapUpdater = ({ stop }: { stop: Stop }) => {
   const map = useMap()
   useEffect(() => {
     const bounds = getMapBounds(
-      stop?.stop_lat && stop?.stop_lon ? [[stop?.stop_lat, stop?.stop_lon]] : []
+      stop.stop_lat && stop.stop_lon ? [[stop.stop_lat, stop.stop_lon]] : []
     )
 
     if (bounds) {
@@ -47,7 +47,7 @@ const StopViewMap = ({
     >
       <MapUpdater stop={stop} />
       <BaseMapLayerControl />
-      {stop?.stop_lat && stop?.stop_lon && (
+      {stop.stop_lat && stop.stop_lon && (
         <StopLayerControl
           selectedStop={stop}
           existingShuttleStops={existingShuttleStops}

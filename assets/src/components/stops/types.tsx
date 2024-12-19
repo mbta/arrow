@@ -1,8 +1,8 @@
 type Stop = {
-  stop_name: string
-  stop_desc: string
-  stop_lat: number
-  stop_lon: number
+  stop_name?: string
+  stop_desc?: string
+  stop_lat?: number
+  stop_lon?: number
   stop_id?: string
 }
 

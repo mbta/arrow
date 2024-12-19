@@ -2,7 +2,7 @@ import { GtfsStop, Stop } from "./types"
 
 import React from "react"
 import { LayerGroup, LayersControl, Marker, Popup } from "react-leaflet"
-import { generateLegend, genIcon, haversineDistanceMiles } from "../util/maps"
+import { generateLegend, genIcon } from "../util/maps"
 
 const newStopColor = "f24727"
 const existingShuttleStopColor = "414bb2"
@@ -15,16 +15,14 @@ const shuttleLayerName = generateLegend(
 const busLayerName = generateLegend(existingBusStopColor, "Existing Bus Stops")
 const selectedStopLayerName = generateLegend(newStopColor, "Selected Stop")
 
-const MAX_RADIUS_FOR_STOPS_MILES = 1
-
 const StopLayerControl = ({
   selectedStop,
   existingShuttleStops,
   existingBusStops,
 }: {
   selectedStop: Stop
-  existingShuttleStops: Stop[] | undefined
-  existingBusStops: GtfsStop[] | undefined
+  existingShuttleStops: Stop[]
+  existingBusStops: GtfsStop[]
 }) => {
   return (
     <LayersControl
@@ -32,17 +30,10 @@ const StopLayerControl = ({
       key="layer-control-stops"
       collapsed={false}
     >
-      {existingShuttleStops && existingShuttleStops.length > 0 && (
+      {existingShuttleStops.length > 0 && (
         <LayersControl.Overlay name={shuttleLayerName}>
           <LayerGroup>
             {existingShuttleStops
-              .filter(
-                (shuttleStop) =>
-                  haversineDistanceMiles(
-                    [shuttleStop.stop_lat, shuttleStop.stop_lon],
-                    [selectedStop.stop_lat, selectedStop.stop_lon]
-                  ) <= MAX_RADIUS_FOR_STOPS_MILES
-              )
               .map(
                 (s, idx) =>
                   s.stop_lat &&
@@ -62,17 +53,10 @@ const StopLayerControl = ({
           </LayerGroup>
         </LayersControl.Overlay>
       )}
-      {existingBusStops && existingBusStops.length > 0 && (
+      {existingBusStops.length > 0 && (
         <LayersControl.Overlay name={busLayerName}>
           <LayerGroup>
             {existingBusStops
-              .filter(
-                (gtfsStop) =>
-                  haversineDistanceMiles(
-                    [gtfsStop.lat, gtfsStop.lon],
-                    [selectedStop.stop_lat, selectedStop.stop_lon]
-                  ) <= MAX_RADIUS_FOR_STOPS_MILES
-              )
               .map(
                 (s, idx) =>
                   s.lat &&
@@ -89,14 +73,16 @@ const StopLayerControl = ({
           </LayerGroup>
         </LayersControl.Overlay>
       )}
-      <LayersControl.Overlay name={selectedStopLayerName} checked={true}>
-        <Marker
-          position={[selectedStop.stop_lat, selectedStop.stop_lon]}
-          icon={genIcon(newStopColor, "selected-stop")}
-        >
-          <Popup>{selectedStop.stop_name}</Popup>
-        </Marker>
-      </LayersControl.Overlay>
+      {selectedStop.stop_lat && selectedStop.stop_lon && (
+        <LayersControl.Overlay name={selectedStopLayerName} checked={true}>
+          <Marker
+            position={[selectedStop.stop_lat, selectedStop.stop_lon]}
+            icon={genIcon(newStopColor, "selected-stop")}
+          >
+            <Popup>{selectedStop.stop_name}</Popup>
+          </Marker>
+        </LayersControl.Overlay>
+      )}
       )
     </LayersControl>
   )

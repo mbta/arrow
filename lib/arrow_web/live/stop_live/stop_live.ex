@@ -119,8 +119,8 @@ defmodule ArrowWeb.StopViewLive do
       |> assign(:stop, %Stop{})
       |> assign(:title, "create shuttle stop")
       |> assign(:stop_map_props, %{})
-      |> assign(:existing_stops, nil)
-      |> assign(:existing_gtfs_stops, nil)
+      |> assign(:existing_stops, [])
+      |> assign(:existing_gtfs_stops, [])
       |> assign(:trigger_submit, false)
 
     {:ok, socket}

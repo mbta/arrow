@@ -4,7 +4,7 @@ import StopViewMap from "../../src/components/stops/StopViewMap"
 import { Stop, GtfsStop } from "../../src/components/stops/types"
 
 describe("StopViewMap", () => {
-  test("renders", () => {
+  test("renders with stop lat/lon defined", () => {
     const stop = {
       stop_lat: 42.352035,
       stop_lon: 71.0551,
@@ -46,12 +46,29 @@ describe("StopViewMap", () => {
       .querySelectorAll("input.leaflet-control-layers-selector")
       .forEach((e) => fireEvent.click(e))
 
-    // show stop that is less than 1 mile away from the selected stop
+    // validate that GTFS stop is shown 
     expect(container.querySelectorAll("#arrow-stop-1234").length > 1)
+    expect(container.querySelectorAll("#gtfs-stop-5678").length > 1)
 
-    // don't show stop that is more than 1 mile away from the selected stop
-    expect(container.querySelectorAll("#gtfs-stop-5678").length === 0).toBe(
-      true
+  })
+
+  test("renders without stop defined (necessary for new stop)", () => {
+    const stop = {
+      stop_lat: undefined,
+      stop_lon: undefined,
+      stop_name: undefined,
+      stop_desc: undefined
+    }
+    const { container } = render(
+      <StopViewMap
+        stop={stop}
+        existingBusStops={[]}
+        existingShuttleStops={[]}
+      />
     )
+    expect(container.getElementsByClassName("leaflet-map-pane").length).toBe(1)
+    expect(
+      container.getElementsByClassName("leaflet-control-container").length
+    ).toBe(1)
   })
 })
