@@ -126,49 +126,21 @@ defmodule ArrowWeb.StopViewLive do
     {:ok, socket}
   end
 
-  def degrees_to_radians(degrees) do
-    degrees * :math.pi() / 180
-  end
-
-  def haversine_distance({lat, lon}, {other_lat, other_lon}) do
-    earth_radius_miles = 3963.1
-
-    delta_lat_rads = degrees_to_radians(other_lat - lat)
-    delta_lon_rads = degrees_to_radians(other_lon - lon)
-
-    arc =
-      :math.cos(degrees_to_radians(lat)) *
-        :math.cos(degrees_to_radians(other_lat)) *
-        :math.sin(delta_lon_rads / 2) *
-        :math.sin(delta_lon_rads / 2) +
-        :math.sin(delta_lat_rads / 2) *
-          :math.sin(delta_lat_rads / 2)
-
-    line = 2 * :math.atan2(:math.sqrt(arc), :math.sqrt(1 - arc))
-
-    earth_radius_miles * line
-  end
-
   def handle_event("validate", %{"stop" => stop_params}, socket) do
     form = Stops.change_stop(socket.assigns.stop, stop_params) |> to_form(action: :validate)
 
-    %{"stop_lat" => lat, "stop_lon" => lon} = stop_params
-
-    stop_id = Map.get(stop_params, "id")
-
-    {lat, lon} =
-      try do
-        {String.to_float(lat), String.to_float(lon)}
-      rescue
-        _ -> {nil, nil}
-      end
-
     {existing_stops, existing_gtfs_stops} =
-      if is_float(lat) and is_float(lon) do
-        {Stops.get_stops_within_mile(stop_id, {lat, lon}),
-         GtfsStop.get_stops_within_mile(stop_id, {lat, lon})}
-      else
-        {nil, nil}
+      case stop_params do
+        %{"stop_lat" => lat, "stop_lon" => lon, "id" => stop_id}
+        when not is_nil(lat) and not is_nil(lon) ->
+          lat_float = String.to_float(lat)
+          lon_float = String.to_float(lon)
+
+          {Stops.get_stops_within_mile(stop_id, {lat_float, lon_float}),
+           GtfsStop.get_stops_within_mile(stop_id, {lat_float, lon_float})}
+
+        _ ->
+          {nil, nil}
       end
 
     {:noreply,
