@@ -107,7 +107,7 @@ defmodule Arrow.Stops do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_stop(%Stop{} = stop) do
+  def delete_stop(%Arrow.Shuttles.Stop{} = stop) do
     Repo.delete(stop)
   end
 
@@ -122,6 +122,47 @@ defmodule Arrow.Stops do
   """
   def change_stop(%Stop{} = stop, attrs \\ %{}) do
     Stop.changeset(stop, attrs)
+  end
+
+  @longitude_degrees_per_mile 1 / 54.6
+  @latitude_degrees_per_mile 1 / 69
+
+  @doc """
+  Get other Arrow shuttle stops within one mile of a given longitude and latitude, excluding 
+  the stop identified by `arrow_stop_id`
+
+  ## Examples
+      iex> Arrow.Stops.get_stops_within_mile("123", {42.3774, -72.1189})
+      [%Arrow.Shuttles.Stop%{}, ...]
+
+      iex> Arrow.Stops.Stop.get_stops_within_mile(nil, {42.3774, -72.1189})
+      [%Arrow.Shuttles.Stop{}, ...]
+  """
+  @spec get_stops_within_mile(String.t() | nil, {float(), float()}) ::
+          list(Arrow.Shuttles.Stop.t())
+  def get_stops_within_mile(stop_id, {lat, lon}) do
+    conditions =
+      dynamic(
+        [s],
+        s.stop_lat <= ^lat + @latitude_degrees_per_mile and
+          s.stop_lat >= ^lat - @latitude_degrees_per_mile and
+          s.stop_lon <= ^lon + @longitude_degrees_per_mile and
+          s.stop_lon >= ^lon - @latitude_degrees_per_mile
+      )
+
+    conditions =
+      if is_nil(stop_id) do
+        conditions
+      else
+        dynamic([s], s.stop_id != ^stop_id and ^conditions)
+      end
+
+    query =
+      from(s in Arrow.Shuttles.Stop,
+        where: ^conditions
+      )
+
+    Repo.all(query)
   end
 
   defp order_by("stop_id_desc"), do: [desc: :stop_id]

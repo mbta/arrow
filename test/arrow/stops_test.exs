@@ -180,5 +180,44 @@ defmodule Arrow.StopsTest do
     test "get_stop_by_stop_id/1 returns nil when stop not found" do
       assert Stops.get_stop_by_stop_id("nonexistent") == nil
     end
+
+    test "get_stops_within_mile/2 returns stops roughly within one mile of a stop" do
+      harvard_lat = 42.3744
+      harvard_lon = -71.1182
+      harvard_stop_id = "harvard-or-whatever"
+      near_harvard_stop_id = "near-harvard"
+
+      _stop_harvard =
+        stop_fixture(%{stop_id: harvard_stop_id, stop_lat: harvard_lat, stop_lon: harvard_lon})
+
+      _stop_close_to_harvard =
+        stop_fixture(%{stop_id: near_harvard_stop_id, stop_lat: 42.3741, stop_lon: -71.1181})
+
+      _stop_stony_brook = stop_fixture(%{stop_id: "jp!!", stop_lat: 42.3172, stop_lon: -71.1043})
+
+      res = Stops.get_stops_within_mile(harvard_stop_id, {harvard_lat, harvard_lon})
+
+      # only the stop near harvard should be returned
+      assert length(res) == 1
+      [stop] = res
+      assert stop.stop_id == near_harvard_stop_id
+    end
+
+    test "get_stops_within_mile/2 returns stops when nil stop_id is passed" do
+      harvard_lat = 42.3744
+      harvard_lon = -71.1182
+      near_harvard_stop_id = "near-harvard"
+
+      _stop_close_to_harvard =
+        stop_fixture(%{stop_id: near_harvard_stop_id, stop_lat: 42.3741, stop_lon: -71.1181})
+
+      _stop_stony_brook = stop_fixture(%{stop_id: "jp!!", stop_lat: 42.3172, stop_lon: -71.1043})
+
+      res = Stops.get_stops_within_mile(nil, {harvard_lat, harvard_lon})
+
+      assert length(res) == 1
+      [stop] = res
+      assert stop.stop_id == near_harvard_stop_id
+    end
   end
 end

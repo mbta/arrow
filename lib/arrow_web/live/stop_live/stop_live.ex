@@ -1,6 +1,7 @@
 defmodule ArrowWeb.StopViewLive do
   use ArrowWeb, :live_view
 
+  alias Arrow.Gtfs.Stop, as: GtfsStop
   alias Arrow.Shuttles.Stop
   alias Arrow.Stops
   embed_templates "stop_live/*"
@@ -85,6 +86,13 @@ defmodule ArrowWeb.StopViewLive do
     stop = Stops.get_stop!(id)
     form = to_form(Stops.change_stop(stop))
 
+    # get stops from arrow DB and gtfs, excluding current stop
+    existing_stops =
+      Stops.get_stops_within_mile(stop.stop_id, {stop.stop_lat, stop.stop_lon})
+
+    existing_gtfs_stops =
+      GtfsStop.get_stops_within_mile(stop.stop_id, {stop.stop_lat, stop.stop_lon})
+
     socket =
       socket
       |> assign(:form, form)
@@ -93,6 +101,8 @@ defmodule ArrowWeb.StopViewLive do
       |> assign(:stop, stop)
       |> assign(:title, "edit shuttle stop")
       |> assign(:stop_map_props, stop)
+      |> assign(:existing_stops, existing_stops)
+      |> assign(:existing_gtfs_stops, existing_gtfs_stops)
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
@@ -109,6 +119,8 @@ defmodule ArrowWeb.StopViewLive do
       |> assign(:stop, %Stop{})
       |> assign(:title, "create shuttle stop")
       |> assign(:stop_map_props, %{})
+      |> assign(:existing_stops, [])
+      |> assign(:existing_gtfs_stops, [])
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
@@ -117,9 +129,28 @@ defmodule ArrowWeb.StopViewLive do
   def handle_event("validate", %{"stop" => stop_params}, socket) do
     form = Stops.change_stop(socket.assigns.stop, stop_params) |> to_form(action: :validate)
 
+    {existing_stops, existing_gtfs_stops} =
+      case stop_params do
+        %{"stop_lat" => lat, "stop_lon" => lon, "stop_id" => stop_id}
+        when not is_nil(lat) and not is_nil(lon) ->
+          lat_float = String.to_float(lat)
+          lon_float = String.to_float(lon)
+
+          {Stops.get_stops_within_mile(stop_id, {lat_float, lon_float}),
+           GtfsStop.get_stops_within_mile(stop_id, {lat_float, lon_float})}
+
+        _ ->
+          {nil, nil}
+      end
+
     {:noreply,
      socket
-     |> assign(stop_map_props: stop_params, form: form)}
+     |> assign(
+       stop_map_props: stop_params,
+       form: form,
+       existing_stops: existing_stops,
+       existing_gtfs_stops: existing_gtfs_stops
+     )}
   end
 
   def handle_event("edit", %{"stop" => stop_params}, socket) do
