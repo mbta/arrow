@@ -129,7 +129,6 @@ defmodule ArrowWeb.StopViewLive do
   def handle_event("validate", %{"stop" => stop_params}, socket) do
     form = Stops.change_stop(socket.assigns.stop, stop_params) |> to_form(action: :validate)
 
-    IO.inspect(stop_params)
     {existing_stops, existing_gtfs_stops} =
       case stop_params do
         %{"stop_lat" => lat, "stop_lon" => lon, "stop_id" => stop_id}
