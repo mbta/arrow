@@ -87,17 +87,6 @@ defmodule Arrow.Gtfs.Stop do
 
   @longitude_degrees_per_mile 1 / 54.6
   @latitude_degrees_per_mile 1 / 69
-  def get_stops_within_mile(nil, {lat, lon}) do
-    from(s in Arrow.Gtfs.Stop,
-      where:
-        s.lat <= ^lat + @latitude_degrees_per_mile and
-          s.lat >= ^lat - @latitude_degrees_per_mile and
-          s.lon <= ^lon + @longitude_degrees_per_mile and
-          s.lon >= ^lon - @latitude_degrees_per_mile and
-          s.vehicle_type == :bus
-    )
-    |> Repo.all()
-  end
 
   @doc """
   Get GTFS stops within one mile of a given longitude and latitude, excluding 
@@ -112,15 +101,28 @@ defmodule Arrow.Gtfs.Stop do
   """
   @spec get_stops_within_mile(String.t() | nil, {float(), float()}) :: list(Arrow.Gtfs.Stop.t())
   def get_stops_within_mile(arrow_stop_id, {lat, lon}) do
-    from(s in Arrow.Gtfs.Stop,
-      where:
-        s.id != ^arrow_stop_id and
-          s.lat <= ^lat + @latitude_degrees_per_mile and
-          s.lat >= ^lat - @latitude_degrees_per_mile and
-          s.lon <= ^lon + @longitude_degrees_per_mile and
-          s.lon >= ^lon - @latitude_degrees_per_mile
-    )
-    |> Repo.all()
+    query =
+      if is_nil(arrow_stop_id) do
+        from(s in Arrow.Gtfs.Stop,
+          where:
+            s.lat <= ^lat + @latitude_degrees_per_mile and
+              s.lat >= ^lat - @latitude_degrees_per_mile and
+              s.lon <= ^lon + @longitude_degrees_per_mile and
+              s.lon >= ^lon - @latitude_degrees_per_mile and
+              s.vehicle_type == :bus
+        )
+      else
+        from(s in Arrow.Gtfs.Stop,
+          where:
+            s.id != ^arrow_stop_id and
+              s.lat <= ^lat + @latitude_degrees_per_mile and
+              s.lat >= ^lat - @latitude_degrees_per_mile and
+              s.lon <= ^lon + @longitude_degrees_per_mile and
+              s.lon >= ^lon - @latitude_degrees_per_mile
+        )
+      end
+
+    query |> Repo.all()
   end
 
   @impl Arrow.Gtfs.Importable

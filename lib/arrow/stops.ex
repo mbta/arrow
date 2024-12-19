@@ -126,16 +126,6 @@ defmodule Arrow.Stops do
 
   @longitude_degrees_per_mile 1 / 54.6
   @latitude_degrees_per_mile 1 / 69
-  def get_stops_within_mile(nil, {lat, lon}) do
-    from(s in Stop,
-      where:
-        s.stop_lat <= ^lat + @latitude_degrees_per_mile and
-          s.stop_lat >= ^lat - @latitude_degrees_per_mile and
-          s.stop_lon <= ^lon + @longitude_degrees_per_mile and
-          s.stop_lon >= ^lon - @latitude_degrees_per_mile
-    )
-    |> Repo.all()
-  end
 
   @doc """
   Get other Arrow shuttle stops within one mile of a given longitude and latitude, excluding 
@@ -151,15 +141,27 @@ defmodule Arrow.Stops do
   @spec get_stops_within_mile(String.t() | nil, {float(), float()}) ::
           list(Arrow.Shuttles.Stop.t())
   def get_stops_within_mile(stop_id, {lat, lon}) do
-    from(s in Stop,
-      where:
-        s.stop_id != ^stop_id and
-          s.stop_lat <= ^lat + @latitude_degrees_per_mile and
-          s.stop_lat >= ^lat - @latitude_degrees_per_mile and
-          s.stop_lon <= ^lon + @longitude_degrees_per_mile and
-          s.stop_lon >= ^lon - @latitude_degrees_per_mile
-    )
-    |> Repo.all()
+    query =
+      if is_nil(stop_id) do
+        from(s in Stop,
+          where:
+            s.stop_lat <= ^lat + @latitude_degrees_per_mile and
+              s.stop_lat >= ^lat - @latitude_degrees_per_mile and
+              s.stop_lon <= ^lon + @longitude_degrees_per_mile and
+              s.stop_lon >= ^lon - @latitude_degrees_per_mile
+        )
+      else
+        from(s in Stop,
+          where:
+            s.stop_id != ^stop_id and
+              s.stop_lat <= ^lat + @latitude_degrees_per_mile and
+              s.stop_lat >= ^lat - @latitude_degrees_per_mile and
+              s.stop_lon <= ^lon + @longitude_degrees_per_mile and
+              s.stop_lon >= ^lon - @latitude_degrees_per_mile
+        )
+      end
+
+    query |> Repo.all()
   end
 
   defp order_by("stop_id_desc"), do: [desc: :stop_id]
