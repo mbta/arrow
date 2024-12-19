@@ -90,16 +90,10 @@ defmodule ArrowWeb.StopViewLive do
 
     # get stops from arrow DB and gtfs, excluding current stop
     existing_stops =
-      from(s in Stop,
-        where: s.stop_id != ^stop.stop_id
-      )
-      |> Repo.all()
+      Stops.get_stops_within_mile(stop.stop_id, {stop.stop_lat, stop.stop_lon})
 
     existing_gtfs_stops =
-      from(g in GtfsStop,
-        where: g.id != ^stop.stop_id
-      )
-      |> Repo.all()
+      GtfsStop.get_stops_within_mile(stop.stop_id, {stop.stop_lat, stop.stop_lon})
 
     socket =
       socket
@@ -119,11 +113,6 @@ defmodule ArrowWeb.StopViewLive do
   def mount(_params, _session, socket) do
     form = to_form(Stops.change_stop(%Stop{}))
 
-    # eventually we should only load a limited number of stops to avoid performance issues
-    # but this should be fine while the cardinality of stops is low
-    existing_stops = Stops.list_stops()
-    existing_gtfs_stops = Repo.all(GtfsStop)
-
     socket =
       socket
       |> assign(:form, form)
@@ -132,8 +121,8 @@ defmodule ArrowWeb.StopViewLive do
       |> assign(:stop, %Stop{})
       |> assign(:title, "create shuttle stop")
       |> assign(:stop_map_props, %{})
-      |> assign(:existing_stops, existing_stops)
-      |> assign(:existing_gtfs_stops, existing_gtfs_stops)
+      |> assign(:existing_stops, nil)
+      |> assign(:existing_gtfs_stops, nil)
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
@@ -176,26 +165,12 @@ defmodule ArrowWeb.StopViewLive do
         _ -> {nil, nil}
       end
 
-    existing_stops =
-      if is_float(lat) and is_float(lon) and !is_nil(stop_id) do
-        from(s in Stop,
-          where: s.stop_id != ^stop_id
-        )
-        |> Repo.all()
-        |> Enum.filter(&haversine_distance({&1.stop_lat, &1.stop_lon}, {lat, lon})) <= 1
+    {existing_stops, existing_gtfs_stops} =
+      if is_float(lat) and is_float(lon) do
+        {Stops.get_stops_within_mile(stop_id, {lat, lon}),
+         GtfsStop.get_stops_within_mile(stop_id, {lat, lon})}
       else
-        nil
-      end
-
-    existing_gtfs_stops =
-      if is_float(lat) and is_float(lon) and !is_nil(stop_id) do
-        from(s in GtfsStop,
-          where: s.stop_id != ^stop_id
-        )
-        |> Repo.all()
-        |> Enum.filter(&haversine_distance({&1.lat, &1.lon}, {lat, lon})) <= 1
-      else
-        nil
+        {nil, nil}
       end
 
     {:noreply,

@@ -32,7 +32,7 @@ const StopLayerControl = ({
       key="layer-control-stops"
       collapsed={false}
     >
-      {existingShuttleStops && (
+      {existingShuttleStops && existingShuttleStops.length > 0 && (
         <LayersControl.Overlay name={shuttleLayerName}>
           <LayerGroup>
             {existingShuttleStops
@@ -62,7 +62,7 @@ const StopLayerControl = ({
           </LayerGroup>
         </LayersControl.Overlay>
       )}
-      {existingBusStops && (
+      {existingBusStops && existingBusStops.length > 0 && (
         <LayersControl.Overlay name={busLayerName}>
           <LayerGroup>
             {existingBusStops

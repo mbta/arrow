@@ -7,6 +7,8 @@ defmodule Arrow.Gtfs.Stop do
   """
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
+  import Ecto.Query
+  alias Arrow.Repo
 
   @derive {Jason.Encoder, only: [:name, :desc, :lat, :lon, :id]}
 
@@ -81,6 +83,43 @@ defmodule Arrow.Gtfs.Stop do
     |> validate_required(~w[id name location_type wheelchair_boarding]a)
     |> assoc_constraint(:level)
     |> assoc_constraint(:parent_station)
+  end
+
+  @longitude_degrees_per_mile 1 / 54.6
+  @latitude_degrees_per_mile 1 / 69
+  def get_stops_within_mile(nil, {lat, lon}) do
+    from(s in Arrow.Gtfs.Stop,
+      where:
+        s.lat <= ^lat + @latitude_degrees_per_mile and
+          s.lat >= ^lat - @latitude_degrees_per_mile and
+          s.lon <= ^lon + @longitude_degrees_per_mile and
+          s.lon >= ^lon - @latitude_degrees_per_mile
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Get GTFS stops within one mile of a given longitude and latitude, excluding 
+  the stops that duplicate an arrow stop identified by `arrow_stop_id` 
+
+  ## Examples
+      iex> Arrow.Gtfs.Stop.get_stops_within_mile("123", {42.3774, -72.1189})
+      [%Arrow.Gtfs.Stop, ...]
+
+      iex> Arrow.Gtfs.Stop.get_stops_within_mile(nil, {42.3774, -72.1189})
+      [%Arrow.Gtfs.Stop, ...]
+  """
+  @spec get_stops_within_mile(String.t() | nil, {float(), float()}) :: list(Arrow.Gtfs.Stop.t())
+  def get_stops_within_mile(arrow_stop_id, {lat, lon}) do
+    from(s in Arrow.Gtfs.Stop,
+      where:
+        s.id != ^arrow_stop_id and
+          s.lat <= ^lat + @latitude_degrees_per_mile and
+          s.lat >= ^lat - @latitude_degrees_per_mile and
+          s.lon <= ^lon + @longitude_degrees_per_mile and
+          s.lon >= ^lon - @latitude_degrees_per_mile
+    )
+    |> Repo.all()
   end
 
   @impl Arrow.Gtfs.Importable
