@@ -76,7 +76,7 @@ defmodule Arrow.Factory do
     }
   end
 
-  def gtfs_stop_factory do
+  def gtfs_stop_factory(attrs \\ %{}) do
     %Arrow.Gtfs.Stop{
       id: sequence(:source_label, &"gtfs-stop-#{&1}"),
       code: nil,
@@ -98,5 +98,6 @@ defmodule Arrow.Factory do
       at_street: nil,
       vehicle_type: :bus
     }
+    |> merge_attributes(attrs)
   end
 end
