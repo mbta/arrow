@@ -107,7 +107,8 @@ defmodule Arrow.Gtfs.Stop do
         s.lat <= ^lat + @latitude_degrees_per_mile and
           s.lat >= ^lat - @latitude_degrees_per_mile and
           s.lon <= ^lon + @longitude_degrees_per_mile and
-          s.lon >= ^lon - @latitude_degrees_per_mile
+          s.lon >= ^lon - @latitude_degrees_per_mile and
+          s.vehicle_type == :bus
       )
 
     conditions =
