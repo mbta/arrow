@@ -59,7 +59,12 @@ if config_env() == :prod do
       capture_log_messages: true
   end
 
-  config :arrow, ArrowWeb.Endpoint, secret_key_base: System.fetch_env!("SECRET_KEY_BASE")
+  config :arrow, ArrowWeb.Endpoint,
+    secret_key_base: System.fetch_env!("SECRET_KEY_BASE"),
+    check_origin: [
+      "https://*.mbta.com",
+      "https://*.mbtace.com"
+    ]
 
   pool_size =
     case System.get_env("DATABASE_POOL_SIZE") do

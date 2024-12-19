@@ -11,7 +11,7 @@ const BaseMapLayerControl = () => {
       <LayersControl.BaseLayer name="Map" checked={true}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://mbta-map-tiles.s3.amazonaws.com/skate_osm_tiles/{z}/{x}/{y}.png"
+          url="https://cdn.mbta.com/osm_tiles/{z}/{x}/{y}.png"
         />
       </LayersControl.BaseLayer>
       <LayersControl.BaseLayer name="Satellite">

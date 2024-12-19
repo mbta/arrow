@@ -1,6 +1,7 @@
 defmodule ArrowWeb.StopViewLive do
   use ArrowWeb, :live_view
 
+  alias Arrow.Gtfs.Stop, as: GtfsStop
   alias Arrow.Shuttles.Stop
   alias Arrow.Stops
   embed_templates "stop_live/*"
@@ -85,6 +86,13 @@ defmodule ArrowWeb.StopViewLive do
     stop = Stops.get_stop!(id)
     form = to_form(Stops.change_stop(stop))
 
+    # get stops from arrow DB and gtfs, excluding current stop
+    existing_stops =
+      Stops.get_stops_within_mile(stop.stop_id, {stop.stop_lat, stop.stop_lon})
+
+    existing_gtfs_stops =
+      GtfsStop.get_stops_within_mile(stop.stop_id, {stop.stop_lat, stop.stop_lon})
+
     socket =
       socket
       |> assign(:form, form)
@@ -93,6 +101,8 @@ defmodule ArrowWeb.StopViewLive do
       |> assign(:stop, stop)
       |> assign(:title, "edit shuttle stop")
       |> assign(:stop_map_props, stop)
+      |> assign(:existing_stops, existing_stops)
+      |> assign(:existing_gtfs_stops, existing_gtfs_stops)
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
@@ -109,17 +119,66 @@ defmodule ArrowWeb.StopViewLive do
       |> assign(:stop, %Stop{})
       |> assign(:title, "create shuttle stop")
       |> assign(:stop_map_props, %{})
+      |> assign(:existing_stops, nil)
+      |> assign(:existing_gtfs_stops, nil)
       |> assign(:trigger_submit, false)
 
     {:ok, socket}
   end
 
+  def degrees_to_radians(degrees) do
+    degrees * :math.pi() / 180
+  end
+
+  def haversine_distance({lat, lon}, {other_lat, other_lon}) do
+    earth_radius_miles = 3963.1
+
+    delta_lat_rads = degrees_to_radians(other_lat - lat)
+    delta_lon_rads = degrees_to_radians(other_lon - lon)
+
+    arc =
+      :math.cos(degrees_to_radians(lat)) *
+        :math.cos(degrees_to_radians(other_lat)) *
+        :math.sin(delta_lon_rads / 2) *
+        :math.sin(delta_lon_rads / 2) +
+        :math.sin(delta_lat_rads / 2) *
+          :math.sin(delta_lat_rads / 2)
+
+    line = 2 * :math.atan2(:math.sqrt(arc), :math.sqrt(1 - arc))
+
+    earth_radius_miles * line
+  end
+
   def handle_event("validate", %{"stop" => stop_params}, socket) do
     form = Stops.change_stop(socket.assigns.stop, stop_params) |> to_form(action: :validate)
 
+    %{"stop_lat" => lat, "stop_lon" => lon} = stop_params
+
+    stop_id = Map.get(stop_params, "id")
+
+    {lat, lon} =
+      try do
+        {String.to_float(lat), String.to_float(lon)}
+      rescue
+        _ -> {nil, nil}
+      end
+
+    {existing_stops, existing_gtfs_stops} =
+      if is_float(lat) and is_float(lon) do
+        {Stops.get_stops_within_mile(stop_id, {lat, lon}),
+         GtfsStop.get_stops_within_mile(stop_id, {lat, lon})}
+      else
+        {nil, nil}
+      end
+
     {:noreply,
      socket
-     |> assign(stop_map_props: stop_params, form: form)}
+     |> assign(
+       stop_map_props: stop_params,
+       form: form,
+       existing_stops: existing_stops,
+       existing_gtfs_stops: existing_gtfs_stops
+     )}
   end
 
   def handle_event("edit", %{"stop" => stop_params}, socket) do
