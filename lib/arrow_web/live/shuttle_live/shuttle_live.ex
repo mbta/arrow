@@ -245,9 +245,10 @@ defmodule ArrowWeb.ShuttleViewLive do
 
   defp render_route_stop(%RouteStop{stop_id: stop_id} = route_stop) when not is_nil(stop_id) do
     route_stop =
-      if !Ecto.assoc_loaded?(route_stop.stop) or route_stop.stop.id != stop_id,
-        do: Arrow.Repo.preload(route_stop, :stop, force: true),
-        else: route_stop
+      if !Ecto.assoc_loaded?(route_stop.stop) or
+           (route_stop.stop && route_stop.stop.id != stop_id),
+         do: Arrow.Repo.preload(route_stop, :stop, force: true),
+         else: route_stop
 
     if route_stop.stop do
       %{
@@ -264,9 +265,10 @@ defmodule ArrowWeb.ShuttleViewLive do
   defp render_route_stop(%RouteStop{gtfs_stop_id: gtfs_stop_id} = route_stop)
        when not is_nil(gtfs_stop_id) do
     route_stop =
-      if !Ecto.assoc_loaded?(route_stop.gtfs_stop) or route_stop.gtfs_stop.id != gtfs_stop_id,
-        do: Arrow.Repo.preload(route_stop, :gtfs_stop, force: true),
-        else: route_stop
+      if !Ecto.assoc_loaded?(route_stop.gtfs_stop) or
+           (route_stop.gtfs_stop && route_stop.gtfs_stop.id != gtfs_stop_id),
+         do: Arrow.Repo.preload(route_stop, :gtfs_stop, force: true),
+         else: route_stop
 
     if route_stop.gtfs_stop do
       %{
