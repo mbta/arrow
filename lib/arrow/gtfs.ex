@@ -4,7 +4,6 @@ defmodule Arrow.Gtfs do
   """
 
   require Logger
-  import Ecto.Query
   alias Arrow.Gtfs.Importable
   alias Arrow.Gtfs.JobHelper
   alias Arrow.Repo

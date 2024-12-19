@@ -2,10 +2,8 @@ defmodule ArrowWeb.StopViewLive do
   use ArrowWeb, :live_view
 
   alias Arrow.Gtfs.Stop, as: GtfsStop
-  alias Arrow.Repo
   alias Arrow.Shuttles.Stop
   alias Arrow.Stops
-  import Ecto.Query
   embed_templates "stop_live/*"
 
   @doc """
