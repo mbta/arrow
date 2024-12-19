@@ -101,28 +101,26 @@ defmodule Arrow.Gtfs.Stop do
   """
   @spec get_stops_within_mile(String.t() | nil, {float(), float()}) :: list(Arrow.Gtfs.Stop.t())
   def get_stops_within_mile(arrow_stop_id, {lat, lon}) do
-    query =
-      if is_nil(arrow_stop_id) do
-        from(s in Arrow.Gtfs.Stop,
-          where:
-            s.lat <= ^lat + @latitude_degrees_per_mile and
-              s.lat >= ^lat - @latitude_degrees_per_mile and
-              s.lon <= ^lon + @longitude_degrees_per_mile and
-              s.lon >= ^lon - @latitude_degrees_per_mile and
-              s.vehicle_type == :bus
-        )
-      else
-        from(s in Arrow.Gtfs.Stop,
-          where:
-            s.id != ^arrow_stop_id and
-              s.lat <= ^lat + @latitude_degrees_per_mile and
-              s.lat >= ^lat - @latitude_degrees_per_mile and
-              s.lon <= ^lon + @longitude_degrees_per_mile and
-              s.lon >= ^lon - @latitude_degrees_per_mile
-        )
+    conditions =
+      dynamic(
+        [s],
+        s.lat <= ^lat + @latitude_degrees_per_mile and
+          s.lat >= ^lat - @latitude_degrees_per_mile and
+          s.lon <= ^lon + @longitude_degrees_per_mile and
+          s.lon >= ^lon - @latitude_degrees_per_mile
+      )
+
+    conditions =
+      if not is_nil(arrow_stop_id) do
+        dynamic([s], s.id != ^arrow_stop_id and ^conditions)
       end
 
-    query |> Repo.all()
+    query =
+      from(s in Arrow.Gtfs.Stop,
+        where: ^conditions
+      )
+
+    Repo.all(query)
   end
 
   @impl Arrow.Gtfs.Importable

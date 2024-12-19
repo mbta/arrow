@@ -46,10 +46,9 @@ describe("StopViewMap", () => {
       .querySelectorAll("input.leaflet-control-layers-selector")
       .forEach((e) => fireEvent.click(e))
 
-    // validate that GTFS stop is shown 
+    // validate that GTFS stop is shown
     expect(container.querySelectorAll("#arrow-stop-1234").length > 1)
     expect(container.querySelectorAll("#gtfs-stop-5678").length > 1)
-
   })
 
   test("renders without stop defined (necessary for new stop)", () => {
@@ -57,7 +56,7 @@ describe("StopViewMap", () => {
       stop_lat: undefined,
       stop_lon: undefined,
       stop_name: undefined,
-      stop_desc: undefined
+      stop_desc: undefined,
     }
     const { container } = render(
       <StopViewMap

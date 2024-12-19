@@ -141,27 +141,26 @@ defmodule Arrow.Stops do
   @spec get_stops_within_mile(String.t() | nil, {float(), float()}) ::
           list(Arrow.Shuttles.Stop.t())
   def get_stops_within_mile(stop_id, {lat, lon}) do
-    query =
-      if is_nil(stop_id) do
-        from(s in Stop,
-          where:
-            s.stop_lat <= ^lat + @latitude_degrees_per_mile and
-              s.stop_lat >= ^lat - @latitude_degrees_per_mile and
-              s.stop_lon <= ^lon + @longitude_degrees_per_mile and
-              s.stop_lon >= ^lon - @latitude_degrees_per_mile
-        )
-      else
-        from(s in Stop,
-          where:
-            s.stop_id != ^stop_id and
-              s.stop_lat <= ^lat + @latitude_degrees_per_mile and
-              s.stop_lat >= ^lat - @latitude_degrees_per_mile and
-              s.stop_lon <= ^lon + @longitude_degrees_per_mile and
-              s.stop_lon >= ^lon - @latitude_degrees_per_mile
-        )
+    conditions =
+      dynamic(
+        [s],
+        s.stop_lat <= ^lat + @latitude_degrees_per_mile and
+          s.stop_lat >= ^lat - @latitude_degrees_per_mile and
+          s.stop_lon <= ^lon + @longitude_degrees_per_mile and
+          s.stop_lon >= ^lon - @latitude_degrees_per_mile
+      )
+
+    conditions =
+      if not is_nil(stop_id) do
+        dynamic([s], s.stop_id != ^stop_id and ^conditions)
       end
 
-    query |> Repo.all()
+    query =
+      from(s in Arrow.Shuttles.Stop,
+        where: ^conditions
+      )
+
+    Repo.all(query)
   end
 
   defp order_by("stop_id_desc"), do: [desc: :stop_id]

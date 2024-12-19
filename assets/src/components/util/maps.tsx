@@ -55,8 +55,4 @@ const generateMapPin = (color: string, stopId: string) => {
 const generateLegend = (color: string, name: string) =>
   `<div class="legend-square" style="background-color: #${color}"></div> ${name}`
 
-export {
-  generateMapPin as genIcon,
-  getMapBounds,
-  generateLegend,
-}
+export { generateMapPin as genIcon, getMapBounds, generateLegend }
