@@ -29,6 +29,8 @@ defmodule ArrowWeb.AuthController do
         auth.extra.raw_info.claims["iat"]
       )
 
+    Logger.info("#{username} has claims: #{IO.inspect(auth.extra.raw_info.claims)}")
+
     roles = auth.extra.raw_info.userinfo["roles"] || []
 
     logout_url =
