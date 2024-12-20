@@ -213,11 +213,11 @@ defmodule ArrowWeb.ShuttleViewLive do
             Retrieve Estimates
           </button>
           <aside
-            :if={@errors[:route_stops][input_value(f_route, :direction_id)]}
+            :if={@errors[:route_stops][to_string(input_value(f_route, :direction_id))]}
             class="mt-2 text-sm alert alert-danger"
             role="alert"
           >
-            <%= @errors[:route_stops][input_value(f_route, :direction_id)] %>
+            <%= @errors[:route_stops][to_string(input_value(f_route, :direction_id))] %>
           </aside>
         </div>
       </div>
@@ -245,9 +245,10 @@ defmodule ArrowWeb.ShuttleViewLive do
 
   defp render_route_stop(%RouteStop{stop_id: stop_id} = route_stop) when not is_nil(stop_id) do
     route_stop =
-      if !Ecto.assoc_loaded?(route_stop.stop) or route_stop.stop.id != stop_id,
-        do: Arrow.Repo.preload(route_stop, :stop, force: true),
-        else: route_stop
+      if !Ecto.assoc_loaded?(route_stop.stop) or
+           (route_stop.stop && route_stop.stop.id != stop_id),
+         do: Arrow.Repo.preload(route_stop, :stop, force: true),
+         else: route_stop
 
     if route_stop.stop do
       %{
@@ -264,9 +265,10 @@ defmodule ArrowWeb.ShuttleViewLive do
   defp render_route_stop(%RouteStop{gtfs_stop_id: gtfs_stop_id} = route_stop)
        when not is_nil(gtfs_stop_id) do
     route_stop =
-      if !Ecto.assoc_loaded?(route_stop.gtfs_stop) or route_stop.gtfs_stop.id != gtfs_stop_id,
-        do: Arrow.Repo.preload(route_stop, :gtfs_stop, force: true),
-        else: route_stop
+      if !Ecto.assoc_loaded?(route_stop.gtfs_stop) or
+           (route_stop.gtfs_stop && route_stop.gtfs_stop.id != gtfs_stop_id),
+         do: Arrow.Repo.preload(route_stop, :gtfs_stop, force: true),
+         else: route_stop
 
     if route_stop.gtfs_stop do
       %{
@@ -482,8 +484,8 @@ defmodule ArrowWeb.ShuttleViewLive do
     {:noreply, socket}
   end
 
-  def handle_event("get_time_to_next_stop", %{"value" => direction_id}, socket) do
-    direction_id = String.to_existing_atom(direction_id)
+  def handle_event("get_time_to_next_stop", %{"value" => direction_id_string}, socket) do
+    direction_id = String.to_existing_atom(direction_id_string)
 
     changeset = socket.assigns.form.source
 
@@ -511,15 +513,17 @@ defmodule ArrowWeb.ShuttleViewLive do
 
         {:noreply,
          socket
+         |> update(:errors, fn errors ->
+           put_in(errors, [:route_stops, Access.key(direction_id_string)], nil)
+         end)
          |> assign(:form, to_form(changeset))}
 
       {:error, error} ->
-        socket =
-          update(socket, :errors, fn errors ->
-            put_in(errors, [:route_stops, Access.key(direction_id, [])], error)
-          end)
-
-        {:noreply, socket}
+        {:noreply,
+         socket
+         |> update(:errors, fn errors ->
+           put_in(errors, [:route_stops, Access.key(direction_id_string)], error)
+         end)}
     end
   end
 
@@ -574,9 +578,13 @@ defmodule ArrowWeb.ShuttleViewLive do
   @spec get_stop_travel_times(list({:ok, any()})) ::
           {:ok, list(number())} | {:error, any()}
   defp get_stop_travel_times(stop_coordinates) do
-    stop_coordinates
-    |> Enum.map(fn {:ok, c} -> c end)
-    |> Shuttles.get_travel_times()
+    stop_coordinates = stop_coordinates |> Enum.map(fn {:ok, c} -> c end)
+
+    if length(stop_coordinates) > 1 do
+      stop_coordinates |> Shuttles.get_travel_times()
+    else
+      {:error, "Incomplete stop data, please provide more than one stop"}
+    end
   end
 
   defp update_route_changeset_with_stop_time_estimates(route_changeset) do
@@ -607,6 +615,7 @@ defmodule ArrowWeb.ShuttleViewLive do
         coordinate_errors =
           stop_coordinates
           |> Enum.filter(&match?({:error, _}, &1))
+          |> Enum.uniq()
           |> Enum.map_join(", ", fn {:error, msg} -> "#{msg}" end)
 
         {:error, coordinate_errors}
