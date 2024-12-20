@@ -6,7 +6,7 @@
   </div>
 
   <%= form_tag(Controller.current_path(@conn), method: "get", class: "col-3") do %>
-    <%= hidden_inputs_for_search(@filters) %>
+    {hidden_inputs_for_search(@filters)}
 
     <div class="input-group">
       <input
@@ -19,11 +19,11 @@
 
       <%= if @filters.search do %>
         <div class="input-group-append">
-          <%= link("✖",
+          {link("✖",
             class: "btn btn-outline-secondary",
             title: "clear search",
             to: update_filters_path(@conn, %{@filters | search: nil})
-          ) %>
+          )}
         </div>
       <% end %>
 
@@ -41,41 +41,41 @@
         <% show_as_active? = MapSet.size(@filters.kinds) == 0 or kind in @filters.kinds %>
         <% active_class = if(show_as_active?, do: "active", else: "") %>
 
-        <%= link(
+        {link(
           adjustment_kind_icon(@conn, kind, "lg"),
           class: "d-flex mr-1 m-disruption-index__route_filter #{active_class}",
           "aria-label": kind |> to_string() |> String.replace("_", " "),
           to: update_filters_path(@conn, Filters.toggle_kind(@filters, kind))
-        ) %>
+        )}
       <% end %>
 
       <%= if not Filters.calendar?(@filters) do %>
-        <%= link("include past",
+        {link("include past",
           class:
             "mx-2 btn btn-outline-secondary" <>
               if(@filters.view.include_past?, do: " active", else: ""),
           to: update_view_path(@conn, @filters, :include_past?, !@filters.view.include_past?)
-        ) %>
+        )}
       <% end %>
 
-      <%= link("approved",
+      {link("approved",
         class:
           "mx-2 btn btn-outline-secondary" <>
             if(@filters.only_approved?, do: " active", else: ""),
         to: update_filters_path(@conn, Filters.toggle_only_approved(@filters))
-      ) %>
+      )}
 
       <%= if Filters.resettable?(@filters) do %>
-        <%= link("reset filters",
+        {link("reset filters",
           class: "btn btn-link",
           to: update_filters_path(@conn, Filters.reset(@filters))
-        ) %>
+        )}
       <% end %>
 
-      <%= link("⬒ #{if(Filters.calendar?(@filters), do: "list", else: "calendar")} view",
+      {link("⬒ #{if(Filters.calendar?(@filters), do: "list", else: "calendar")} view",
         class: "ml-auto btn btn-outline-secondary",
         to: update_filters_path(@conn, Filters.toggle_view(@filters))
-      ) %>
+      )}
     </div>
   </div>
 </div>
@@ -84,7 +84,7 @@
   <div class="col">
     <%= if Filters.calendar?(@filters) do %>
       <div class="my-3">
-        <%= react_component("Components.DisruptionCalendar", DCalendar.props(@disruptions)) %>
+        {react_component("Components.DisruptionCalendar", DCalendar.props(@disruptions))}
       </div>
     <% else %>
       <._table conn={@conn} disruptions={@disruptions} filters={@filters} />

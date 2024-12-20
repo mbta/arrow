@@ -8,8 +8,8 @@
 </.header>
 
 <.table id="shapes" rows={@shapes} row_click={&JS.navigate(~p"/shapes/#{&1}")}>
-  <:col :let={shape} label="Name"><%= shape.name %></:col>
-  <:col :let={shape} label="File"><%= shape.path %></:col>
+  <:col :let={shape} label="Name">{shape.name}</:col>
+  <:col :let={shape} label="File">{shape.path}</:col>
   <:action :let={shape}>
     <.link navigate={~p"/shapes/#{shape}"}>Show</.link>
   </:action>
