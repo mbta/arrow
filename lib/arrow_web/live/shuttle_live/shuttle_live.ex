@@ -77,11 +77,11 @@ defmodule ArrowWeb.ShuttleViewLive do
           </.link_button>
         </div>
       </div>
-      <%= live_react_component("Components.ShapeStopViewMap", @map_props, id: "shuttle-view-map") %>
+      {live_react_component("Components.ShapeStopViewMap", @map_props, id: "shuttle-view-map")}
       <hr />
       <h2>define route</h2>
       <.inputs_for :let={f_route} field={f[:routes]}>
-        <h4>direction <%= input_value(f_route, :direction_id) %></h4>
+        <h4>direction {input_value(f_route, :direction_id)}</h4>
         <div class="row">
           <div class="hidden">
             <.input field={f_route[:direction_id]} type="text" label="Direction id" />
@@ -141,7 +141,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   defp shuttle_form_stops_section(assigns) do
     ~H"""
     <.inputs_for :let={f_route} field={@f[:routes]} as={:routes_with_stops}>
-      <h4>direction <%= input_value(f_route, :direction_id) %></h4>
+      <h4>direction {input_value(f_route, :direction_id)}</h4>
       <div
         id={"stops-dir-#{input_value(f_route, :direction_id)}"}
         phx-hook="sortable"
@@ -217,7 +217,7 @@ defmodule ArrowWeb.ShuttleViewLive do
             class="mt-2 text-sm alert alert-danger"
             role="alert"
           >
-            <%= @errors[:route_stops][input_value(f_route, :direction_id)] %>
+            {@errors[:route_stops][input_value(f_route, :direction_id)]}
           </aside>
         </div>
       </div>

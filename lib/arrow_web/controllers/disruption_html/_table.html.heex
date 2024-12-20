@@ -3,11 +3,11 @@
     <tr>
       <th>title</th>
       <th>description</th>
-      <th><%= sort_link(@conn, @filters, :start_date, "date range") %></th>
+      <th>{sort_link(@conn, @filters, :start_date, "date range")}</th>
       <th>except</th>
       <th>time period</th>
       <th>status</th>
-      <th><%= sort_link(@conn, @filters, :id, "ID") %></th>
+      <th>{sort_link(@conn, @filters, :id, "ID")}</th>
     </tr>
   </thead>
 
@@ -15,21 +15,21 @@
     <%= for %{revisions: [revision]} = disruption <- @disruptions do %>
       <tr class={if not revision.row_approved, do: "bg-light-pink"}>
         <td>
-          <%= revision.title %>
+          {revision.title}
         </td>
         <td>
           <._description conn={@conn} revision={revision} />
         </td>
         <td>
-          <div><%= format_date(revision.start_date, "(no start date)") %></div>
-          <div><%= format_date(revision.end_date, "(no end date)") %></div>
+          <div>{format_date(revision.start_date, "(no start date)")}</div>
+          <div>{format_date(revision.end_date, "(no end date)")}</div>
         </td>
         <td>
-          <%= length(revision.exceptions) %>
+          {length(revision.exceptions)}
         </td>
         <td>
           <%= for desc <- DaysOfWeek.summarize(revision.days_of_week), part <- desc do %>
-            <%= part %><br />
+            {part}<br />
           <% end %>
         </td>
         <td>
@@ -44,7 +44,7 @@
           <% end %>
         </td>
         <td>
-          <%= link(disruption.id, to: Routes.disruption_path(@conn, :show, disruption.id)) %>
+          {link(disruption.id, to: Routes.disruption_path(@conn, :show, disruption.id))}
         </td>
       </tr>
     <% end %>

@@ -12,10 +12,10 @@
     <link rel="manifest" href="/icons/site.webmanifest" />
 
     <title>Arrow</title>
-    <%= tag(:link, rel: "stylesheet", href: ~p"/assets/app.css") %>
+    {tag(:link, rel: "stylesheet", href: ~p"/assets/app.css")}
   </head>
 
   <body class="d-flex flex-column h-100">
-    <%= @inner_content %>
+    {@inner_content}
   </body>
 </html>

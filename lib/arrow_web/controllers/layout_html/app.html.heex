@@ -2,9 +2,9 @@
 
 <main class="container">
   <._flash flash={@flash} />
-  <%= @inner_content %>
+  {@inner_content}
 </main>
 
 <._footer />
 
-<%= content_tag(:script, "", type: "text/javascript", src: ~p"/assets/app.js") %>
+{content_tag(:script, "", type: "text/javascript", src: ~p"/assets/app.js")}

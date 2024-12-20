@@ -8,46 +8,46 @@
 </.header>
 
 <.table id="stops" rows={@stops} row_click={&JS.navigate(~p"/stops/#{&1}/edit")}>
-  <:col :let={stop} label="Stop" link={sort_link(@order_by, "stop_id")}><%= stop.stop_id %></:col>
+  <:col :let={stop} label="Stop" link={sort_link(@order_by, "stop_id")}>{stop.stop_id}</:col>
   <:col :let={stop} label="Stop name" link={sort_link(@order_by, "stop_name")}>
-    <%= stop.stop_name %>
+    {stop.stop_name}
   </:col>
   <:col :let={stop} label="Stop desc" link={sort_link(@order_by, "stop_desc")}>
-    <%= stop.stop_desc %>
+    {stop.stop_desc}
   </:col>
   <:col :let={stop} label="Platform code" link={sort_link(@order_by, "platform_code")}>
-    <%= stop.platform_code %>
+    {stop.platform_code}
   </:col>
   <:col :let={stop} label="Platform name" link={sort_link(@order_by, "platform_name")}>
-    <%= stop.platform_name %>
+    {stop.platform_name}
   </:col>
   <:col :let={stop} label="Stop lat" link={sort_link(@order_by, "stop_lat")}>
-    <%= stop.stop_lat %>
+    {stop.stop_lat}
   </:col>
   <:col :let={stop} label="Stop long" link={sort_link(@order_by, "stop_lon")}>
-    <%= stop.stop_lon %>
+    {stop.stop_lon}
   </:col>
   <:col :let={stop} label="Stop address" link={sort_link(@order_by, "stop_address")}>
-    <%= stop.stop_address %>
+    {stop.stop_address}
   </:col>
-  <:col :let={stop} label="Zone" link={sort_link(@order_by, "zone_id")}><%= stop.zone_id %></:col>
+  <:col :let={stop} label="Zone" link={sort_link(@order_by, "zone_id")}>{stop.zone_id}</:col>
   <:col :let={stop} label="Level" link={sort_link(@order_by, "level_id")}>
-    <%= stop.level_id %>
+    {stop.level_id}
   </:col>
   <:col :let={stop} label="Parent station" link={sort_link(@order_by, "parent_station")}>
-    <%= stop.parent_station %>
+    {stop.parent_station}
   </:col>
   <:col :let={stop} label="Municipality" link={sort_link(@order_by, "municipality")}>
-    <%= stop.municipality %>
+    {stop.municipality}
   </:col>
   <:col :let={stop} label="On street" link={sort_link(@order_by, "on_street")}>
-    <%= stop.on_street %>
+    {stop.on_street}
   </:col>
   <:col :let={stop} label="At street" link={sort_link(@order_by, "at_street")}>
-    <%= stop.at_street %>
+    {stop.at_street}
   </:col>
   <:col :let={stop} label="Last updated" link={sort_link(@order_by, "updated_at")}>
-    <%= format_timestamp(stop.updated_at) %>
+    {format_timestamp(stop.updated_at)}
   </:col>
   <:action :let={stop}>
     <.link navigate={~p"/stops/#{stop}/edit"}>Edit</.link>
