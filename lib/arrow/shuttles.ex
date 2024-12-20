@@ -463,4 +463,34 @@ defmodule Arrow.Shuttles do
       stop -> stop
     end
   end
+
+  @spec stops_or_gtfs_stops_by_search_string(String.t()) :: [Stop.t() | GtfsStop.t()]
+  def stops_or_gtfs_stops_by_search_string(string) do
+    # See https://github.blog/engineering/like-injection/
+    sanitized_string = Regex.replace(~r/([\%_])/, string, fn _, x -> "\\#{x}" end) <> "%"
+
+    stops_query =
+      from(s in Stop,
+        where:
+          ilike(s.stop_id, ^sanitized_string) or ilike(s.stop_desc, ^sanitized_string) or
+            ilike(s.stop_name, ^sanitized_string)
+      )
+
+    gtfs_stops_query =
+      from(g in GtfsStop,
+        where:
+          g.vehicle_type == :bus and g.location_type == :stop_platform and
+            (ilike(g.id, ^sanitized_string) or ilike(g.desc, ^sanitized_string) or
+               ilike(g.name, ^sanitized_string))
+      )
+
+    matching_stops = Repo.all(stops_query)
+
+    arrow_stop_ids = matching_stops |> Enum.map(& &1.stop_id) |> MapSet.new()
+
+    matching_gtfs_stops =
+      gtfs_stops_query |> Repo.all() |> Enum.filter(&(!MapSet.member?(arrow_stop_ids, &1.id)))
+
+    Enum.concat(matching_stops, matching_gtfs_stops)
+  end
 end
