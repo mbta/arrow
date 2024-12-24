@@ -94,8 +94,8 @@ defmodule ArrowWeb.ShuttleViewLive do
               field={f_route[:shape_id]}
               label="Shape"
               placeholder="Choose a shape"
-              options={options_mapper(@shapes)}
-              value_mapper={&value_mapper/1}
+              options={shape_options_mapper(@shapes)}
+              value_mapper={&shape_value_mapper/1}
               allow_clear={true}
             />
           </div>
@@ -318,19 +318,19 @@ defmodule ArrowWeb.ShuttleViewLive do
     routes_to_layers(routes, %{layers: []})
   end
 
-  defp options_mapper(shapes) do
-    Enum.map(shapes, &option_mapper/1)
+  defp shape_options_mapper(shapes) do
+    Enum.map(shapes, &shape_option_mapper/1)
   end
 
-  def option_mapper(%{name: name, id: id}) do
-    {name, value_mapper(id)}
+  def shape_option_mapper(%{name: name, id: id}) do
+    {name, shape_value_mapper(id)}
   end
 
-  def value_mapper(id) when is_integer(id) do
+  def shape_value_mapper(id) when is_integer(id) do
     Integer.to_string(id)
   end
 
-  def value_mapper(id) do
+  def shape_value_mapper(id) do
     id
   end
 
@@ -431,7 +431,7 @@ defmodule ArrowWeb.ShuttleViewLive do
     shapes =
       Shuttles.list_shapes()
       |> Enum.filter(&(String.downcase(&1.name) |> String.contains?(String.downcase(text))))
-      |> Enum.map(&option_mapper/1)
+      |> Enum.map(&shape_option_mapper/1)
 
     send_update(LiveSelect.Component, id: live_select_id, options: shapes)
 
