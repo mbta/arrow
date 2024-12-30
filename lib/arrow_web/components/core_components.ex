@@ -458,7 +458,7 @@ defmodule ArrowWeb.CoreComponents do
   LiveSelect-based input for stop ID with autocomplete
   """
 
-  attr :id, :string, required: true
+  attr :id, :string
 
   attr :field, :any,
     required: true,
@@ -468,6 +468,11 @@ defmodule ArrowWeb.CoreComponents do
   attr :class, :string, default: nil
 
   def stop_input(assigns) do
+    assigns =
+      assign_new(assigns, :id, fn %{field: field} ->
+        "#{field.form.name}_#{field.name}_stop_input_component"
+      end)
+
     ~H"""
     <.live_component module={ArrowWeb.StopInput} id={@id} field={@field} class={@class} />
     """

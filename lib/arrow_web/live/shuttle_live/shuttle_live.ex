@@ -155,11 +155,7 @@ defmodule ArrowWeb.ShuttleViewLive do
             <div class="col-lg-1">
               <.icon name="hero-bars-3" class="h-4 w-4 drag-handle cursor-grab" />
             </div>
-            <.stop_input
-              id={"stop-id-#{input_value(f_route, :direction_id)}-#{input_value(f_route_stop, :stop_sequence)}"}
-              field={f_route_stop[:display_stop_id]}
-              class="col-lg-6"
-            />
+            <.stop_input field={f_route_stop[:display_stop_id]} class="col-lg-6" />
             <.input
               field={f_route_stop[:time_to_next_stop]}
               type="number"
