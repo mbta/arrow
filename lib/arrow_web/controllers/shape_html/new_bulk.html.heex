@@ -3,7 +3,7 @@
   <:subtitle>Upload a KML file to start adding new shapes</:subtitle>
 </.header>
 
-<%= react_component("Components.ShapeViewMap", %{}) %>
+{react_component("Components.ShapeViewMap", %{})}
 
 <.simple_form :let={f} for={@shapes_upload} action={~p"/shapes_upload"} multipart>
   <.input field={f[:filename]} type="file" label="Filename" required="true" />

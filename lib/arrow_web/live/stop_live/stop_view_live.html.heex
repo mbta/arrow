@@ -1,5 +1,5 @@
 <.header>
-  <%= @title %>
+  {@title}
 </.header>
 
 <div class="container">
@@ -12,7 +12,7 @@
         trigger_submit={@trigger_submit}
       />
     </div>
-    <%= live_react_component(
+    {live_react_component(
       "Components.StopViewMap",
       [
         stop: @stop_map_props,
@@ -21,6 +21,6 @@
       ],
       id: "stop-view-map",
       container: [class: "col-lg-6"]
-    ) %>
+    )}
   </div>
 </div>

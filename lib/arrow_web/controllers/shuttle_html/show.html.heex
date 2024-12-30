@@ -1,5 +1,5 @@
 <.header>
-  shuttle <%= @shuttle.id %>
+  shuttle {@shuttle.id}
   <:actions>
     <.link href={~p"/shuttles/#{@shuttle}/edit"}>
       <.button>Edit shuttle</.button>
@@ -8,9 +8,9 @@
 </.header>
 
 <.list>
-  <:item title="Shuttle name"><%= @shuttle.shuttle_name %></:item>
-  <:item title="Disrupted route"><%= @shuttle.disrupted_route_id %></:item>
-  <:item title="Status"><%= @shuttle.status %></:item>
+  <:item title="Shuttle name">{@shuttle.shuttle_name}</:item>
+  <:item title="Disrupted route">{@shuttle.disrupted_route_id}</:item>
+  <:item title="Status">{@shuttle.status}</:item>
 </.list>
 
 <.back navigate={~p"/shuttles"}>Back to shuttles</.back>

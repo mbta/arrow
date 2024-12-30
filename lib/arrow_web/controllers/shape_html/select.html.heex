@@ -1,9 +1,9 @@
 <.header>
   upload shapes from file
-  <:subtitle><%= input_value(@form, :filename) %></:subtitle>
+  <:subtitle>{input_value(@form, :filename)}</:subtitle>
 </.header>
 
-<%= react_component("Components.ShapeViewMap", shapes_map_view(@form)) %>
+{react_component("Components.ShapeViewMap", shapes_map_view(@form))}
 
 <div class="container">
   <.simple_form :let={f} for={@form} action={~p"/shapes_upload"} multipart>

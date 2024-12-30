@@ -1,20 +1,20 @@
 <%= with message when is_binary(message) <- Phoenix.Flash.get(@flash, :info) do %>
-  <aside role="alert" class="alert alert-info"><%= message %></aside>
+  <aside role="alert" class="alert alert-info">{message}</aside>
 <% end %>
 
 <%= with message when is_binary(message) <- Phoenix.Flash.get(@flash, :error) do %>
   <aside role="alert" class="alert alert-danger">
-    <h4 class="alert-heading"><%= message %></h4>
+    <h4 class="alert-heading">{message}</h4>
   </aside>
 <% end %>
 
 <%= with {message, errors} <- Phoenix.Flash.get(@flash, :errors) do %>
   <aside role="alert" class="alert alert-danger">
-    <h4 class="alert-heading"><%= message %></h4>
+    <h4 class="alert-heading">{message}</h4>
 
     <ul>
       <%= for error <- errors do %>
-        <li><%= error %></li>
+        <li>{error}</li>
       <% end %>
     </ul>
   </aside>
