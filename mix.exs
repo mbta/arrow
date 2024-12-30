@@ -93,8 +93,7 @@ defmodule Arrow.MixProject do
        tag: "v2.1.1",
        sparse: "optimized",
        app: false,
-       compile: false,
-       depth: 1},
+       compile: false},
       {:sax_map, "~> 1.2"},
       {:unzip, "~> 0.12.0"},
       {:xlsxir, "~> 1.6"}
