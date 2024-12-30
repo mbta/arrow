@@ -362,9 +362,14 @@ defmodule Arrow.ShuttlesTest do
       lat = 42.38758
       lon = -71.11934
 
+      arrow_stop = stop_fixture(%{stop_lat: lat, stop_lon: lon})
+
       stop = %Shuttles.RouteStop{
-        stop: stop_fixture(%{stop_lat: lat, stop_lon: lon}),
-        gtfs_stop: nil
+        id: 1,
+        stop: arrow_stop,
+        gtfs_stop: nil,
+        display_stop: nil,
+        display_stop_id: arrow_stop.stop_id
       }
 
       coordinates = %{lat: lat, lon: lon}
@@ -375,7 +380,14 @@ defmodule Arrow.ShuttlesTest do
     test "gets the stop coordinates for an gtfs stop from a RouteStop" do
       gtfs_stop = insert(:gtfs_stop)
       coordinates = %{lat: gtfs_stop.lat, lon: gtfs_stop.lon}
-      stop = %Shuttles.RouteStop{gtfs_stop: gtfs_stop, stop: nil}
+
+      stop = %Shuttles.RouteStop{
+        id: 1,
+        gtfs_stop: gtfs_stop,
+        stop: nil,
+        display_stop: nil,
+        display_stop_id: gtfs_stop.id
+      }
 
       assert {:ok, ^coordinates} = Shuttles.get_stop_coordinates(stop)
     end
