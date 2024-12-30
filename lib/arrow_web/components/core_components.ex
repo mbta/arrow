@@ -455,6 +455,25 @@ defmodule ArrowWeb.CoreComponents do
   end
 
   @doc """
+  LiveSelect-based input for stop ID with autocomplete
+  """
+
+  attr :id, :string, required: true
+
+  attr :field, :any,
+    required: true,
+    doc: "Field for `display_stop_id` from a form for a `route_stop`"
+
+  attr :label, :string, default: "Stop ID"
+  attr :class, :string, default: nil
+
+  def stop_input(assigns) do
+    ~H"""
+    <.live_component module={ArrowWeb.StopInput} id={@id} field={@field} class={@class} />
+    """
+  end
+
+  @doc """
   Renders a label.
   """
   attr :for, :string, default: nil
