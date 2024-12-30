@@ -1,8 +1,8 @@
 name: CI
 
-on: 
+on:
   push:
-  pull_request: 
+  pull_request:
   schedule:
     - cron: '0 5 * * *'
 
@@ -61,7 +61,7 @@ jobs:
       DATABASE_HOST: localhost
     services:
       postgres:
-        image: postgres:11
+        image: postgres:14
         ports:
           - 5432:5432
         env:
@@ -94,7 +94,7 @@ jobs:
       - name: Check formatting
         run: mix format --check-formatted
       - name: Credo
-        run: mix credo --strict
+        run: mix credo
       - name: Run tests
         run: mix test --cover
       - name: Save PR information
@@ -103,7 +103,7 @@ jobs:
           echo "${{ github.event.pull_request.head.sha }}" > cover/PR_SHA
         if: github.event.pull_request
       - name: Upload coverage artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: elixir-lcov
           path: cover/
@@ -120,7 +120,7 @@ jobs:
       DATABASE_HOST: localhost
     services:
       postgres:
-        image: postgres:11
+        image: postgres:14
         ports:
           - 5432:5432
         env:

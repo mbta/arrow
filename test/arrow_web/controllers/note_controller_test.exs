@@ -25,7 +25,7 @@ defmodule ArrowWeb.NoteControllerTest do
       conn = post(conn, Routes.note_path(conn, :create, id), params)
 
       assert redirected_to(conn) == Routes.disruption_path(conn, :show, id)
-      assert {_, _} = get_flash(conn, :errors)
+      assert {_, _} = Phoenix.Flash.get(conn.assigns.flash, :errors)
       disruption = Disruption.get!(id)
       assert disruption.notes == []
     end

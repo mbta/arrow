@@ -16,12 +16,7 @@ config :arrow,
   # Run migrations synchronously before anything else. Must finish in <5 seconds
   migrate_synchronously?: true,
   redirect_http?: true,
-  cognito_groups: %{
-    # map cognito groups to roles
-    "arrow-admin" => "admin"
-  },
-  ueberauth_provider: :cognito,
-  api_login_module: ArrowWeb.TryApiTokenAuth.Cognito,
+  ueberauth_provider: :keycloak,
   required_roles: %{
     view_disruption: ["read-only", "admin"],
     create_disruption: ["admin"],
@@ -34,46 +29,95 @@ config :arrow,
   },
   time_zone: "America/New_York",
   ex_aws_requester: {Fake.ExAws, :admin_group_request},
-  http_client: HTTPoison
+  http_client: HTTPoison,
+  shape_storage_enabled?: false,
+  shape_storage_bucket: "mbta-arrow",
+  shape_storage_prefix: "shape-uploads/",
+  shape_storage_request_fn: {ExAws, :request},
+  gtfs_archive_storage_enabled?: false,
+  gtfs_archive_storage_bucket: "mbta-arrow",
+  gtfs_archive_storage_prefix: "gtfs-archive-uploads/",
+  gtfs_archive_storage_request_fn: {ExAws, :request}
+
+# Addresses an issue with Oban
+# https://github.com/oban-bg/oban/issues/493#issuecomment-1187001822
+config :arrow, Arrow.Repo,
+  parameters: [
+    tcp_keepalives_idle: "60",
+    tcp_keepalives_interval: "5",
+    tcp_keepalives_count: "3"
+  ],
+  socket_options: [keepalive: true]
 
 # Configures the endpoint
 config :arrow, ArrowWeb.Endpoint,
   url: [host: "localhost"],
   render_errors: [view: ArrowWeb.ErrorView, accepts: ~w(html json)],
-  pubsub_server: Arrow.PubSub
+  pubsub_server: Arrow.PubSub,
+  live_view: [signing_salt: "35DDvOCJ"]
+
+# Configures Oban, the job processing library
+config :arrow, Oban,
+  engine: Oban.Engines.Basic,
+  queues: [default: 10, gtfs_import: 1],
+  repo: Arrow.Repo
 
 config :esbuild,
-  version: "0.12.18",
+  version: "0.17.11",
   default: [
     args: ~w(
       src/app.tsx
       --bundle
       --target=es2015
-      --loader:.png=file
-      --loader:.woff=file
+      --loader:.css=empty
       --outdir=../priv/static/assets
+      --external:/fonts/*
+      --external:/images/*
+      --external:/css/*
       #{if(Mix.env() == :test, do: "--define:__REACT_DEVTOOLS_GLOBAL_HOOK__={'isDisabled':true}")}
     ),
     cd: Path.expand("../assets", __DIR__),
-    env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+    env: %{
+      "NODE_PATH" =>
+        Enum.join(
+          [Path.expand("../deps", __DIR__)],
+          ":"
+        )
+    }
   ]
 
-config :arrow, ArrowWeb.AuthManager, issuer: "arrow"
+# Configure tailwind (the version is required)
+config :tailwind,
+  version: "3.4.0",
+  default: [
+    args: ~w(
+    --config=tailwind.config.js
+    --input=css/app.css
+    --output=../priv/static/assets/app.css
+  ),
+    cd: Path.expand("../assets", __DIR__)
+  ]
+
+# 12 hours in seconds
+max_session_time = 12 * 60 * 60
+
+config :arrow, ArrowWeb.AuthManager,
+  issuer: "arrow",
+  max_session_time: max_session_time,
+  # 30 minutes
+  idle_time: 30 * 60
 
 config :ueberauth, Ueberauth,
   providers: [
-    cognito: {Ueberauth.Strategy.Cognito, []},
     keycloak:
       {Ueberauth.Strategy.Oidcc,
-       issuer: :keycloak_issuer, userinfo: true, uid_field: "email", scopes: ~w"openid email"}
+       issuer: :keycloak_issuer,
+       userinfo: true,
+       uid_field: "email",
+       scopes: ~w"openid email",
+       authorization_params: %{max_age: "#{max_session_time}"},
+       authorization_params_passthrough: ~w"prompt login_hint"}
   ]
-
-config :ueberauth, Ueberauth.Strategy.Cognito,
-  auth_domain: {System, :get_env, ["COGNITO_DOMAIN"]},
-  client_id: {System, :get_env, ["COGNITO_CLIENT_ID"]},
-  client_secret: {System, :get_env, ["COGNITO_CLIENT_SECRET"]},
-  user_pool_id: {System, :get_env, ["COGNITO_USER_POOL_ID"]},
-  aws_region: {System, :get_env, ["COGNITO_AWS_REGION"]}
 
 # Configures Elixir's Logger
 config :logger, :console,
@@ -98,4 +142,4 @@ config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
-import_config "#{Mix.env()}.exs"
+import_config "#{config_env()}.exs"

@@ -215,7 +215,8 @@ defmodule Fake.HTTPoison do
                 "inserted_at" => "2020-09-29T18:54:00.000000Z",
                 "is_active" => true,
                 "start_date" => "2020-10-05",
-                "updated_at" => "2020-09-29T18:54:00.000000Z"
+                "updated_at" => "2020-09-29T18:54:00.000000Z",
+                "title" => "disruption title"
               }
             ],
             "disruption_trip_short_names" => [

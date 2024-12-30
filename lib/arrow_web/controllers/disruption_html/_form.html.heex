@@ -1,0 +1,17 @@
+{react_component("Components.DisruptionForm", Form.props(@conn, @changeset, @adjustments))}
+
+<hr class="light-hr" />
+
+<div class="d-flex justify-content-center">
+  <div class="w-25 mr-2">
+    {submit("save", class: "w-100 btn btn-primary")}
+  </div>
+
+  <div class="w-25 ml-2">
+    {link("cancel",
+      to: @cancel_path,
+      class: "w-100 btn btn-outline-primary",
+      data: [confirm: @cancel_confirmation]
+    )}
+  </div>
+</div>

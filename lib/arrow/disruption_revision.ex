@@ -26,7 +26,8 @@ defmodule Arrow.DisruptionRevision do
           trip_short_names: [TripShortName.t()] | Ecto.Association.NotLoaded.t(),
           adjustments: [Adjustment.t()] | Ecto.Association.NotLoaded.t(),
           inserted_at: DateTime.t() | nil,
-          updated_at: DateTime.t() | nil
+          updated_at: DateTime.t() | nil,
+          title: String.t()
         }
 
   schema "disruption_revisions" do
@@ -37,6 +38,7 @@ defmodule Arrow.DisruptionRevision do
     field(:description, :string)
     field(:adjustment_kind, Ecto.Enum, values: Adjustment.kinds())
     field(:note_body, :string, virtual: true)
+    field(:title, :string)
 
     belongs_to(:disruption, Disruption)
     has_many(:days_of_week, DayOfWeek, on_replace: :delete)
@@ -51,7 +53,7 @@ defmodule Arrow.DisruptionRevision do
     timestamps(type: :utc_datetime)
   end
 
-  @required_fields [:start_date, :end_date, :row_approved, :description]
+  @required_fields [:start_date, :end_date, :row_approved, :description, :title]
   @permitted_fields @required_fields ++ [:adjustment_kind, :note_body]
 
   @doc """
@@ -85,6 +87,7 @@ defmodule Arrow.DisruptionRevision do
     |> Changeset.cast_assoc(:trip_short_names, with: &TripShortName.changeset/2)
     |> Changeset.validate_required(@required_fields)
     |> Changeset.validate_length(:days_of_week, min: 1)
+    |> Changeset.validate_length(:title, min: 1, max: 40)
     |> validate_adjustments_or_adjustment_kind()
     |> validate_days_of_week_between_start_and_end_date()
     |> validate_exceptions_are_applicable()
@@ -207,7 +210,7 @@ defmodule Arrow.DisruptionRevision do
 
       Enum.all?(days_of_week, fn day ->
         Enum.member?(
-          Enum.map(Date.range(start_date, end_date), fn date -> Date.day_of_week(date) end),
+          Enum.map(date_range(start_date, end_date), fn date -> Date.day_of_week(date) end),
           DayOfWeek.day_number(day)
         )
       end) ->
@@ -280,6 +283,14 @@ defmodule Arrow.DisruptionRevision do
 
       true ->
         changeset
+    end
+  end
+
+  defp date_range(start_date, end_date) do
+    if Date.compare(start_date, end_date) == :gt do
+      Date.range(start_date, end_date, -1)
+    else
+      Date.range(start_date, end_date)
     end
   end
 end

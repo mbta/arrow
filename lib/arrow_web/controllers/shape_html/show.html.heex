@@ -1,0 +1,12 @@
+<.header>
+  Shape {@shape.id}
+</.header>
+
+{react_component("Components.ShapeViewMap", shapes_map_view(@shape_upload))}
+
+<.list>
+  <:item title="Name">{@shape.name}</:item>
+  <:item title="Path">{@shape.path}</:item>
+</.list>
+
+<.back navigate={~p"/shapes"}>Back to shapes</.back>

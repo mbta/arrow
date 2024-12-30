@@ -14,10 +14,13 @@ keycloak_issuer =
       nil
   end
 
+config :arrow, Arrow.OpenRouteServiceAPI,
+  api_base_url: System.get_env("OPEN_ROUTE_SERVICE_API_URL"),
+  api_key: System.get_env("OPEN_ROUTE_SERVICE_API_KEY"),
+  client: Arrow.OpenRouteServiceAPI.Client
+
 if is_binary(keycloak_issuer) and not is_test? do
   config :arrow,
-    ueberauth_provider: :keycloak,
-    api_login_module: ArrowWeb.TryApiTokenAuth.Keycloak,
     keycloak_client_uuid: System.fetch_env!("KEYCLOAK_CLIENT_UUID"),
     keycloak_api_base: System.fetch_env!("KEYCLOAK_API_BASE")
 
@@ -25,13 +28,6 @@ if is_binary(keycloak_issuer) and not is_test? do
     client_id: System.fetch_env!("KEYCLOAK_CLIENT_ID"),
     client_secret: System.fetch_env!("KEYCLOAK_CLIENT_SECRET")
   ]
-
-  keycloak_opts =
-    if keycloak_idp = System.get_env("KEYCLOAK_IDP_HINT") do
-      Keyword.put(keycloak_opts, :authorization_params, %{kc_idp_hint: keycloak_idp})
-    else
-      keycloak_opts
-    end
 
   config :ueberauth_oidcc,
     issuers: [
@@ -56,21 +52,14 @@ if config_env() == :prod do
       root_source_code_path: File.cwd!(),
       tags: %{
         env: sentry_env
-      },
-      included_environments: [sentry_env]
+      }
 
     config :logger, Sentry.LoggerBackend,
-      level: :warn,
+      level: :warning,
       capture_log_messages: true
   end
 
   config :arrow, ArrowWeb.Endpoint, secret_key_base: System.fetch_env!("SECRET_KEY_BASE")
-
-  config :ueberauth, Ueberauth,
-    providers: [
-      cognito:
-        {Ueberauth.Strategy.Cognito, [client_secret: System.fetch_env!("COGNITO_CLIENT_SECRET")]}
-    ]
 
   pool_size =
     case System.get_env("DATABASE_POOL_SIZE") do
@@ -87,5 +76,11 @@ if config_env() == :prod do
     port: port,
     pool_size: pool_size,
     # password set by `configure` callback below
-    configure: {Arrow.Repo, :before_connect, []}
+    configure: {Arrow.Repo, :before_connect, []},
+    queue_target: 30_000,
+    queue_interval: 120_000
+
+  config :arrow,
+    shape_storage_prefix_env: System.get_env("S3_PREFIX"),
+    gtfs_archive_storage_prefix_env: System.get_env("S3_PREFIX")
 end

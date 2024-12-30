@@ -6,51 +6,28 @@ defmodule ArrowWeb.AuthController do
 
   @spec logout(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def logout(conn, _params) do
-    logout_url = get_session(conn, :logout_url)
-    conn = configure_session(conn, drop: true)
-
-    if logout_url do
-      redirect(conn, external: logout_url)
-    else
-      redirect(conn, to: "/")
-    end
-  end
-
-  @cognito_groups Application.compile_env!(:arrow, :cognito_groups)
-
-  @spec callback(Plug.Conn.t(), map()) :: Plug.Conn.t()
-  def callback(%{assigns: %{ueberauth_auth: %{provider: :cognito} = auth}} = conn, _params) do
-    username = auth.uid
-    expiration = auth.credentials.expires_at
-    current_time = System.system_time(:second)
-
-    groups = Map.get(auth.credentials.other, :groups, [])
-
-    roles =
-      Enum.flat_map(groups, fn group ->
-        case @cognito_groups[group] do
-          role when is_binary(role) -> [role]
-          _ -> []
-        end
-      end)
+    redirect_opts =
+      if logout_url = get_session(conn, :logout_url) do
+        [external: logout_url]
+      else
+        [to: "/"]
+      end
 
     conn
-    |> Guardian.Plug.sign_in(
-      ArrowWeb.AuthManager,
-      username,
-      %{
-        # all cognito users have read-only access
-        roles: roles ++ ["read-only"]
-      },
-      ttl: {expiration - current_time, :seconds}
-    )
-    |> redirect(to: Routes.disruption_path(conn, :index))
+    |> Guardian.Plug.sign_out(Arrow.AuthManager)
+    |> configure_session(drop: true)
+    |> redirect(redirect_opts)
   end
 
   def callback(%{assigns: %{ueberauth_auth: %{provider: :keycloak} = auth}} = conn, _params) do
     username = auth.uid
-    expiration = auth.credentials.expires_at
-    current_time = System.system_time(:second)
+
+    auth_time =
+      Map.get(
+        auth.extra.raw_info.claims,
+        "auth_time",
+        auth.extra.raw_info.claims["iat"]
+      )
 
     roles = auth.extra.raw_info.userinfo["roles"] || []
 
@@ -66,14 +43,16 @@ defmodule ArrowWeb.AuthController do
       end
 
     conn
+    |> configure_session(drop: true)
     |> put_session(:logout_url, logout_url)
     |> Guardian.Plug.sign_in(
       ArrowWeb.AuthManager,
       username,
       %{
+        auth_time: auth_time,
         roles: roles
       },
-      ttl: {expiration - current_time, :seconds}
+      ttl: {1, :minute}
     )
     |> redirect(to: Routes.disruption_path(conn, :index))
   end

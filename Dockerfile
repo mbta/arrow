@@ -1,6 +1,6 @@
-ARG ELIXIR_VERSION=1.14.5
-ARG ERLANG_VERSION=26.1.2
-ARG DEBIAN_VERSION=bullseye-20230612
+ARG ELIXIR_VERSION=1.18.1
+ARG ERLANG_VERSION=27.2
+ARG DEBIAN_VERSION=bullseye-20241223
 
 FROM hexpm/elixir:$ELIXIR_VERSION-erlang-$ERLANG_VERSION-debian-$DEBIAN_VERSION as elixir-builder
 
@@ -15,7 +15,7 @@ RUN mix local.hex --force && \
 
 RUN curl https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
   -o /root/aws-cert-bundle.pem
-RUN echo "51b107da46717aed974d97464b63f7357b220fe8737969db1492d1cae74b3947 /root/aws-cert-bundle.pem" | sha256sum -c -
+RUN echo "390fdc813e2e58ec5a0def8ce6422b83d75032899167052ab981d8e1b3b14ff2 /root/aws-cert-bundle.pem" | sha256sum -c -
 
 # Instructions from:
 # https://github.com/nodesource/distributions#debian-versions
@@ -39,12 +39,14 @@ COPY config/config.exs config/
 COPY config/prod.exs config/
 
 RUN mix deps.compile
+RUN mix sentry.package_source_code
 
 COPY assets assets
 RUN npm ci --prefix assets
-RUN mix assets.deploy
 
 COPY lib lib
+RUN mix assets.deploy
+
 COPY priv priv
 
 RUN mix phx.digest
@@ -59,7 +61,7 @@ FROM debian:$DEBIAN_VERSION
 
 RUN apt-get update --allow-releaseinfo-change && \
   apt-get install -y --no-install-recommends \
-    libssl1.1 libsctp1 curl ca-certificates && \
+  libssl1.1 libsctp1 curl ca-certificates && \
   rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -71,9 +73,9 @@ ENV MIX_ENV=prod TERM=xterm LANG="C.UTF-8" PORT=4000 PHX_SERVER=true
 COPY --from=elixir-builder --chown=nobody:root /app/_build/prod/rel/arrow .
 
 # Ensure SSL support is enabled
-RUN env SECRET_KEY_BASE=fake COGNITO_CLIENT_SECRET=fake DATABASE_PORT=0 \
+RUN env SECRET_KEY_BASE=fake DATABASE_PORT=0 \
   sh -c ' \
-     /app/bin/arrow eval ":crypto.supports()" && \
-     /app/bin/arrow eval ":ok = :public_key.cacerts_load"'
+  /app/bin/arrow eval ":crypto.supports()" && \
+  /app/bin/arrow eval ":ok = :public_key.cacerts_load"'
 
 CMD ["/app/bin/arrow", "start"]

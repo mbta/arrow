@@ -23,7 +23,9 @@ config :arrow, ArrowWeb.Endpoint,
   secret_key_base: "local_secret_key_base_at_least_64_bytes_________________________________",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
-    node: ~w(assets/node_modules/.bin/tsc --project assets --noEmit --watch --preserveWatchOutput)
+    node:
+      ~w(assets/node_modules/.bin/tsc --project assets --noEmit --watch --preserveWatchOutput),
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
   ]
 
 config :arrow, ArrowWeb.AuthManager, secret_key: "test key"
@@ -58,17 +60,26 @@ config :arrow, ArrowWeb.Endpoint,
     patterns: [
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/arrow_web/{live,views}/.*(ex)$",
-      ~r"lib/arrow_web/templates/.*(eex)$"
+      ~r"lib/arrow_web/(controllers|live|components)/.*(ex|heex)$"
     ]
   ]
 
 config :ueberauth, Ueberauth,
   providers: [
-    cognito: {Arrow.Ueberauth.Strategy.Fake, []}
+    keycloak: {Arrow.Ueberauth.Strategy.Fake, [groups: ["admin"]]}
   ]
 
 config :arrow, :redirect_http?, false
+
+# Enable dev routes for dashboard and mailbox
+config :arrow, dev_routes: true
+
+# Set prefix env for s3 uploads
+config :arrow,
+  shape_storage_enabled?: true,
+  shape_storage_prefix_env: "dev/local/",
+  gtfs_archive_storage_enabled?: true,
+  gtfs_archive_storage_prefix_env: "dev/local/"
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
@@ -79,3 +90,10 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
+
+config :phoenix_live_view,
+  # Include HEEx debug annotations as HTML comments in rendered markup
+  debug_heex_annotations: true
+
+# Enable helpful, but potentially expensive runtime checks
+# enable_expensive_runtime_checks: true

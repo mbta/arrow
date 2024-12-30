@@ -1,5 +1,11 @@
 import Config
 
+config :arrow,
+  shape_storage_enabled?: false,
+  shape_storage_request_fn: {Arrow.Mock.ExAws.Request, :request},
+  gtfs_archive_storage_enabled?: false,
+  gtfs_archive_storage_request_fn: {Arrow.Mock.ExAws.Request, :request}
+
 # Configure your database
 config :arrow, Arrow.Repo,
   username: System.get_env("DATABASE_USERNAME") || "postgres",
@@ -15,10 +21,12 @@ config :arrow, ArrowWeb.Endpoint,
 
 config :arrow, ArrowWeb.AuthManager, secret_key: "test key"
 
+# Prevent Oban from running jobs and plugins during test runs
+config :arrow, Oban, testing: :inline
+
 config :ueberauth, Ueberauth,
   providers: [
-    cognito: {Arrow.Ueberauth.Strategy.Fake, []},
-    keycloak: {Ueberauth.Strategy.Oidcc, []}
+    keycloak: {Arrow.Ueberauth.Strategy.Fake, [groups: ["admin"]]}
   ]
 
 # Configure Keycloak

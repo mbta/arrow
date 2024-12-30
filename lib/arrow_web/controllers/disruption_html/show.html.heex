@@ -1,0 +1,114 @@
+<div class="row">
+  <section class="col-lg-7">
+    <div class="m-disruption-details__header">
+      <div class="d-flex align-items-end">
+        <h2 class="mb-0">{@revision.title}</h2>
+        <h5>ID <span class="ml-2 font-weight-normal">{@id}</span></h5>
+      </div>
+    </div>
+
+    <._description conn={@conn} revision={@revision} />
+
+    <hr class="my-3" />
+
+    <div class="row">
+      <%= if not @revision.is_active do %>
+        <div class="col-xs-12">
+          <div class="m-disruption-details__deletion-indicator">
+            <b>Note:</b> This disruption is deleted. It will not appear in GTFS.
+          </div>
+        </div>
+      <% end %>
+
+      <% inactive_class = if(@revision.is_active, do: "", else: "text-muted") %>
+
+      <div class={"col-md-12 " <> inactive_class}>
+        <div class="mb-3">
+          <div class="m-disruption-details_flex align-items-center">
+            <div class="w-50">
+              <h4>approval status</h4>
+            </div>
+            <span
+              role="approval"
+              class={"m-disruption-details_approval-status m-disruption-details_approval-status-info w-75 " <> inactive_class}
+            >
+              {if @revision.row_approved, do: "approved", else: "pending"}
+            </span>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <h4>date range</h4>
+
+          <div class="pl-3">
+            {format_date(@revision.start_date, "(no start date)")} – {format_date(
+              @revision.end_date,
+              "(no end date)"
+            )}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <h4>time period</h4>
+
+          <div class="pl-3">
+            <%= for {day, times} <- DaysOfWeek.describe(@revision.days_of_week) do %>
+              <div><b>{day}</b> <br />{times}</div>
+            <% end %>
+          </div>
+        </div>
+
+        <%= if not Enum.empty?(@revision.trip_short_names) do %>
+          <div class="mb-3">
+            <h4>trips</h4>
+
+            <div class="pl-3">
+              {@revision.trip_short_names
+              |> Enum.map(& &1.trip_short_name)
+              |> Enum.join(", ")}
+            </div>
+          </div>
+        <% end %>
+
+        <%= if not Enum.empty?(@revision.exceptions) do %>
+          <div class="mb-3">
+            <h4>exceptions</h4>
+
+            <div class="pl-3">
+              <%= for %{excluded_date: date} <- @revision.exceptions do %>
+                <div>{format_date(date)}</div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </section>
+
+  <section class="col-lg-5">
+    <%= if @revision.is_active do %>
+      <div class="m-disruption-details_flex align-items-center">
+        <%= if Permissions.authorize?(:update_disruption, @user) do %>
+          <%= form_tag Routes.disruption_path(@conn, :update_row_status, @revision.disruption_id), method: "put" do %>
+            {hidden_input(:revision, :row_approved, value: !@revision.row_approved)}
+            {submit(mark_as_approved_or_pending(@revision.row_approved),
+              class: "btn btn-primary"
+            )}
+          <% end %>
+          <.link class="btn btn-tertiary" navigate={Routes.disruption_path(@conn, :edit, @id)}>
+            <._button_description conn={@conn} kind={:edit} />
+          </.link>
+        <% end %>
+        <%= if Permissions.authorize?(:delete_disruption, @user) do %>
+          <%= button class: "btn btn-tertiary",
+            method: :delete,
+            to: Routes.disruption_path(@conn, :delete, @id),
+            data: [confirm: "Permanently delete this disruption?"]
+            do %>
+            <._button_description conn={@conn} kind={:delete} />
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+</div>

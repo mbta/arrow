@@ -1,0 +1,52 @@
+<.header>
+  upload shapes from file
+  <:subtitle>{input_value(@form, :filename)}</:subtitle>
+</.header>
+
+{react_component("Components.ShapeViewMap", shapes_map_view(@form))}
+
+<div class="container">
+  <.simple_form :let={f} for={@form} action={~p"/shapes_upload"} multipart>
+    <.error :if={@form.action}>
+      Oops, something went wrong! Please check the errors below.
+    </.error>
+    <%= if f[:shapes] do %>
+      <div class="grid grid-cols-3 gap-4">
+        <div class="block text-sm font-semibold leading-6 text-zinc-800">Uploaded Name</div>
+        <div class="block text-sm font-semibold leading-6 text-zinc-800">New Name</div>
+        <div class="block text-sm font-semibold leading-6 text-zinc-800">Save?</div>
+        <.inputs_for
+          :let={f_nested}
+          field={f[:shapes]}
+          id="shapes"
+          as={:shapes}
+          skip_hidden={true}
+        >
+          <.input field={f_nested[:name]} class="flex align-items-center" disabled />
+          <.input field={f_nested[:name]} class="flex align-items-center" />
+          <.input field={f_nested[:save]} type="checkbox" />
+          <div class="hidden">
+            <.input
+              field={f_nested[:coordinates]}
+              value={Enum.join(f_nested[:coordinates].value, " ")}
+            />
+          </div>
+        </.inputs_for>
+      </div>
+    <% end %>
+    <:actions>
+      <div class="w-25 mr-2">
+        <.button type="submit" class="btn-primary w-100">save selected shapes</.button>
+      </div>
+      <div class="w-25 mr-2">
+        <.link_button
+          href={~p"/shapes_upload"}
+          class="btn-outline-primary w-100"
+          data-confirm="Are you sure you want to cancel? All changes will be lost!"
+        >
+          cancel
+        </.link_button>
+      </div>
+    </:actions>
+  </.simple_form>
+</div>

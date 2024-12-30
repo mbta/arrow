@@ -32,6 +32,7 @@ type DisruptionRevision = {
   daysOfWeek: DaysOfWeek
   exceptions: string[]
   tripShortNames: string
+  title: string
 }
 
 const modeAdjustmentKinds = ["bus", "commuter_rail", "silver_line"] as const
@@ -48,8 +49,8 @@ const subwayLineAdjustmentKinds = [
   "red_line",
 ] as const
 
-type Mode = typeof modeAdjustmentKinds[number] | "subway"
-type SubwayLine = typeof subwayLineAdjustmentKinds[number]
+type Mode = (typeof modeAdjustmentKinds)[number] | "subway"
+type SubwayLine = (typeof subwayLineAdjustmentKinds)[number]
 
 const days = [
   "monday",
@@ -161,6 +162,7 @@ interface DisruptionFormProps {
 const DisruptionForm = ({
   allAdjustments,
   disruptionRevision: {
+    title: initialTitle,
     description: initialDescription,
     startDate: initialStartDate,
     endDate: initialEndDate,
@@ -174,7 +176,8 @@ const DisruptionForm = ({
   iconPaths,
 }: DisruptionFormProps) => {
   const [isRowApproved, setIsRowApproved] = useState(initialRowApproved)
-  const [description, setDescription] = useState(initialDescription)
+  const [title, setTitle] = useState(initialTitle || "")
+  const [description, setDescription] = useState(initialDescription || "")
   const [adjustmentKind, setAdjustmentKind] = useState(initialAdjustmentKind)
   const [hasAdjustments, setHasAdjustments] = useState(adjustmentKind === null)
   const [adjustments, setAdjustments] = useState(initialAdjustments)
@@ -275,6 +278,21 @@ const DisruptionForm = ({
             {label}
           </label>
         ))}
+      </fieldset>
+
+      <fieldset>
+        <legend>title</legend>
+        <textarea
+          className="form-control"
+          cols={30}
+          maxLength={40}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          name="revision[title]"
+          aria-describedby="titleHelp"
+          aria-label="title"
+          required
+        />
       </fieldset>
 
       <fieldset>
@@ -520,7 +538,7 @@ const DisruptionForm = ({
               name={`revision[exceptions][${index}][excluded_date]`}
               required={true}
               selected={exception}
-              excludeDates={exceptions.filter((e) => e !== null) as string[]}
+              excludeDates={exceptions.filter((e) => e !== null)}
               onChange={(date) => updateException(index, date)}
             />
 

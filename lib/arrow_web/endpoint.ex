@@ -6,9 +6,22 @@ defmodule ArrowWeb.Endpoint do
     plug Phoenix.Ecto.SQL.Sandbox, sandbox: Ecto.Adapters.SQL.Sandbox
   end
 
+  @session_options [
+    store: :cookie,
+    key: "_arrow_key",
+    signing_salt: "35DDvOCJ"
+  ]
+
   socket "/socket", ArrowWeb.UserSocket,
-    websocket: true,
+    websocket: [check_origin: Application.compile_env(:arrow, :websocket_check_origin, false)],
     longpoll: false
+
+  socket "/live", Phoenix.LiveView.Socket,
+    websocket: [
+      connect_info: [session: @session_options],
+      check_origin: Application.compile_env(:arrow, :websocket_check_origin, false)
+    ],
+    longpoll: [connect_info: [session: @session_options]]
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -18,7 +31,7 @@ defmodule ArrowWeb.Endpoint do
     at: "/",
     from: :arrow,
     gzip: false,
-    only: ~w(assets fonts images icons favicon.ico robots.txt)
+    only: ArrowWeb.static_paths()
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
@@ -32,7 +45,7 @@ defmodule ArrowWeb.Endpoint do
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
 
   plug Plug.Parsers,
-    parsers: [:urlencoded, :multipart, :json],
+    parsers: [:urlencoded, {:multipart, length: 100_000_000}, :json],
     pass: ["*/*"],
     json_decoder: Phoenix.json_library()
 
@@ -41,14 +54,10 @@ defmodule ArrowWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
-
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
   # Set :encryption_salt if you would also like to encrypt it.
-  plug Plug.Session,
-    store: :cookie,
-    key: "_arrow_key",
-    signing_salt: "35DDvOCJ"
+  plug Plug.Session, @session_options
 
   plug ArrowWeb.Router
 end
