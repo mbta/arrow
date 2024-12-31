@@ -4,7 +4,19 @@ updates:
   directory: "/"
   schedule:
     interval: daily
+  groups:
+    mix-patches:
+      patterns:
+        - "*"
+      update-types:
+        - "patch"
 - package-ecosystem: npm
   directory: "/assets"
   schedule:
     interval: daily
+  groups:
+    npm-patches:
+      patterns:
+        - "*"
+      update-types:
+        - "patch"
