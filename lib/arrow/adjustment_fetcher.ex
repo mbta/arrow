@@ -31,7 +31,7 @@ defmodule Arrow.AdjustmentFetcher do
     _ =
       case fetch() do
         :ok -> Logger.debug("adjustment_fetch_complete")
-        {:error, reason} -> Logger.warn("adjustment_fetch_failed: #{inspect(reason)}")
+        {:error, reason} -> Logger.warning("adjustment_fetch_failed: #{inspect(reason)}")
       end
 
     Process.send_after(self(), :fetch, interval)

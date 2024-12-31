@@ -1,8 +1,0 @@
-<section class="d-flex flex-column justify-content-center align-items-center h-100">
-  <h4 class="text-danger text-start">Whoops! You are not authorized to access this page.</h4>
-  <span class="text-start">
-    Were you looking for a <%= link("list of disruptions", to: Routes.disruption_path(@conn, :index)) %>
-    or a <%= link("calendar schedule", to: Routes.disruption_path(@conn, :index, view: "calendar")) %>?
-  </span>
-  <span class="text-start">To request access to this page, please contact <%= link("trc@mbta.com", to: "mailto:trc@mbta.com") %>.</span>
-</section>

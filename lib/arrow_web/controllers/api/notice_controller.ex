@@ -1,6 +1,9 @@
 defmodule ArrowWeb.API.NoticeController do
+  alias ArrowWeb.Plug.Authorize
   use ArrowWeb, :controller
   require Logger
+
+  plug(Authorize, :publish_notice)
 
   @spec publish(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def publish(conn, params) do

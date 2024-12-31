@@ -3,13 +3,13 @@ defmodule Arrow.Accounts.User do
   A module for Arrow user accounts.
   """
 
-  @type group() :: :admin
+  @type role() :: String.t()
 
   @type t() :: %__MODULE__{
           id: String.t(),
-          groups: MapSet.t(group())
+          roles: MapSet.t(role())
         }
 
   @enforce_keys [:id]
-  defstruct @enforce_keys ++ [groups: MapSet.new()]
+  defstruct @enforce_keys ++ [roles: MapSet.new()]
 end

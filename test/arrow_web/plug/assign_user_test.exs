@@ -13,14 +13,14 @@ defmodule ArrowWeb.Plug.AssignUserTest do
     @tag :authenticated_admin
     test "loads an admin user into the connection", %{conn: conn} do
       assert AssignUser.call(conn, []).assigns == %{
-               current_user: %User{id: "test_user", groups: MapSet.new([:admin])}
+               current_user: %User{id: "test_user", roles: MapSet.new(["admin"])}
              }
     end
 
     @tag :authenticated
-    test "loads a non-admin into the connection when user has no groups", %{conn: conn} do
+    test "loads a non-admin into the connection when user is not an admin", %{conn: conn} do
       assert AssignUser.call(conn, []).assigns == %{
-               current_user: %User{id: "test_user", groups: MapSet.new()}
+               current_user: %User{id: "test_user", roles: MapSet.new(["read-only"])}
              }
     end
   end

@@ -4,14 +4,16 @@ defmodule Arrow.Permissions do
   """
   alias Arrow.Accounts.User
 
-  @required_groups Application.compile_env!(:arrow, :required_groups)
+  @required_roles Application.compile_env!(:arrow, :required_roles)
 
   @type action() ::
-          :create_disruption
+          :view_disruption
+          | :create_disruption
           | :update_disruption
           | :delete_disruption
-          | :use_api
           | :view_change_feed
+          | :publish_notice
+          | :db_dump
 
   @spec authorize(action(), User.t()) :: :ok | {:error, :unauthorized}
   def authorize(action, user) do
@@ -23,16 +25,16 @@ defmodule Arrow.Permissions do
   end
 
   @spec authorize?(action :: action(), user :: User.t()) :: boolean()
-  for {action, required_groups} <- @required_groups do
-    def authorize?(unquote(action), %User{groups: groups}) do
-      matches_group(groups, unquote(required_groups))
+  for {action, required_roles} <- @required_roles do
+    def authorize?(unquote(action), %User{roles: roles}) do
+      matches_role(roles, unquote(required_roles))
     end
   end
 
   def authorize?(_, _), do: false
 
-  @spec matches_group(list(User.group()), list(User.group())) :: boolean()
-  defp matches_group(user_groups, required_groups) do
-    Enum.any?(user_groups, &(&1 in required_groups))
+  @spec matches_role(list(User.role()), list(User.role())) :: boolean()
+  defp matches_role(user_roles, required_roles) do
+    Enum.any?(user_roles, &(&1 in required_roles))
   end
 end

@@ -73,11 +73,12 @@ defmodule Arrow.DisruptionTest do
         "start_date" => "2021-01-01",
         "end_date" => "2021-12-31",
         "row_approved" => "true",
-        "adjustments" => [%{"id" => insert(:adjustment).id}],
+        "adjustments" => %{"id" => [insert(:adjustment).id]},
         "days_of_week" => [%{"day_name" => "monday", "start_time" => "20:00:00"}],
         "exceptions" => [%{"excluded_date" => "2021-01-11"}],
         "trip_short_names" => [%{"trip_short_name" => "777"}],
-        "description" => "a testing disruption"
+        "description" => "a testing disruption",
+        "title" => "a testing disruption title"
       }
 
       {:ok, _multi} = Disruption.create("author", attrs)
@@ -175,14 +176,14 @@ defmodule Arrow.DisruptionTest do
 
     test "requires exactly one of adjustment kind or non-empty adjustments" do
       {:error, :revision, changeset, _} =
-        Disruption.create("author", %{"adjustment_kind" => nil, "adjustments" => []})
+        Disruption.create("author", %{"adjustment_kind" => nil, "adjustments" => %{}})
 
       assert "is required without adjustments" in errors_on(changeset).adjustment_kind
 
       {:error, :revision, changeset, _} =
         Disruption.create("author", %{
           "adjustment_kind" => "red_line",
-          "adjustments" => [%{"id" => insert(:adjustment).id}]
+          "adjustments" => %{"id" => [insert(:adjustment).id]}
         })
 
       assert "cannot be set with adjustments" in errors_on(changeset).adjustment_kind
@@ -193,12 +194,13 @@ defmodule Arrow.DisruptionTest do
         "start_date" => "2021-01-01",
         "end_date" => "2021-12-31",
         "row_approved" => "true",
-        "adjustments" => [%{"id" => insert(:adjustment).id}],
+        "adjustments" => %{"id" => [insert(:adjustment).id]},
         "days_of_week" => [%{"day_name" => "monday", "start_time" => "20:00:00"}],
         "exceptions" => [%{"excluded_date" => "2021-01-11"}],
         "trip_short_names" => [%{"trip_short_name" => "777"}],
         "description" => "a testing disruption",
-        "note_body" => "This is a note."
+        "note_body" => "This is a note.",
+        "title" => "a testing disruption title"
       }
 
       {:ok, %{disruption: %{id: id}}} = Disruption.create("author", revision_attrs)
@@ -392,14 +394,14 @@ defmodule Arrow.DisruptionTest do
       assert "is required without adjustments" in errors_on(changeset).adjustment_kind
 
       {:error, :revision, changeset, _} =
-        Disruption.update(adj_id, "author", %{"adjustments" => []})
+        Disruption.update(adj_id, "author", %{"adjustments" => %{}})
 
       assert "is required without adjustments" in errors_on(changeset).adjustment_kind
 
       %{id: id} = insert(:adjustment)
 
       {:error, :revision, changeset, _} =
-        Disruption.update(kind_id, "author", %{"adjustments" => [%{"id" => id}]})
+        Disruption.update(kind_id, "author", %{"adjustments" => %{"id" => [id]}})
 
       assert "cannot be set with adjustments" in errors_on(changeset).adjustment_kind
 

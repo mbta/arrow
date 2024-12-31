@@ -1,0 +1,24 @@
+<.header>
+  Listing Shapes
+  <:actions>
+    <.link href={~p"/shapes_upload"}>
+      <.button class="btn-primary">New Shape</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="shapes" rows={@shapes} row_click={&JS.navigate(~p"/shapes/#{&1}")}>
+  <:col :let={shape} label="Name">{shape.name}</:col>
+  <:col :let={shape} label="File">{shape.path}</:col>
+  <:action :let={shape}>
+    <.link navigate={~p"/shapes/#{shape}"}>Show</.link>
+  </:action>
+  <:action :let={shape}>
+    <.link navigate={~p"/shapes/#{shape}/download"}>Download</.link>
+  </:action>
+  <:action :let={shape}>
+    <.link href={~p"/shapes/#{shape}"} method="delete" data-confirm="Are you sure?">
+      Delete
+    </.link>
+  </:action>
+</.table>

@@ -6,7 +6,7 @@
 */
 
 import React from "react"
-import ReactDOM from "react-dom"
+import { createRoot } from "react-dom/client"
 
 export default class ReactPhoenix {
   static init() {
@@ -26,7 +26,9 @@ export default class ReactPhoenix {
         reactClass,
         JSON.parse(reactProps)
       )
-      ReactDOM.render(reactElement, targetDiv)
+
+      const root = createRoot(targetDiv)
+      root.render(reactElement)
     })
   }
 }

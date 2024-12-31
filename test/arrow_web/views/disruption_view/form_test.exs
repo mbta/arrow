@@ -30,7 +30,8 @@ defmodule ArrowWeb.DisruptionView.FormTest do
           trip_short_names: [
             %TripShortName{trip_short_name: "one"},
             %TripShortName{trip_short_name: "two"}
-          ]
+          ],
+          title: "disruption title"
         }
         |> Changeset.change(%{end_date: ~D[2021-02-28]})
 
@@ -48,7 +49,8 @@ defmodule ArrowWeb.DisruptionView.FormTest do
         "daysOfWeek" => %{"monday" => %{"start" => ~T[21:15:00], "end" => nil}},
         "exceptions" => [~D[2021-01-11]],
         "tripShortNames" => "one,two",
-        "description" => "a disruption for testing"
+        "description" => "a disruption for testing",
+        "title" => "disruption title"
       }
 
       props = Form.props(conn, changeset, adjustments)

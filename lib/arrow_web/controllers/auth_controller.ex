@@ -1,30 +1,68 @@
 defmodule ArrowWeb.AuthController do
   use ArrowWeb, :controller
-  plug Ueberauth
+  require Logger
 
-  @spec callback(Plug.Conn.t(), map()) :: Plug.Conn.t()
-  def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
-    username = auth.uid
-    expiration = auth.credentials.expires_at
-    credentials = conn.assigns.ueberauth_auth.credentials
+  plug(Ueberauth)
 
-    current_time = System.system_time(:second)
+  @spec logout(Plug.Conn.t(), map()) :: Plug.Conn.t()
+  def logout(conn, _params) do
+    redirect_opts =
+      if logout_url = get_session(conn, :logout_url) do
+        [external: logout_url]
+      else
+        [to: "/"]
+      end
 
     conn
+    |> Guardian.Plug.sign_out(Arrow.AuthManager)
+    |> configure_session(drop: true)
+    |> redirect(redirect_opts)
+  end
+
+  def callback(%{assigns: %{ueberauth_auth: %{provider: :keycloak} = auth}} = conn, _params) do
+    username = auth.uid
+
+    auth_time =
+      Map.get(
+        auth.extra.raw_info.claims,
+        "auth_time",
+        auth.extra.raw_info.claims["iat"]
+      )
+
+    roles = auth.extra.raw_info.userinfo["roles"] || []
+
+    logout_url =
+      case UeberauthOidcc.initiate_logout_url(auth, %{
+             post_logout_redirect_uri: "https://www.mbta.com/"
+           }) do
+        {:ok, url} ->
+          url
+
+        _ ->
+          nil
+      end
+
+    conn
+    |> configure_session(drop: true)
+    |> put_session(:logout_url, logout_url)
     |> Guardian.Plug.sign_in(
       ArrowWeb.AuthManager,
       username,
-      %{groups: credentials.other[:groups]},
-      ttl: {expiration - current_time, :seconds}
+      %{
+        auth_time: auth_time,
+        roles: roles
+      },
+      ttl: {1, :minute}
     )
-    |> put_session(:arrow_username, username)
     |> redirect(to: Routes.disruption_path(conn, :index))
   end
 
   def callback(
-        %{assigns: %{ueberauth_failure: %Ueberauth.Failure{}}} = conn,
+        %{assigns: %{ueberauth_failure: %Ueberauth.Failure{errors: errors}}} = conn,
         _params
       ) do
+    Logger.warning("failed to authenticate errors=#{inspect(errors)}")
+
     send_resp(conn, 401, "unauthenticated")
   end
 end

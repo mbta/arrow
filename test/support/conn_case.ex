@@ -17,33 +17,37 @@ defmodule ArrowWeb.ConnCase do
 
   use ExUnit.CaseTemplate
   import Plug.Test
-  alias Arrow.Accounts.Group
 
   using do
     quote do
+      # The default endpoint for testing
+      @endpoint ArrowWeb.Endpoint
+
+      use ArrowWeb, :verified_routes
+
       # Import conveniences for testing with connections
       import Plug.Conn
       import Phoenix.ConnTest
       alias ArrowWeb.Router.Helpers, as: Routes
-
-      # The default endpoint for testing
-      @endpoint ArrowWeb.Endpoint
     end
   end
 
   setup tags do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Arrow.Repo)
 
-    unless tags[:async] do
+    if !tags[:async] do
       Ecto.Adapters.SQL.Sandbox.mode(Arrow.Repo, {:shared, self()})
     end
 
     cond do
       tags[:authenticated] ->
-        {:ok, conn: build_conn("test_user")}
+        {:ok, conn: build_conn("test_user", ["read-only"])}
 
       tags[:authenticated_admin] ->
-        {:ok, conn: build_conn("test_user", [Group.admin()])}
+        {:ok, conn: authenticated_admin()}
+
+      tags[:authenticated_empty] ->
+        {:ok, conn: build_conn("test_user", [])}
 
       true ->
         {:ok,
@@ -54,10 +58,12 @@ defmodule ArrowWeb.ConnCase do
   end
 
   @spec build_conn(String.t(), [String.t()] | []) :: Plug.Conn.t()
-  defp build_conn(user, groups \\ []) do
+  defp build_conn(user, roles) do
     Phoenix.ConnTest.build_conn()
     |> Plug.Conn.put_req_header("x-forwarded-proto", "https")
-    |> init_test_session(%{arrow_username: user})
-    |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{groups: groups})
+    |> init_test_session(%{})
+    |> Guardian.Plug.sign_in(ArrowWeb.AuthManager, user, %{roles: roles})
   end
+
+  def authenticated_admin, do: build_conn("test_user", ["admin"])
 end

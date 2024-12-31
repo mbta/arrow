@@ -1,4 +1,10 @@
-use Mix.Config
+import Config
+
+config :arrow,
+  shape_storage_enabled?: false,
+  shape_storage_request_fn: {Arrow.Mock.ExAws.Request, :request},
+  gtfs_archive_storage_enabled?: false,
+  gtfs_archive_storage_request_fn: {Arrow.Mock.ExAws.Request, :request}
 
 # Configure your database
 config :arrow, Arrow.Repo,
@@ -15,9 +21,27 @@ config :arrow, ArrowWeb.Endpoint,
 
 config :arrow, ArrowWeb.AuthManager, secret_key: "test key"
 
+# Prevent Oban from running jobs and plugins during test runs
+config :arrow, Oban, testing: :inline
+
 config :ueberauth, Ueberauth,
   providers: [
-    cognito: {Arrow.Ueberauth.Strategy.Fake, []}
+    keycloak: {Arrow.Ueberauth.Strategy.Fake, [groups: ["admin"]]}
+  ]
+
+# Configure Keycloak
+config :arrow,
+  keycloak_api_base: "https://keycloak.example/auth/realm/",
+  keycloak_client_uuid: "UUID"
+
+config :ueberauth_oidcc,
+  providers: [
+    keycloak: [
+      issuer: :fake_issuer,
+      client_id: "fake_client",
+      client_secret: "fake_client_secret",
+      module: Arrow.FakeOidcc
+    ]
   ]
 
 config :arrow,
@@ -25,7 +49,7 @@ config :arrow,
   http_client: Arrow.HTTPMock
 
 # Print only warnings and errors during test
-config :logger, level: :warn
+config :logger, level: :warning
 
 config :arrow, env: :test
 

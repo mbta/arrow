@@ -2,6 +2,7 @@ defmodule Arrow.Factory do
   @moduledoc false
 
   use ExMachina.Ecto, repo: Arrow.Repo
+  use Arrow.OpenRouteServiceFactory
 
   def adjustment_factory do
     %Arrow.Adjustment{
@@ -25,7 +26,8 @@ defmodule Arrow.Factory do
       adjustment_kind: :bus,
       disruption: build(:disruption),
       days_of_week: [build(:day_of_week)],
-      trip_short_names: [build(:trip_short_name)]
+      trip_short_names: [build(:trip_short_name)],
+      title: sequence("Title")
     }
     |> merge_attributes(attrs)
     |> evaluate_lazy_attributes()
@@ -54,5 +56,48 @@ defmodule Arrow.Factory do
 
   def note_factory do
     %Arrow.Disruption.Note{author: "An author", body: "This is the body."}
+  end
+
+  def route_stop_factory do
+    %Arrow.Shuttles.RouteStop{
+      direction_id: :"0",
+      stop_sequence: sequence(:route_stop_stop_sequence, & &1)
+    }
+  end
+
+  def stop_factory do
+    %Arrow.Shuttles.Stop{
+      stop_id: sequence(:source_label, &"stop-#{&1}"),
+      stop_name: sequence(:source_label, &"Stop #{&1}"),
+      stop_desc: sequence(:source_label, &"Stop Description #{&1}"),
+      stop_lat: 72.0,
+      stop_lon: 43.0,
+      municipality: "Boston"
+    }
+  end
+
+  def gtfs_stop_factory(attrs \\ %{}) do
+    %Arrow.Gtfs.Stop{
+      id: sequence(:source_label, &"gtfs-stop-#{&1}"),
+      code: nil,
+      name: "Test Stop",
+      desc: nil,
+      platform_code: nil,
+      platform_name: nil,
+      lat: 42.3601,
+      lon: -71.0589,
+      zone_id: nil,
+      address: nil,
+      url: nil,
+      level: nil,
+      location_type: :stop_platform,
+      parent_station: nil,
+      wheelchair_boarding: :accessible,
+      municipality: "Boston",
+      on_street: nil,
+      at_street: nil,
+      vehicle_type: :bus
+    }
+    |> merge_attributes(attrs)
   end
 end

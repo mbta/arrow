@@ -1,7 +1,8 @@
 defmodule ArrowWeb.TryApiTokenAuthTest do
   use ArrowWeb.ConnCase
-  import ExUnit.CaptureLog
-  import Test.Support.Helpers
+
+  alias Arrow.HTTPMock
+  import Mox
 
   describe "init/1" do
     test "passes options through unchanged" do
@@ -28,53 +29,61 @@ defmodule ArrowWeb.TryApiTokenAuthTest do
     end
 
     test "signs user in if correct API key given", %{conn: conn} do
-      old_ueberauth_config = Application.get_env(:ueberauth, Ueberauth.Strategy.Cognito)
+      auth_token = auth_token_for("foo@mbta.com")
 
-      on_exit(fn ->
-        Application.put_env(:ueberauth, Ueberauth.Strategy.Cognito, old_ueberauth_config)
+      expect(HTTPMock, :get, fn url, headers, opts ->
+        assert url == "https://keycloak.example/auth/realm/users"
+        assert {_, "Bearer fake_access_token"} = List.keyfind(headers, "authorization", 0)
+
+        assert %{
+                 email: "foo@mbta.com"
+               } = opts[:params]
+
+        {:ok,
+         %HTTPoison.Response{
+           status_code: 200,
+           body: Jason.encode!([%{id: "admin_user_id"}])
+         }}
       end)
 
-      Application.put_env(
-        :ueberauth,
-        Ueberauth.Strategy.Cognito,
-        Keyword.put(old_ueberauth_config, :user_pool_id, "dummy_pool")
-      )
-
-      token = Arrow.AuthToken.get_or_create_token_for_user("foo@mbta.com")
+      expect(HTTPMock, :get, fn _url, _headers, _opts ->
+        {:ok,
+         %HTTPoison.Response{
+           status_code: 200,
+           body: Jason.encode!([%{name: "read-only"}, %{name: "admin"}])
+         }}
+      end)
 
       conn =
         conn
-        |> init_test_session([])
-        |> put_req_header("x-api-key", token)
+        |> put_req_header("x-api-key", auth_token.token)
         |> ArrowWeb.TryApiTokenAuth.call([])
 
       claims = Guardian.Plug.current_claims(conn)
 
       assert claims["sub"] == "foo@mbta.com"
       assert claims["typ"] == "access"
-      assert claims["groups"] == ["arrow-admin"]
-      assert get_session(conn, :arrow_username) == "foo@mbta.com"
+      assert claims["roles"] == ["read-only", "admin"]
+      assert Guardian.Plug.current_resource(conn) == "foo@mbta.com"
     end
 
-    test "handles unexpected response from Cognito API", %{conn: conn} do
-      reassign_env(:ex_aws_requester, {Fake.ExAws, :unexpected_response})
+    test "handles API token with local database token from gtfs_creator user", %{conn: conn} do
+      token = Arrow.AuthToken.get_or_create_token_for_user("gtfs_creator_ci@mbta.com")
 
-      token = Arrow.AuthToken.get_or_create_token_for_user("foo@mbta.com")
+      conn =
+        conn
+        |> put_req_header("x-api-key", token)
+        |> ArrowWeb.TryApiTokenAuth.call([])
 
-      log =
-        capture_log([level: :warn], fn ->
-          conn =
-            conn
-            |> init_test_session([])
-            |> put_req_header("x-api-key", token)
-            |> ArrowWeb.TryApiTokenAuth.call([])
+      claims = Guardian.Plug.current_claims(conn)
 
-          claims = Guardian.Plug.current_claims(conn)
-
-          assert claims["groups"] == []
-        end)
-
-      assert log =~ "unexpected_aws_api_response"
+      assert claims["roles"] == ["read-only"]
+      assert Guardian.Plug.current_resource(conn) == "gtfs_creator_ci@mbta.com"
     end
+  end
+
+  defp auth_token_for(email) do
+    token = Arrow.AuthToken.get_or_create_token_for_user(email)
+    Arrow.Repo.get_by(Arrow.AuthToken, token: token)
   end
 end

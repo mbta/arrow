@@ -2,12 +2,11 @@ defmodule Arrow.Ueberauth.Strategy.Fake do
   @moduledoc false
 
   use Ueberauth.Strategy, ignores_csrf_attack: true
-  alias Arrow.Accounts.Group
 
   @impl Ueberauth.Strategy
   def handle_request!(conn) do
     conn
-    |> redirect!("/auth/cognito/callback")
+    |> redirect!("/auth/keycloak/callback")
     |> halt()
   end
 
@@ -28,7 +27,7 @@ defmodule Arrow.Ueberauth.Strategy.Fake do
       refresh_token: "fake_refresh_token",
       expires: true,
       expires_at: System.system_time(:second) + 60 * 60,
-      other: %{groups: [Group.admin()]}
+      other: %{groups: ["arrow-admin"]}
     }
   end
 
@@ -38,8 +37,17 @@ defmodule Arrow.Ueberauth.Strategy.Fake do
   end
 
   @impl Ueberauth.Strategy
-  def extra(_conn) do
-    %Ueberauth.Auth.Extra{raw_info: %{}}
+  def extra(conn) do
+    %Ueberauth.Auth.Extra{
+      raw_info: %UeberauthOidcc.RawInfo{
+        claims: %{
+          "iat" => System.system_time(:second)
+        },
+        userinfo: %{
+          "roles" => Ueberauth.Strategy.Helpers.options(conn)[:groups]
+        }
+      }
+    }
   end
 
   @impl Ueberauth.Strategy

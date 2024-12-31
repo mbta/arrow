@@ -1,0 +1,9 @@
+<div class="d-flex align-items-center">
+  <div class="d-flex flex-column">
+    <%= for kind <- adjustment_kinds(@revision) do %>
+      {adjustment_kind_icon(@conn, kind, "sm", class: "my-1 mr-2")}
+    <% end %>
+  </div>
+
+  {@revision.description}
+</div>

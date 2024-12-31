@@ -1,0 +1,20 @@
+<header class="container bg-light">
+  <nav class="navbar navbar-expand navbar-light">
+    <div class="navbar-brand">
+      <a href="/" class="m-header__arrow">
+        {img_tag(~p"/images/logo.svg", width: "34", height: "34")}
+        <span class="m-header__arrow-text">ARROW</span>
+      </a>
+    </div>
+
+    <div class="m-header__long-name navbar-text justify-content-end navbar-collapse">
+      Adjustments to the Regular Right of Way {link("logout",
+        to: ~p"/auth/keycloak/logout",
+        class: "ml-2 btn btn-outline-danger"
+      )}
+      <div class="hidden">
+        {@view}
+      </div>
+    </div>
+  </nav>
+</header>

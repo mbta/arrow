@@ -1,0 +1,20 @@
+<.header>
+  shuttles
+  <:actions>
+    <.link href={~p"/shuttles/new"}>
+      <.button>New Shuttle</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="shuttles" rows={@shuttles} row_click={&JS.navigate(~p"/shuttles/#{&1}")}>
+  <:col :let={shuttle} label="Shuttle name">{shuttle.shuttle_name}</:col>
+  <:col :let={shuttle} label="Disrupted route">{shuttle.disrupted_route_id}</:col>
+  <:col :let={shuttle} label="Status">{shuttle.status}</:col>
+  <:action :let={shuttle}>
+    <div class="sr-only">
+      <.link navigate={~p"/shuttles/#{shuttle}"}>Show</.link>
+    </div>
+    <.link navigate={~p"/shuttles/#{shuttle}/edit"}>Edit</.link>
+  </:action>
+</.table>

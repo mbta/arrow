@@ -20,6 +20,15 @@ defmodule Arrow.Repo do
     token = mod.generate_db_auth_token(hostname, username, port, %{})
     :ok = Logger.info("generated_aws_rds_iam_auth_token")
 
-    Keyword.put(config, :password, token)
+    Keyword.merge(config,
+      password: token,
+      ssl: [
+        cacertfile: Path.join(:code.priv_dir(:arrow), "aws-cert-bundle.pem"),
+        verify: :verify_peer,
+        server_name_indication: String.to_charlist(hostname),
+        verify_fun:
+          {&:ssl_verify_hostname.verify_fun/3, [check_hostname: String.to_charlist(hostname)]}
+      ]
+    )
   end
 end

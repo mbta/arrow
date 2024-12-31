@@ -56,9 +56,9 @@ const DatePicker = ({
         }
         onChange={(date) => {
           if (onChange) {
-            onChange(encodeDate(date as Date | null))
+            onChange(encodeDate(date))
           } else {
-            setInternalSelected(date as Date | null)
+            setInternalSelected(date)
           }
         }}
         placeholderText="__ / __ / ____"

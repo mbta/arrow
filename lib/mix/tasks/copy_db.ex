@@ -9,6 +9,10 @@ defmodule Mix.Tasks.CopyDb do
   @shortdoc "Copies database"
   @impl Mix.Task
   def run(_args) do
+    # Load the DBStructure module now, so that relevant atoms like :route_id are
+    # registered ahead of the call to `String.to_existing_atom/1` further down
+    # in this function.
+    Code.ensure_loaded!(Arrow.DBStructure)
     api_key = System.get_env("ARROW_API_KEY")
     domain = System.get_env("ARROW_DOMAIN", "https://arrow.mbta.com")
     fetch_module = Application.get_env(:arrow, :http_client)
@@ -45,26 +49,30 @@ defmodule Mix.Tasks.CopyDb do
   defp get_error(%{status_code: status_code}), do: "issue with request: #{status_code}"
 
   @spec parse_json_value(any()) :: any()
+  defp parse_json_value(value) when is_binary(value) do
+    case DateTime.from_iso8601(value) do
+      {:ok, dt, _} ->
+        dt
+
+      {:error, _} ->
+        parse_separate_date_or_time(value)
+    end
+  end
+
   defp parse_json_value(value) do
-    if is_binary(value) do
-      case DateTime.from_iso8601(value) do
-        {:ok, dt, _} ->
-          dt
+    value
+  end
 
-        {:error, _} ->
-          case Date.from_iso8601(value) do
-            {:ok, d} ->
-              d
+  defp parse_separate_date_or_time(value) do
+    case Date.from_iso8601(value) do
+      {:ok, d} ->
+        d
 
-            {:error, _} ->
-              case Time.from_iso8601(value) do
-                {:ok, t} -> t
-                {:error, _} -> value
-              end
-          end
-      end
-    else
-      value
+      {:error, _} ->
+        case Time.from_iso8601(value) do
+          {:ok, t} -> t
+          {:error, _} -> value
+        end
     end
   end
 end

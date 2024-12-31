@@ -1,8 +1,11 @@
 /* This file is for your main application css. */
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 @import "./variables.css";
 @import "./bootstrap.css";
 @import "../node_modules/react-datepicker/dist/react-datepicker.css";
+@import "../node_modules/leaflet/dist/leaflet.css";
 
 @import "./base.css";
 @import "./checkbox.css";
@@ -16,3 +19,4 @@
 @import "./header.css";
 @import "./icon.css";
 @import "./notes.css";
+@import "./shapes.css";

@@ -1,0 +1,10 @@
+<._header view="app" />
+
+<main class="container">
+  <._flash flash={@flash} />
+  {@inner_content}
+</main>
+
+<._footer />
+
+{content_tag(:script, "", type: "text/javascript", src: ~p"/assets/app.js")}

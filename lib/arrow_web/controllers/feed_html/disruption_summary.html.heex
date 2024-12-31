@@ -1,0 +1,54 @@
+<div class={"border p-3 bg-gray-100 relative" <> (if !@revision.is_active, do: " bg-red-100", else: "")}>
+  <div class="text-xs absolute bottom-0 right-0">Revision #{@revision.id}</div>
+  <dl>
+    <div class="flex flex-col md:flex-row">
+      <div class="flex-1">
+        <dt class="mt-3">ROW Status</dt>
+        <dd>{if @revision.row_approved, do: "Approved", else: "Pending"}</dd>
+
+        <dt class="mt-3">Adjustments</dt>
+        <dd>
+          <%= for a <- @revision.adjustments do %>
+            <span class="bg-white px-1 border-bottom">{a.source_label}</span>
+          <% end %>
+        </dd>
+
+        <dt class="mt-3">Date</dt>
+        <dd>
+          <span class="text-xs">start</span>
+          {@revision.start_date}
+          <span class="text-xs">end</span>
+          {@revision.end_date}
+        </dd>
+        <dt class="mt-3">Description</dt>
+        <dd>{@revision.description}</dd>
+      </div>
+      <div class="flex-1">
+        <dt>Exception Dates</dt>
+        <dd>
+          <%= if @revision.exceptions == [] do %>
+            None
+          <% else %>
+            <%= for exc <- @revision.exceptions do %>
+              <span class="bg-gray-300 mr-1 px-2 py-1 rounded-full">
+                {exc.excluded_date}
+              </span>
+            <% end %>
+          <% end %>
+        </dd>
+
+        <dt class="mt-3">Trip Short Names</dt>
+        <dd>
+          <%= if @revision.trip_short_names == [] do %>
+            All
+          <% else %>
+            {@revision.trip_short_names |> Enum.map(& &1.trip_short_name) |> Enum.join(", ")}
+          <% end %>
+        </dd>
+
+        <dt class="mt-3">Active?</dt>
+        <dd>{@revision.is_active}</dd>
+      </div>
+    </div>
+  </dl>
+</div>
