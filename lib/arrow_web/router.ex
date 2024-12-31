@@ -50,6 +50,14 @@ defmodule ArrowWeb.Router do
     resources("/disruptions", DisruptionController, except: [:index])
     put("/disruptions/:id/row_status", DisruptionController, :update_row_status)
     post("/disruptions/:id/notes", NoteController, :create)
+
+    live("/disruptionsv2", DisruptionV2Live.Index, :index)
+    live("/disruptionsv2/new", DisruptionV2Live.Index, :new)
+    live("/disruptionsv2/:id/edit", DisruptionV2Live.Index, :edit)
+
+    live("/disruptionsv2/:id", DisruptionV2Live.Show, :show)
+    live("/disruptionsv2/:id/show/edit", DisruptionV2Live.Show, :edit)
+
     live("/stops/new", StopViewLive, :new)
     live("/stops/:id/edit", StopViewLive, :edit)
     get("/stops", StopController, :index)

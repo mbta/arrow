@@ -405,6 +405,37 @@ ALTER SEQUENCE public.disruptions_id_seq1 OWNED BY public.disruptions.id;
 
 
 --
+-- Name: disruptionsv2; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.disruptionsv2 (
+    id bigint NOT NULL,
+    name character varying(255),
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
+-- Name: disruptionsv2_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.disruptionsv2_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: disruptionsv2_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.disruptionsv2_id_seq OWNED BY public.disruptionsv2.id;
+
+
+--
 -- Name: foreign_key_constraints; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -1005,6 +1036,13 @@ ALTER TABLE ONLY public.disruptions ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
+-- Name: disruptionsv2 id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.disruptionsv2 ALTER COLUMN id SET DEFAULT nextval('public.disruptionsv2_id_seq'::regclass);
+
+
+--
 -- Name: oban_jobs id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1116,6 +1154,14 @@ ALTER TABLE ONLY public.disruption_revisions
 
 ALTER TABLE ONLY public.disruptions
     ADD CONSTRAINT disruptions_pkey1 PRIMARY KEY (id);
+
+
+--
+-- Name: disruptionsv2 disruptionsv2_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.disruptionsv2
+    ADD CONSTRAINT disruptionsv2_pkey PRIMARY KEY (id);
 
 
 --
@@ -1389,6 +1435,13 @@ CREATE INDEX gtfs_stops_lat_lon_vehicle_type_id_index ON public.gtfs_stops USING
 
 
 --
+-- Name: gtfs_stops_lat_lon_vehicle_type_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX gtfs_stops_lat_lon_vehicle_type_index ON public.gtfs_stops USING btree (lat, lon, vehicle_type);
+
+
+--
 -- Name: oban_jobs_args_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1449,6 +1502,13 @@ CREATE UNIQUE INDEX shuttles_shuttle_name_index ON public.shuttles USING btree (
 --
 
 CREATE UNIQUE INDEX stops_stop_id_index ON public.stops USING btree (stop_id);
+
+
+--
+-- Name: stops_stop_lat_stop_lon_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX stops_stop_lat_stop_lon_index ON public.stops USING btree (stop_lat, stop_lon);
 
 
 --
@@ -1776,3 +1836,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20241030181351);
 INSERT INTO public."schema_migrations" (version) VALUES (20241209204043);
 INSERT INTO public."schema_migrations" (version) VALUES (20241210155455);
 INSERT INTO public."schema_migrations" (version) VALUES (20241219160941);
+INSERT INTO public."schema_migrations" (version) VALUES (20241231110033);
