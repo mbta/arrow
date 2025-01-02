@@ -1,0 +1,17 @@
+<hr />
+
+<.header>
+  create new disruption
+</.header>
+
+<hr />
+
+<h2>Disruption</h2>
+
+<.live_component
+  module={ArrowWeb.DisruptionV2Live.DisruptionFormComponent}
+  id={@disruption_v2.id || :new}
+  title={@page_title}
+  action={@live_action}
+  disruption_v2={@disruption_v2}
+/>
