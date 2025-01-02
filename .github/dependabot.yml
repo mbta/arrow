@@ -4,12 +4,24 @@ updates:
   directory: "/"
   schedule:
     interval: daily
+  groups:
+    mix-patches:
+      patterns:
+        - "*"
+      update-types:
+        - "patch"
   ignore:
     - dependency-name: heroicons
 - package-ecosystem: npm
   directory: "/assets"
   schedule:
     interval: daily
+  groups:
+    npm-patches:
+      patterns:
+        - "*"
+      update-types:
+        - "patch"
   ignore:
     - dependency-name: live_select
     - dependency-name: phoenix
