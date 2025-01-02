@@ -62,7 +62,7 @@ defmodule Arrow.MixProject do
       {:httpoison, "~> 2.2"},
       {:ja_serializer, "~> 0.18.0"},
       {:jason, "~> 1.0"},
-      {:live_select, "~> 1.4.4"},
+      {:live_select, "~> 1.5.2"},
       {:lcov_ex, "~> 0.2", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.2", only: :test},
       {:oban, "~> 2.18"},
@@ -93,8 +93,7 @@ defmodule Arrow.MixProject do
        tag: "v2.1.1",
        sparse: "optimized",
        app: false,
-       compile: false,
-       depth: 1},
+       compile: false},
       {:sax_map, "~> 1.2"},
       {:unzip, "~> 0.12.0"},
       {:xlsxir, "~> 1.6"}
