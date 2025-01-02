@@ -155,7 +155,14 @@ defmodule ArrowWeb.ShuttleViewLive do
             <div class="col-lg-1">
               <.icon name="hero-bars-3" class="h-4 w-4 drag-handle cursor-grab" />
             </div>
-            <.stop_input field={f_route_stop[:display_stop_id]} class="col-lg-6" />
+            <.stop_input
+              field={f_route_stop[:display_stop_id]}
+              stop_or_gtfs_stop={
+                Phoenix.HTML.Form.input_value(f_route_stop, :stop) ||
+                  Phoenix.HTML.Form.input_value(f_route_stop, :gtfs_stop)
+              }
+              class="col-lg-6"
+            />
             <.input
               field={f_route_stop[:time_to_next_stop]}
               type="number"

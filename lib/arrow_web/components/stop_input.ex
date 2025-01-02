@@ -12,28 +12,21 @@ defmodule ArrowWeb.StopInput do
 
   attr :id, :string, required: true
   attr :field, :any, required: true
+  attr :stop_or_gtfs_stop, :any, required: true
   attr :label, :string, default: "Stop ID"
   attr :class, :string, default: nil
 
   def render(assigns) do
-    assigns =
-      assign(
-        assigns,
-        :stop,
-        Phoenix.HTML.Form.input_value(assigns.field.form, :stop) ||
-          Phoenix.HTML.Form.input_value(assigns.field.form, :gtfs_stop)
-      )
-
     # This should only change if the selected value actually changes,
     # not just when a user is typing and options change.
     assigns =
       assign(
         assigns,
         :options,
-        if is_nil(assigns.stop) || !Ecto.assoc_loaded?(assigns.stop) do
+        if is_nil(assigns.stop_or_gtfs_stop) || !Ecto.assoc_loaded?(assigns.stop_or_gtfs_stop) do
           []
         else
-          [option_for_stop(assigns.stop)]
+          [option_for_stop(assigns.stop_or_gtfs_stop)]
         end
       )
 

@@ -459,10 +459,11 @@ defmodule ArrowWeb.CoreComponents do
   """
 
   attr :id, :string
+  attr :field, :any, required: true, doc: "Field for `display_stop_id` value"
 
-  attr :field, :any,
+  attr :stop_or_gtfs_stop, :any,
     required: true,
-    doc: "Field for `display_stop_id` from a form for a `route_stop`"
+    doc: "Currently selected stop or GTFS stop, if any"
 
   attr :label, :string, default: "Stop ID"
   attr :class, :string, default: nil
@@ -474,7 +475,14 @@ defmodule ArrowWeb.CoreComponents do
       end)
 
     ~H"""
-    <.live_component module={ArrowWeb.StopInput} id={@id} field={@field} class={@class} />
+    <.live_component
+      module={ArrowWeb.StopInput}
+      id={@id}
+      field={@field}
+      stop_or_gtfs_stop={@stop_or_gtfs_stop}
+      class={@class}
+      s
+    />
     """
   end
 
