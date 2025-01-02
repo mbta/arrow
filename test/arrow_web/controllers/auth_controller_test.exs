@@ -75,4 +75,56 @@ defmodule ArrowWeb.Controllers.AuthControllerTest do
       refute Guardian.Plug.authenticated?(conn)
     end
   end
+
+  test "redirects to auth_orig_path if present", %{conn: conn} do
+    current_time = System.system_time(:second)
+    original_path = "/some/original/path"
+
+    auth = %Ueberauth.Auth{
+      uid: "foo@mbta.com",
+      provider: :keycloak,
+      credentials: %Ueberauth.Auth.Credentials{
+        expires_at: current_time + 1_000,
+        other: %{id_token: "id_token"}
+      },
+      extra: %{
+        raw_info: %UeberauthOidcc.RawInfo{}
+      }
+    }
+
+    conn =
+      conn
+      |> init_test_session(%{})
+      |> put_session(:auth_orig_path, original_path)
+      |> assign(:ueberauth_auth, auth)
+      |> get(Routes.auth_path(conn, :callback, "keycloak"))
+
+    response = html_response(conn, 302)
+    assert response =~ original_path
+  end
+
+  test "redirects to root if auth_orig_path is not present", %{conn: conn} do
+    current_time = System.system_time(:second)
+
+    auth = %Ueberauth.Auth{
+      uid: "foo@mbta.com",
+      provider: :keycloak,
+      credentials: %Ueberauth.Auth.Credentials{
+        expires_at: current_time + 1_000,
+        other: %{id_token: "id_token"}
+      },
+      extra: %{
+        raw_info: %UeberauthOidcc.RawInfo{}
+      }
+    }
+
+    conn =
+      conn
+      |> init_test_session(%{})
+      |> assign(:ueberauth_auth, auth)
+      |> get(Routes.auth_path(conn, :callback, "keycloak"))
+
+    response = html_response(conn, 302)
+    assert response =~ "/"
+  end
 end

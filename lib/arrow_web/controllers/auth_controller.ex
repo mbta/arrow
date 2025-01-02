@@ -31,6 +31,8 @@ defmodule ArrowWeb.AuthController do
 
     roles = auth.extra.raw_info.userinfo["roles"] || []
 
+    redirect_path = get_session(conn, :auth_orig_path, Routes.disruption_path(conn, :index))
+
     logout_url =
       case UeberauthOidcc.initiate_logout_url(auth, %{
              post_logout_redirect_uri: "https://www.mbta.com/"
@@ -54,7 +56,7 @@ defmodule ArrowWeb.AuthController do
       },
       ttl: {1, :minute}
     )
-    |> redirect(to: Routes.disruption_path(conn, :index))
+    |> redirect(to: redirect_path)
   end
 
   def callback(
