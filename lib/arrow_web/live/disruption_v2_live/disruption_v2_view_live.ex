@@ -1,22 +1,17 @@
-defmodule ArrowWeb.DisruptionV2Live.Index do
+defmodule ArrowWeb.DisruptionV2ViewLive do
   use ArrowWeb, :live_view
 
   alias Arrow.Disruptions
   alias Arrow.Disruptions.DisruptionV2
 
+  embed_templates "disruption_v2_live/*"
+
   @impl true
   def mount(%{} = _params, _session, socket) do
-    disruption = %DisruptionV2{}
-
-    gtfs_disruptable_routes = Shuttles.list_disruptable_routes()
-    shapes = Shuttles.list_shapes()
-    form = shuttle |> Shuttles.change_shuttle() |> to_form()
-
     socket =
       socket
-      |> assign(:form, form)
       |> assign(:form_action, "create")
-      |> assign(:http_action, ~p"/shuttles")
+      |> assign(:http_action, ~p"/disruptionsv2/new")
       |> assign(:title, "Create new Disruption")
       |> assign(:errors, %{route_stops: %{}})
 
@@ -50,18 +45,4 @@ defmodule ArrowWeb.DisruptionV2Live.Index do
     |> assign(:page_title, "Listing Disruptionsv2")
     |> assign(:disruption_v2, nil)
   end
-
-  @impl true
-  def handle_info({ArrowWeb.DisruptionV2Live.FormComponent, {:saved, disruption_v2}}, socket) do
-    {:noreply, stream_insert(socket, :disruptionsv2, disruption_v2)}
-  end
-
-  @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    disruption_v2 = Disruptions.get_disruption_v2!(id)
-    {:ok, _} = Disruptions.delete_disruption_v2(disruption_v2)
-
-    {:noreply, stream_delete(socket, :disruptionsv2, disruption_v2)}
-  end
-
 end
