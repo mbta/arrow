@@ -12,7 +12,18 @@ defmodule ArrowWeb.AuthManager.ErrorHandler do
   def auth_error(conn, error, _opts) do
     provider = Application.get_env(:arrow, :ueberauth_provider)
     auth_params = auth_params_for_error(error)
-    Controller.redirect(conn, to: Routes.auth_path(conn, :request, "#{provider}", auth_params))
+
+    conn
+    |> maybe_put_auth_orig_path(conn)
+    |> Controller.redirect(to: Routes.auth_path(conn, :request, "#{provider}", auth_params))
+  end
+
+  defp maybe_put_auth_orig_path(conn, original_conn) do
+    if original_conn.method == "GET" do
+      Plug.Conn.put_session(conn, :auth_orig_path, original_conn.request_path)
+    else
+      conn
+    end
   end
 
   def auth_params_for_error({:invalid_token, {:auth_expired, sub}}) do
