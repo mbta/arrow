@@ -261,6 +261,74 @@ defmodule Arrow.ShuttlesTest do
     end
   end
 
+  describe "stops_or_gtfs_stops_by_search_string/1" do
+    test "finds Arrow stop by stop ID" do
+      insert(:stop, %{stop_id: "12"})
+
+      assert [%Arrow.Shuttles.Stop{stop_id: "12"}] =
+               Shuttles.stops_or_gtfs_stops_by_search_string("1")
+    end
+
+    test "finds Arrow stop by stop description" do
+      stop = insert(:stop, %{stop_desc: "Description"})
+      stop_id = stop.stop_id
+
+      assert [%Arrow.Shuttles.Stop{stop_id: ^stop_id}] =
+               Shuttles.stops_or_gtfs_stops_by_search_string("Des")
+    end
+
+    test "finds Arrow stop by stop name" do
+      stop = insert(:stop, %{stop_name: "Name"})
+      stop_id = stop.stop_id
+
+      assert [%Arrow.Shuttles.Stop{stop_id: ^stop_id}] =
+               Shuttles.stops_or_gtfs_stops_by_search_string("Na")
+    end
+
+    test "finds GTFS stop by stop ID" do
+      insert(:gtfs_stop, %{id: "12"})
+
+      assert [%Arrow.Gtfs.Stop{id: "12"}] =
+               Shuttles.stops_or_gtfs_stops_by_search_string("1")
+    end
+
+    test "finds GTFS stop by stop description" do
+      gtfs_stop = insert(:gtfs_stop, %{desc: "Description"})
+      gtfs_stop_id = gtfs_stop.id
+
+      assert [%Arrow.Gtfs.Stop{id: ^gtfs_stop_id}] =
+               Shuttles.stops_or_gtfs_stops_by_search_string("Des")
+    end
+
+    test "finds GTFS stop by stop name" do
+      gtfs_stop = insert(:gtfs_stop, %{name: "Name"})
+      gtfs_stop_id = gtfs_stop.id
+
+      assert [%Arrow.Gtfs.Stop{id: ^gtfs_stop_id}] =
+               Shuttles.stops_or_gtfs_stops_by_search_string("Na")
+    end
+
+    test "finds Arrow and GTFS stops when both match, with Arrow first" do
+      stop = insert(:stop, %{stop_desc: "Description A"})
+      stop_id = stop.stop_id
+
+      gtfs_stop = insert(:gtfs_stop, %{desc: "Description B"})
+      gtfs_stop_id = gtfs_stop.id
+
+      assert [%Arrow.Shuttles.Stop{stop_id: ^stop_id}, %Arrow.Gtfs.Stop{id: ^gtfs_stop_id}] =
+               Shuttles.stops_or_gtfs_stops_by_search_string("Des")
+    end
+
+    test "when a stop ID is duplicated in Arrow and GTFS, returns the Arrow one" do
+      insert(:stop, %{stop_id: "stop"})
+
+      insert(:gtfs_stop, %{id: "stop"})
+
+      assert [%Arrow.Shuttles.Stop{stop_id: "stop"}] =
+               Shuttles.stops_or_gtfs_stops_by_search_string("st")
+    end
+  end
+
   describe "get_travel_times/1" do
     test "calculates travel time between coordinates" do
       expect(

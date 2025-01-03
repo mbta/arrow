@@ -414,12 +414,16 @@ defmodule ArrowWeb.CoreComponents do
   attr :options, :any
   attr :value_mapper, :any
   attr :allow_clear, :boolean
+  attr :target, :any, default: nil
 
   def live_select(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
     assigns =
       assigns
       |> assign(:errors, Enum.map(field.errors, &translate_error(&1)))
-      |> assign(:live_select_opts, assigns_to_attributes(assigns, [:errors, :label, :class]))
+      |> assign(
+        :live_select_opts,
+        assigns_to_attributes(assigns, [:errors, :label, :class, :target])
+      )
 
     ~H"""
     <div class="form-group">
@@ -440,12 +444,45 @@ defmodule ArrowWeb.CoreComponents do
           dropdown_extra_class={[
             "list-unstyled"
           ]}
+          phx-target={@target}
           {@live_select_opts}
         />
 
         <.error :for={msg <- @errors}>{msg}</.error>
       </div>
     </div>
+    """
+  end
+
+  @doc """
+  LiveSelect-based input for stop ID with autocomplete
+  """
+
+  attr :id, :string
+  attr :field, :any, required: true, doc: "Field for `display_stop_id` value"
+
+  attr :stop_or_gtfs_stop, :any,
+    required: true,
+    doc: "Currently selected stop or GTFS stop, if any"
+
+  attr :label, :string, default: "Stop ID"
+  attr :class, :string, default: nil
+
+  def stop_input(assigns) do
+    assigns =
+      assign_new(assigns, :id, fn %{field: field} ->
+        "#{field.form.name}_#{field.name}_stop_input_component"
+      end)
+
+    ~H"""
+    <.live_component
+      module={ArrowWeb.StopInput}
+      id={@id}
+      field={@field}
+      stop_or_gtfs_stop={@stop_or_gtfs_stop}
+      class={@class}
+      s
+    />
     """
   end
 
