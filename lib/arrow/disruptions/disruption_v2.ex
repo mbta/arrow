@@ -3,7 +3,10 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   import Ecto.Changeset
 
   schema "disruptionsv2" do
-    field :name, :string
+    field :title, :string
+    field :mode, :string
+    field :is_active, :boolean
+    field :description, :string
 
     timestamps()
   end
@@ -11,7 +14,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   @doc false
   def changeset(disruption_v2, attrs) do
     disruption_v2
-    |> cast(attrs, [:name])
-    |> validate_required([:name])
+    |> cast(attrs, [:title, :mode, :is_active, :description])
+    |> validate_required([:title, :mode, :is_active, :description])
   end
 end
