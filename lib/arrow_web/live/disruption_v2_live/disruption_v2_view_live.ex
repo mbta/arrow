@@ -8,16 +8,34 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   embed_templates "disruption_v2_live/*"
 
   @impl true
+  def mount(%{"id" => disruption_id}, _session, socket) do
+    disruption = Disruptions.get_disruption_v2!(disruption_id)
+
+    dbg()
+
+    socket =
+      socket
+      |> assign(:form_action, :edit)
+      |> assign(:title, "edit disruption")
+      |> assign(:form, Disruptions.change_disruption_v2(disruption) |> to_form)
+      |> assign(:errors, %{})
+      |> assign(:icon_paths, icon_paths(socket))
+      |> assign(:disruption_v2, disruption)
+
+    {:ok, socket}
+  end
+
+  @impl true
   def mount(%{} = _params, _session, socket) do
 
     socket =
       socket
-      |> assign(:form_action, "create")
+      |> assign(:form_action, :create)
       |> assign(:http_action, ~p"/disruptionsv2/new")
-      |> assign(:title, "Create new Disruption")
+      |> assign(:title, "create new disruption")
       |> assign(:form, Disruptions.change_disruption_v2(%DisruptionV2{}) |> to_form)
       |> assign(:errors, %{})
-      |> assign(:icon_paths, icon_paths(socket))
+|> assign(:icon_paths, icon_paths(socket))
       |> assign(:disruption_v2, %DisruptionV2{})
 
     {:ok, socket}
@@ -25,14 +43,16 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, stream(socket, :disruptionsv2, Disruptions.list_disruptionsv2())}
-  end
-
-  @impl true
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
+
+  # handle flash messages from child components
+  @impl true
+  def handle_info({:put_flash, type, message}, socket) do
+    {:noreply, put_flash(socket, type, message)}
+  end
+
 
   @adjustment_kind_icon_names %{
     blue_line: "blue-line",

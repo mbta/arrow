@@ -1,13 +1,12 @@
 defmodule ArrowWeb.DisruptionFormComponent do
   use ArrowWeb, :live_component
+  import ArrowWeb.Flash, only: [put_flash!: 3]
 
   alias Arrow.Disruptions
-  alias Arrow.Disruptions.DisruptionV2
-  alias Arrow.Adjustment
-
 
   @impl true
   def render(assigns) do
+    dbg()
     row_status_labels = %{"Approved": true, "Pending": false}
     mode_labels = %{"Subway": :subway, "Commuter Rail": :commuter_rail, "Bus": :bus, "Silver Line": :silver_line}
     ~H"""
@@ -117,7 +116,8 @@ defmodule ArrowWeb.DisruptionFormComponent do
       {:ok, _} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Disruption edited successfully")}
+         |> put_flash!(:info, "Disruption edited successfully")}
+
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -130,7 +130,7 @@ defmodule ArrowWeb.DisruptionFormComponent do
 
         {:noreply,
          socket
-         |> put_flash(:info, "Disruption created successfully")}
+         |> put_flash!(:info, "Disruption created successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}

@@ -52,7 +52,7 @@ defmodule ArrowWeb.Router do
     post("/disruptions/:id/notes", NoteController, :create)
 
     live("/disruptionsv2/new", DisruptionV2ViewLive, :new)
-    live("/disruptionsv2/:id", DisruptionV2ViewLive, :edit)
+    live("/disruptionsv2/:id/edit", DisruptionV2ViewLive, :edit)
 
     live("/stops/new", StopViewLive, :new)
     live("/stops/:id/edit", StopViewLive, :edit)

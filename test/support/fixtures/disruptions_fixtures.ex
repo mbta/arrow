@@ -11,7 +11,10 @@ defmodule Arrow.DisruptionsFixtures do
     {:ok, disruption_v2} =
       attrs
       |> Enum.into(%{
-        name: "some name"
+        title: "get disrupted bro",
+        mode: "subway",
+        is_active: true,
+        description: "very disruptive"
       })
       |> Arrow.Disruptions.create_disruption_v2()
 
