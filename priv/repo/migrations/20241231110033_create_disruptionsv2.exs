@@ -3,7 +3,10 @@ defmodule Arrow.Repo.Migrations.CreateDisruptionsv2 do
 
   def change do
     create table(:disruptionsv2) do
-      add :name, :string
+      add :title, :string
+      add :mode, :string
+      add :is_active, :boolean
+      add :description, :text
 
       timestamps()
     end

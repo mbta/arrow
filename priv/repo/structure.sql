@@ -410,7 +410,10 @@ ALTER SEQUENCE public.disruptions_id_seq1 OWNED BY public.disruptions.id;
 
 CREATE TABLE public.disruptionsv2 (
     id bigint NOT NULL,
-    name character varying(255),
+    title character varying(255),
+    mode character varying(255),
+    is_active boolean,
+    description text,
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL
 );
@@ -1435,13 +1438,6 @@ CREATE INDEX gtfs_stops_lat_lon_vehicle_type_id_index ON public.gtfs_stops USING
 
 
 --
--- Name: gtfs_stops_lat_lon_vehicle_type_index; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX gtfs_stops_lat_lon_vehicle_type_index ON public.gtfs_stops USING btree (lat, lon, vehicle_type);
-
-
---
 -- Name: oban_jobs_args_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1502,13 +1498,6 @@ CREATE UNIQUE INDEX shuttles_shuttle_name_index ON public.shuttles USING btree (
 --
 
 CREATE UNIQUE INDEX stops_stop_id_index ON public.stops USING btree (stop_id);
-
-
---
--- Name: stops_stop_lat_stop_lon_index; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX stops_stop_lat_stop_lon_index ON public.stops USING btree (stop_lat, stop_lon);
 
 
 --
