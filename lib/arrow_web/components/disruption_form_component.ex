@@ -10,17 +10,22 @@ defmodule ArrowWeb.DisruptionFormComponent do
 
   alias Arrow.Disruptions
 
+  @compile {:inline, disruption_status_labels: 0, mode_labels: 0}
+  @row_status_labels %{Approved: true, Pending: false}
+  @spec disruption_status_labels :: map()
+  def disruption_status_labels, do: @row_status_labels
+
+  @mode_labels %{
+    Subway: :subway,
+    "Commuter Rail": :commuter_rail,
+    Bus: :bus,
+    "Silver Line": :silver_line
+  }
+  @spec mode_labels :: map()
+  def mode_labels, do: @mode_labels
+
   @impl true
   def render(assigns) do
-    row_status_labels = %{Approved: true, Pending: false}
-
-    mode_labels = %{
-      Subway: :subway,
-      "Commuter Rail": :commuter_rail,
-      Bus: :bus,
-      "Silver Line": :silver_line
-    }
-
     ~H"""
     <div class="w-75">
       <.simple_form
@@ -37,7 +42,7 @@ defmodule ArrowWeb.DisruptionFormComponent do
           </fieldset>
           <fieldset class="w-50 ml-20">
             <legend>Approval Status</legend>
-            <div :for={{{status, value}, idx} <- Enum.with_index(row_status_labels)} %>
+            <div :for={{{status, value}, idx} <- Enum.with_index(disruption_status_labels())} %>
               <label class="form-check form-check-label">
                 <input
                   name={@form[:is_active].name}
@@ -54,7 +59,7 @@ defmodule ArrowWeb.DisruptionFormComponent do
         </div>
         <fieldset>
           <legend>Mode</legend>
-          <div :for={{{mode, value}, idx} <- Enum.with_index(mode_labels)}>
+          <div :for={{{mode, value}, idx} <- Enum.with_index(mode_labels())}>
             <label class="form-check form-check-label">
               <input
                 name={@form[:mode].name}
