@@ -8,7 +8,7 @@ defmodule Arrow.DisruptionsTest do
 
     import Arrow.DisruptionsFixtures
 
-    @invalid_attrs %{name: nil}
+    @invalid_attrs %{title: "foobar", description: "barfoo", mode: nil, is_active: true}
 
     test "list_disruptionsv2/0 returns all disruptionsv2" do
       disruption_v2 = disruption_v2_fixture()
@@ -21,10 +21,19 @@ defmodule Arrow.DisruptionsTest do
     end
 
     test "create_disruption_v2/1 with valid data creates a disruption_v2" do
-      valid_attrs = %{name: "some name"}
+      valid_attrs = %{
+        title: "the great molasses disruption of 2025",
+        mode: "commuter_rail",
+        is_active: true,
+        description: "Run for the hills"
+      }
 
-      assert {:ok, %DisruptionV2{} = disruption_v2} = Disruptions.create_disruption_v2(valid_attrs)
-      assert disruption_v2.name == "some name"
+      assert {:ok, %DisruptionV2{} = disruption_v2} =
+               Disruptions.create_disruption_v2(valid_attrs)
+
+      expected_disruption = struct(DisruptionV2, valid_attrs)
+
+      assert match?(expected_disruption, disruption_v2)
     end
 
     test "create_disruption_v2/1 with invalid data returns error changeset" do
@@ -33,15 +42,26 @@ defmodule Arrow.DisruptionsTest do
 
     test "update_disruption_v2/2 with valid data updates the disruption_v2" do
       disruption_v2 = disruption_v2_fixture()
-      update_attrs = %{name: "some updated name"}
 
-      assert {:ok, %DisruptionV2{} = disruption_v2} = Disruptions.update_disruption_v2(disruption_v2, update_attrs)
-      assert disruption_v2.name == "some updated name"
+      update_attrs = %{
+        title: "some updated name",
+        is_active: true,
+        description: "bar",
+        mode: "subway"
+      }
+
+      assert {:ok, %DisruptionV2{} = disruption_v2} =
+               Disruptions.update_disruption_v2(disruption_v2, update_attrs)
+      expected_disrtupion = struct(DisruptionV2, update_attrs)
+      assert match?(expected_disrtupion, disruption_v2)
     end
 
     test "update_disruption_v2/2 with invalid data returns error changeset" do
       disruption_v2 = disruption_v2_fixture()
-      assert {:error, %Ecto.Changeset{}} = Disruptions.update_disruption_v2(disruption_v2, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Disruptions.update_disruption_v2(disruption_v2, @invalid_attrs)
+
       assert disruption_v2 == Disruptions.get_disruption_v2!(disruption_v2.id)
     end
 

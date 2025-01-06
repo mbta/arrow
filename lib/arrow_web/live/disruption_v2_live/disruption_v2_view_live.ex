@@ -1,9 +1,9 @@
 defmodule ArrowWeb.DisruptionV2ViewLive do
   use ArrowWeb, :live_view
 
+  alias Arrow.Adjustment
   alias Arrow.Disruptions
   alias Arrow.Disruptions.DisruptionV2
-  alias Arrow.Adjustment
 
   embed_templates "disruption_v2_live/*"
 
@@ -25,7 +25,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   @impl true
   def mount(%{} = _params, _session, socket) do
-
     socket =
       socket
       |> assign(:form_action, :create)
@@ -33,11 +32,10 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:title, "create new disruption")
       |> assign(:form, Disruptions.change_disruption_v2(%DisruptionV2{}) |> to_form)
       |> assign(:errors, %{})
-|> assign(:icon_paths, icon_paths(socket))
+      |> assign(:icon_paths, icon_paths(socket))
       |> assign(:disruption_v2, %DisruptionV2{})
 
     {:ok, socket}
-
   end
 
   @impl true
@@ -50,7 +48,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   def handle_info({:put_flash, type, message}, socket) do
     {:noreply, put_flash(socket, type, message)}
   end
-
 
   @adjustment_kind_icon_names %{
     blue_line: "blue-line",
@@ -68,14 +65,20 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   }
 
   defp adjustment_kind_icon_path(socket, kind) do
-    Phoenix.VerifiedRoutes.static_path(socket, "/images/icon-#{@adjustment_kind_icon_names[kind]}-small.svg")
+    Phoenix.VerifiedRoutes.static_path(
+      socket,
+      "/images/icon-#{@adjustment_kind_icon_names[kind]}-small.svg"
+    )
   end
 
   defp icon_paths(socket) do
     Adjustment.kinds()
     |> Enum.map(&{&1, adjustment_kind_icon_path(socket, &1)})
     |> Enum.into(%{})
-    |> Map.put(:subway, Phoenix.VerifiedRoutes.static_path(socket, "/images/icon-mode-subway-small.svg"))
+    |> Map.put(
+      :subway,
+      Phoenix.VerifiedRoutes.static_path(socket, "/images/icon-mode-subway-small.svg")
+    )
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do

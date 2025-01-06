@@ -10,8 +10,18 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     is_active: true,
     description: "Run for the hills"
   }
-  @update_attrs %{title: "the second great molasses disruption"}
-  @invalid_attrs %{description: nil}
+  @update_attrs %{
+    title: "the second great molasses disruption",
+    mode: "subway",
+    is_active: false,
+    description: "there is more"
+  }
+  @invalid_attrs %{
+    title: nil,
+    mode: "silver_line",
+    is_active: true,
+    description: "foobar"
+  }
 
   defp create_disruption_v2(_) do
     disruption_v2 = disruption_v2_fixture()
@@ -37,6 +47,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
 
     @tag :authenticated_admin
     setup [:create_disruption_v2]
+
     test "updates disruption_v2", %{conn: conn, disruption_v2: disruption_v2} do
       {:ok, index_live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
 

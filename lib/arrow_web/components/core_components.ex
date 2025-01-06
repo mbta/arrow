@@ -380,8 +380,6 @@ defmodule ArrowWeb.CoreComponents do
     """
   end
 
-
-
   # All other inputs text, datetime-local, url, password, etc. are handled here...
   def input(assigns) do
     ~H"""
@@ -427,19 +425,19 @@ defmodule ArrowWeb.CoreComponents do
   def radio_group(assigns) do
     ~H"""
     <div>
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
       <fieldset>
-      <div :for={{%{value: value} = rad, idx} <- Enum.with_index(@radio)}>
-        <label for={"#{@field.id}-#{idx}"}><%= render_slot(rad) %></label>
-        <input
-          type="radio"
-          name={@field.name}
-          id={"#{@field.id}-#{idx}"}
-          value={value}
-          checked={to_string(@field.value) == to_string(value)}
-          class="rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6"
-        />
-      </div>
+        <div :for={{%{value: value} = rad, idx} <- Enum.with_index(@radio)}>
+          <label for={"#{@field.id}-#{idx}"}>{render_slot(rad)}</label>
+          <input
+            type="radio"
+            name={@field.name}
+            id={"#{@field.id}-#{idx}"}
+            value={value}
+            checked={to_string(@field.value) == to_string(value)}
+            class="rounded-lg text-zinc-900 focus:ring-0 sm:text-sm sm:leading-6"
+          />
+        </div>
       </fieldset>
     </div>
     """
