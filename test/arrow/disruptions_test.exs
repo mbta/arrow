@@ -31,9 +31,10 @@ defmodule Arrow.DisruptionsTest do
       assert {:ok, %DisruptionV2{} = disruption_v2} =
                Disruptions.create_disruption_v2(valid_attrs)
 
-      expected_disruption = struct(DisruptionV2, valid_attrs)
-
-      assert match?(expected_disruption, disruption_v2)
+      assert disruption_v2.title == valid_attrs.title
+      assert disruption_v2.mode == valid_attrs.mode
+      assert disruption_v2.is_active == valid_attrs.is_active
+      assert disruption_v2.description == valid_attrs.description
     end
 
     test "create_disruption_v2/1 with invalid data returns error changeset" do
@@ -53,8 +54,10 @@ defmodule Arrow.DisruptionsTest do
       assert {:ok, %DisruptionV2{} = disruption_v2} =
                Disruptions.update_disruption_v2(disruption_v2, update_attrs)
 
-      expected_disrtupion = struct(DisruptionV2, update_attrs)
-      assert match?(expected_disrtupion, disruption_v2)
+      assert disruption_v2.title == update_attrs.title
+      assert disruption_v2.mode == update_attrs.mode
+      assert disruption_v2.is_active == update_attrs.is_active
+      assert disruption_v2.description == update_attrs.description
     end
 
     test "update_disruption_v2/2 with invalid data returns error changeset" do
