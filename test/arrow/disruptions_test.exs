@@ -52,6 +52,7 @@ defmodule Arrow.DisruptionsTest do
 
       assert {:ok, %DisruptionV2{} = disruption_v2} =
                Disruptions.update_disruption_v2(disruption_v2, update_attrs)
+
       expected_disrtupion = struct(DisruptionV2, update_attrs)
       assert match?(expected_disrtupion, disruption_v2)
     end
