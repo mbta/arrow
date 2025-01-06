@@ -20,6 +20,6 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   def changeset(disruption_v2, attrs) do
     disruption_v2
     |> cast(attrs, [:title, :mode, :is_active, :description])
-    |> validate_required([:title, :mode, :is_active, :description])
+    |> validate_required([:title, :mode, :is_active])
   end
 end
