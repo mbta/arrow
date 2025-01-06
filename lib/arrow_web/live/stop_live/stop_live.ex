@@ -132,7 +132,7 @@ defmodule ArrowWeb.StopViewLive do
     {existing_stops, existing_gtfs_stops} =
       case stop_params do
         %{"stop_lat" => lat, "stop_lon" => lon, "stop_id" => stop_id}
-        when not is_nil(lat) and not is_nil(lon) ->
+        when not is_nil(lat) and not is_nil(lon) and lat != "" and lon != "" ->
           lat_float = String.to_float(lat)
           lon_float = String.to_float(lon)
 
