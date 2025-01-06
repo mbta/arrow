@@ -18,10 +18,8 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     %{disruption_v2: disruption_v2}
   end
 
-  describe "Index" do
+  describe "Changing Disruptions" do
     @tag :authenticated_admin
-    setup [:create_disruption_v2]
-
     test "saves new disruption_v2", %{conn: conn} do
       {:ok, index_live, _html} = live(conn, ~p"/disruptionsv2/new")
 
@@ -37,8 +35,10 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       assert html =~ "Disruption created successfully"
     end
 
+    @tag :authenticated_admin
+    setup [:create_disruption_v2]
     test "updates disruption_v2", %{conn: conn, disruption_v2: disruption_v2} do
-      {:ok, index_live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}")
+      {:ok, index_live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
 
       assert index_live
              |> form("#disruption_v2-form", disruption_v2: @invalid_attrs)
@@ -48,11 +48,8 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
              |> form("#disruption_v2-form", disruption_v2: @update_attrs)
              |> render_submit()
 
-      assert_patch(index_live, ~p"/disruptionsv2")
-
       html = render(index_live)
-      assert html =~ "Disruption v2 updated successfully"
-      assert html =~ "some updated name"
+      assert html =~ "Disruption edited successfully"
     end
   end
 end

@@ -6,7 +6,6 @@ defmodule ArrowWeb.DisruptionFormComponent do
 
   @impl true
   def render(assigns) do
-    dbg()
     row_status_labels = %{"Approved": true, "Pending": false}
     mode_labels = %{"Subway": :subway, "Commuter Rail": :commuter_rail, "Bus": :bus, "Silver Line": :silver_line}
     ~H"""

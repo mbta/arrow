@@ -11,8 +11,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   def mount(%{"id" => disruption_id}, _session, socket) do
     disruption = Disruptions.get_disruption_v2!(disruption_id)
 
-    dbg()
-
     socket =
       socket
       |> assign(:form_action, :edit)
