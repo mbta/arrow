@@ -127,7 +127,7 @@ defmodule ArrowWeb.StopViewLive do
   end
 
   defp valid_float(str) do
-    case Float.parse(str) do 
+    case Float.parse(str) do
       {float, _} -> float
       _ -> nil
     end
@@ -141,12 +141,14 @@ defmodule ArrowWeb.StopViewLive do
         %{"stop_lat" => lat, "stop_lon" => lon, "stop_id" => stop_id} ->
           float_lat = valid_float(lat)
           float_lon = valid_float(lon)
+
           if is_float(float_lat) and is_float(float_lon) do
             {Stops.get_stops_within_mile(stop_id, {float_lat, float_lon}),
              GtfsStop.get_stops_within_mile(stop_id, {float_lat, float_lon})}
           else
             {nil, nil}
           end
+
         _ ->
           {nil, nil}
       end
