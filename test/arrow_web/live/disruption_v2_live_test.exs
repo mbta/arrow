@@ -8,7 +8,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     title: "the great molasses disruption of 2025",
     mode: "commuter_rail",
     is_active: true,
-    description: nil 
+    description: nil
   }
   @update_attrs %{
     title: "the second great molasses disruption",
