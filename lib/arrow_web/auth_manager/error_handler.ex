@@ -14,13 +14,13 @@ defmodule ArrowWeb.AuthManager.ErrorHandler do
     auth_params = auth_params_for_error(error)
 
     conn
-    |> maybe_put_auth_orig_path(conn)
+    |> maybe_put_auth_orig_path()
     |> Controller.redirect(to: Routes.auth_path(conn, :request, "#{provider}", auth_params))
   end
 
-  defp maybe_put_auth_orig_path(conn, original_conn) do
-    if original_conn.method == "GET" do
-      Plug.Conn.put_session(conn, :auth_orig_path, original_conn.request_path)
+  defp maybe_put_auth_orig_path(conn) do
+    if conn.method == "GET" do
+      Plug.Conn.put_session(conn, :auth_orig_path, conn.request_path)
     else
       conn
     end
