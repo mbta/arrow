@@ -64,7 +64,7 @@ defmodule ArrowWeb.DisruptionFormComponent do
                 id={"#{@form[:mode].id}-#{idx}"}
                 class="form-check-input"
                 type="radio"
-                checked={to_string(@form[:mode].value) |> IO.inspect == to_string(value) |> IO.inspect}
+                checked={to_string(@form[:mode].value) == to_string(value) |> IO.inspect}
                 value={to_string(value)}
               />
 
