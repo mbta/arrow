@@ -1,6 +1,6 @@
 <div class="row my-3">
   <div class="col">
-    <%= if Permissions.authorize?(:create_disruption, @user) do %>
+    <%= if "admin" in @roles do %>
       <a class="btn btn-primary" href="/disruptions/new">+ create new</a>
     <% end %>
   </div>

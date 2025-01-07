@@ -58,3 +58,8 @@ config :wallaby,
   otp_app: :arrow,
   screenshot_dir: "test/integration/screenshots",
   screenshot_on_failure: true
+
+config :ueberauth, Ueberauth,
+  providers: [
+    keycloak: {Arrow.Ueberauth.Strategy.Fake, [roles: ["admin"]]}
+  ]

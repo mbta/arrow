@@ -66,7 +66,7 @@ config :arrow, ArrowWeb.Endpoint,
 
 config :ueberauth, Ueberauth,
   providers: [
-    keycloak: {Arrow.Ueberauth.Strategy.Fake, [groups: ["admin"]]}
+    keycloak: {Arrow.Ueberauth.Strategy.Fake, [roles: ["admin"]]}
   ]
 
 config :arrow, :redirect_http?, false

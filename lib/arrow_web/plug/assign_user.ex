@@ -9,7 +9,7 @@ defmodule ArrowWeb.Plug.AssignUser do
   def init(options), do: options
 
   @spec call(Plug.Conn.t(), Plug.opts()) :: Plug.Conn.t()
-  def call(conn, _opts) do
+  def call(conn, _opts \\ []) do
     %{"sub" => user_id, "roles" => roles} = Guardian.Plug.current_claims(conn)
 
     assign(conn, :current_user, %User{

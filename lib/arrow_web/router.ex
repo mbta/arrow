@@ -40,24 +40,44 @@ defmodule ArrowWeb.Router do
     plug(ArrowWeb.Plug.AssignUser)
   end
 
+  pipeline :ensure_arrow_admin do
+    plug(ArrowWeb.EnsureArrowAdmin)
+  end
+
+  pipeline :ensure_arrow_read_only do
+    plug(ArrowWeb.EnsureArrowReadOnly)
+  end
+
   scope "/", ArrowWeb do
     pipe_through([:redirect_prod_http, :browser, :authenticate])
 
     get("/unauthorized", UnauthorizedController, :index)
+  end
+
+  scope "/", ArrowWeb do
+    pipe_through([:redirect_prod_http, :browser, :authenticate, :ensure_arrow_admin])
+
     get("/feed", FeedController, :index)
-    get("/mytoken", MyTokenController, :show)
-    get("/", DisruptionController, :index)
-    resources("/disruptions", DisruptionController, except: [:index])
+    resources("/disruptions", DisruptionController, except: [:index, :show])
     put("/disruptions/:id/row_status", DisruptionController, :update_row_status)
     post("/disruptions/:id/notes", NoteController, :create)
+    delete("/shapes/:id", ShapeController, :delete)
+    get("/shapes_upload", ShapeController, :new)
+    post("/shapes_upload", ShapeController, :create)
+  end
+
+  scope "/", ArrowWeb do
+    pipe_through([:redirect_prod_http, :browser, :authenticate, :ensure_arrow_read_only])
+
+    get("/mytoken", MyTokenController, :show)
+    get("/", DisruptionController, :index)
+    get("/disruptions/:id", DisruptionController, :show)
     live("/stops/new", StopViewLive, :new)
     live("/stops/:id/edit", StopViewLive, :edit)
     get("/stops", StopController, :index)
     put("/stops/:id", StopController, :update)
     post("/stops", StopController, :create)
-    resources("/shapes", ShapeController, only: [:delete, :index, :show])
-    get("/shapes_upload", ShapeController, :new)
-    post("/shapes_upload", ShapeController, :create)
+    resources("/shapes", ShapeController, only: [:index, :show])
     get("/shapes/:id/download", ShapeController, :download)
     live("/shuttles/new", ShuttleViewLive, :new)
     live("/shuttles/:id/edit", ShuttleViewLive, :edit)
@@ -89,10 +109,14 @@ defmodule ArrowWeb.Router do
   end
 
   scope "/api", ArrowWeb.API do
-    pipe_through([:redirect_prod_http, :api, :authenticate_api])
+    pipe_through([:redirect_prod_http, :api, :authenticate_api, :ensure_arrow_admin])
 
     post("/publish_notice", NoticeController, :publish)
     get("/db_dump", DBDumpController, :show)
+  end
+
+  scope "/api", ArrowWeb.API do
+    pipe_through([:redirect_prod_http, :api, :authenticate_api])
 
     scope "/gtfs", alias: false do
       post("/import", GtfsImportController, :enqueue_import)
