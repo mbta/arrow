@@ -136,27 +136,30 @@ defmodule ArrowWeb.DisruptionFormComponent do
     save_disruption_v2(socket, socket.assigns.action, disruption_v2_params)
   end
 
-  defp save_disruption_v2(socket, :edit, disruption_v2_params) do
-    case Disruptions.update_disruption_v2(socket.assigns.disruption_v2, disruption_v2_params) do
+  defp save_disruption_v2(socket, action, disruption_v2_params) do
+    save_result =
+      case action do
+        :create ->
+          Disruptions.create_disruption_v2(disruption_v2_params)
+
+        :edit ->
+          Disruptions.update_disruption_v2(socket.assigns.disruption_v2, disruption_v2_params)
+
+        _ ->
+          raise "Unknown action for disruption form: #{action}"
+      end
+
+    case save_result do
       {:ok, _} ->
         {:noreply,
          socket
-         |> put_flash!(:info, "Disruption edited successfully")}
+         |> put_flash!(:info, "Disruption saved successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, form: to_form(changeset))}
-    end
-  end
-
-  defp save_disruption_v2(socket, :create, disruption_v2_params) do
-    case Disruptions.create_disruption_v2(disruption_v2_params) do
-      {:ok, _} ->
         {:noreply,
          socket
-         |> put_flash!(:info, "Disruption created successfully")}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, form: to_form(changeset))}
+         |> assign(form: to_form(changeset))
+         |> put_flash!(:error, "Error when saving disruption!")}
     end
   end
 end

@@ -42,7 +42,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
              |> render_submit()
 
       html = render(index_live)
-      assert html =~ "Disruption created successfully"
+      assert html =~ "Disruption saved successfully"
     end
 
     @tag :authenticated_admin
@@ -60,7 +60,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
              |> render_submit()
 
       html = render(index_live)
-      assert html =~ "Disruption edited successfully"
+      assert html =~ "Disruption saved successfully"
     end
   end
 end
