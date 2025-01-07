@@ -2,7 +2,7 @@ ARG ELIXIR_VERSION=1.18.1
 ARG ERLANG_VERSION=27.2
 ARG DEBIAN_VERSION=bullseye-20241223
 
-FROM hexpm/elixir:$ELIXIR_VERSION-erlang-$ERLANG_VERSION-debian-$DEBIAN_VERSION as elixir-builder
+FROM hexpm/elixir:$ELIXIR_VERSION-erlang-$ERLANG_VERSION-debian-$DEBIAN_VERSION AS elixir-builder
 
 ENV LANG=C.UTF-8 \
   MIX_ENV=prod
@@ -13,9 +13,10 @@ RUN apt-get update --allow-releaseinfo-change && \
 RUN mix local.hex --force && \
   mix local.rebar --force
 
-RUN curl https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
-  -o /root/aws-cert-bundle.pem
-RUN echo "390fdc813e2e58ec5a0def8ce6422b83d75032899167052ab981d8e1b3b14ff2 /root/aws-cert-bundle.pem" | sha256sum -c -
+ADD \
+  --checksum=sha256:eb0f4a60ff3face9f464c983a1ba9a8564f1295eba3661937c91a184c7f7a587 \
+  https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
+  /root/aws-cert-bundle.pem
 
 # Instructions from:
 # https://github.com/nodesource/distributions#debian-versions
