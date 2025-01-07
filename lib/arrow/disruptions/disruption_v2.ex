@@ -9,7 +9,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
 
   schema "disruptionsv2" do
     field :title, :string
-    field :mode, :string
+    field :mode, Ecto.Enum, values: [:subway, :commuter_rail, :silver_line, :bus]
     field :is_active, :boolean
     field :description, :string
 
@@ -19,7 +19,8 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   @doc false
   def changeset(disruption_v2, attrs) do
     disruption_v2
-    |> cast(attrs, [:title, :mode, :is_active, :description])
+    |> cast(attrs, [:title, :is_active, :description])
+    |> cast(attrs, [:mode], force_changes: true)
     |> validate_required([:title, :mode, :is_active])
   end
 end

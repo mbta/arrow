@@ -32,7 +32,7 @@ defmodule Arrow.DisruptionsTest do
                Disruptions.create_disruption_v2(valid_attrs)
 
       assert disruption_v2.title == valid_attrs.title
-      assert disruption_v2.mode == valid_attrs.mode
+      assert to_string(disruption_v2.mode) == valid_attrs.mode
       assert disruption_v2.is_active == valid_attrs.is_active
       assert disruption_v2.description == valid_attrs.description
     end
@@ -55,7 +55,7 @@ defmodule Arrow.DisruptionsTest do
                Disruptions.update_disruption_v2(disruption_v2, update_attrs)
 
       assert disruption_v2.title == update_attrs.title
-      assert disruption_v2.mode == update_attrs.mode
+      assert to_string(disruption_v2.mode) == update_attrs.mode
       assert disruption_v2.is_active == update_attrs.is_active
       assert disruption_v2.description == update_attrs.description
     end
