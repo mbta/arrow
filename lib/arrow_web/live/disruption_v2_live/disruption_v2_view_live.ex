@@ -90,10 +90,4 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     |> assign(:page_title, "New Disruption v2")
     |> assign(:disruption_v2, %DisruptionV2{})
   end
-
-  defp apply_action(socket, :index, _params) do
-    socket
-    |> assign(:page_title, "Listing Disruptionsv2")
-    |> assign(:disruption_v2, nil)
-  end
 end
