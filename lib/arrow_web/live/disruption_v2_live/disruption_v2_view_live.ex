@@ -5,8 +5,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   alias Arrow.Disruptions
   alias Arrow.Disruptions.DisruptionV2
 
-  embed_templates "disruption_v2_live/*"
-
   @impl true
   def mount(%{"id" => disruption_id}, _session, socket) do
     disruption = Disruptions.get_disruption_v2!(disruption_id)
