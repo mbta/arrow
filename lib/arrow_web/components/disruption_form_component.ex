@@ -10,19 +10,17 @@ defmodule ArrowWeb.DisruptionFormComponent do
 
   alias Arrow.Disruptions
 
-  @compile {:inline, disruption_status_labels: 0, mode_labels: 0}
-  @row_status_labels %{Approved: true, Pending: false}
   @spec disruption_status_labels :: map()
-  def disruption_status_labels, do: @row_status_labels
+  def disruption_status_labels, do: %{Approved: true, Pending: false}
 
-  @mode_labels %{
-    Subway: :subway,
-    "Commuter Rail": :commuter_rail,
-    Bus: :bus,
-    "Silver Line": :silver_line
-  }
   @spec mode_labels :: map()
-  def mode_labels, do: @mode_labels
+  def mode_labels,
+    do: %{
+      Subway: :subway,
+      "Commuter Rail": :commuter_rail,
+      Bus: :bus,
+      "Silver Line": :silver_line
+    }
 
   @impl true
   def render(assigns) do
