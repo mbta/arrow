@@ -126,31 +126,18 @@ defmodule ArrowWeb.StopViewLive do
     {:ok, socket}
   end
 
-  defp valid_float(str) do
-    case Float.parse(str) do
-      {float, _} -> float
-      _ -> nil
-    end
-  end
-
   def handle_event("validate", %{"stop" => stop_params}, socket) do
     form = Stops.change_stop(socket.assigns.stop, stop_params) |> to_form(action: :validate)
 
     {existing_stops, existing_gtfs_stops} =
-      case stop_params do
-        %{"stop_lat" => lat, "stop_lon" => lon, "stop_id" => stop_id} ->
-          float_lat = valid_float(lat)
-          float_lon = valid_float(lon)
-
-          if is_float(float_lat) and is_float(float_lon) do
-            {Stops.get_stops_within_mile(stop_id, {float_lat, float_lon}),
-             GtfsStop.get_stops_within_mile(stop_id, {float_lat, float_lon})}
-          else
-            {nil, nil}
-          end
-
-        _ ->
-          {nil, nil}
+      with %{"stop_lat" => lat, "stop_lon" => lon, "stop_id" => stop_id} <- stop_params,
+           {float_lat, _} <- Float.parse(lat),
+           {float_lon, _} <-
+             Float.parse(lon) do
+        {Stops.get_stops_within_mile(stop_id, {float_lat, float_lon}),
+         GtfsStop.get_stops_within_mile(stop_id, {float_lat, float_lon})}
+      else
+        _ -> {nil, nil}
       end
 
     {:noreply,
