@@ -13,7 +13,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
     field :is_active, :boolean
     field :description, :string
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @doc false

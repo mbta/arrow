@@ -8,7 +8,7 @@ defmodule Arrow.Repo.Migrations.CreateDisruptionsv2 do
       add :is_active, :boolean
       add :description, :text
 
-      timestamps()
+      timestamps(type: :timestamptz)
     end
   end
 end

@@ -414,8 +414,8 @@ CREATE TABLE public.disruptionsv2 (
     mode character varying(255),
     is_active boolean,
     description text,
-    inserted_at timestamp(0) without time zone NOT NULL,
-    updated_at timestamp(0) without time zone NOT NULL
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
 );
 
 
