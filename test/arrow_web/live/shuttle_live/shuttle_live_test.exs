@@ -148,14 +148,18 @@ defmodule ArrowWeb.ShuttleLiveTest do
 
       {:ok, edit_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
 
+      edit_live
+      |> element("#shuttle-form")
+      |> render_change(%{
+        shuttle: @update_attrs,
+        routes_with_stops: %{
+          "0" => %{route_stops: %{"0" => %{display_stop_id: new_gtfs_stop.id}}}
+        }
+      })
+
       {:ok, conn} =
         edit_live
-        |> form("#shuttle-form",
-          shuttle: @update_attrs,
-          routes_with_stops: %{
-            "0" => %{route_stops: %{"0" => %{display_stop_id: new_gtfs_stop.id}}}
-          }
-        )
+        |> form("#shuttle-form")
         |> render_submit()
         |> follow_redirect(conn)
 
@@ -213,14 +217,22 @@ defmodule ArrowWeb.ShuttleLiveTest do
       |> element("#shuttle-form #add_stop-0[value=\"0\"]", "Add")
       |> render_click()
 
+      edit_live
+      |> element("#shuttle-form")
+      |> render_change(%{
+        shuttle: @update_attrs,
+        routes_with_stops: %{
+          "0" => %{
+            route_stops: %{
+              "0" => %{display_stop_id: stop_id, display_stop_id_text_input: stop_id}
+            }
+          }
+        }
+      })
+
       {:ok, conn} =
         edit_live
-        |> form("#shuttle-form",
-          shuttle: @update_attrs,
-          routes_with_stops: %{
-            "0" => %{route_stops: %{"0" => %{display_stop_id: stop_id}}}
-          }
-        )
+        |> form("#shuttle-form")
         |> render_submit()
         |> follow_redirect(conn)
 
@@ -425,7 +437,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
         assert [^stop_id] =
                  Floki.attribute(
                    direction_0_stop_rows,
-                   "[data-stop_sequence=#{index}] > div.form-group > input[type=text]",
+                   "[data-stop_sequence=#{index}] > div > div.form-group > div > div > div > input[type=text]",
                    "value"
                  )
       end
@@ -434,7 +446,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
         assert [^stop_id] =
                  Floki.attribute(
                    direction_1_stop_rows,
-                   "[data-stop_sequence=#{index}] > div.form-group > input[type=text]",
+                   "[data-stop_sequence=#{index}] > div > div.form-group > div > div > div > input[type=text]",
                    "value"
                  )
       end
