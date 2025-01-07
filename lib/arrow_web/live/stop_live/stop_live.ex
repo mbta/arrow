@@ -132,8 +132,7 @@ defmodule ArrowWeb.StopViewLive do
     {existing_stops, existing_gtfs_stops} =
       with %{"stop_lat" => lat, "stop_lon" => lon, "stop_id" => stop_id} <- stop_params,
            {float_lat, _} <- Float.parse(lat),
-           {float_lon, _} <-
-             Float.parse(lon) do
+           {float_lon, _} <- Float.parse(lon) do
         {Stops.get_stops_within_mile(stop_id, {float_lat, float_lon}),
          GtfsStop.get_stops_within_mile(stop_id, {float_lat, float_lon})}
       else
