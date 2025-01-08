@@ -130,17 +130,13 @@ defmodule ArrowWeb.StopViewLive do
     form = Stops.change_stop(socket.assigns.stop, stop_params) |> to_form(action: :validate)
 
     {existing_stops, existing_gtfs_stops} =
-      case stop_params do
-        %{"stop_lat" => lat, "stop_lon" => lon, "stop_id" => stop_id}
-        when not is_nil(lat) and not is_nil(lon) ->
-          lat_float = String.to_float(lat)
-          lon_float = String.to_float(lon)
-
-          {Stops.get_stops_within_mile(stop_id, {lat_float, lon_float}),
-           GtfsStop.get_stops_within_mile(stop_id, {lat_float, lon_float})}
-
-        _ ->
-          {nil, nil}
+      with %{"stop_lat" => lat, "stop_lon" => lon, "stop_id" => stop_id} <- stop_params,
+           {float_lat, _} <- Float.parse(lat),
+           {float_lon, _} <- Float.parse(lon) do
+        {Stops.get_stops_within_mile(stop_id, {float_lat, float_lon}),
+         GtfsStop.get_stops_within_mile(stop_id, {float_lat, float_lon})}
+      else
+        _ -> {nil, nil}
       end
 
     {:noreply,
