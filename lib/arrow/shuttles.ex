@@ -466,8 +466,7 @@ defmodule Arrow.Shuttles do
 
   @spec stops_or_gtfs_stops_by_search_string(String.t()) :: [Stop.t() | GtfsStop.t()]
   def stops_or_gtfs_stops_by_search_string(string) do
-    # See https://github.blog/engineering/like-injection/
-    sanitized_string = Regex.replace(~r/([\%_])/, string, fn _, x -> "\\#{x}" end) <> "%"
+    sanitized_string = Arrow.Util.sanitized_string_for_sql_like(string)
 
     stops_query =
       from(s in Stop,
