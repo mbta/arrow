@@ -2,6 +2,9 @@ defmodule Arrow.Shuttles.DefinitionUpload do
   @moduledoc "functions for extracting shuttle defintions from xlsx uploads"
   alias Arrow.Shuttles.Stop
 
+  @direction_0_tab_name "Direction 0 STOPS"
+  @direction_1_tab_name "Direction 1 STOPS"
+
   @doc """
   Parses a shuttle definition xlsx worksheet and returns a list of two stop_id lists
   """
@@ -11,8 +14,8 @@ defmodule Arrow.Shuttles.DefinitionUpload do
     with tids when is_list(tids) <- Xlsxir.multi_extract(xlsx_path),
          {:ok,
           %{
-            "Direction 0 STOPS" => direction_0_tab_tid,
-            "Direction 1 STOPS" => direction_1_tab_tid
+            @direction_0_tab_name => direction_0_tab_tid,
+            @direction_1_tab_name => direction_1_tab_tid
           }} <- get_xlsx_tab_tids(tids),
          {:ok, direction_0_stop_ids} <- parse_direction_tab(direction_0_tab_tid),
          {:ok, direction_1_stop_ids} <- parse_direction_tab(direction_1_tab_tid) do
@@ -25,24 +28,21 @@ defmodule Arrow.Shuttles.DefinitionUpload do
 
   defp get_xlsx_tab_tids(tab_tids) do
     tab_map =
-      tab_tids
-      |> Enum.map(fn {:ok, tid} ->
+      Enum.reduce(tab_tids, %{}, fn {:ok, tid}, acc ->
         name = Xlsxir.get_info(tid, :name)
 
-        if name in ["Direction 0 STOPS", "Direction 1 STOPS"] do
-          {name, tid}
+        if name in [@direction_0_tab_name, @direction_1_tab_name] do
+          Map.put(acc, name, tid)
         else
           Xlsxir.close(tid)
-          nil
+          acc
         end
       end)
-      |> Enum.reject(&is_nil/1)
-      |> Map.new()
 
-    case {tab_map["Direction 0 STOPS"], tab_map["Direction 1 STOPS"]} do
+    case {tab_map[@direction_0_tab_name], tab_map[@direction_1_tab_name]} do
       {nil, nil} -> {:error, "Missing tabs for both directions"}
-      {nil, _} -> {:error, "Missing Direction 0 STOPS tab"}
-      {_, nil} -> {:error, "Missing Direction 1 STOPS tab"}
+      {nil, _} -> {:error, "Missing #{@direction_0_tab_name} tab"}
+      {_, nil} -> {:error, "Missing #{@direction_1_tab_name} tab"}
       _ -> {:ok, tab_map}
     end
   end
