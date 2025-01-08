@@ -131,6 +131,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       direction_0_route = Enum.find(shuttle.routes, fn route -> route.direction_id == :"0" end)
       gtfs_stop = insert(:gtfs_stop)
       new_gtfs_stop = insert(:gtfs_stop)
+      stop_id = new_gtfs_stop.id
 
       direction_0_route
       |> Arrow.Shuttles.Route.changeset(%{
@@ -148,14 +149,25 @@ defmodule ArrowWeb.ShuttleLiveTest do
 
       {:ok, edit_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
 
-      edit_live
-      |> element("#shuttle-form")
-      |> render_change(%{
-        shuttle: @update_attrs,
-        routes_with_stops: %{
-          "0" => %{route_stops: %{"0" => %{display_stop_id: new_gtfs_stop.id}}}
+      edit_stop_attrs = %{
+        routes: %{
+          "0" => %{
+            route_stops: %{
+              "0" => %{
+                display_stop_id: stop_id,
+                display_stop_id_text_input: stop_id
+              }
+            }
+          }
         }
-      })
+      }
+
+      assert edit_live
+             |> form("#shuttle-form")
+             |> render_change(shuttle: edit_stop_attrs)
+             |> Floki.find("#shuttle_routes_0_route_stops_0_display_stop_id")
+             |> Floki.attribute("value")
+             |> List.first() =~ "#{stop_id}"
 
       {:ok, conn} =
         edit_live
@@ -164,6 +176,13 @@ defmodule ArrowWeb.ShuttleLiveTest do
         |> follow_redirect(conn)
 
       assert html_response(conn, 200) =~ ~r/shuttle updated successfully/i
+
+      updated_shuttle = Arrow.Shuttles.get_shuttle!(shuttle.id)
+
+      direction_0_route =
+        Enum.find(updated_shuttle.routes, fn route -> route.direction_id == :"0" end)
+
+      assert [%{gtfs_stop_id: ^stop_id}] = direction_0_route.route_stops
     end
 
     @tag :authenticated_admin
@@ -190,7 +209,9 @@ defmodule ArrowWeb.ShuttleLiveTest do
       edit_live
       |> element("#shuttle-form")
       |> render_change(%{
-        routes_with_stops: %{"0" => %{"route_stops_drop" => ["0"]}}
+        shuttle: %{
+          routes: %{"0" => %{"route_stops_drop" => ["0"]}}
+        }
       })
 
       {:ok, conn} =
@@ -217,18 +238,30 @@ defmodule ArrowWeb.ShuttleLiveTest do
       |> element("#shuttle-form #add_stop-0[value=\"0\"]", "Add")
       |> render_click()
 
-      edit_live
-      |> element("#shuttle-form")
-      |> render_change(%{
-        shuttle: @update_attrs,
-        routes_with_stops: %{
+      add_stop_attrs = %{
+        routes: %{
           "0" => %{
+            destination: "Broadway",
+            direction_desc: "Southbound",
+            direction_id: "0",
+            suffix: "",
+            waypoint: "",
             route_stops: %{
-              "0" => %{display_stop_id: stop_id, display_stop_id_text_input: stop_id}
+              "0" => %{
+                display_stop_id: gtfs_stop.id,
+                display_stop_id_text_input: stop_id
+              }
             }
           }
         }
-      })
+      }
+
+      assert edit_live
+             |> form("#shuttle-form")
+             |> render_change(shuttle: add_stop_attrs)
+             |> Floki.find("#shuttle_routes_0_route_stops_0_display_stop_id")
+             |> Floki.attribute("value")
+             |> List.first() =~ "#{stop_id}"
 
       {:ok, conn} =
         edit_live
@@ -278,7 +311,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       {:ok, edit_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
 
       edit_live
-      |> element("#shuttle-form > div[data-direction_id=\"0\"]")
+      |> element("#stops-dir-0[data-direction_id=\"0\"]")
       |> render_hook(:reorder_stops, %{"direction_id" => "0", "old" => 1, "new" => 0})
 
       {:ok, conn} =
@@ -350,7 +383,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       {:ok, edit_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
 
       refute edit_live
-             |> element(~s{#shuttle-form_routes_0_route_stops_1_time_to_next_stop"})
+             |> element(~s{#shuttle_routes_0_route_stops_1_time_to_next_stop"})
              |> render() =~ "value"
 
       edit_live
@@ -358,7 +391,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       |> render_click()
 
       assert edit_live
-             |> element(~s{#shuttle-form_routes_0_route_stops_1_time_to_next_stop"})
+             |> element(~s{#shuttle_routes_0_route_stops_1_time_to_next_stop"})
              |> render() =~ "value=\"300\""
     end
   end
@@ -384,8 +417,8 @@ defmodule ArrowWeb.ShuttleLiveTest do
 
       # `#` and escaping the brackets doesn't seem to work with this selector format (unlike $() in the browser)
       live_component_selector = ~s{[id="shuttle[routes][0]_shape_id_live_select_component"]}
-      hidden_input_selector = ~s{#shuttle-form_routes_0_shape_id}
-      displayed_value_selector = ~s{#shuttle-form_routes_0_shape_id_text_input}
+      hidden_input_selector = ~s{#shuttle_routes_0_shape_id}
+      displayed_value_selector = ~s{#shuttle_routes_0_shape_id_text_input}
 
       # initially set to original shape
       assert edit_live

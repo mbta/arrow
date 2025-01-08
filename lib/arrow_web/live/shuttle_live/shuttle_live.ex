@@ -22,14 +22,7 @@ defmodule ArrowWeb.ShuttleViewLive do
 
   def shuttle_form(assigns) do
     ~H"""
-    <.simple_form
-      :let={f}
-      for={@form}
-      as={:shuttle}
-      action={@http_action}
-      phx-submit={@action}
-      id="shuttle-form"
-    >
+    <.simple_form for={@form} action={@http_action} phx-submit={@action} id="shuttle-form">
       <div class="form-group">
         <a
           target="_blank"
@@ -44,11 +37,11 @@ defmodule ArrowWeb.ShuttleViewLive do
       </.error>
       <div class="row">
         <div class="col">
-          <.input field={f[:shuttle_name]} type="text" label="Shuttle Name" />
+          <.input field={@form[:shuttle_name]} type="text" label="Shuttle Name" />
         </div>
         <div class="col">
           <.input
-            field={f[:disrupted_route_id]}
+            field={@form[:disrupted_route_id]}
             type="select"
             label="Disrupted Route"
             prompt="Choose a route"
@@ -57,7 +50,7 @@ defmodule ArrowWeb.ShuttleViewLive do
         </div>
         <div class="col">
           <.input
-            field={f[:status]}
+            field={@form[:status]}
             type="select"
             label="Status"
             prompt="Choose a value"
@@ -79,55 +72,78 @@ defmodule ArrowWeb.ShuttleViewLive do
       </div>
       {live_react_component("Components.ShapeStopViewMap", @map_props, id: "shuttle-view-map")}
       <hr />
-      <h2>define route</h2>
-      <.inputs_for :let={f_route} field={f[:routes]}>
-        <h4>direction {input_value(f_route, :direction_id)}</h4>
-        <div class="row">
-          <div class="hidden">
-            <.input field={f_route[:direction_id]} type="text" label="Direction id" />
-          </div>
-          <div class="col">
-            <.input field={f_route[:direction_desc]} type="text" label="Direction desc" />
-          </div>
-          <div class="col offset-md-1">
-            <.live_select
-              field={f_route[:shape_id]}
-              label="Shape"
-              placeholder="Choose a shape"
-              options={shape_options_mapper(@shapes)}
-              value_mapper={&shape_value_mapper/1}
-              allow_clear={true}
-            />
-          </div>
-        </div>
-        <div class="row">
-          <div class="col">
-            <.input field={f_route[:destination]} type="text" label="Destination" />
-          </div>
-          <div class="col-1 align-self-end italic">
-            <div class="form-group">
-              via
+      <h3>define route</h3>
+      <div class="row">
+        <.inputs_for :let={f_route} field={@form[:routes]}>
+          <div class="col-lg-12 order-1">
+            <h4>direction {input_value(f_route, :direction_id)}</h4>
+            <div class="row">
+              <div class="hidden">
+                <.input field={f_route[:direction_id]} type="text" label="Direction id" />
+              </div>
+              <div class="col">
+                <.input field={f_route[:direction_desc]} type="text" label="Direction desc" />
+              </div>
+              <div class="col offset-md-1">
+                <.live_select
+                  field={f_route[:shape_id]}
+                  label="Shape"
+                  placeholder="Choose a shape"
+                  options={shape_options_mapper(@shapes)}
+                  value_mapper={&shape_value_mapper/1}
+                  allow_clear={true}
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <.input field={f_route[:destination]} type="text" label="Destination" />
+              </div>
+              <div class="col-1 align-self-end italic">
+                <div class="form-group">
+                  via
+                </div>
+              </div>
+              <div class="col">
+                <.input field={f_route[:waypoint]} type="text" label="Waypoint" />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <.input field={f_route[:suffix]} type="text" label="Suffix" />
+              </div>
             </div>
           </div>
-          <div class="col">
-            <.input field={f_route[:waypoint]} type="text" label="Waypoint" />
+          <div class="col-lg-12 order-12">
+            <.shuttle_form_stops_section
+              f={f_route}
+              direction_id={input_value(f_route, :direction_id)}
+              errors={@errors}
+            />
+          </div>
+          <hr />
+        </.inputs_for>
+        <div class="col-lg-12 order-11">
+          <hr />
+          <h3>define stops</h3>
+        </div>
+        <div class="col-lg-12 order-2">
+          <div class="flex items-center space-x-4">
+            <span>If you'd like to upload a shape:</span>
+            <.link_button class="btn-primary" href={~p"/shapes_upload"} target="_blank">
+              Upload Shape
+            </.link_button>
           </div>
         </div>
-        <div class="row">
-          <div class="col">
-            <.input field={f_route[:suffix]} type="text" label="Suffix" />
+        <div class="col-lg-12 order-12">
+          <div class="mt-8 flex items-center space-x-4">
+            <span>If you'd like to create a stop:</span>
+            <.link_button class="btn-primary" href={~p"/stops/new"} target="_blank">
+              Create Stop
+            </.link_button>
           </div>
         </div>
-      </.inputs_for>
-      <div class="flex items-center space-x-4">
-        <span>If you'd like to upload a shape:</span>
-        <.link_button class="btn-primary" href={~p"/shapes_upload"} target="_blank">
-          Upload Shape
-        </.link_button>
       </div>
-      <hr />
-      <h2>define stops</h2>
-      <.shuttle_form_stops_section f={f} errors={@errors} />
       <:actions>
         <.button>Save Shuttle</.button>
       </:actions>
@@ -137,103 +153,92 @@ defmodule ArrowWeb.ShuttleViewLive do
 
   attr :f, :any, required: true
   attr :errors, :map, required: true
+  attr :direction_id, :string, required: true
 
   defp shuttle_form_stops_section(assigns) do
     ~H"""
-    <.inputs_for :let={f_route} field={@f[:routes]} as={:routes_with_stops}>
-      <h4>direction {input_value(f_route, :direction_id)}</h4>
-      <div
-        id={"stops-dir-#{input_value(f_route, :direction_id)}"}
-        phx-hook="sortable"
-        data-direction_id={input_value(f_route, :direction_id)}
-      >
-        <.inputs_for :let={f_route_stop} field={f_route[:route_stops]}>
-          <div
-            class="row item align-items-center"
-            data-stop_sequence={input_value(f_route_stop, :stop_sequence)}
-          >
-            <div class="col-lg-1">
-              <.icon name="hero-bars-3" class="h-4 w-4 drag-handle cursor-grab" />
-            </div>
-            <.stop_input
-              field={f_route_stop[:display_stop_id]}
-              stop_or_gtfs_stop={
-                Phoenix.HTML.Form.input_value(f_route_stop, :stop) ||
-                  Phoenix.HTML.Form.input_value(f_route_stop, :gtfs_stop)
-              }
-              class="col-lg-6"
-            />
-            <.input
-              field={f_route_stop[:time_to_next_stop]}
-              type="number"
-              label="Time to next stop"
-              class="col-lg-4"
-            />
-            <button
-              class="btn"
-              type="button"
-              name={input_name(f_route, :route_stops_drop) <> "[]"}
-              value={f_route_stop.index}
-              phx-click={JS.dispatch("change")}
-            >
-              <.icon name="hero-x-mark-solid" class="h-4 w-4" />
-            </button>
-            <input
-              value={f_route_stop.index}
-              type="hidden"
-              name={input_name(f_route, :route_stops_sort) <> "[]"}
-            />
-            <input
-              value={input_value(f_route_stop, :direction_id)}
-              type="hidden"
-              name={input_name(f_route_stop, :direction_id)}
-            />
-            <input
-              value={input_value(f_route_stop, :stop_sequence)}
-              type="hidden"
-              name={input_name(f_route_stop, :stop_sequence)}
-            />
+    <div id={"stops-dir-#{@direction_id}"} phx-hook="sortable" data-direction_id={@direction_id}>
+      <h4>direction {@direction_id}</h4>
+      <.inputs_for :let={f_route_stop} field={@f[:route_stops]}>
+        <div
+          class="row item align-items-center"
+          data-stop_sequence={input_value(f_route_stop, :stop_sequence)}
+        >
+          <div class="col-lg-1">
+            <.icon name="hero-bars-3" class="h-4 w-4 drag-handle cursor-grab" />
           </div>
-        </.inputs_for>
-      </div>
-      <input type="hidden" name={input_name(f_route, :route_stops_drop) <> "[]"} />
-      <div class="row form-group">
-        <div class="offset-lg-1 col-lg-6">
+          <.stop_input
+            field={f_route_stop[:display_stop_id]}
+            stop_or_gtfs_stop={
+              Phoenix.HTML.Form.input_value(f_route_stop, :stop) ||
+                Phoenix.HTML.Form.input_value(f_route_stop, :gtfs_stop)
+            }
+            class="col-lg-6"
+          />
+          <.input
+            field={f_route_stop[:time_to_next_stop]}
+            type="number"
+            label="Time to next stop"
+            class="col-lg-4"
+          />
           <button
-            class="btn btn-primary"
+            class="btn"
             type="button"
-            id={"add_stop-#{input_value(f_route, :direction_id)}"}
-            value={input_value(f_route, :direction_id)}
-            phx-click="add_stop"
+            name={input_name(@f, :route_stops_drop) <> "[]"}
+            value={f_route_stop.index}
+            phx-click={JS.dispatch("change")}
           >
-            Add Another Stop
+            <.icon name="hero-x-mark-solid" class="h-4 w-4" />
           </button>
+          <input
+            value={f_route_stop.index}
+            type="hidden"
+            name={input_name(@f, :route_stops_sort) <> "[]"}
+          />
+          <input
+            value={input_value(f_route_stop, :direction_id)}
+            type="hidden"
+            name={input_name(f_route_stop, :direction_id)}
+          />
+          <input
+            value={input_value(f_route_stop, :stop_sequence)}
+            type="hidden"
+            name={input_name(f_route_stop, :stop_sequence)}
+          />
         </div>
-        <div class="col-lg">
-          <button
-            class="btn btn-primary"
-            type="button"
-            id={"get_time-#{input_value(f_route, :direction_id)}"}
-            value={input_value(f_route, :direction_id)}
-            phx-click="get_time_to_next_stop"
-          >
-            Retrieve Estimates
-          </button>
-          <aside
-            :if={@errors[:route_stops][to_string(input_value(f_route, :direction_id))]}
-            class="mt-2 text-sm alert alert-danger"
-            role="alert"
-          >
-            {@errors[:route_stops][to_string(input_value(f_route, :direction_id))]}
-          </aside>
-        </div>
+      </.inputs_for>
+    </div>
+    <input type="hidden" name={input_name(@f, :route_stops_drop) <> "[]"} />
+    <div class="row form-group">
+      <div class="offset-lg-1 col-lg-6">
+        <button
+          class="btn btn-primary"
+          type="button"
+          id={"add_stop-#{input_value(@f, :direction_id)}"}
+          value={input_value(@f, :direction_id)}
+          phx-click="add_stop"
+        >
+          Add Another Stop
+        </button>
       </div>
-    </.inputs_for>
-    <div class="mt-8 flex items-center space-x-4">
-      <span>If you'd like to create a stop:</span>
-      <.link_button class="btn-primary" href={~p"/stops/new"} target="_blank">
-        Create Stop
-      </.link_button>
+      <div class="col-lg">
+        <button
+          class="btn btn-primary"
+          type="button"
+          id={"get_time-#{input_value(@f, :direction_id)}"}
+          value={input_value(@f, :direction_id)}
+          phx-click="get_time_to_next_stop"
+        >
+          Retrieve Estimates
+        </button>
+        <aside
+          :if={@errors[:route_stops][to_string(input_value(@f, :direction_id))]}
+          class="mt-2 text-sm alert alert-danger"
+          role="alert"
+        >
+          {@errors[:route_stops][to_string(input_value(@f, :direction_id))]}
+        </aside>
+      </div>
     </div>
     """
   end
@@ -403,8 +408,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   end
 
   def handle_event("edit", params, socket) do
-    shuttle_params = params |> combine_params()
-
+    shuttle_params = params["shuttle"]
     shuttle = Shuttles.get_shuttle!(socket.assigns.shuttle.id)
 
     case Shuttles.update_shuttle(shuttle, shuttle_params) do
@@ -420,7 +424,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   end
 
   def handle_event("create", params, socket) do
-    shuttle_params = params |> combine_params()
+    shuttle_params = params["shuttle"]
 
     case Shuttles.create_shuttle(shuttle_params) do
       {:ok, shuttle} ->
@@ -532,28 +536,6 @@ defmodule ArrowWeb.ShuttleViewLive do
            put_in(errors, [:route_stops, Access.key(direction_id_string)], error)
          end)}
     end
-  end
-
-  defp combine_params(%{
-         "shuttle" => shuttle_params,
-         "routes_with_stops" => routes_with_stops_params
-       }) do
-    %{
-      shuttle_params
-      | "routes" =>
-          shuttle_params
-          |> Map.get("routes")
-          |> Map.new(fn {route_index, route} ->
-            route_stop_fields =
-              Map.take(routes_with_stops_params[route_index], [
-                "route_stops",
-                "route_stops_drop",
-                "route_stops_sort"
-              ])
-
-            {route_index, Map.merge(route, route_stop_fields)}
-          end)
-    }
   end
 
   defp update_route_changeset_with_uploaded_stops(route_changeset, stop_ids, direction_id) do
@@ -688,7 +670,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   end
 
   defp validate(params, socket) do
-    shuttle_params = params |> combine_params()
+    shuttle_params = params["shuttle"]
 
     change = Shuttles.change_shuttle(socket.assigns.shuttle, shuttle_params)
     form = to_form(change, action: :validate)
