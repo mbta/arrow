@@ -483,7 +483,9 @@ defmodule ArrowWeb.ShuttleLiveTest do
 
       page = render_upload(definition, "invalid_missing_data.xlsx")
       assert page =~ "Failed to upload definition:"
-      assert page =~ "Missing/invalid stop ID on row 3"
+      assert page =~ "Tab Direction 0 STOPS, row 3: missing/invalid stop ID"
+      assert page =~ "Tab Direction 1 STOPS, row 2: missing/invalid stop ID"
+      assert page =~ "Tab Direction 1 STOPS, row 3: missing/invalid stop ID"
     end
 
     @tag :authenticated_admin
