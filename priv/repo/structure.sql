@@ -405,6 +405,40 @@ ALTER SEQUENCE public.disruptions_id_seq1 OWNED BY public.disruptions.id;
 
 
 --
+-- Name: disruptionsv2; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.disruptionsv2 (
+    id bigint NOT NULL,
+    title character varying(255),
+    mode character varying(255),
+    is_active boolean,
+    description text,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: disruptionsv2_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.disruptionsv2_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: disruptionsv2_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.disruptionsv2_id_seq OWNED BY public.disruptionsv2.id;
+
+
+--
 -- Name: foreign_key_constraints; Type: VIEW; Schema: public; Owner: -
 --
 
@@ -1005,6 +1039,13 @@ ALTER TABLE ONLY public.disruptions ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
+-- Name: disruptionsv2 id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.disruptionsv2 ALTER COLUMN id SET DEFAULT nextval('public.disruptionsv2_id_seq'::regclass);
+
+
+--
 -- Name: oban_jobs id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1116,6 +1157,14 @@ ALTER TABLE ONLY public.disruption_revisions
 
 ALTER TABLE ONLY public.disruptions
     ADD CONSTRAINT disruptions_pkey1 PRIMARY KEY (id);
+
+
+--
+-- Name: disruptionsv2 disruptionsv2_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.disruptionsv2
+    ADD CONSTRAINT disruptionsv2_pkey PRIMARY KEY (id);
 
 
 --
@@ -1776,3 +1825,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20241030181351);
 INSERT INTO public."schema_migrations" (version) VALUES (20241209204043);
 INSERT INTO public."schema_migrations" (version) VALUES (20241210155455);
 INSERT INTO public."schema_migrations" (version) VALUES (20241219160941);
+INSERT INTO public."schema_migrations" (version) VALUES (20241231110033);
