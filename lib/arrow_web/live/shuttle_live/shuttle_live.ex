@@ -403,12 +403,14 @@ defmodule ArrowWeb.ShuttleViewLive do
     {:ok, socket}
   end
 
-  def handle_event("validate", params, socket) do
-    validate(params, socket)
+  def handle_event("validate", %{"shuttle" => shuttle_params}, socket) do
+    change = Shuttles.change_shuttle(socket.assigns.shuttle, shuttle_params)
+    form = to_form(change, action: :validate)
+
+    {:noreply, socket |> assign(form: form) |> update_map(change)}
   end
 
-  def handle_event("edit", params, socket) do
-    shuttle_params = params["shuttle"]
+  def handle_event("edit", %{"shuttle" => shuttle_params}, socket) do
     shuttle = Shuttles.get_shuttle!(socket.assigns.shuttle.id)
 
     case Shuttles.update_shuttle(shuttle, shuttle_params) do
@@ -423,9 +425,7 @@ defmodule ArrowWeb.ShuttleViewLive do
     end
   end
 
-  def handle_event("create", params, socket) do
-    shuttle_params = params["shuttle"]
-
+  def handle_event("create", %{"shuttle" => shuttle_params}, socket) do
     case Shuttles.create_shuttle(shuttle_params) do
       {:ok, shuttle} ->
         {:noreply,
@@ -667,15 +667,6 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> routes_to_layers(socket.assigns.map_props)
 
     assign(socket, :map_props, %{layers: layers})
-  end
-
-  defp validate(params, socket) do
-    shuttle_params = params["shuttle"]
-
-    change = Shuttles.change_shuttle(socket.assigns.shuttle, shuttle_params)
-    form = to_form(change, action: :validate)
-
-    {:noreply, socket |> assign(form: form) |> update_map(change)}
   end
 
   defp handle_progress(:definition, entry, socket) do
