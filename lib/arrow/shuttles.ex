@@ -492,4 +492,12 @@ defmodule Arrow.Shuttles do
 
     Enum.concat(matching_stops, matching_gtfs_stops)
   end
+
+  def shuttles_by_search_string(string) do
+    sanitized_string = Arrow.Util.sanitized_string_for_sql_like(string)
+
+    shuttles_query = from(s in Shuttle, where: ilike(s.shuttle_name, ^sanitized_string))
+
+    Repo.all(shuttles_query)
+  end
 end

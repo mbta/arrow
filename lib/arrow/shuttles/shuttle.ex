@@ -3,6 +3,14 @@ defmodule Arrow.Shuttles.Shuttle do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @type id :: integer
+  @type t :: %__MODULE__{
+          id: id,
+          status: :draft | :active | :inactive,
+          shuttle_name: String.t(),
+          disrupted_route_id: String.t()
+        }
+
   schema "shuttles" do
     field :status, Ecto.Enum, values: [:draft, :active, :inactive]
     field :shuttle_name, :string

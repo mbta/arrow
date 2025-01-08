@@ -415,6 +415,7 @@ defmodule ArrowWeb.CoreComponents do
   attr :value_mapper, :any
   attr :allow_clear, :boolean
   attr :target, :any, default: nil
+  attr :update_min_len, :integer
 
   def live_select(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
     assigns =
@@ -481,7 +482,35 @@ defmodule ArrowWeb.CoreComponents do
       field={@field}
       stop_or_gtfs_stop={@stop_or_gtfs_stop}
       class={@class}
-      s
+    />
+    """
+  end
+
+  @doc """
+  LiveSelect-based input for shuttle ID with autocomplete
+  """
+
+  attr :id, :string
+  attr :field, :any, required: true, doc: "Field for `shuttle_id` value"
+
+  attr :shuttle, :any, required: true, doc: "Currently selected shuttle, if any"
+
+  attr :label, :string, default: "Stop ID"
+  attr :class, :string, default: nil
+
+  def shuttle_input(assigns) do
+    assigns =
+      assign_new(assigns, :id, fn %{field: field} ->
+        "#{field.form.name}_#{field.name}_shuttle_input_component"
+      end)
+
+    ~H"""
+    <.live_component
+      module={ArrowWeb.ShuttleInput}
+      id={@id}
+      field={@field}
+      shuttle={@shuttle}
+      class={@class}
     />
     """
   end
