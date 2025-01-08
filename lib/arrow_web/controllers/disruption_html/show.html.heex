@@ -88,7 +88,7 @@
   <section class="col-lg-5">
     <%= if @revision.is_active do %>
       <div class="m-disruption-details_flex align-items-center">
-        <%= if Permissions.authorize?(:update_disruption, @user) do %>
+        <%= if "admin" in @roles do %>
           <%= form_tag Routes.disruption_path(@conn, :update_row_status, @revision.disruption_id), method: "put" do %>
             {hidden_input(:revision, :row_approved, value: !@revision.row_approved)}
             {submit(mark_as_approved_or_pending(@revision.row_approved),
@@ -98,8 +98,6 @@
           <.link class="btn btn-tertiary" navigate={Routes.disruption_path(@conn, :edit, @id)}>
             <._button_description conn={@conn} kind={:edit} />
           </.link>
-        <% end %>
-        <%= if Permissions.authorize?(:delete_disruption, @user) do %>
           <%= button class: "btn btn-tertiary",
             method: :delete,
             to: Routes.disruption_path(@conn, :delete, @id),

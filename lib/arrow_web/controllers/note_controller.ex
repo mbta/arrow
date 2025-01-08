@@ -3,9 +3,6 @@ defmodule ArrowWeb.NoteController do
 
   alias Arrow.Disruption
   alias ArrowWeb.ErrorHelpers
-  alias ArrowWeb.Plug.Authorize
-
-  plug(Authorize, :create_note when action in [:create])
 
   def create(%{assigns: %{current_user: user}} = conn, %{
         "id" => disruption_id,

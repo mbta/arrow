@@ -4,14 +4,8 @@ defmodule ArrowWeb.DisruptionController do
   alias __MODULE__.{Filters, Index}
   alias Arrow.{Adjustment, Disruption, DisruptionRevision}
   alias ArrowWeb.ErrorHelpers
-  alias ArrowWeb.Plug.Authorize
   alias Ecto.Changeset
   alias Plug.Conn
-
-  plug(Authorize, :view_disruption when action in [:index, :show])
-  plug(Authorize, :create_disruption when action in [:new, :create])
-  plug(Authorize, :update_disruption when action in [:edit, :update, :update_row_status])
-  plug(Authorize, :delete_disruption when action in [:delete])
 
   @spec update_row_status(Conn.t(), Conn.params()) :: Conn.t()
   def update_row_status(%{assigns: %{current_user: user}} = conn, %{
@@ -29,13 +23,17 @@ defmodule ArrowWeb.DisruptionController do
   def index(%{assigns: %{current_user: user}} = conn, params) do
     filters = Filters.from_params(params)
 
-    render(conn, "index.html", disruptions: Index.all(filters), filters: filters, user: user)
+    render(conn, "index.html",
+      disruptions: Index.all(filters),
+      filters: filters,
+      roles: user.roles
+    )
   end
 
   @spec show(Conn.t(), Conn.params()) :: Conn.t()
   def show(%{assigns: %{current_user: user}} = conn, %{"id" => id}) do
     %{id: id, revisions: [revision], notes: notes} = Disruption.get!(id)
-    render(conn, "show.html", id: id, revision: revision, user: user, notes: notes)
+    render(conn, "show.html", id: id, revision: revision, roles: user.roles, notes: notes)
   end
 
   @spec new(Conn.t(), Conn.params()) :: Conn.t()
