@@ -135,6 +135,33 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       <div :if={@adding_new_service?} class="border-2 border-dashed border-primary p-2">
         <span class="text-primary">add new replacement service component</span>
         <.shuttle_input field={@form[:new_shuttle_id]} shuttle={input_value(@form, :new_shuttle)} />
+        <div class="row">
+          <.input
+            field={@form[:new_shuttle_start_date]}
+            type="date"
+            label="Start date"
+            class="col-lg-3"
+          />
+          <.input field={@form[:new_shuttle_end_date]} type="date" label="End date" class="col-lg-3" />
+          <.input field={@form[:new_shuttle_activation_reason]} type="text" label="Activation reason" />
+        </div>
+        <div class="row">
+          <div class="col-lg-3">
+            <.button disabled={not Enum.empty?(@form.source.errors)} class="btn btn-primary w-100">
+              save component
+            </.button>
+          </div>
+          <div class="col-lg-3">
+            <.button
+              id="cancel_add_new_replacement_service_button"
+              class="btn-outline-primary w-100"
+              data-confirm="Are you sure you want to cancel? All changes to this replacement service component will be lost!"
+              phx-click="cancel_add_new_replacement_service"
+            >
+              cancel
+            </.button>
+          </div>
+        </div>
       </div>
     </div>
     """
@@ -198,6 +225,12 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   def handle_event("add_new_replacement_service", _params, socket) do
     socket = assign(socket, :adding_new_service?, true)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("cancel_add_new_replacement_service", _params, socket) do
+    socket = assign(socket, :adding_new_service?, false)
 
     {:noreply, socket}
   end

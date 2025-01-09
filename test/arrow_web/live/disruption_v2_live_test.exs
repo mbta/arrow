@@ -74,5 +74,20 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       assert live |> element("button#add_new_replacement_service_button") |> render_click() =~
                "add new replacement service component"
     end
+
+    @tag :authenticated_admin
+    setup [:create_disruption_v2]
+
+    test "can deactivate add replacement service flow", %{
+      conn: conn,
+      disruption_v2: disruption_v2
+    } do
+      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+
+      live |> element("button#add_new_replacement_service_button") |> render_click()
+
+      refute live |> element("button#cancel_add_new_replacement_service_button") |> render_click() =~
+               "add new replacement service component"
+    end
   end
 end
