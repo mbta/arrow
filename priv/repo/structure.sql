@@ -714,6 +714,42 @@ CREATE TABLE public.gtfs_trips (
 
 
 --
+-- Name: limits; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.limits (
+    id bigint NOT NULL,
+    start_date date,
+    end_date date,
+    disruption_id bigint,
+    route_id character varying,
+    start_stop_id character varying,
+    end_stop_id character varying,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: limits_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.limits_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: limits_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.limits_id_seq OWNED BY public.limits.id;
+
+
+--
 -- Name: oban_jobs; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1046,6 +1082,13 @@ ALTER TABLE ONLY public.disruptionsv2 ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
+-- Name: limits id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.limits ALTER COLUMN id SET DEFAULT nextval('public.limits_id_seq'::regclass);
+
+
+--
 -- Name: oban_jobs id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1296,6 +1339,14 @@ ALTER TABLE ONLY public.gtfs_trips
 
 
 --
+-- Name: limits limits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.limits
+    ADD CONSTRAINT limits_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: oban_jobs non_negative_priority; Type: CHECK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1435,6 +1486,34 @@ CREATE INDEX disruption_trip_short_names_disruption_id_index ON public.disruptio
 --
 
 CREATE INDEX gtfs_stops_lat_lon_vehicle_type_id_index ON public.gtfs_stops USING btree (lat, lon, vehicle_type, id);
+
+
+--
+-- Name: limits_disruption_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX limits_disruption_id_index ON public.limits USING btree (disruption_id);
+
+
+--
+-- Name: limits_end_stop_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX limits_end_stop_id_index ON public.limits USING btree (end_stop_id);
+
+
+--
+-- Name: limits_route_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX limits_route_id_index ON public.limits USING btree (route_id);
+
+
+--
+-- Name: limits_start_stop_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX limits_start_stop_id_index ON public.limits USING btree (start_stop_id);
 
 
 --
@@ -1731,6 +1810,38 @@ ALTER TABLE ONLY public.gtfs_trips
 
 
 --
+-- Name: limits limits_disruption_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.limits
+    ADD CONSTRAINT limits_disruption_id_fkey FOREIGN KEY (disruption_id) REFERENCES public.disruptionsv2(id);
+
+
+--
+-- Name: limits limits_end_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.limits
+    ADD CONSTRAINT limits_end_stop_id_fkey FOREIGN KEY (end_stop_id) REFERENCES public.gtfs_stops(id);
+
+
+--
+-- Name: limits limits_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.limits
+    ADD CONSTRAINT limits_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.gtfs_routes(id);
+
+
+--
+-- Name: limits limits_start_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.limits
+    ADD CONSTRAINT limits_start_stop_id_fkey FOREIGN KEY (start_stop_id) REFERENCES public.gtfs_stops(id);
+
+
+--
 -- Name: shuttle_route_stops shuttle_route_stops_gtfs_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1826,3 +1937,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20241209204043);
 INSERT INTO public."schema_migrations" (version) VALUES (20241210155455);
 INSERT INTO public."schema_migrations" (version) VALUES (20241219160941);
 INSERT INTO public."schema_migrations" (version) VALUES (20241231110033);
+INSERT INTO public."schema_migrations" (version) VALUES (20250109134438);

@@ -12,6 +12,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
     field :mode, Ecto.Enum, values: [:subway, :commuter_rail, :silver_line, :bus]
     field :is_active, :boolean
     field :description, :string
+    has_many(:limits, Arrow.Disruptions.Limit, foreign_key: :disruption_id)
 
     timestamps(type: :utc_datetime)
   end
