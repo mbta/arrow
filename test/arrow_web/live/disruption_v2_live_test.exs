@@ -63,4 +63,16 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       assert html =~ "Disruption saved successfully"
     end
   end
+
+  describe "Replacement Service" do
+    @tag :authenticated_admin
+    setup [:create_disruption_v2]
+
+    test "can activate add replacement service flow", %{conn: conn, disruption_v2: disruption_v2} do
+      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+
+      assert live |> element("button#add_new_replacement_service_button") |> render_click() =~
+               "add new replacement service component"
+    end
+  end
 end
