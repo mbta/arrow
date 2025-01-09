@@ -538,32 +538,6 @@ defmodule ArrowWeb.ShuttleViewLive do
     end
   end
 
-  defp update_route_changeset_with_uploaded_stops(route_changeset, stop_ids, direction_id) do
-    if Ecto.Changeset.get_field(route_changeset, :direction_id) == direction_id do
-      new_route_stops =
-        stop_ids
-        |> Enum.with_index()
-        |> Enum.map(fn {stop_id, i} ->
-          Arrow.Shuttles.RouteStop.changeset(
-            %Arrow.Shuttles.RouteStop{},
-            %{
-              direction_id: direction_id,
-              stop_sequence: i,
-              display_stop_id: Integer.to_string(stop_id)
-            }
-          )
-        end)
-
-      Ecto.Changeset.put_assoc(
-        route_changeset,
-        :route_stops,
-        new_route_stops
-      )
-    else
-      route_changeset
-    end
-  end
-
   @spec get_stop_travel_times(list({:ok, any()})) ::
           {:ok, list(number())} | {:error, any()}
   defp get_stop_travel_times(stop_coordinates) do
@@ -687,6 +661,28 @@ defmodule ArrowWeb.ShuttleViewLive do
     end
   end
 
+  defp update_route_changeset_with_uploaded_stops(route_changeset, stop_ids, direction_id) do
+    new_route_stops =
+      stop_ids
+      |> Enum.with_index()
+      |> Enum.map(fn {stop_id, i} ->
+        Arrow.Shuttles.RouteStop.changeset(
+          %Arrow.Shuttles.RouteStop{},
+          %{
+            direction_id: direction_id,
+            stop_sequence: i,
+            display_stop_id: Integer.to_string(stop_id)
+          }
+        )
+      end)
+
+    Ecto.Changeset.put_assoc(
+      route_changeset,
+      :route_stops,
+      new_route_stops
+    )
+  end
+
   defp populate_stop_ids(socket, stop_ids) do
     changeset = socket.assigns.form.source
     existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
@@ -704,6 +700,13 @@ defmodule ArrowWeb.ShuttleViewLive do
 
     changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
 
-    socket |> assign(:form, to_form(changeset)) |> update_map(changeset)
+    case Ecto.Changeset.apply_action(changeset, :update) do
+      {:error, changeset} ->
+        socket |> assign(:form, to_form(changeset)) |> update_map(changeset)
+
+      {:ok, shuttle} ->
+        new_changeset = Shuttles.change_shuttle(shuttle)
+        socket |> assign(:form, to_form(new_changeset)) |> update_map(new_changeset)
+    end
   end
 end
