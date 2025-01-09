@@ -125,7 +125,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
           id="add_new_replacement_service_button"
           class="btn"
           type="button"
-          name="add_new_replacement_service"
           phx-click="add_new_replacement_service"
         >
           <.icon name="hero-plus" class="h-8 w-8 text-primary" />
