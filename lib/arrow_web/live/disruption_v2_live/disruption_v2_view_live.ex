@@ -52,7 +52,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
                 id={"#{@form[:mode].id}-#{idx}"}
                 class="form-check-input"
                 type="radio"
-                checked={to_string(@form[:mode].value) == to_string(value) |> IO.inspect()}
+                checked={to_string(@form[:mode].value) == to_string(value)}
                 value={to_string(value)}
               />
 
