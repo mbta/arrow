@@ -1,6 +1,8 @@
 defmodule ArrowWeb.DisruptionV2ViewLive do
   use ArrowWeb, :live_view
 
+  import Phoenix.HTML.Form
+
   alias Arrow.Adjustment
   alias Arrow.Disruptions
   alias Arrow.Disruptions.DisruptionV2
@@ -88,7 +90,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
           </small>
         </fieldset>
 
-        <.replacement_service_section adding_new_service?={@adding_new_service?} />
+        <.replacement_service_section form={@form} adding_new_service?={@adding_new_service?} />
 
         <:actions>
           <div class="w-25 mr-2">
@@ -112,6 +114,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   end
 
   attr :adding_new_service?, :boolean, required: true
+  attr :form, :any, required: true
 
   defp replacement_service_section(assigns) do
     ~H"""
@@ -131,6 +134,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       </span>
       <div :if={@adding_new_service?} class="border-2 border-dashed border-primary p-2">
         <span class="text-primary">add new replacement service component</span>
+        <.shuttle_input field={@form[:new_shuttle_id]} shuttle={input_value(@form, :new_shuttle)} />
       </div>
     </div>
     """
