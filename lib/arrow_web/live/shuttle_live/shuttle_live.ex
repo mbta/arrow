@@ -407,7 +407,7 @@ defmodule ArrowWeb.ShuttleViewLive do
     change = Shuttles.change_shuttle(socket.assigns.shuttle, shuttle_params)
     form = to_form(change, action: :validate)
 
-    {:noreply, socket |> assign(form: form) |> update_map(change)}
+    {:noreply, socket |> assign(form: form) |> update_map()}
   end
 
   def handle_event("edit", %{"shuttle" => shuttle_params}, socket) do
@@ -490,7 +490,7 @@ defmodule ArrowWeb.ShuttleViewLive do
 
     changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
 
-    socket = socket |> assign(:form, to_form(changeset)) |> update_map(changeset)
+    socket = socket |> assign(:form, to_form(changeset)) |> update_map()
 
     {:noreply, socket}
   end
@@ -633,7 +633,9 @@ defmodule ArrowWeb.ShuttleViewLive do
     end
   end
 
-  defp update_map(socket, changeset) do
+  defp update_map(socket) do
+    changeset = socket.assigns.form.source
+
     layers =
       changeset
       |> Ecto.Changeset.get_assoc(:routes, :struct)
@@ -702,11 +704,11 @@ defmodule ArrowWeb.ShuttleViewLive do
 
     case Ecto.Changeset.apply_action(changeset, :update) do
       {:error, changeset} ->
-        socket |> assign(:form, to_form(changeset)) |> update_map(changeset)
+        socket |> assign(:form, to_form(changeset)) |> update_map()
 
       {:ok, shuttle} ->
         new_changeset = Shuttles.change_shuttle(shuttle)
-        socket |> assign(:form, to_form(new_changeset)) |> update_map(new_changeset)
+        socket |> assign(:form, to_form(new_changeset)) |> update_map()
     end
   end
 end
