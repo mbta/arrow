@@ -176,9 +176,9 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   defp limit_form_section(assigns) do
     ~H"""
     <h3>Limits</h3>
-    <div :for={%Limit{route: route} <- @form[:limits].value}>
+    <%!-- <div :for={%Limit{route: route} <- @form.data.limits}>
       {route}
-    </div>
+    </div> --%>
     <.link_button :if={!@show_limit_form?} class="btn-link" phx-click="add_limit">
       <.icon name="hero-plus" /> <span>add limit component</span>
     </.link_button>
@@ -300,6 +300,30 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     {:noreply, socket}
   end
 
+  def handle_event(
+        "add_limit",
+        _,
+        %{assigns: %{disruption_v2: %DisruptionV2{id: nil}, form: form}} = socket
+      ) do
+    IO.inspect(form.params)
+
+    case Disruptions.create_disruption_v2(form.params) do
+      {:ok, disruption} ->
+        {:noreply,
+         socket
+         |> apply_action(:edit, %{"id" => disruption.id})
+         |> assign(show_limit_form?: true)
+         |> push_patch(to: ~p"/disruptionsv2/#{disruption.id}/edit")
+         |> clear_flash()}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply,
+         socket
+         |> assign(form: to_form(changeset))
+         |> put_flash(:error, "Error when saving disruption!")}
+    end
+  end
+
   def handle_event("add_limit", _, socket) do
     socket = assign(socket, show_limit_form?: true)
 
@@ -367,6 +391,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
+    |> assign(title: "edit disruption")
     |> assign(:page_title, "Edit Disruption v2")
     |> assign(:disruption_v2, Disruptions.get_disruption_v2!(id))
   end
