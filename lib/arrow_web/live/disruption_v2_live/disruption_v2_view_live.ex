@@ -1,6 +1,8 @@
 defmodule ArrowWeb.DisruptionV2ViewLive do
   use ArrowWeb, :live_view
 
+  import Phoenix.HTML.Form
+
   alias Arrow.Adjustment
   alias Arrow.Disruptions
   alias Arrow.Disruptions.DisruptionV2
@@ -16,6 +18,12 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       Bus: :bus,
       "Silver Line": :silver_line
     }
+
+  attr :id, :string
+  attr :form, :any, required: true
+  attr :disruption_v2, :any
+  attr :icon_paths, :any
+  attr :adding_new_service?, :boolean
 
   def disruption_form(assigns) do
     ~H"""
@@ -52,7 +60,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
                 id={"#{@form[:mode].id}-#{idx}"}
                 class="form-check-input"
                 type="radio"
-                checked={to_string(@form[:mode].value) == to_string(value) |> IO.inspect()}
+                checked={to_string(@form[:mode].value) == to_string(value)}
                 value={to_string(value)}
               />
 
@@ -82,6 +90,8 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
           </small>
         </fieldset>
 
+        <.replacement_service_section form={@form} adding_new_service?={@adding_new_service?} />
+
         <:actions>
           <div class="w-25 mr-2">
             <.button disabled={not Enum.empty?(@form.source.errors)} class="btn btn-primary w-100">
@@ -103,6 +113,59 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     """
   end
 
+  attr :adding_new_service?, :boolean, required: true
+  attr :form, :any, required: true
+
+  defp replacement_service_section(assigns) do
+    ~H"""
+    <h3>Replacement Service</h3>
+    <div>
+      <span :if={!@adding_new_service?} class="text-primary">
+        <button
+          id="add_new_replacement_service_button"
+          class="btn"
+          type="button"
+          phx-click="add_new_replacement_service"
+        >
+          <.icon name="hero-plus" class="h-8 w-8 text-primary" />
+        </button>
+        <label for="add_new_replacement_service_button">add replacement service component</label>
+      </span>
+      <div :if={@adding_new_service?} class="border-2 border-dashed border-primary p-2">
+        <span class="text-primary">add new replacement service component</span>
+        <.shuttle_input field={@form[:new_shuttle_id]} shuttle={input_value(@form, :new_shuttle)} />
+        <div class="row">
+          <.input
+            field={@form[:new_shuttle_start_date]}
+            type="date"
+            label="Start date"
+            class="col-lg-3"
+          />
+          <.input field={@form[:new_shuttle_end_date]} type="date" label="End date" class="col-lg-3" />
+          <.input field={@form[:new_shuttle_activation_reason]} type="text" label="Activation reason" />
+        </div>
+        <div class="row">
+          <div class="col-lg-3">
+            <.button disabled={not Enum.empty?(@form.source.errors)} class="btn btn-primary w-100">
+              save component
+            </.button>
+          </div>
+          <div class="col-lg-3">
+            <.button
+              id="cancel_add_new_replacement_service_button"
+              class="btn-outline-primary w-100"
+              data-confirm="Are you sure you want to cancel? All changes to this replacement service component will be lost!"
+              phx-click="cancel_add_new_replacement_service"
+            >
+              cancel
+            </.button>
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
   @impl true
   def mount(%{"id" => disruption_id}, _session, socket) do
     disruption = Disruptions.get_disruption_v2!(disruption_id)
@@ -112,6 +175,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:form_action, :edit)
       |> assign(:title, "edit disruption")
       |> assign(:form, Disruptions.change_disruption_v2(disruption) |> to_form)
+      |> assign(:adding_new_service?, false)
       |> assign(:errors, %{})
       |> assign(:icon_paths, icon_paths(socket))
       |> assign(:disruption_v2, disruption)
@@ -127,6 +191,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:http_action, ~p"/disruptionsv2/new")
       |> assign(:title, "create new disruption")
       |> assign(:form, Disruptions.change_disruption_v2(%DisruptionV2{}) |> to_form)
+      |> assign(:adding_new_service?, false)
       |> assign(:errors, %{})
       |> assign(:icon_paths, icon_paths(socket))
       |> assign(:disruption_v2, %DisruptionV2{})
@@ -153,9 +218,20 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     {:noreply, assign(socket, form: form)}
   end
 
-  @impl true
   def handle_event("save", %{"disruption_v2" => disruption_v2_params}, socket) do
     save_disruption_v2(socket, socket.assigns.form_action, disruption_v2_params)
+  end
+
+  def handle_event("add_new_replacement_service", _params, socket) do
+    socket = assign(socket, :adding_new_service?, true)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("cancel_add_new_replacement_service", _params, socket) do
+    socket = assign(socket, :adding_new_service?, false)
+
+    {:noreply, socket}
   end
 
   defp save_disruption_v2(socket, action, disruption_v2_params) do
