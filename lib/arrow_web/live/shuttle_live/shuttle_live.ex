@@ -620,6 +620,10 @@ defmodule ArrowWeb.ShuttleViewLive do
         socket |> assign(:form, to_form(changeset)) |> update_map()
 
       {:ok, shuttle} ->
+        # We replaced any existing associated stops
+        # so we must create a new changeset here to track additional changes
+        # Related Ecto error:
+        # https://github.com/elixir-ecto/ecto/blob/18288287f18ce205b03b3b3dc8cb80f0f1b06dbe/lib/ecto/changeset/relation.ex#L448-L453
         new_changeset = Shuttles.change_shuttle(shuttle)
         socket |> assign(:form, to_form(new_changeset)) |> update_map()
     end
