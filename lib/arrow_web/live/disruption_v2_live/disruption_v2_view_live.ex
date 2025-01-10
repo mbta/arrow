@@ -5,7 +5,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   alias Arrow.Adjustment
   alias Arrow.Disruptions
-  alias Arrow.Disruptions.DisruptionV2
+  alias Arrow.Disruptions.{DisruptionV2, Limit}
 
   @spec disruption_status_labels :: map()
   def disruption_status_labels, do: %{Approved: true, Pending: false}
@@ -21,8 +21,11 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   attr :id, :string
   attr :form, :any, required: true
-  attr :disruption_v2, :any
-  attr :icon_paths, :any
+  attr :action, :string, required: true
+  attr :disruption_v2, DisruptionV2, required: true
+  attr :icon_paths, :map, required: true
+  attr :errors, :map, default: %{}
+  attr :show_limit_form?, :boolean
   attr :adding_new_service?, :boolean
 
   def disruption_form(assigns) do
@@ -67,7 +70,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
               <span
                 class="m-icon m-icon-sm mr-1"
                 style={"background-image: url('#{Map.get(@icon_paths, value)}');"}
-                }
               >
               </span>
               {mode}
@@ -89,12 +91,14 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
             please include: types of disruption, place, and reason
           </small>
         </fieldset>
+        <fieldset></fieldset>
+        <.limit_form_section form={@form} show_limit_form?={@show_limit_form?} />
 
         <.replacement_service_section form={@form} adding_new_service?={@adding_new_service?} />
 
         <:actions>
           <div class="w-25 mr-2">
-            <.button disabled={not Enum.empty?(@form.source.errors)} class="btn btn-primary w-100">
+            <.button disabled={not Enum.empty?(@errors)} class="btn btn-primary w-100">
               Save Disruption
             </.button>
           </div>
@@ -166,7 +170,67 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     """
   end
 
-  @impl true
+  attr :form, :any, required: true
+  attr :show_limit_form?, :boolean, required: true
+
+  defp limit_form_section(assigns) do
+    ~H"""
+    <h3>Limits</h3>
+    <div :for={%Limit{route: route} <- @form[:limits].value}>
+      {route}
+    </div>
+    <.link_button :if={!@show_limit_form?} class="btn-link" phx-click="add_limit">
+      <.icon name="hero-plus" /> <span>add limit component</span>
+    </.link_button>
+    <div :if={@show_limit_form?} class="border-2 border-dashed border-primary p-2">
+      <h4 class="text-primary">add new disruption limit</h4>
+      <div class="row">
+        <div class="col-lg-3">
+          <.input
+            class="h-100"
+            field={@form[:route_id]}
+            type="select"
+            label="route"
+            prompt="Choose a route"
+            options={["Red Line"]}
+          />
+        </div>
+        <.stop_input
+          field={@form[:start_stop_id]}
+          stop_or_gtfs_stop={input_value(@form, :start_stop_id)}
+          label="start stop"
+        /> to
+        <.stop_input
+          field={@form[:end_stop_id]}
+          stop_or_gtfs_stop={input_value(@form, :end_stop_id)}
+          label="end stop"
+        />
+      </div>
+      <div class="row">
+        <.input class="col-lg-3" field={@form[:start_date]} type="date" label="start date" />
+        <.input class="col-lg-3" field={@form[:end_date]} type="date" label="end date" />
+      </div>
+      <div class="row">
+        <div class="col-lg-3">
+          <.button disabled={not Enum.empty?(@form.source.errors)} class="btn btn-primary w-100">
+            save limit
+          </.button>
+        </div>
+        <div class="col-lg-3">
+          <.button
+            id="cancel_add_limit_button"
+            class="btn-outline-primary w-100"
+            data-confirm="Are you sure you want to cancel? All changes to this limit will be lost!"
+            phx-click="cancel_add_limit"
+          >
+            cancel
+          </.button>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
   def mount(%{"id" => disruption_id}, _session, socket) do
     disruption = Disruptions.get_disruption_v2!(disruption_id)
 
@@ -179,32 +243,34 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:errors, %{})
       |> assign(:icon_paths, icon_paths(socket))
       |> assign(:disruption_v2, disruption)
+      |> assign(:show_limit_form?, false)
 
     {:ok, socket}
   end
 
-  @impl true
   def mount(%{} = _params, _session, socket) do
+    disruption = %DisruptionV2{limits: []}
+    form = disruption |> Disruptions.change_disruption_v2() |> to_form()
+
     socket =
       socket
       |> assign(:form_action, :create)
       |> assign(:http_action, ~p"/disruptionsv2/new")
       |> assign(:title, "create new disruption")
-      |> assign(:form, Disruptions.change_disruption_v2(%DisruptionV2{}) |> to_form)
-      |> assign(:adding_new_service?, false)
+      |> assign(:form, form)
       |> assign(:errors, %{})
       |> assign(:icon_paths, icon_paths(socket))
-      |> assign(:disruption_v2, %DisruptionV2{})
+      |> assign(:disruption_v2, disruption)
+      |> assign(:show_limit_form?, false)
+      |> assign(:adding_new_service?, false)
 
     {:ok, socket}
   end
 
-  @impl true
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
   end
 
-  @impl true
   def handle_event(
         "validate",
         %{"disruption_v2" => disruption_v2_params},
@@ -230,6 +296,12 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   def handle_event("cancel_add_new_replacement_service", _params, socket) do
     socket = assign(socket, :adding_new_service?, false)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("add_limit", _, socket) do
+    socket = assign(socket, show_limit_form?: true)
 
     {:noreply, socket}
   end

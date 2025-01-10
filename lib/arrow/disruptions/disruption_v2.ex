@@ -12,7 +12,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
     field :mode, Ecto.Enum, values: [:subway, :commuter_rail, :silver_line, :bus]
     field :is_active, :boolean
     field :description, :string
-    has_many(:limits, Arrow.Disruptions.Limit, foreign_key: :disruption_id)
+    has_many :limits, Arrow.Disruptions.Limit, foreign_key: :disruption_id
 
     timestamps(type: :utc_datetime)
   end
@@ -22,6 +22,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
     disruption_v2
     |> cast(attrs, [:title, :is_active, :description])
     |> cast(attrs, [:mode], force_changes: true)
+    |> cast_assoc(:limits, with: &Arrow.Disruptions.Limit.changeset/2)
     |> validate_required([:title, :mode, :is_active])
   end
 end

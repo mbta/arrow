@@ -18,7 +18,7 @@ defmodule Arrow.Disruptions do
 
   """
   def list_disruptionsv2 do
-    Repo.all(DisruptionV2)
+    DisruptionV2 |> Repo.all() |> Repo.preload([:limits])
   end
 
   @doc """
@@ -35,7 +35,7 @@ defmodule Arrow.Disruptions do
       ** (Ecto.NoResultsError)
 
   """
-  def get_disruption_v2!(id), do: Repo.get!(DisruptionV2, id)
+  def get_disruption_v2!(id), do: DisruptionV2 |> Repo.get!(id) |> Repo.preload([:limits])
 
   @doc """
   Creates a disruption_v2.
