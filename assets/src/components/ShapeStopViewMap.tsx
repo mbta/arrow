@@ -10,11 +10,11 @@ import {
   LayerGroup,
   MapContainer,
   Polyline,
-  TileLayer,
   Marker,
   Popup,
   useMap,
 } from "react-leaflet"
+import BaseMapLayerControl from "./BaseMapLayerControl"
 
 type Coordinate = [number, number]
 interface Shape {
@@ -244,10 +244,7 @@ const ShapeStopViewMap = ({ layers }: ShapeStopViewMapProps) => {
       scrollWheelZoom={true}
     >
       <MapUpdater layers={layers} />
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+      <BaseMapLayerControl />
       <LayersControl
         position="bottomright"
         key="layer-control"
