@@ -408,6 +408,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       socket.assigns.shuttle
       |> Shuttles.change_shuttle(shuttle_params)
       |> to_form(action: :validate)
+      |> dbg()
 
     {:noreply, socket |> assign(form: form) |> update_map()}
   end
