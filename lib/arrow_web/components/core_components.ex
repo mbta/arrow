@@ -481,7 +481,6 @@ defmodule ArrowWeb.CoreComponents do
       field={@field}
       stop_or_gtfs_stop={@stop_or_gtfs_stop}
       class={@class}
-      s
     />
     """
   end
