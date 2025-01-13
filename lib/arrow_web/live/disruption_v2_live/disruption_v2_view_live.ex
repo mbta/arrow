@@ -3,8 +3,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   import Phoenix.HTML.Form
 
-  alias Arrow.Adjustment
-  alias Arrow.Disruptions
+  alias Arrow.{Adjustment, Disruptions, Limits}
   alias Arrow.Disruptions.{DisruptionV2, Limit}
 
   @spec disruption_status_labels :: map()
@@ -92,13 +91,17 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
           </small>
         </fieldset>
         <fieldset></fieldset>
-        <.limit_form_section form={@form} show_limit_form?={@show_limit_form?} />
+        <.limit_form_section
+          form={@form}
+          show_limit_form?={@show_limit_form?}
+          existing_limits={@disruption_v2.limits}
+        />
 
         <.replacement_service_section form={@form} adding_new_service?={@adding_new_service?} />
 
         <:actions>
           <div class="w-25 mr-2">
-            <.button disabled={not Enum.empty?(@errors)} class="btn btn-primary w-100">
+            <.button type="submit" disabled={not Enum.empty?(@errors)} class="btn btn-primary w-100">
               Save Disruption
             </.button>
           </div>
@@ -171,63 +174,64 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   end
 
   attr :form, :any, required: true
+  attr :existing_limits, :any, default: []
   attr :show_limit_form?, :boolean, required: true
 
   defp limit_form_section(assigns) do
     ~H"""
     <h3>Limits</h3>
-    <%!-- <div :for={%Limit{route: route} <- @form.data.limits}>
-      {route}
-    </div> --%>
     <.link_button :if={!@show_limit_form?} class="btn-link" phx-click="add_limit">
       <.icon name="hero-plus" /> <span>add limit component</span>
     </.link_button>
-    <div :if={@show_limit_form?} class="border-2 border-dashed border-primary p-2">
-      <h4 class="text-primary">add new disruption limit</h4>
-      <div class="row">
-        <div class="col-lg-3">
-          <.input
-            class="h-100"
-            field={@form[:route_id]}
-            type="select"
-            label="route"
-            prompt="Choose a route"
-            options={["Red Line"]}
-          />
+    <%!-- <.inputs_for :let={f_limit} :if={@show_limit_form?} field={@form[:limits]}> --%>
+    <.inputs_for :let={f_limit} field={@form[:limits]}>
+      <div :if={is_nil(f_limit[:id].value)} class="border-2 border-dashed border-primary p-2">
+        <h4 class="text-primary">add new disruption limit</h4>
+        <div class="row">
+          <div class="col-lg-3">
+            <.input
+              class="h-100"
+              field={f_limit[:route_id]}
+              type="select"
+              label="route"
+              prompt="Choose a route"
+              options={["Red Line"]}
+            />
+          </div>
+          <%!-- <.stop_input
+            field={f_limit[:start_stop_id]}
+            stop_or_gtfs_stop={input_value(f_limit, :start_stop_id)}
+            label="start stop"
+          /> to
+          <.stop_input
+            field={f_limit[:end_stop_id]}
+            stop_or_gtfs_stop={input_value(f_limit, :end_stop_id)}
+            label="end stop"
+          /> --%>
         </div>
-        <.stop_input
-          field={@form[:start_stop_id]}
-          stop_or_gtfs_stop={input_value(@form, :start_stop_id)}
-          label="start stop"
-        /> to
-        <.stop_input
-          field={@form[:end_stop_id]}
-          stop_or_gtfs_stop={input_value(@form, :end_stop_id)}
-          label="end stop"
-        />
-      </div>
-      <div class="row">
-        <.input class="col-lg-3" field={@form[:start_date]} type="date" label="start date" />
-        <.input class="col-lg-3" field={@form[:end_date]} type="date" label="end date" />
-      </div>
-      <div class="row">
-        <div class="col-lg-3">
-          <.button disabled={not Enum.empty?(@form.source.errors)} class="btn btn-primary w-100">
-            save limit
-          </.button>
+        <div class="row">
+          <.input class="col-lg-3" field={f_limit[:start_date]} type="date" label="start date" />
+          <.input class="col-lg-3" field={f_limit[:end_date]} type="date" label="end date" />
         </div>
-        <div class="col-lg-3">
-          <.button
-            id="cancel_add_limit_button"
-            class="btn-outline-primary w-100"
-            data-confirm="Are you sure you want to cancel? All changes to this limit will be lost!"
-            phx-click="cancel_add_limit"
-          >
-            cancel
-          </.button>
+        <div class="row">
+          <div class="col-lg-3">
+            <.button class="btn btn-primary w-100" phx-click="save_limit">
+              save limit
+            </.button>
+          </div>
+          <div class="col-lg-3">
+            <.button
+              id="cancel_add_limit_button"
+              class="btn-outline-primary w-100"
+              data-confirm="Are you sure you want to cancel? All changes to this limit will be lost!"
+              phx-click="cancel_add_limit"
+            >
+              cancel
+            </.button>
+          </div>
         </div>
       </div>
-    </div>
+    </.inputs_for>
     """
   end
 
@@ -305,8 +309,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         _,
         %{assigns: %{disruption_v2: %DisruptionV2{id: nil}, form: form}} = socket
       ) do
-    IO.inspect(form.params)
-
     case Disruptions.create_disruption_v2(form.params) do
       {:ok, disruption} ->
         {:noreply,
@@ -314,7 +316,11 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
          |> apply_action(:edit, %{"id" => disruption.id})
          |> assign(show_limit_form?: true)
          |> push_patch(to: ~p"/disruptionsv2/#{disruption.id}/edit")
-         |> clear_flash()}
+         |> clear_flash()
+         |> update(:form, fn %{source: changeset} ->
+           empty_limit = Limits.change_limit(%Limit{})
+           changeset |> Ecto.Changeset.put_assoc(:limits, [empty_limit]) |> to_form()
+         end)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply,
@@ -325,7 +331,28 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   end
 
   def handle_event("add_limit", _, socket) do
-    socket = assign(socket, show_limit_form?: true)
+    socket =
+      assign(socket, show_limit_form?: true)
+      |> clear_flash()
+      |> update(:form, fn %{source: changeset} ->
+        empty_limit = Limits.change_limit(%Limit{})
+
+        changeset
+        |> Ecto.Changeset.put_assoc(:limits, [empty_limit])
+        |> to_form()
+      end)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("save_limit", _params, socket) do
+    socket = assign(socket, :show_limit_form?, false)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("cancel_add_limit", _params, socket) do
+    socket = assign(socket, :show_limit_form?, false)
 
     {:noreply, socket}
   end
