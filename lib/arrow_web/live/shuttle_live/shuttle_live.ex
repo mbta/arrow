@@ -404,8 +404,10 @@ defmodule ArrowWeb.ShuttleViewLive do
   end
 
   def handle_event("validate", %{"shuttle" => shuttle_params}, socket) do
-    change = Shuttles.change_shuttle(socket.assigns.shuttle, shuttle_params)
-    form = to_form(change, action: :validate)
+    form =
+      socket.assigns.shuttle
+      |> Shuttles.change_shuttle(shuttle_params)
+      |> to_form(action: :validate)
 
     {:noreply, socket |> assign(form: form) |> update_map()}
   end
