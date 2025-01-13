@@ -8,7 +8,7 @@ defmodule Arrow.Limits do
 
   alias Arrow.Disruptions.Limit
 
-  @preloads [:start_stop, :end_stop]
+  @preloads [:route, :start_stop, :end_stop]
 
   @doc """
   Returns the list of limits.

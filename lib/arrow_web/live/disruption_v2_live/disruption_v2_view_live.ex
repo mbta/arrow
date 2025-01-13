@@ -4,7 +4,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   import Phoenix.HTML.Form
   import Ecto.Query, only: [from: 2, dynamic: 2]
 
-  alias Arrow.{Adjustment, Disruptions, Limits}
+  alias Arrow.{Adjustment, Disruptions}
   alias Arrow.Disruptions.{DisruptionV2, Limit}
 
   @silver_line_routes ~w(741 742 743 746 747 749 751)
@@ -186,8 +186,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     <.link_button :if={!@show_limit_form?} class="btn-link" phx-click="add_limit">
       <.icon name="hero-plus" /> <span>add limit component</span>
     </.link_button>
-    <%!-- <.inputs_for :let={f_limit} :if={@show_limit_form?} field={@form[:limits]}> --%>
-    <.inputs_for :let={f_limit} field={@form[:limits]}>
+    <.inputs_for :let={f_limit} :if={@show_limit_form?} field={@form[:limits]}>
       <div :if={is_nil(f_limit[:id].value)} class="border-2 border-dashed border-primary p-2">
         <h4 class="text-primary">add new disruption limit</h4>
         <div class="row">
@@ -201,16 +200,29 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
               options={get_routes_for_mode(input_value(@form, :mode))}
             />
           </div>
-          <.stop_input
-            field={f_limit[:display_start_stop_id]}
-            stop_or_gtfs_stop={f_limit[:start_stop].value}
-            label="start stop"
-          /> to
-          <.stop_input
-            field={f_limit[:display_end_stop_id]}
-            stop_or_gtfs_stop={f_limit[:end_stop].value}
-            label="end stop"
-          />
+          <div class="col-lg-3">
+            <.input
+              class="h-100"
+              field={f_limit[:start_stop_id]}
+              type="select"
+              label="start stop"
+              prompt="Choose a stop"
+              disabled={is_nil(input_value(f_limit, :route_id))}
+              options={get_stops_for_route(input_value(f_limit, :route_id))}
+            />
+          </div>
+          to
+          <div class="col-lg-3">
+            <.input
+              class="h-100"
+              field={f_limit[:end_stop_id]}
+              type="select"
+              label="end stop"
+              prompt="Choose a stop"
+              disabled={is_nil(input_value(f_limit, :route_id))}
+              options={get_stops_for_route(input_value(f_limit, :route_id))}
+            />
+          </div>
         </div>
         <div class="row">
           <.input class="col-lg-3" field={f_limit[:start_date]} type="date" label="start date" />
@@ -256,7 +268,25 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
     from(r in Arrow.Gtfs.Route, where: ^condition)
     |> Arrow.Repo.all()
-    |> Enum.map(&{&1.id, &1.id})
+    |> Enum.map(&{&1.long_name, &1.id})
+  end
+
+  defp get_stops_for_route(nil), do: []
+
+  defp get_stops_for_route(route_id) do
+    Arrow.Repo.all(
+      from s in Arrow.Gtfs.Stop,
+        where: s.location_type == :stop_platform,
+        join: st in Arrow.Gtfs.StopTime,
+        on: s.id == st.stop_id,
+        join: t in Arrow.Gtfs.Trip,
+        on: st.trip_id == t.id,
+        where: t.route_id == ^route_id,
+        select: s,
+        distinct: s.parent_station_id
+    )
+    |> Enum.map(&{&1.name, &1.parent_station_id})
+    |> IO.inspect()
   end
 
   def mount(%{"id" => disruption_id}, _session, socket) do
@@ -342,8 +372,9 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
          |> push_patch(to: ~p"/disruptionsv2/#{disruption.id}/edit")
          |> clear_flash()
          |> update(:form, fn %{source: changeset} ->
-           empty_limit = Limits.change_limit(%Limit{})
-           changeset |> Ecto.Changeset.put_assoc(:limits, [empty_limit]) |> to_form()
+           changeset
+           |> Ecto.Changeset.put_assoc(:limits, [%Limit{}])
+           |> to_form()
          end)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -359,10 +390,8 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       assign(socket, show_limit_form?: true)
       |> clear_flash()
       |> update(:form, fn %{source: changeset} ->
-        empty_limit = Limits.change_limit(%Limit{})
-
         changeset
-        |> Ecto.Changeset.put_assoc(:limits, [empty_limit])
+        |> Ecto.Changeset.put_assoc(:limits, [%Limit{route_id: nil}])
         |> to_form()
       end)
 
