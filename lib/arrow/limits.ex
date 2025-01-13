@@ -8,6 +8,8 @@ defmodule Arrow.Limits do
 
   alias Arrow.Disruptions.Limit
 
+  @preloads [:start_stop, :end_stop]
+
   @doc """
   Returns the list of limits.
 
@@ -18,7 +20,7 @@ defmodule Arrow.Limits do
 
   """
   def list_limits do
-    Repo.all(Limit)
+    Limit |> Repo.all() |> Repo.preload(@preloads)
   end
 
   @doc """
@@ -35,7 +37,7 @@ defmodule Arrow.Limits do
       ** (Ecto.NoResultsError)
 
   """
-  def get_limit!(id), do: Repo.get!(Limit, id)
+  def get_limit!(id), do: Limit |> Repo.get!(id) |> Repo.preload(@preloads)
 
   @doc """
   Creates a limit.

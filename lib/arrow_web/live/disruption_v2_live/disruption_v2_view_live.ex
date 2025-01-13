@@ -198,16 +198,16 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
               options={["Red Line"]}
             />
           </div>
-          <%!-- <.stop_input
-            field={f_limit[:start_stop_id]}
-            stop_or_gtfs_stop={input_value(f_limit, :start_stop_id)}
+          <.stop_input
+            field={f_limit[:display_start_stop_id]}
+            stop_or_gtfs_stop={f_limit[:start_stop].value}
             label="start stop"
           /> to
           <.stop_input
-            field={f_limit[:end_stop_id]}
-            stop_or_gtfs_stop={input_value(f_limit, :end_stop_id)}
+            field={f_limit[:display_end_stop_id]}
+            stop_or_gtfs_stop={f_limit[:end_stop].value}
             label="end stop"
-          /> --%>
+          />
         </div>
         <div class="row">
           <.input class="col-lg-3" field={f_limit[:start_date]} type="date" label="start date" />
