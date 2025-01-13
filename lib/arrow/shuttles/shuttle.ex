@@ -47,11 +47,7 @@ defmodule Arrow.Shuttles.Shuttle do
 
           routes
           |> Enum.map(&get_assoc(&1, :route_stops))
-          |> Enum.any?(fn route_stops ->
-            route_stops
-            |> Enum.slice(0..-2//1)
-            |> Enum.any?(&(&1 |> get_field(:time_to_next_stop) |> is_nil()))
-          end) ->
+          |> Enum.any?(&route_stops_missing_time_to_next_stop?/1) ->
             add_error(
               changeset,
               :status,
@@ -65,5 +61,12 @@ defmodule Arrow.Shuttles.Shuttle do
       _ ->
         changeset
     end
+  end
+
+  @spec route_stops_missing_time_to_next_stop?([Arrow.Shuttles.RouteStop.t()]) :: boolean()
+  defp route_stops_missing_time_to_next_stop?(route_stops) do
+    route_stops
+    |> Enum.slice(0..-2//1)
+    |> Enum.any?(&(&1 |> get_field(:time_to_next_stop) |> is_nil()))
   end
 end
