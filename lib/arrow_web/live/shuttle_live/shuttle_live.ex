@@ -578,7 +578,7 @@ defmodule ArrowWeb.ShuttleViewLive do
     end
   end
 
-  defp update_route_changeset_with_uploaded_stops(route_changeset, stop_ids, direction_id) do
+  defp get_new_route_stops_changeset_with_uploaded_stops(stop_ids, direction_id) do
     new_route_stops =
       stop_ids
       |> Enum.with_index()
@@ -593,41 +593,87 @@ defmodule ArrowWeb.ShuttleViewLive do
         )
       end)
 
-    Ecto.Changeset.put_assoc(
-      route_changeset,
-      :route_stops,
-      new_route_stops
-    )
+    if Enum.all?(new_route_stops, & &1.valid?) do
+      {:ok, new_route_stops}
+    else
+      {:error,
+       new_route_stops
+       |> Enum.flat_map(fn %Ecto.Changeset{
+                             errors: errors
+                           } ->
+         errors
+       end)
+       |> Enum.map(&elem(&1, 1))}
+    end
   end
 
   defp populate_stop_ids(socket, stop_ids) do
     changeset = socket.assigns.form.source
     existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
 
-    new_routes =
-      Enum.map(existing_routes, fn route_changeset ->
+    new_route_stops =
+      existing_routes
+      |> Enum.map(fn route_changeset ->
         direction_id = Ecto.Changeset.get_field(route_changeset, :direction_id)
 
-        update_route_changeset_with_uploaded_stops(
-          route_changeset,
-          elem(stop_ids, direction_id |> Atom.to_string() |> String.to_integer()),
-          direction_id
-        )
+        stop_ids
+        |> elem(direction_id |> Atom.to_string() |> String.to_integer())
+        |> get_new_route_stops_changeset_with_uploaded_stops(direction_id)
       end)
+      |> Enum.split_with(fn
+        {:ok, _} -> true
+        _ -> false
+      end)
+      |> case do
+        {valid_route_stops, []} ->
+          {:ok, valid_route_stops |> Enum.flat_map(&elem(&1, 1))}
 
-    changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
+        {_, errors} ->
+          {:error, errors |> Enum.flat_map(&elem(&1, 1))}
+      end
 
-    case Ecto.Changeset.apply_action(changeset, :update) do
-      {:error, changeset} ->
-        socket |> assign(:form, to_form(changeset)) |> update_map()
+    case new_route_stops do
+      {:ok, route_stops} ->
+        new_routes =
+          Enum.map(existing_routes, fn route_changeset ->
+            direction_id = Ecto.Changeset.get_field(route_changeset, :direction_id)
 
-      {:ok, shuttle} ->
-        # We replaced any existing associated stops
-        # so we must create a new changeset here to track additional changes
-        # Related Ecto error:
-        # https://github.com/elixir-ecto/ecto/blob/18288287f18ce205b03b3b3dc8cb80f0f1b06dbe/lib/ecto/changeset/relation.ex#L448-L453
-        new_changeset = Shuttles.change_shuttle(shuttle)
-        socket |> assign(:form, to_form(new_changeset)) |> update_map()
+            direction_new_route_stops =
+              route_stops
+              |> Enum.filter(&(Ecto.Changeset.get_field(&1, :direction_id) == direction_id))
+
+            Ecto.Changeset.put_assoc(
+              route_changeset,
+              :route_stops,
+              direction_new_route_stops
+            )
+          end)
+
+        changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
+
+        case Ecto.Changeset.apply_action(changeset, :update) do
+          {:ok, shuttle} ->
+            # We replaced any existing associated stops
+            # so we create a new changeset here to track additional changes
+            # Related Ecto error:
+            # https://github.com/elixir-ecto/ecto/blob/18288287f18ce205b03b3b3dc8cb80f0f1b06dbe/lib/ecto/changeset/relation.ex#L448-L453
+            new_changeset = Shuttles.change_shuttle(shuttle)
+            socket |> assign(:form, to_form(new_changeset)) |> update_map()
+
+          {:error, _invalid_changeset} ->
+            # The changeset from the upload data wasn't valid, so we don't retain it
+            socket |> assign(:form, to_form(changeset)) |> update_map()
+        end
+
+      {:error, errors} ->
+        socket
+        |> put_flash(
+          :errors,
+          {
+            "Failed to upload definition: ",
+            errors |> Enum.map(&translate_error/1)
+          }
+        )
     end
   end
 end
