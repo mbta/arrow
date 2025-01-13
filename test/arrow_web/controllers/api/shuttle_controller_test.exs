@@ -28,7 +28,8 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
           %{
             "direction_id" => "0",
             "stop_sequence" => "1",
-            "display_stop_id" => stop1.id
+            "display_stop_id" => stop1.id,
+            "time_to_next_stop" => 30.0
           },
           %{
             "direction_id" => "0",
@@ -45,11 +46,12 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
           %{
             "direction_id" => "1",
             "stop_sequence" => "1",
-            "display_stop_id" => stop3.id
+            "display_stop_id" => stop3.id,
+            "time_to_next_stop" => 30.0
           },
           %{
             "direction_id" => "0",
-            "stop_sequence" => "1",
+            "stop_sequence" => "2",
             "display_stop_id" => stop4.id
           }
         ]
