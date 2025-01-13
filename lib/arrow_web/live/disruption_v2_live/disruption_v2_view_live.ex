@@ -2,9 +2,12 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   use ArrowWeb, :live_view
 
   import Phoenix.HTML.Form
+  import Ecto.Query, only: [from: 2, dynamic: 2]
 
   alias Arrow.{Adjustment, Disruptions, Limits}
   alias Arrow.Disruptions.{DisruptionV2, Limit}
+
+  @silver_line_routes ~w(741 742 743 746 747 749 751)
 
   @spec disruption_status_labels :: map()
   def disruption_status_labels, do: %{Approved: true, Pending: false}
@@ -195,7 +198,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
               type="select"
               label="route"
               prompt="Choose a route"
-              options={["Red Line"]}
+              options={get_routes_for_mode(input_value(@form, :mode))}
             />
           </div>
           <.stop_input
@@ -233,6 +236,27 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       </div>
     </.inputs_for>
     """
+  end
+
+  defp get_routes_for_mode(mode) do
+    condition =
+      case mode do
+        :subway ->
+          dynamic([r], r.type in [:light_rail, :heavy_rail])
+
+        :silver_line ->
+          dynamic([r], r.type == :bus and r.id in @silver_line_routes)
+
+        :bus ->
+          dynamic([r], r.type == :bus and r.id not in @silver_line_routes)
+
+        :commuter_rail ->
+          dynamic([r], r.type == :commuter_rail)
+      end
+
+    from(r in Arrow.Gtfs.Route, where: ^condition)
+    |> Arrow.Repo.all()
+    |> Enum.map(&{&1.id, &1.id})
   end
 
   def mount(%{"id" => disruption_id}, _session, socket) do
