@@ -705,8 +705,26 @@ defmodule ArrowWeb.ShuttleViewLive do
     changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
 
     case Ecto.Changeset.apply_action(changeset, :update) do
-      {:error, changeset} ->
-        socket |> assign(:form, to_form(changeset)) |> update_map()
+      {:error, invalid_changeset} ->
+        errors =
+          invalid_changeset.changes.routes
+          |> Enum.reject(& &1.valid?)
+          |> Enum.flat_map(& &1.changes.route_stops)
+          |> Enum.flat_map(fn %Ecto.Changeset{
+                                errors: errors
+                              } ->
+            errors
+          end)
+          |> Enum.map(&elem(&1, 1))
+
+        socket
+        |> put_flash(
+          :errors,
+          {
+            "Failed to upload definition: ",
+            errors |> Enum.map(&translate_error/1)
+          }
+        )
 
       {:ok, shuttle} ->
         # We replaced any existing associated stops
