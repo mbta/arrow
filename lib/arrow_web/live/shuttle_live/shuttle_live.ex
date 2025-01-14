@@ -2,8 +2,9 @@ defmodule ArrowWeb.ShuttleViewLive do
   use ArrowWeb, :live_view
   import Phoenix.HTML.Form
 
+  alias Arrow.Gtfs.Stop, as: GtfsStop
   alias Arrow.Shuttles
-  alias Arrow.Shuttles.{DefinitionUpload, Route, RouteStop, Shape, Shuttle}
+  alias Arrow.Shuttles.{DefinitionUpload, Route, RouteStop, Shape, Shuttle, Stop}
   alias ArrowWeb.ShapeView
 
   embed_templates "shuttle_live/*"
@@ -167,7 +168,8 @@ defmodule ArrowWeb.ShuttleViewLive do
           <div class="col-lg-1">
             <.icon name="hero-bars-3" class="h-4 w-4 drag-handle cursor-grab" />
           </div>
-          <.stop_input
+          <.local_stop_input
+            id={"stop_input_component_#{f_route_stop.name}"}
             field={f_route_stop[:display_stop_id]}
             stop_or_gtfs_stop={
               Phoenix.HTML.Form.input_value(f_route_stop, :stop) ||
@@ -239,6 +241,33 @@ defmodule ArrowWeb.ShuttleViewLive do
           {@errors[:route_stops][to_string(input_value(@f, :direction_id))]}
         </aside>
       </div>
+    </div>
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :field, :any, required: true
+  attr :stop_or_gtfs_stop, :any, required: true
+  attr :label, :string, default: "Stop ID"
+  attr :class, :string, default: nil
+
+  defp local_stop_input(assigns) do
+    # This should only change if the selected value actually changes,
+    # not just when a user is typing and options change.
+    assigns =
+      assign(
+        assigns,
+        :options,
+        if is_nil(assigns.stop_or_gtfs_stop) || !Ecto.assoc_loaded?(assigns.stop_or_gtfs_stop) do
+          []
+        else
+          [option_for_stop(assigns.stop_or_gtfs_stop)]
+        end
+      )
+
+    ~H"""
+    <div class={@class}>
+      <.live_select id={@id} field={@field} label={@label} allow_clear={true} options={@options} />
     </div>
     """
   end
@@ -436,6 +465,27 @@ defmodule ArrowWeb.ShuttleViewLive do
       {:error, changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
     end
+  end
+
+  def handle_event(
+        "live_select_change",
+        %{"id" => "stop_input_component_" <> _foo = live_select_id, "text" => text},
+        socket
+      ) do
+    new_opts =
+      if String.length(text) < 2 do
+        # We only start autocomplete at 2 characters, but there are some 1-character stop IDs
+        case Shuttles.stop_or_gtfs_stop_for_stop_id(text) do
+          nil -> []
+          stop -> [option_for_stop(stop)]
+        end
+      else
+        text |> Shuttles.stops_or_gtfs_stops_by_search_string() |> Enum.map(&option_for_stop/1)
+      end
+
+    send_update(LiveSelect.Component, id: live_select_id, options: new_opts)
+
+    {:noreply, socket}
   end
 
   def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
@@ -706,4 +756,11 @@ defmodule ArrowWeb.ShuttleViewLive do
 
     socket |> assign(:form, to_form(changeset)) |> update_map(changeset)
   end
+
+  @spec option_for_stop(Stop.t() | GtfsStop.t()) :: {String.t(), String.t()}
+  defp option_for_stop(%Stop{stop_id: stop_id, stop_desc: stop_desc, stop_name: stop_name}),
+    do: {"#{stop_id} - #{if(stop_desc != "", do: stop_desc, else: stop_name)}", stop_id}
+
+  defp option_for_stop(%GtfsStop{id: id, desc: desc, name: name}),
+    do: {"#{id} - #{desc || name}", id}
 end

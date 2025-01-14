@@ -416,6 +416,7 @@ defmodule ArrowWeb.CoreComponents do
   attr :allow_clear, :boolean
   attr :target, :any, default: nil
   attr :update_min_len, :integer
+  attr :id, :string
 
   def live_select(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
     assigns =
