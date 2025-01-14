@@ -32,8 +32,6 @@ defmodule ArrowWeb.StopInput do
         end
       )
 
-    IO.inspect(assigns.field)
-
     ~H"""
     <div id={@id} class={@class}>
       <.live_select
