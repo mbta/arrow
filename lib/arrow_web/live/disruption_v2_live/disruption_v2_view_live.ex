@@ -245,6 +245,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
             </div>
             <div class="col">
               <.input
+                :if={input_value(f_day_of_week, :active?) == "true"}
                 field={f_day_of_week[:start_time]}
                 type="time"
                 disabled={input_value(f_day_of_week, :all_day?) == "true"}
@@ -252,13 +253,18 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
             </div>
             <div class="col">
               <.input
+                :if={input_value(f_day_of_week, :active?) == "true"}
                 field={f_day_of_week[:end_time]}
                 type="time"
                 disabled={input_value(f_day_of_week, :all_day?) == "true"}
               />
             </div>
             <div class="col">
-              <.input field={f_day_of_week[:all_day?]} type="checkbox" />
+              <.input
+                :if={input_value(f_day_of_week, :active?) == "true"}
+                field={f_day_of_week[:all_day?]}
+                type="checkbox"
+              />
             </div>
           </div>
         </.inputs_for>
