@@ -329,7 +329,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
 
       [%{id: stop_id1}, %{id: stop_id2}, %{id: stop_id3}] = [gtfs_stop1, gtfs_stop2, gtfs_stop3]
 
-      assert [%{gtfs_stop_id: ^stop_id2}, %{gtfs_stop_id: ^stop_id1}, %{gtfs_stop_id: ^stop_id3}] =
+      assert [%{gtfs_stop_id: ^stop_id2, stop_sequence: 1, display_stop_id: ^stop_id2}, %{gtfs_stop_id: ^stop_id1, stop_sequence: 2, display_stop_id: ^stop_id1}, %{gtfs_stop_id: ^stop_id3, stop_sequence: 3, display_stop_id: ^stop_id3}] =
                direction_0_route.route_stops
     end
 

@@ -556,7 +556,7 @@ defmodule ArrowWeb.ShuttleViewLive do
         existing_stops
         |> List.delete_at(old)
         |> List.insert_at(new, moved_route_stop)
-        |> Enum.reduce({[], 0}, fn route_stop, {route_stop_changes, stop_sequence} ->
+        |> Enum.reduce({[], 1}, fn route_stop, {route_stop_changes, stop_sequence} ->
           {route_stop_changes ++
              [Arrow.Shuttles.RouteStop.changeset(route_stop, %{stop_sequence: stop_sequence})],
            stop_sequence + 1}
