@@ -50,9 +50,14 @@ defmodule Arrow.Shuttles.RouteStop do
       if display_stop_id = Ecto.Changeset.get_change(change, :display_stop_id) do
         {stop_id, gtfs_stop_id, stop, error} =
           case Shuttles.stop_or_gtfs_stop_for_stop_id(display_stop_id) do
-            %Stop{id: id} = stop -> {id, nil, stop, nil}
-            %GtfsStop{id: id} = stop -> {nil, id, stop, nil}
-            nil -> {nil, nil, nil, "not a valid stop ID"}
+            %Stop{id: id} = stop ->
+              {id, nil, stop, nil}
+
+            %GtfsStop{id: id} = stop ->
+              {nil, id, stop, nil}
+
+            nil ->
+              {nil, nil, nil, "not a valid stop ID '%{display_stop_id}'"}
           end
 
         change =
@@ -64,7 +69,7 @@ defmodule Arrow.Shuttles.RouteStop do
         if is_nil(error) do
           change
         else
-          add_error(change, :display_stop_id, error)
+          add_error(change, :display_stop_id, error, display_stop_id: display_stop_id)
         end
       else
         change

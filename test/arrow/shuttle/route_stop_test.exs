@@ -44,7 +44,10 @@ defmodule Arrow.Shuttles.RouteStopTest do
 
       assert %Ecto.Changeset{
                valid?: false,
-               errors: [display_stop_id: {"not a valid stop ID", []}]
+               errors: [
+                 display_stop_id:
+                   {"not a valid stop ID '%{display_stop_id}'", [display_stop_id: "invalid_id"]}
+               ]
              } = changeset
     end
 
