@@ -7,6 +7,15 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @type t :: %__MODULE__{
+          title: String.t() | nil,
+          mode: atom() | nil,
+          is_active: boolean(),
+          description: String.t() | nil,
+          inserted_at: DateTime.t() | nil,
+          updated_at: DateTime.t() | nil
+        }
+
   schema "disruptionsv2" do
     field :title, :string
     field :mode, Ecto.Enum, values: [:subway, :commuter_rail, :silver_line, :bus]

@@ -2,6 +2,30 @@ defmodule Arrow.Disruptions.Limit do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Arrow.Gtfs.{Route, Stop}
+  alias Arrow.Disruptions.DisruptionV2
+  alias Arrow.Limits.LimitDayOfWeek
+
+  @default_day_of_weeks_list [
+    LimitDayOfWeek.changeset(%LimitDayOfWeek{day_name: "monday"}),
+    LimitDayOfWeek.changeset(%LimitDayOfWeek{day_name: "tuesday"}),
+    LimitDayOfWeek.changeset(%LimitDayOfWeek{day_name: "wednesday"}),
+    LimitDayOfWeek.changeset(%LimitDayOfWeek{day_name: "thursday"}),
+    LimitDayOfWeek.changeset(%LimitDayOfWeek{day_name: "friday"}),
+    LimitDayOfWeek.changeset(%LimitDayOfWeek{day_name: "saturday"}),
+    LimitDayOfWeek.changeset(%LimitDayOfWeek{day_name: "sunday"})
+  ]
+
+  @type t :: %__MODULE__{
+          start_date: Date.t() | nil,
+          end_date: Date.t() | nil,
+          disruption: DisruptionV2.t() | Ecto.Association.NotLoaded.t(),
+          route: Route.t() | Ecto.Association.NotLoaded.t(),
+          start_stop: Stop.t() | Ecto.Association.NotLoaded.t(),
+          end_stop: Stop.t() | Ecto.Association.NotLoaded.t(),
+          limit_day_of_weeks: [LimitDayOfWeek.t() | Ecto.Association.NotLoaded.t()]
+        }
+
   schema "limits" do
     field :start_date, :date
     field :end_date, :date
@@ -25,9 +49,18 @@ defmodule Arrow.Disruptions.Limit do
       :end_stop_id
     ])
     |> cast_assoc(:limit_day_of_weeks, with: &Arrow.Limits.LimitDayOfWeek.changeset/2)
-    |> validate_required([:start_date, :end_date])
+    |> validate_required([:start_date, :end_date, :route_id, :start_stop_id, :end_stop_id])
     |> assoc_constraint(:route)
     |> assoc_constraint(:start_stop)
     |> assoc_constraint(:end_stop)
+  end
+
+  @doc """
+  Constructs a new limit with a default list of `limit_day_of_weeks`.
+  """
+  @spec new(Enum.t()) :: t()
+  def new(attrs \\ %{}) do
+    %__MODULE__{limit_day_of_weeks: @default_day_of_weeks_list}
+    |> struct!(attrs)
   end
 end

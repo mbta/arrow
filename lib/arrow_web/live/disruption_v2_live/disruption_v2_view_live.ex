@@ -2,12 +2,12 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   use ArrowWeb, :live_view
 
   import Phoenix.HTML.Form
-  import Ecto.Query, only: [from: 2, dynamic: 2]
+  import Ecto.Query, only: [from: 2]
 
-  alias Arrow.{Adjustment, Disruptions}
+  alias Arrow.{Adjustment, Disruptions, Limits}
   alias Arrow.Disruptions.{DisruptionV2, Limit}
 
-  @silver_line_routes ~w(741 742 743 746 747 749 751)
+  @days ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
   @spec disruption_status_labels :: map()
   def disruption_status_labels, do: %{Approved: true, Pending: false}
@@ -20,6 +20,8 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       Bus: :bus,
       "Silver Line": :silver_line
     }
+
+  def days, do: @days
 
   attr :id, :string
   attr :form, :any, required: true
@@ -207,7 +209,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
               type="select"
               label="start stop"
               prompt="Choose a stop"
-              disabled={is_nil(input_value(f_limit, :route_id))}
+              disabled={input_value(f_limit, :route_id) in [nil, ""]}
               options={get_stops_for_route(input_value(f_limit, :route_id))}
             />
           </div>
@@ -219,7 +221,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
               type="select"
               label="end stop"
               prompt="Choose a stop"
-              disabled={is_nil(input_value(f_limit, :route_id))}
+              disabled={input_value(f_limit, :route_id) in [nil, ""]}
               options={get_stops_for_route(input_value(f_limit, :route_id))}
             />
           </div>
@@ -228,9 +230,41 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
           <.input class="col-lg-3" field={f_limit[:start_date]} type="date" label="start date" />
           <.input class="col-lg-3" field={f_limit[:end_date]} type="date" label="end date" />
         </div>
+        <.inputs_for :let={f_day_of_week} field={f_limit[:limit_day_of_weeks]}>
+          <div class="row">
+            <div class="col">
+              <.input type="checkbox" field={f_day_of_week[:active?]} />
+            </div>
+            <.input hidden field={f_day_of_week[:day_name]} />
+            <div class="col">
+              <span class="h-100 border-2 border-solid border-primary p-2 rounded-lg">
+                {input_value(f_day_of_week, :day_name)
+                |> String.slice(0..2)
+                |> String.capitalize()}
+              </span>
+            </div>
+            <div class="col">
+              <.input
+                field={f_day_of_week[:start_time]}
+                type="time"
+                disabled={input_value(f_day_of_week, :all_day?) == "true"}
+              />
+            </div>
+            <div class="col">
+              <.input
+                field={f_day_of_week[:end_time]}
+                type="time"
+                disabled={input_value(f_day_of_week, :all_day?) == "true"}
+              />
+            </div>
+            <div class="col">
+              <.input field={f_day_of_week[:all_day?]} type="checkbox" />
+            </div>
+          </div>
+        </.inputs_for>
         <div class="row">
           <div class="col-lg-3">
-            <.button class="btn btn-primary w-100" phx-click="save_limit">
+            <.button type="button" class="btn btn-primary w-100" phx-click="save_limit">
               save limit
             </.button>
           </div>
@@ -250,26 +284,13 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     """
   end
 
-  defp get_routes_for_mode(mode) do
-    condition =
-      case mode do
-        :subway ->
-          dynamic([r], r.type in [:light_rail, :heavy_rail])
-
-        :silver_line ->
-          dynamic([r], r.type == :bus and r.id in @silver_line_routes)
-
-        :bus ->
-          dynamic([r], r.type == :bus and r.id not in @silver_line_routes)
-
-        :commuter_rail ->
-          dynamic([r], r.type == :commuter_rail)
-      end
-
-    from(r in Arrow.Gtfs.Route, where: ^condition)
+  defp get_routes_for_mode(:subway) do
+    from(r in Arrow.Gtfs.Route, where: r.type in [:light_rail, :heavy_rail])
     |> Arrow.Repo.all()
     |> Enum.map(&{&1.long_name, &1.id})
   end
+
+  defp get_routes_for_mode(_), do: []
 
   defp get_stops_for_route(nil), do: []
 
@@ -286,7 +307,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         distinct: s.parent_station_id
     )
     |> Enum.map(&{&1.name, &1.parent_station_id})
-    |> IO.inspect()
   end
 
   def mount(%{"id" => disruption_id}, _session, socket) do
@@ -367,10 +387,10 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       {:ok, disruption} ->
         {:noreply,
          socket
+         |> clear_flash()
          |> apply_action(:edit, %{"id" => disruption.id})
          |> assign(show_limit_form?: true)
          |> push_patch(to: ~p"/disruptionsv2/#{disruption.id}/edit")
-         |> clear_flash()
          |> update(:form, fn %{source: changeset} ->
            changeset
            |> Ecto.Changeset.put_assoc(:limits, [%Limit{}])
@@ -387,11 +407,15 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   def handle_event("add_limit", _, socket) do
     socket =
-      assign(socket, show_limit_form?: true)
+      socket
       |> clear_flash()
+      |> assign(show_limit_form?: true)
       |> update(:form, fn %{source: changeset} ->
+        existing_limits = Ecto.Changeset.get_assoc(changeset, :limits)
+        new_limit = Limits.change_limit(Limit.new())
+
         changeset
-        |> Ecto.Changeset.put_assoc(:limits, [%Limit{route_id: nil}])
+        |> Ecto.Changeset.put_assoc(:limits, existing_limits ++ [new_limit])
         |> to_form()
       end)
 
