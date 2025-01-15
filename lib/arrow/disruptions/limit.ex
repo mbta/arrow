@@ -46,7 +46,8 @@ defmodule Arrow.Disruptions.Limit do
       :end_date,
       :route_id,
       :start_stop_id,
-      :end_stop_id
+      :end_stop_id,
+      :disruption_id
     ])
     |> cast_assoc(:limit_day_of_weeks, with: &Arrow.Limits.LimitDayOfWeek.changeset/2)
     |> validate_required([:start_date, :end_date, :route_id, :start_stop_id, :end_stop_id])

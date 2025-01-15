@@ -25,8 +25,10 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   attr :id, :string
   attr :form, :any, required: true
+  attr :limit_form, :any, required: true
   attr :action, :string, required: true
   attr :disruption_v2, DisruptionV2, required: true
+  attr :limit, Limit, required: true
   attr :icon_paths, :map, required: true
   attr :errors, :map, default: %{}
   attr :show_limit_form?, :boolean
@@ -97,7 +99,8 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         </fieldset>
         <fieldset></fieldset>
         <.limit_form_section
-          form={@form}
+          form={@limit_form}
+          disruption_form={@form}
           show_limit_form?={@show_limit_form?}
           existing_limits={@disruption_v2.limits}
         />
@@ -179,115 +182,115 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   end
 
   attr :form, :any, required: true
+  attr :disruption_form, :any, required: true
   attr :existing_limits, :any, default: []
   attr :show_limit_form?, :boolean, required: true
 
   defp limit_form_section(assigns) do
     ~H"""
     <h3>Limits</h3>
-    <.link_button :if={!@show_limit_form?} class="btn-link" phx-click="add_limit">
+    <.link_button :if={is_nil(@form)} class="btn-link" phx-click="add_limit">
       <.icon name="hero-plus" /> <span>add limit component</span>
     </.link_button>
-    <.inputs_for :let={f_limit} :if={@show_limit_form?} field={@form[:limits]}>
-      <div :if={is_nil(f_limit[:id].value)} class="border-2 border-dashed border-primary p-2">
-        <h4 class="text-primary">add new disruption limit</h4>
-        <div class="row">
-          <div class="col-lg-3">
-            <.input
-              class="h-100"
-              field={f_limit[:route_id]}
-              type="select"
-              label="route"
-              prompt="Choose a route"
-              options={get_routes_for_mode(input_value(@form, :mode))}
-            />
-          </div>
-          <div class="col-lg-3">
-            <.input
-              class="h-100"
-              field={f_limit[:start_stop_id]}
-              type="select"
-              label="start stop"
-              prompt="Choose a stop"
-              disabled={input_value(f_limit, :route_id) in [nil, ""]}
-              options={get_stops_for_route(input_value(f_limit, :route_id))}
-            />
-          </div>
-          to
-          <div class="col-lg-3">
-            <.input
-              class="h-100"
-              field={f_limit[:end_stop_id]}
-              type="select"
-              label="end stop"
-              prompt="Choose a stop"
-              disabled={input_value(f_limit, :route_id) in [nil, ""]}
-              options={get_stops_for_route(input_value(f_limit, :route_id))}
-            />
-          </div>
+    <div :if={!is_nil(@form)} class="border-2 border-dashed border-primary p-2">
+      <.input hidden field={@form[:disruption_id]} />
+      <h4 class="text-primary">add new disruption limit</h4>
+      <div class="row">
+        <div class="col-lg-3">
+          <.input
+            class="h-100"
+            field={@form[:route_id]}
+            type="select"
+            label="route"
+            prompt="Choose a route"
+            options={get_routes_for_mode(input_value(@disruption_form, :mode))}
+          />
         </div>
-        <div class="row">
-          <.input class="col-lg-3" field={f_limit[:start_date]} type="date" label="start date" />
-          <.input class="col-lg-3" field={f_limit[:end_date]} type="date" label="end date" />
+        <div class="col-lg-3">
+          <.input
+            class="h-100"
+            field={@form[:start_stop_id]}
+            type="select"
+            label="start stop"
+            prompt="Choose a stop"
+            disabled={input_value(@form, :route_id) in [nil, ""]}
+            options={get_stops_for_route(input_value(@form, :route_id))}
+          />
         </div>
-        <.inputs_for :let={f_day_of_week} field={f_limit[:limit_day_of_weeks]}>
-          <div class="row">
-            <div class="col">
-              <.input type="checkbox" field={f_day_of_week[:active?]} />
-            </div>
-            <.input hidden field={f_day_of_week[:id]} />
-            <.input hidden field={f_day_of_week[:day_name]} />
-            <div class="col">
-              <span class="h-100 border-2 border-solid border-primary p-2 rounded-lg">
-                {input_value(f_day_of_week, :day_name)
-                |> String.slice(0..2)
-                |> String.capitalize()}
-              </span>
-            </div>
-            <div class="col">
-              <.input
-                :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
-                field={f_day_of_week[:start_time]}
-                type="time"
-                disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
-              />
-            </div>
-            <div class="col">
-              <.input
-                :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
-                field={f_day_of_week[:end_time]}
-                type="time"
-                disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
-              />
-            </div>
-            <div class="col">
-              <.input
-                :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
-                field={f_day_of_week[:all_day?]}
-                type="checkbox"
-              />
-            </div>
-          </div>
-        </.inputs_for>
-        <div class="row">
-          <div class="col-lg-3">
-            <.button type="button" class="btn btn-primary w-100" phx-click="save_limit">
-              save limit
-            </.button>
-          </div>
-          <div class="col-lg-3">
-            <.button
-              id="cancel_add_limit_button"
-              class="btn-outline-primary w-100"
-              data-confirm="Are you sure you want to cancel? All changes to this limit will be lost!"
-              phx-click="cancel_add_limit"
-            >
-              cancel
-            </.button>
-          </div>
+        to
+        <div class="col-lg-3">
+          <.input
+            class="h-100"
+            field={@form[:end_stop_id]}
+            type="select"
+            label="end stop"
+            prompt="Choose a stop"
+            disabled={input_value(@form, :route_id) in [nil, ""]}
+            options={get_stops_for_route(input_value(@form, :route_id))}
+          />
         </div>
       </div>
-    </.inputs_for>
+      <div class="row">
+        <.input class="col-lg-3" field={@form[:start_date]} type="date" label="start date" />
+        <.input class="col-lg-3" field={@form[:end_date]} type="date" label="end date" />
+      </div>
+      <.inputs_for :let={f_day_of_week} field={@form[:limit_day_of_weeks]}>
+        <div class="row">
+          <div class="col">
+            <.input type="checkbox" field={f_day_of_week[:active?]} />
+          </div>
+          <.input hidden field={f_day_of_week[:id]} />
+          <.input hidden field={f_day_of_week[:day_name]} />
+          <div class="col">
+            <span class="h-100 border-2 border-solid border-primary p-2 rounded-lg">
+              {input_value(f_day_of_week, :day_name)
+              |> String.slice(0..2)
+              |> String.capitalize()}
+            </span>
+          </div>
+          <div class="col">
+            <.input
+              :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
+              field={f_day_of_week[:start_time]}
+              type="time"
+              disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
+            />
+          </div>
+          <div class="col">
+            <.input
+              :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
+              field={f_day_of_week[:end_time]}
+              type="time"
+              disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
+            />
+          </div>
+          <div class="col">
+            <.input
+              :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
+              field={f_day_of_week[:all_day?]}
+              type="checkbox"
+            />
+          </div>
+        </div>
+      </.inputs_for>
+      <div class="row">
+        <div class="col-lg-3">
+          <.button type="button" class="btn btn-primary w-100" phx-click="save_limit">
+            save limit
+          </.button>
+        </div>
+        <div class="col-lg-3">
+          <.button
+            id="cancel_add_limit_button"
+            class="btn-outline-primary w-100"
+            data-confirm="Are you sure you want to cancel? All changes to this limit will be lost!"
+            phx-click="cancel_add_limit"
+          >
+            cancel
+          </.button>
+        </div>
+      </div>
+    </div>
     """
   end
 
@@ -328,7 +331,9 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:errors, %{})
       |> assign(:icon_paths, icon_paths(socket))
       |> assign(:disruption_v2, disruption)
+      |> assign(:limit, Limit.new())
       |> assign(:show_limit_form?, false)
+      |> assign(:limit_form, nil)
 
     {:ok, socket}
   end
@@ -346,14 +351,29 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:errors, %{})
       |> assign(:icon_paths, icon_paths(socket))
       |> assign(:disruption_v2, disruption)
+      |> assign(:limit, Limit.new())
       |> assign(:show_limit_form?, false)
       |> assign(:adding_new_service?, false)
+      |> assign(:limit_form, nil)
 
     {:ok, socket}
   end
 
   def handle_params(params, _url, socket) do
     {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  end
+
+  def handle_event(
+        "validate",
+        %{"limit" => limit_params},
+        %Phoenix.LiveView.Socket{} = socket
+      ) do
+    form =
+      socket.assigns.limit
+      |> Limits.change_limit(limit_params)
+      |> to_form(action: :validate)
+
+    {:noreply, assign(socket, limit_form: form)}
   end
 
   def handle_event(
@@ -392,17 +412,21 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       ) do
     case Disruptions.create_disruption_v2(form.params) do
       {:ok, disruption} ->
+        limit = Limit.new(%{disruption_id: disruption.id})
+
         {:noreply,
          socket
          |> clear_flash()
          |> apply_action(:edit, %{"id" => disruption.id})
          |> assign(show_limit_form?: true)
          |> push_patch(to: ~p"/disruptionsv2/#{disruption.id}/edit")
-         |> update(:form, fn %{source: changeset} ->
-           changeset
-           |> Ecto.Changeset.put_assoc(:limits, [%Limit{}])
+         |> assign(
+           :limit_form,
+           limit
+           |> Limits.change_limit()
            |> to_form()
-         end)}
+         )
+         |> assign(limit: limit)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply,
@@ -413,38 +437,42 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   end
 
   def handle_event("add_limit", _, socket) do
+    limit = Limit.new(%{disruption_id: socket.assigns.disruption_v2.id})
+
     socket =
       socket
       |> clear_flash()
       |> assign(show_limit_form?: true)
-      |> update(:form, fn %{source: changeset} ->
-        existing_limits = Ecto.Changeset.get_assoc(changeset, :limits)
-        new_limit = Limits.change_limit(Limit.new())
-
-        changeset
-        |> Ecto.Changeset.put_assoc(:limits, existing_limits ++ [new_limit])
+      |> assign(
+        :limit_form,
+        limit
+        |> Limits.change_limit()
         |> to_form()
-      end)
+      )
+      |> assign(limit: limit)
 
     {:noreply, socket}
   end
 
   def handle_event("save_limit", _params, socket) do
-    case Arrow.Repo.update(%{socket.assigns.form.source | action: :update}) do
-      {:ok, disruption} ->
+    result =
+      if is_nil(socket.assigns.limit_form.data.id) do
+        Limits.create_limit(socket.assigns.limit_form.params)
+      else
+        # Limits.update_limit(socket.assigns.limit)
+      end
+
+    case result do
+      {:ok, _} ->
         {:noreply,
          socket
-         |> clear_flash()
-         |> assign(:disruption_v2, disruption)
+         |> assign(limit: %Limit{}, limit_form: nil)
          |> put_flash(:info, "Limit saved successfully")}
 
-      {:error, changeset} ->
-        # IO.inspect(changeset)
-
+      {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply,
          socket
-         |> clear_flash()
-         |> assign(form: to_form(changeset))
+         |> assign(limit_form: to_form(changeset))
          |> put_flash(:error, "Error when saving limit!")}
     end
   end
