@@ -235,6 +235,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
             <div class="col">
               <.input type="checkbox" field={f_day_of_week[:active?]} />
             </div>
+            <.input hidden field={f_day_of_week[:id]} />
             <.input hidden field={f_day_of_week[:day_name]} />
             <div class="col">
               <span class="h-100 border-2 border-solid border-primary p-2 rounded-lg">
@@ -245,23 +246,23 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
             </div>
             <div class="col">
               <.input
-                :if={input_value(f_day_of_week, :active?) == "true"}
+                :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
                 field={f_day_of_week[:start_time]}
                 type="time"
-                disabled={input_value(f_day_of_week, :all_day?) == "true"}
+                disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
               />
             </div>
             <div class="col">
               <.input
-                :if={input_value(f_day_of_week, :active?) == "true"}
+                :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
                 field={f_day_of_week[:end_time]}
                 type="time"
-                disabled={input_value(f_day_of_week, :all_day?) == "true"}
+                disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
               />
             </div>
             <div class="col">
               <.input
-                :if={input_value(f_day_of_week, :active?) == "true"}
+                :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
                 field={f_day_of_week[:all_day?]}
                 type="checkbox"
               />
@@ -429,9 +430,23 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   end
 
   def handle_event("save_limit", _params, socket) do
-    socket = assign(socket, :show_limit_form?, false)
+    case Arrow.Repo.update(%{socket.assigns.form.source | action: :update}) do
+      {:ok, disruption} ->
+        {:noreply,
+         socket
+         |> clear_flash()
+         |> assign(:disruption_v2, disruption)
+         |> put_flash(:info, "Limit saved successfully")}
 
-    {:noreply, socket}
+      {:error, changeset} ->
+        # IO.inspect(changeset)
+
+        {:noreply,
+         socket
+         |> clear_flash()
+         |> assign(form: to_form(changeset))
+         |> put_flash(:error, "Error when saving limit!")}
+    end
   end
 
   def handle_event("cancel_add_limit", _params, socket) do

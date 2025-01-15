@@ -33,7 +33,7 @@ defmodule Arrow.Disruptions.Limit do
     belongs_to :route, Arrow.Gtfs.Route, type: :string
     belongs_to :start_stop, Arrow.Gtfs.Stop, type: :string
     belongs_to :end_stop, Arrow.Gtfs.Stop, type: :string
-    has_many :limit_day_of_weeks, Arrow.Limits.LimitDayOfWeek
+    has_many :limit_day_of_weeks, Arrow.Limits.LimitDayOfWeek, on_replace: :delete
 
     timestamps(type: :utc_datetime)
   end
@@ -53,6 +53,7 @@ defmodule Arrow.Disruptions.Limit do
     |> assoc_constraint(:route)
     |> assoc_constraint(:start_stop)
     |> assoc_constraint(:end_stop)
+    |> assoc_constraint(:disruption)
   end
 
   @doc """

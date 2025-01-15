@@ -17,7 +17,7 @@ defmodule Arrow.Limits.LimitDayOfWeek do
     field :day_name, :string
     field :start_time, :time
     field :end_time, :time
-    field :active?, :boolean, source: :is_active
+    field :active?, :boolean, source: :is_active, default: false
     field :all_day?, :boolean, virtual: true
     belongs_to :limit, Arrow.Disruptions.Limit
 
@@ -27,7 +27,7 @@ defmodule Arrow.Limits.LimitDayOfWeek do
   @doc false
   def changeset(limit_day_of_week, attrs \\ %{}) do
     limit_day_of_week
-    |> cast(attrs, [:day_name, :start_time, :end_time, :limit_id, :all_day?])
+    |> cast(attrs, [:active?, :day_name, :start_time, :end_time, :limit_id, :all_day?])
     |> validate_required([:day_name])
     |> validate_inclusion(:day_name, [
       "monday",
@@ -39,16 +39,21 @@ defmodule Arrow.Limits.LimitDayOfWeek do
       "sunday"
     ])
     |> validate_required_times()
-    |> assoc_constraint(:limit)
     |> validate_start_time_before_end_time()
+    |> assoc_constraint(:limit)
   end
 
   @spec validate_required_times(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
   defp validate_required_times(changeset) do
-    if get_field(changeset, :all_day?) do
-      Ecto.Changeset.change(changeset, %{start_time: nil, end_time: nil})
-    else
-      validate_required(changeset, [:start_time, :end_time])
+    cond do
+      not get_field(changeset, :active?) ->
+        changeset
+
+      get_field(changeset, :all_day?) ->
+        Ecto.Changeset.change(changeset, %{start_time: nil, end_time: nil})
+
+      true ->
+        validate_required(changeset, [:start_time, :end_time])
     end
   end
 
