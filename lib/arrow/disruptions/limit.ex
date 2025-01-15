@@ -51,10 +51,28 @@ defmodule Arrow.Disruptions.Limit do
     ])
     |> cast_assoc(:limit_day_of_weeks, with: &Arrow.Limits.LimitDayOfWeek.changeset/2)
     |> validate_required([:start_date, :end_date, :route_id, :start_stop_id, :end_stop_id])
+    |> validate_start_date_before_end_date()
     |> assoc_constraint(:route)
     |> assoc_constraint(:start_stop)
     |> assoc_constraint(:end_stop)
     |> assoc_constraint(:disruption)
+  end
+
+  @spec validate_start_date_before_end_date(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
+  defp validate_start_date_before_end_date(changeset) do
+    start_date = get_field(changeset, :start_date)
+    end_date = get_field(changeset, :end_date)
+
+    cond do
+      is_nil(start_date) or is_nil(end_date) ->
+        changeset
+
+      not (Date.compare(start_date, end_date) == :lt) ->
+        add_error(changeset, :start_date, "start date should be before end date")
+
+      true ->
+        changeset
+    end
   end
 
   @doc """
