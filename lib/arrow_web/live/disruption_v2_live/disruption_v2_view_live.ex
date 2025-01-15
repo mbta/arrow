@@ -181,22 +181,28 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   defp limit_form_section(assigns) do
     ~H"""
     <h3>Limits</h3>
-    <.table id="limits" rows={@disruption_form[:limits].value}>
-      <:col :let={limit} label="route">{limit.route_id}</:col>
-      <:col :let={limit} label="start stop">{limit.start_stop.name}</:col>
-      <:col :let={limit} label="end stop">{limit.end_stop.name}</:col>
-      <:col :let={limit} label="start date">{limit.start_date}</:col>
-      <:col :let={limit} label="end date">{limit.end_date}</:col>
-      <:action :let={limit}>
-        <.button type="button" phx-click="edit_limit" phx-value-limit={limit.id}>
-          <.icon name="hero-pencil-solid" class="bg-primary" />
-        </.button>
-        <.button type="button">
-          <.icon name="hero-document-duplicate-solid" class="bg-primary" />
-        </.button>
-        <.button type="button"><.icon name="hero-trash-solid" class="bg-primary" /></.button>
-      </:action>
-    </.table>
+    <%= if Ecto.assoc_loaded?(@disruption_form.data.limits) do %>
+      <.table
+        :if={Enum.any?(@disruption_form.data.limits)}
+        id="limits"
+        rows={@disruption_form.data.limits}
+      >
+        <:col :let={limit} label="route">{limit.route_id}</:col>
+        <:col :let={limit} label="start stop">{limit.start_stop.name}</:col>
+        <:col :let={limit} label="end stop">{limit.end_stop.name}</:col>
+        <:col :let={limit} label="start date">{limit.start_date}</:col>
+        <:col :let={limit} label="end date">{limit.end_date}</:col>
+        <:action :let={limit}>
+          <.button type="button" phx-click="edit_limit" phx-value-limit={limit.id}>
+            <.icon name="hero-pencil-solid" class="bg-primary" />
+          </.button>
+          <.button type="button">
+            <.icon name="hero-document-duplicate-solid" class="bg-primary" />
+          </.button>
+          <.button type="button"><.icon name="hero-trash-solid" class="bg-primary" /></.button>
+        </:action>
+      </.table>
+    <% end %>
     <.link_button :if={is_nil(@form)} class="btn-link" phx-click="add_limit">
       <.icon name="hero-plus" /> <span>add limit component</span>
     </.link_button>
@@ -346,7 +352,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   end
 
   def mount(%{} = _params, _session, socket) do
-    disruption = %DisruptionV2{limits: []}
+    disruption = DisruptionV2.new()
     form = disruption |> Disruptions.change_disruption_v2() |> to_form()
 
     socket =
@@ -416,7 +422,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         _,
         %{assigns: %{disruption_v2: %DisruptionV2{id: nil}, form: form}} = socket
       ) do
-    case Disruptions.create_disruption_v2(form.params) do
+    case Disruptions.create_disruption_v2(Map.put(form.params, "limits", [])) do
       {:ok, disruption} ->
         limit = Limit.new(%{disruption_id: disruption.id})
 

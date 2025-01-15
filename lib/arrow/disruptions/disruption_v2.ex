@@ -13,7 +13,8 @@ defmodule Arrow.Disruptions.DisruptionV2 do
           is_active: boolean(),
           description: String.t() | nil,
           inserted_at: DateTime.t() | nil,
-          updated_at: DateTime.t() | nil
+          updated_at: DateTime.t() | nil,
+          limits: [Arrow.Disruptions.Limit.t() | Ecto.Association.NotLoaded.t()]
         }
 
   schema "disruptionsv2" do
@@ -36,5 +37,10 @@ defmodule Arrow.Disruptions.DisruptionV2 do
     |> cast(attrs, [:mode], force_changes: true)
     |> cast_assoc(:limits, with: &Arrow.Disruptions.Limit.changeset/2)
     |> validate_required([:title, :mode, :is_active])
+  end
+
+  def new(attrs \\ %{}) do
+    %__MODULE__{limits: []}
+    |> struct!(attrs)
   end
 end
