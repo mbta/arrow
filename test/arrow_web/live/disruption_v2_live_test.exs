@@ -71,6 +71,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
 
     @tag :authenticated_admin
     setup [:create_disruption_v2]
+
     test "can activate add replacement service flow", %{conn: conn, disruption_v2: disruption_v2} do
       {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
 
@@ -81,7 +82,8 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
 
       live_component_selector = ~s{[id="shuttle[routes][0]_shape_id_live_select_component"]}
 
-      stop_map_container = live
+      stop_map_container =
+        live
         |> form("#disruption_v2-form")
         |> render_change(%{"disruption_v2[new_shuttle_id]" => shuttle.id})
         |> Floki.find("#shuttle-view-map-disruptionsv2-container")
