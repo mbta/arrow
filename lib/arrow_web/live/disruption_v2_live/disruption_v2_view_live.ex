@@ -187,8 +187,10 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       <:col :let={limit} label="end stop">{limit.end_stop.name}</:col>
       <:col :let={limit} label="start date">{limit.start_date}</:col>
       <:col :let={limit} label="end date">{limit.end_date}</:col>
-      <:action>
-        <.button type="button"><.icon name="hero-pencil-solid" class="bg-primary" /></.button>
+      <:action :let={limit}>
+        <.button type="button" phx-click="edit_limit" phx-value-limit={limit.id}>
+          <.icon name="hero-pencil-solid" class="bg-primary" />
+        </.button>
         <.button type="button">
           <.icon name="hero-document-duplicate-solid" class="bg-primary" />
         </.button>
@@ -461,7 +463,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       if is_nil(socket.assigns.limit_form.data.id) do
         Limits.create_limit(socket.assigns.limit_form.params)
       else
-        # Limits.update_limit(socket.assigns.limit)
+        Limits.update_limit(socket.assigns.limit, socket.assigns.limit_form.params)
       end
 
     case result do
@@ -481,6 +483,17 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   def handle_event("cancel_add_limit", _params, socket) do
     socket = assign(socket, :limit_form, nil)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("edit_limit", %{"limit" => limit_id}, socket) do
+    limit = Limits.get_limit!(limit_id)
+
+    socket =
+      socket
+      |> assign(:limit_form, Limits.change_limit(limit) |> to_form())
+      |> assign(:limit, limit)
 
     {:noreply, socket}
   end
