@@ -31,7 +31,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   attr :limit, Limit, required: true
   attr :icon_paths, :map, required: true
   attr :errors, :map, default: %{}
-  attr :show_limit_form?, :boolean
   attr :adding_new_service?, :boolean
 
   def disruption_form(assigns) do
@@ -97,13 +96,8 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
             please include: types of disruption, place, and reason
           </small>
         </fieldset>
-        <fieldset></fieldset>
-        <.limit_form_section
-          form={@limit_form}
-          disruption_form={@form}
-          show_limit_form?={@show_limit_form?}
-          existing_limits={@disruption_v2.limits}
-        />
+
+        <.limit_form_section form={@limit_form} disruption_form={@form} />
 
         <.replacement_service_section form={@form} adding_new_service?={@adding_new_service?} />
 
@@ -183,12 +177,24 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   attr :form, :any, required: true
   attr :disruption_form, :any, required: true
-  attr :existing_limits, :any, default: []
-  attr :show_limit_form?, :boolean, required: true
 
   defp limit_form_section(assigns) do
     ~H"""
     <h3>Limits</h3>
+    <.table id="limits" rows={@disruption_form[:limits].value}>
+      <:col :let={limit} label="route">{limit.route_id}</:col>
+      <:col :let={limit} label="start stop">{limit.start_stop.name}</:col>
+      <:col :let={limit} label="end stop">{limit.end_stop.name}</:col>
+      <:col :let={limit} label="start date">{limit.start_date}</:col>
+      <:col :let={limit} label="end date">{limit.end_date}</:col>
+      <:action>
+        <.button type="button"><.icon name="hero-pencil-solid" class="bg-primary" /></.button>
+        <.button type="button">
+          <.icon name="hero-document-duplicate-solid" class="bg-primary" />
+        </.button>
+        <.button type="button"><.icon name="hero-trash-solid" class="bg-primary" /></.button>
+      </:action>
+    </.table>
     <.link_button :if={is_nil(@form)} class="btn-link" phx-click="add_limit">
       <.icon name="hero-plus" /> <span>add limit component</span>
     </.link_button>
@@ -332,7 +338,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:icon_paths, icon_paths(socket))
       |> assign(:disruption_v2, disruption)
       |> assign(:limit, Limit.new())
-      |> assign(:show_limit_form?, false)
       |> assign(:limit_form, nil)
 
     {:ok, socket}
@@ -352,7 +357,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:icon_paths, icon_paths(socket))
       |> assign(:disruption_v2, disruption)
       |> assign(:limit, Limit.new())
-      |> assign(:show_limit_form?, false)
       |> assign(:adding_new_service?, false)
       |> assign(:limit_form, nil)
 
@@ -418,7 +422,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
          socket
          |> clear_flash()
          |> apply_action(:edit, %{"id" => disruption.id})
-         |> assign(show_limit_form?: true)
          |> push_patch(to: ~p"/disruptionsv2/#{disruption.id}/edit")
          |> assign(
            :limit_form,
@@ -442,7 +445,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     socket =
       socket
       |> clear_flash()
-      |> assign(show_limit_form?: true)
       |> assign(
         :limit_form,
         limit
@@ -478,7 +480,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   end
 
   def handle_event("cancel_add_limit", _params, socket) do
-    socket = assign(socket, :show_limit_form?, false)
+    socket = assign(socket, :limit_form, nil)
 
     {:noreply, socket}
   end
