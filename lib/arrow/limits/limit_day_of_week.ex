@@ -1,4 +1,6 @@
 defmodule Arrow.Limits.LimitDayOfWeek do
+  @moduledoc "schema for a limit day of week for the db"
+
   use Ecto.Schema
   import Ecto.Changeset
 

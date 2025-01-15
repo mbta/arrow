@@ -14,7 +14,8 @@ defmodule Arrow.DisruptionsFixtures do
         title: "get disrupted bro",
         mode: "subway",
         is_active: true,
-        description: "very disruptive"
+        description: "very disruptive",
+        limits: []
       })
       |> Arrow.Disruptions.create_disruption_v2()
 

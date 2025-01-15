@@ -1,4 +1,6 @@
 defmodule Arrow.Disruptions.Limit do
+  @moduledoc "schema for a limit for the db"
+
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -50,7 +52,7 @@ defmodule Arrow.Disruptions.Limit do
       :disruption_id
     ])
     |> cast_assoc(:limit_day_of_weeks, with: &Arrow.Limits.LimitDayOfWeek.changeset/2)
-    |> validate_required([:start_date, :end_date, :route_id, :start_stop_id, :end_stop_id])
+    |> validate_required([:start_date, :end_date])
     |> validate_start_date_before_end_date()
     |> assoc_constraint(:route)
     |> assoc_constraint(:start_stop)

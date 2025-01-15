@@ -1,7 +1,7 @@
 defmodule Arrow.LimitsTest do
   use Arrow.DataCase
 
-  alias Arrow.Limits
+  alias Arrow.{GtfsFixtures, Limits}
 
   describe "limits" do
     alias Arrow.Disruptions.Limit
@@ -12,20 +12,30 @@ defmodule Arrow.LimitsTest do
 
     test "list_limits/0 returns all limits" do
       limit = limit_fixture()
-      assert Limits.list_limits() == [limit]
+      assert Limits.list_limits() == [Repo.preload(limit, [:route, :start_stop, :end_stop])]
     end
 
     test "get_limit!/1 returns the limit with given id" do
       limit = limit_fixture()
-      assert Limits.get_limit!(limit.id) == limit
+      assert Limits.get_limit!(limit.id) == Repo.preload(limit, [:route, :start_stop, :end_stop])
     end
 
     test "create_limit/1 with valid data creates a limit" do
-      valid_attrs = %{start_date: ~U[2025-01-08 13:44:00Z], end_date: ~U[2025-01-08 13:44:00Z]}
+      route = GtfsFixtures.route_fixture()
+      start_stop = GtfsFixtures.stop_fixture()
+      end_stop = GtfsFixtures.stop_fixture()
+
+      valid_attrs = %{
+        start_date: ~D[2025-01-08],
+        end_date: ~D[2025-01-09],
+        start_stop_id: start_stop.id,
+        end_stop_id: end_stop.id,
+        route_id: route.id
+      }
 
       assert {:ok, %Limit{} = limit} = Limits.create_limit(valid_attrs)
-      assert limit.start_date == ~U[2025-01-08 13:44:00Z]
-      assert limit.end_date == ~U[2025-01-08 13:44:00Z]
+      assert limit.start_date == ~D[2025-01-08]
+      assert limit.end_date == ~D[2025-01-09]
     end
 
     test "create_limit/1 with invalid data returns error changeset" do
@@ -33,18 +43,30 @@ defmodule Arrow.LimitsTest do
     end
 
     test "update_limit/2 with valid data updates the limit" do
-      limit = limit_fixture()
-      update_attrs = %{start_date: ~U[2025-01-09 13:44:00Z], end_date: ~U[2025-01-09 13:44:00Z]}
+      route = GtfsFixtures.route_fixture()
+      start_stop = GtfsFixtures.stop_fixture()
+      end_stop = GtfsFixtures.stop_fixture()
+
+      limit =
+        limit_fixture(start_stop_id: start_stop.id, end_stop_id: end_stop.id, route_id: route.id)
+
+      update_attrs = %{start_date: ~D[2025-01-09], end_date: ~D[2025-01-10]}
 
       assert {:ok, %Limit{} = limit} = Limits.update_limit(limit, update_attrs)
-      assert limit.start_date == ~U[2025-01-09 13:44:00Z]
-      assert limit.end_date == ~U[2025-01-09 13:44:00Z]
+      assert limit.start_date == ~D[2025-01-09]
+      assert limit.end_date == ~D[2025-01-10]
     end
 
     test "update_limit/2 with invalid data returns error changeset" do
-      limit = limit_fixture()
+      route = GtfsFixtures.route_fixture()
+      start_stop = GtfsFixtures.stop_fixture()
+      end_stop = GtfsFixtures.stop_fixture()
+
+      limit =
+        limit_fixture(start_stop_id: start_stop.id, end_stop_id: end_stop.id, route_id: route.id)
+
       assert {:error, %Ecto.Changeset{}} = Limits.update_limit(limit, @invalid_attrs)
-      assert limit == Limits.get_limit!(limit.id)
+      assert Repo.preload(limit, [:route, :start_stop, :end_stop]) == Limits.get_limit!(limit.id)
     end
 
     test "delete_limit/1 deletes the limit" do
@@ -77,11 +99,13 @@ defmodule Arrow.LimitsTest do
     end
 
     test "create_limit_day_of_week/1 with valid data creates a limit_day_of_week" do
-      valid_attrs = %{day_name: "some day_name", start_time: ~T[14:00:00], end_time: ~T[14:00:00]}
+      valid_attrs = %{day_name: "monday", start_time: ~T[13:00:00], end_time: ~T[14:00:00]}
 
-      assert {:ok, %LimitDayOfWeek{} = limit_day_of_week} = Limits.create_limit_day_of_week(valid_attrs)
-      assert limit_day_of_week.day_name == "some day_name"
-      assert limit_day_of_week.start_time == ~T[14:00:00]
+      assert {:ok, %LimitDayOfWeek{} = limit_day_of_week} =
+               Limits.create_limit_day_of_week(valid_attrs)
+
+      assert limit_day_of_week.day_name == "monday"
+      assert limit_day_of_week.start_time == ~T[13:00:00]
       assert limit_day_of_week.end_time == ~T[14:00:00]
     end
 
@@ -91,24 +115,37 @@ defmodule Arrow.LimitsTest do
 
     test "update_limit_day_of_week/2 with valid data updates the limit_day_of_week" do
       limit_day_of_week = limit_day_of_week_fixture()
-      update_attrs = %{day_name: "some updated day_name", start_time: ~T[15:01:01], end_time: ~T[15:01:01]}
 
-      assert {:ok, %LimitDayOfWeek{} = limit_day_of_week} = Limits.update_limit_day_of_week(limit_day_of_week, update_attrs)
-      assert limit_day_of_week.day_name == "some updated day_name"
+      update_attrs = %{
+        day_name: "tuesday",
+        start_time: ~T[15:01:01],
+        end_time: ~T[16:01:01]
+      }
+
+      assert {:ok, %LimitDayOfWeek{} = limit_day_of_week} =
+               Limits.update_limit_day_of_week(limit_day_of_week, update_attrs)
+
+      assert limit_day_of_week.day_name == "tuesday"
       assert limit_day_of_week.start_time == ~T[15:01:01]
-      assert limit_day_of_week.end_time == ~T[15:01:01]
+      assert limit_day_of_week.end_time == ~T[16:01:01]
     end
 
     test "update_limit_day_of_week/2 with invalid data returns error changeset" do
       limit_day_of_week = limit_day_of_week_fixture()
-      assert {:error, %Ecto.Changeset{}} = Limits.update_limit_day_of_week(limit_day_of_week, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Limits.update_limit_day_of_week(limit_day_of_week, @invalid_attrs)
+
       assert limit_day_of_week == Limits.get_limit_day_of_week!(limit_day_of_week.id)
     end
 
     test "delete_limit_day_of_week/1 deletes the limit_day_of_week" do
       limit_day_of_week = limit_day_of_week_fixture()
       assert {:ok, %LimitDayOfWeek{}} = Limits.delete_limit_day_of_week(limit_day_of_week)
-      assert_raise Ecto.NoResultsError, fn -> Limits.get_limit_day_of_week!(limit_day_of_week.id) end
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Limits.get_limit_day_of_week!(limit_day_of_week.id)
+      end
     end
 
     test "change_limit_day_of_week/1 returns a limit_day_of_week changeset" do

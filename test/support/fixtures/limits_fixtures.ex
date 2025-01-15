@@ -4,6 +4,8 @@ defmodule Arrow.LimitsFixtures do
   entities via the `Arrow.Limits` context.
   """
 
+  alias Arrow.GtfsFixtures
+
   @doc """
   Generate a limit.
   """
@@ -11,8 +13,12 @@ defmodule Arrow.LimitsFixtures do
     {:ok, limit} =
       attrs
       |> Enum.into(%{
-        end_date: ~U[2025-01-08 13:44:00Z],
-        start_date: ~U[2025-01-08 13:44:00Z]
+        end_date: ~D[2025-01-09],
+        start_date: ~D[2025-01-08],
+        start_stop: GtfsFixtures.stop_fixture(),
+        end_stop: GtfsFixtures.stop_fixture(),
+        route: GtfsFixtures.route_fixture(),
+        limit_day_of_weeks: []
       })
       |> Arrow.Limits.create_limit()
 
@@ -26,8 +32,9 @@ defmodule Arrow.LimitsFixtures do
     {:ok, limit_day_of_week} =
       attrs
       |> Enum.into(%{
-        day_name: "some day_name",
-        end_time: ~T[14:00:00],
+        active?: true,
+        day_name: "monday",
+        end_time: ~T[15:00:00],
         start_time: ~T[14:00:00]
       })
       |> Arrow.Limits.create_limit_day_of_week()
