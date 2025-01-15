@@ -89,7 +89,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
         |> Floki.find("#shuttle-view-map-disruptionsv2-container")
 
       # make sure the shuttle map container is displayed when we have entered a new shuttle
-      assert !Enum.empty?(stop_map_container)
+      assert [_shuttle_map_div] = stop_map_container
     end
 
     @tag :authenticated_admin
