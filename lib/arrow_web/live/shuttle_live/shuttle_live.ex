@@ -320,13 +320,13 @@ defmodule ArrowWeb.ShuttleViewLive do
     }
   end
 
-  defp routes_to_layers(routes, existing_props) do
+  def routes_to_layers(routes, existing_props) do
     routes
     |> Enum.sort_by(& &1.direction_id)
     |> Enum.map(&direction_to_layer(&1, existing_props))
   end
 
-  defp routes_to_layers(routes) do
+  def routes_to_layers(routes) do
     routes_to_layers(routes, %{layers: []})
   end
 

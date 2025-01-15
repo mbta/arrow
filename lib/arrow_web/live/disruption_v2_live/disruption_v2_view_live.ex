@@ -6,6 +6,8 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   alias Arrow.Adjustment
   alias Arrow.Disruptions
   alias Arrow.Disruptions.DisruptionV2
+  alias Arrow.Shuttles
+  alias ArrowWeb.ShuttleViewLive
 
   @spec disruption_status_labels :: map()
   def disruption_status_labels, do: %{Approved: true, Pending: false}
@@ -113,6 +115,10 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     """
   end
 
+  defp get_shuttle_map_props(shuttle_id) do
+     %{layers: Shuttles.get_shuttle!(shuttle_id).routes |> ShuttleViewLive.routes_to_layers()}
+  end
+
   attr :adding_new_service?, :boolean, required: true
   attr :form, :any, required: true
 
@@ -134,6 +140,9 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       <div :if={@adding_new_service?} class="border-2 border-dashed border-primary p-2">
         <span class="text-primary">add new replacement service component</span>
         <.shuttle_input field={@form[:new_shuttle_id]} shuttle={input_value(@form, :new_shuttle)} />
+        {
+          if @form[:new_shuttle_id].value != nil, do: live_react_component("Components.ShapeStopViewMap", get_shuttle_map_props(@form[:new_shuttle_id].value), id: "shuttle-view-map-disruptionsv2")
+        }
         <div class="row">
           <.input
             field={@form[:new_shuttle_start_date]}
