@@ -182,34 +182,40 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     ~H"""
     <h3>Limits</h3>
     <%= if Ecto.assoc_loaded?(@disruption_form.data.limits) do %>
-      <.table
-        :if={Enum.any?(@disruption_form.data.limits)}
-        id="limits"
-        rows={@disruption_form.data.limits}
-      >
-        <:col :let={limit} label="route">{limit.route_id}</:col>
-        <:col :let={limit} label="start stop">{limit.start_stop.name}</:col>
-        <:col :let={limit} label="end stop">{limit.end_stop.name}</:col>
-        <:col :let={limit} label="start date">{limit.start_date}</:col>
-        <:col :let={limit} label="end date">{limit.end_date}</:col>
-        <:action :let={limit}>
-          <.button type="button" phx-click="edit_limit" phx-value-limit={limit.id}>
-            <.icon name="hero-pencil-solid" class="bg-primary" />
-          </.button>
-          <.button type="button">
-            <.icon name="hero-document-duplicate-solid" class="bg-primary" />
-          </.button>
-          <.button type="button"><.icon name="hero-trash-solid" class="bg-primary" /></.button>
-        </:action>
-      </.table>
+      <div class="mb-3">
+        <.table
+          :if={Enum.any?(@disruption_form.data.limits)}
+          id="limits"
+          rows={@disruption_form.data.limits}
+        >
+          <:col :let={limit} label="route">{limit.route_id}</:col>
+          <:col :let={limit} label="start stop">{limit.start_stop.name}</:col>
+          <:col :let={limit} label="end stop">{limit.end_stop.name}</:col>
+          <:col :let={limit} label="start date">{limit.start_date}</:col>
+          <:col :let={limit} label="end date">{limit.end_date}</:col>
+          <:action :let={limit}>
+            <.button type="button" phx-click="edit_limit" phx-value-limit={limit.id}>
+              <.icon name="hero-pencil-solid" class="bg-primary" />
+            </.button>
+            <.button type="button">
+              <.icon name="hero-document-duplicate-solid" class="bg-primary" />
+            </.button>
+            <.button type="button"><.icon name="hero-trash-solid" class="bg-primary" /></.button>
+          </:action>
+        </.table>
+      </div>
     <% end %>
     <.link_button :if={is_nil(@form)} class="btn-link" phx-click="add_limit">
       <.icon name="hero-plus" /> <span>add limit component</span>
     </.link_button>
-    <div :if={!is_nil(@form)} class="border-2 border-dashed border-primary p-2">
-      <.input hidden field={@form[:disruption_id]} />
+    <div :if={!is_nil(@form)} class="border-2 border-dashed border-primary p-3">
+      <input
+        value={input_value(@form, :disruption_id)}
+        type="hidden"
+        name={input_name(@form, :disruption_id)}
+      />
       <h4 class="text-primary">add new disruption limit</h4>
-      <div class="row">
+      <div class="row mb-3">
         <div class="col-lg-3">
           <.input
             class="h-100"
@@ -231,7 +237,9 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
             options={get_stops_for_route(input_value(@form, :route_id))}
           />
         </div>
-        to
+        <div class="align-self-end">
+          to
+        </div>
         <div class="col-lg-3">
           <.input
             class="h-100"
@@ -244,49 +252,61 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
           />
         </div>
       </div>
-      <div class="row">
+      <div class="row mb-3">
         <.input class="col-lg-3" field={@form[:start_date]} type="date" label="start date" />
         <.input class="col-lg-3" field={@form[:end_date]} type="date" label="end date" />
       </div>
-      <.inputs_for :let={f_day_of_week} field={@form[:limit_day_of_weeks]}>
-        <div class="row">
-          <div class="col">
-            <.input type="checkbox" field={f_day_of_week[:active?]} />
-          </div>
-          <.input hidden field={f_day_of_week[:id]} />
-          <.input hidden field={f_day_of_week[:day_name]} />
-          <div class="col">
-            <span class="h-100 border-2 border-solid border-primary p-2 rounded-lg">
-              {input_value(f_day_of_week, :day_name)
-              |> String.slice(0..2)
-              |> String.capitalize()}
-            </span>
-          </div>
-          <div class="col">
-            <.input
-              :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
-              field={f_day_of_week[:start_time]}
-              type="time"
-              disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
+      <div class="container justify-content-around mb-3">
+        <.inputs_for :let={f_day_of_week} field={@form[:limit_day_of_weeks]}>
+          <div class="row">
+            <input
+              value={input_value(f_day_of_week, :id)}
+              type="hidden"
+              name={input_name(f_day_of_week, :id)}
             />
-          </div>
-          <div class="col">
-            <.input
-              :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
-              field={f_day_of_week[:end_time]}
-              type="time"
-              disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
+            <input
+              value={input_value(f_day_of_week, :day_name)}
+              type="hidden"
+              name={input_name(f_day_of_week, :day_name)}
             />
+            <div class="col col-lg-1">
+              <.input type="checkbox" field={f_day_of_week[:active?]} />
+            </div>
+            <div class="col col-lg-2">
+              <div class="border-2 border-solid border-primary text-center py-2 rounded-lg">
+                {input_value(f_day_of_week, :day_name)
+                |> String.slice(0..2)
+                |> String.capitalize()}
+              </div>
+            </div>
+            <div class="col col-lg-2">
+              <input
+                :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
+                value={input_value(f_day_of_week, :start_time)}
+                name={input_value(f_day_of_week, :start_time)}
+                type="time"
+                disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
+              />
+            </div>
+            <div class="col col-lg-2">
+              <input
+                :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
+                value={input_value(f_day_of_week, :end_time)}
+                name={input_value(f_day_of_week, :end_time)}
+                type="time"
+                disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
+              />
+            </div>
+            <div class="col col-lg-1">
+              <.input
+                :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
+                field={f_day_of_week[:all_day?]}
+                type="checkbox"
+              />
+            </div>
           </div>
-          <div class="col">
-            <.input
-              :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
-              field={f_day_of_week[:all_day?]}
-              type="checkbox"
-            />
-          </div>
-        </div>
-      </.inputs_for>
+        </.inputs_for>
+      </div>
       <div class="row">
         <div class="col-lg-3">
           <.button type="button" class="btn btn-primary w-100" phx-click="save_limit">
