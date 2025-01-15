@@ -6,8 +6,6 @@ defmodule ArrowWeb.StopInput do
 
   use ArrowWeb, :live_component
 
-  import Ecto.Changeset, only: [get_assoc: 2]
-
   alias Arrow.Gtfs.Stop, as: GtfsStop
   alias Arrow.Shuttles
   alias Arrow.Shuttles.Stop
@@ -49,9 +47,9 @@ defmodule ArrowWeb.StopInput do
   defp stop_value_mapper(text, field) do
     stop =
       case Map.get(field.form.source.changes, :display_stop) do
-        %Arrow.Gtfs.Stop{id: text} = stop -> stop |> dbg()
-        %Arrow.Shuttles.Stop{stop_id: text} = stop -> stop |> dbg()
-        _ -> Shuttles.stop_or_gtfs_stop_for_stop_id(text) |> dbg()
+        %Arrow.Gtfs.Stop{} = stop -> stop
+        %Arrow.Shuttles.Stop{} = stop -> stop
+        _ -> Shuttles.stop_or_gtfs_stop_for_stop_id(text)
       end
 
     if stop == nil do
