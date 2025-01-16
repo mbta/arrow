@@ -206,7 +206,13 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
             <.button disabled={@show_limit_form?} type="button">
               <.icon name="hero-document-duplicate-solid" class="bg-primary" />
             </.button>
-            <.button disabled={@show_limit_form?} type="button">
+            <.button
+              disabled={@show_limit_form?}
+              type="button"
+              phx-click="delete_limit"
+              phx-value-limit={limit.id}
+              data-confirm="Are you sure you want to delete this limit?"
+            >
               <.icon name="hero-trash-solid" class="bg-primary" />
             </.button>
           </:action>
@@ -427,6 +433,37 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     socket = assign(socket, :show_service_form?, false)
 
     {:noreply, socket}
+  end
+
+  def handle_event("delete_limit", %{"limit" => limit_id}, socket) do
+    {parsed_id, _} = Integer.parse(limit_id)
+
+    socket =
+      update(socket, :form, fn %{source: changeset} ->
+        new_limits =
+          changeset
+          |> Ecto.Changeset.get_assoc(:limits)
+          |> Enum.reject(&(&1.data.id == parsed_id))
+
+        changeset |> DisruptionV2.changeset(%{limits: new_limits}) |> to_form()
+      end)
+
+    case Disruptions.update_disruption_v2(
+           socket.assigns.disruption_v2,
+           socket.assigns.form.params
+         ) do
+      {:ok, disruption} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Limit successfully deleted")
+         |> assign(:disruption_v2, disruption)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply,
+         socket
+         |> assign(form: to_form(changeset))
+         |> put_flash(:error, "Error when deleting limit!")}
+    end
   end
 
   def handle_event(
