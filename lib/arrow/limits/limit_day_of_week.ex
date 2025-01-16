@@ -30,6 +30,7 @@ defmodule Arrow.Limits.LimitDayOfWeek do
   def changeset(limit_day_of_week, attrs \\ %{}) do
     limit_day_of_week
     |> cast(attrs, [:active?, :day_name, :start_time, :end_time, :limit_id, :all_day?])
+    |> validate_required([:day_name])
     |> validate_inclusion(:day_name, [
       "monday",
       "tuesday",

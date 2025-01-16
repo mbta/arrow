@@ -1666,6 +1666,13 @@ CREATE INDEX stops_stop_lat_stop_lon_stop_id_index ON public.stops USING btree (
 
 
 --
+-- Name: unique_disruption_weekday; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX unique_disruption_weekday ON public.disruption_day_of_weeks USING btree (disruption_revision_id, day_name);
+
+
+--
 -- Name: unique_limit_weekday; Type: INDEX; Schema: public; Owner: -
 --
 

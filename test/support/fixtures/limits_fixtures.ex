@@ -10,14 +10,18 @@ defmodule Arrow.LimitsFixtures do
   Generate a limit.
   """
   def limit_fixture(attrs \\ %{}) do
+    start_stop = GtfsFixtures.stop_fixture()
+    end_stop = GtfsFixtures.stop_fixture()
+    route = GtfsFixtures.route_fixture()
+
     {:ok, limit} =
       attrs
       |> Enum.into(%{
         end_date: ~D[2025-01-09],
         start_date: ~D[2025-01-08],
-        start_stop: GtfsFixtures.stop_fixture(),
-        end_stop: GtfsFixtures.stop_fixture(),
-        route: GtfsFixtures.route_fixture(),
+        start_stop_id: start_stop.id,
+        end_stop_id: end_stop.id,
+        route_id: route.id,
         limit_day_of_weeks: []
       })
       |> Arrow.Limits.create_limit()

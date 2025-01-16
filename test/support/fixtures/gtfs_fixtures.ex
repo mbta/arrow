@@ -61,7 +61,7 @@ defmodule Arrow.GtfsFixtures do
         url: "https://www.mbta.com/schedules/Red",
         color: "DA291C",
         text_color: "FFFFFF",
-        sort_order: 10010,
+        sort_order: 10_010,
         fare_class: "Rapid Transit",
         listed_route: nil,
         network_id: "rapid_transit"

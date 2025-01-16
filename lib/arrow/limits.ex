@@ -3,8 +3,8 @@ defmodule Arrow.Limits do
   The Limits context.
   """
 
-  alias Arrow.Repo
   alias Arrow.Disruptions.Limit
+  alias Arrow.Repo
 
   @preloads [:route, :start_stop, :end_stop, :limit_day_of_weeks]
 

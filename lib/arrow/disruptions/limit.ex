@@ -4,8 +4,8 @@ defmodule Arrow.Disruptions.Limit do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Arrow.Gtfs.{Route, Stop}
   alias Arrow.Disruptions.DisruptionV2
+  alias Arrow.Gtfs.{Route, Stop}
   alias Arrow.Limits.LimitDayOfWeek
 
   @default_day_of_weeks_list [

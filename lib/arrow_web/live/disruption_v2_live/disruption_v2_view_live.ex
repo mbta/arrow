@@ -337,7 +337,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     """
   end
 
-  defp get_route_options() do
+  defp get_route_options do
     from(r in Arrow.Gtfs.Route, where: r.type in [:light_rail, :heavy_rail])
     |> Arrow.Repo.all()
     |> Enum.map(&{&1.long_name, &1.id})
@@ -501,13 +501,16 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         limits =
           changeset
           |> Ecto.Changeset.get_assoc(:limits)
-          |> Enum.reduce([], fn limit, acc ->
-            if limit.data.id == parsed_id do
-              [Limits.change_limit(limit.data, %{editing?: true}) | acc]
-            else
-              [limit | acc]
+          |> Enum.reduce(
+            [],
+            fn
+              %{data: %{id: ^parsed_id} = data}, acc ->
+                [Limits.change_limit(data, %{editing?: true}) | acc]
+
+              limit, acc ->
+                [limit | acc]
             end
-          end)
+          )
 
         changeset |> Ecto.Changeset.put_assoc(:limits, limits) |> to_form()
       end)
