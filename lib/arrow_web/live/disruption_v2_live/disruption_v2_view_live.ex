@@ -440,6 +440,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
          socket
          |> clear_flash()
          |> apply_action(:edit, %{"id" => disruption.id})
+         |> assign(:form_action, :edit)
          |> push_patch(to: ~p"/disruptionsv2/#{disruption.id}/edit")
          |> update(:form, fn %{source: changeset} ->
            changeset
