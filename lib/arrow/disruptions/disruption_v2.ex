@@ -14,7 +14,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
           description: String.t() | nil,
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil,
-          limits: [Arrow.Disruptions.Limit.t() | Ecto.Association.NotLoaded.t()]
+          limits: [Arrow.Disruptions.Limit.t()] | Ecto.Association.NotLoaded.t()
         }
 
   schema "disruptionsv2" do

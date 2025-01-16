@@ -3,9 +3,7 @@ defmodule Arrow.Limits do
   The Limits context.
   """
 
-  import Ecto.Query, warn: false
   alias Arrow.Repo
-
   alias Arrow.Disruptions.Limit
 
   @preloads [:route, :start_stop, :end_stop, :limit_day_of_weeks]

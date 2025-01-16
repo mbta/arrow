@@ -29,7 +29,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   attr :disruption_v2, DisruptionV2, required: true
   attr :icon_paths, :map, required: true
   attr :errors, :map, default: %{}
-  attr :adding_new_service?, :boolean
+  attr :show_service_form?, :boolean
   attr :show_limit_form?, :boolean
 
   def disruption_form(assigns) do
@@ -102,7 +102,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
           existing_limits={@disruption_v2.limits}
         />
 
-        <.replacement_service_section form={@form} adding_new_service?={@adding_new_service?} />
+        <.replacement_service_section form={@form} show_service_form?={@show_service_form?} />
 
         <:actions>
           <div class="w-25 mr-2">
@@ -125,14 +125,14 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     """
   end
 
-  attr :adding_new_service?, :boolean, required: true
+  attr :show_service_form?, :boolean, required: true
   attr :form, :any, required: true
 
   defp replacement_service_section(assigns) do
     ~H"""
     <h3>Replacement Service</h3>
     <div>
-      <span :if={!@adding_new_service?} class="text-primary">
+      <span :if={!@show_service_form?} class="text-primary">
         <button
           id="add_new_replacement_service_button"
           class="btn"
@@ -143,7 +143,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         </button>
         <label for="add_new_replacement_service_button">add replacement service component</label>
       </span>
-      <div :if={@adding_new_service?} class="border-2 border-dashed border-primary p-2">
+      <div :if={@show_service_form?} class="border-2 border-dashed border-primary p-2">
         <span class="text-primary">add new replacement service component</span>
         <.shuttle_input field={@form[:new_shuttle_id]} shuttle={input_value(@form, :new_shuttle)} />
         <div class="row">
@@ -218,14 +218,12 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     </.link_button>
     <.inputs_for :let={f_limit} field={@form[:limits]}>
       <div
-        :if={@show_limit_form? and (is_nil(f_limit.data.id) or f_limit.data.editing?)}
+        :if={
+          @show_limit_form? and
+            (is_nil(f_limit.data.id) or input_value(f_limit, :editing?) == true)
+        }
         class="container border-2 border-dashed border-primary p-3"
       >
-        <input
-          value={input_value(f_limit, :disruption_id)}
-          type="hidden"
-          name={input_name(f_limit, :disruption_id)}
-        />
         <input
           value={input_value(f_limit, :editing?)}
           type="hidden"
@@ -277,11 +275,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
           <.inputs_for :let={f_day_of_week} field={f_limit[:limit_day_of_weeks]}>
             <div class="row">
               <input
-                value={input_value(f_day_of_week, :id)}
-                type="hidden"
-                name={input_name(f_day_of_week, :id)}
-              />
-              <input
                 value={input_value(f_day_of_week, :day_name)}
                 type="hidden"
                 name={input_name(f_day_of_week, :day_name)}
@@ -291,9 +284,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
               </div>
               <div class="col col-lg-2">
                 <div class="border-2 border-solid border-primary text-center py-2 rounded-lg">
-                  {input_value(f_day_of_week, :day_name)
-                  |> String.slice(0..2)
-                  |> String.capitalize()}
+                  {format_day_name(input_value(f_day_of_week, :day_name))}
                 </div>
               </div>
               <div class="col col-lg-2">
@@ -377,7 +368,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:form_action, :edit)
       |> assign(:title, "edit disruption")
       |> assign(:form, Disruptions.change_disruption_v2(disruption) |> to_form)
-      |> assign(:adding_new_service?, false)
+      |> assign(:show_service_form?, false)
       |> assign(:show_limit_form?, false)
       |> assign(:errors, %{})
       |> assign(:icon_paths, icon_paths(socket))
@@ -399,7 +390,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:errors, %{})
       |> assign(:icon_paths, icon_paths(socket))
       |> assign(:disruption_v2, disruption)
-      |> assign(:adding_new_service?, false)
+      |> assign(:show_service_form?, false)
       |> assign(:show_limit_form?, false)
 
     {:ok, socket}
@@ -427,13 +418,13 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   end
 
   def handle_event("add_new_replacement_service", _params, socket) do
-    socket = assign(socket, :adding_new_service?, true)
+    socket = assign(socket, :show_service_form?, true)
 
     {:noreply, socket}
   end
 
   def handle_event("cancel_add_new_replacement_service", _params, socket) do
-    socket = assign(socket, :adding_new_service?, false)
+    socket = assign(socket, :show_service_form?, false)
 
     {:noreply, socket}
   end
@@ -573,5 +564,11 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     socket
     |> assign(:page_title, "New Disruption v2")
     |> assign(:disruption_v2, %DisruptionV2{})
+  end
+
+  defp format_day_name(day_name) do
+    day_name
+    |> String.slice(0..2)
+    |> String.capitalize()
   end
 end

@@ -32,6 +32,21 @@ CREATE TYPE public.day_name AS ENUM (
 
 
 --
+-- Name: day_of_week; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.day_of_week AS ENUM (
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday'
+);
+
+
+--
 -- Name: direction_desc; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -720,7 +735,7 @@ CREATE TABLE public.gtfs_trips (
 CREATE TABLE public.limit_day_of_weeks (
     id bigint NOT NULL,
     is_active boolean,
-    day_name character varying(255) NOT NULL,
+    day_name public.day_of_week NOT NULL,
     start_time time(0) without time zone,
     end_time time(0) without time zone,
     limit_id bigint,
@@ -1648,13 +1663,6 @@ CREATE UNIQUE INDEX stops_stop_id_index ON public.stops USING btree (stop_id);
 --
 
 CREATE INDEX stops_stop_lat_stop_lon_stop_id_index ON public.stops USING btree (stop_lat, stop_lon, stop_id);
-
-
---
--- Name: unique_disruption_weekday; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX unique_disruption_weekday ON public.disruption_day_of_weeks USING btree (disruption_revision_id, day_name);
 
 
 --

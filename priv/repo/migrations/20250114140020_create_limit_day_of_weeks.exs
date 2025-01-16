@@ -1,10 +1,21 @@
 defmodule Arrow.Repo.Migrations.CreateLimitDayOfWeeks do
   use Ecto.Migration
+  import Arrow.Gtfs.MigrationHelper
 
   def change do
+    create_enum_type(:day_of_week, [
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+      "sunday"
+    ])
+
     create table(:limit_day_of_weeks) do
       add :is_active, :boolean
-      add :day_name, :string, null: false
+      add :day_name, :day_of_week, null: false
       add :start_time, :time
       add :end_time, :time
       add :limit_id, references(:limits, on_delete: :delete_all)

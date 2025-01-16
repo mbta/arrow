@@ -9,13 +9,13 @@ defmodule Arrow.Disruptions.Limit do
   alias Arrow.Limits.LimitDayOfWeek
 
   @default_day_of_weeks_list [
-    LimitDayOfWeek.changeset(%LimitDayOfWeek{day_name: "monday"}),
-    LimitDayOfWeek.changeset(%LimitDayOfWeek{day_name: "tuesday"}),
-    LimitDayOfWeek.changeset(%LimitDayOfWeek{day_name: "wednesday"}),
-    LimitDayOfWeek.changeset(%LimitDayOfWeek{day_name: "thursday"}),
-    LimitDayOfWeek.changeset(%LimitDayOfWeek{day_name: "friday"}),
-    LimitDayOfWeek.changeset(%LimitDayOfWeek{day_name: "saturday"}),
-    LimitDayOfWeek.changeset(%LimitDayOfWeek{day_name: "sunday"})
+    %LimitDayOfWeek{day_name: "monday"},
+    %LimitDayOfWeek{day_name: "tuesday"},
+    %LimitDayOfWeek{day_name: "wednesday"},
+    %LimitDayOfWeek{day_name: "thursday"},
+    %LimitDayOfWeek{day_name: "friday"},
+    %LimitDayOfWeek{day_name: "saturday"},
+    %LimitDayOfWeek{day_name: "sunday"}
   ]
 
   @type t :: %__MODULE__{
@@ -25,7 +25,7 @@ defmodule Arrow.Disruptions.Limit do
           route: Route.t() | Ecto.Association.NotLoaded.t(),
           start_stop: Stop.t() | Ecto.Association.NotLoaded.t(),
           end_stop: Stop.t() | Ecto.Association.NotLoaded.t(),
-          limit_day_of_weeks: [LimitDayOfWeek.t() | Ecto.Association.NotLoaded.t()]
+          limit_day_of_weeks: [LimitDayOfWeek.t()] | Ecto.Association.NotLoaded.t()
         }
 
   schema "limits" do
