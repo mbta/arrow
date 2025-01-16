@@ -3,6 +3,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
 
   import Phoenix.LiveViewTest
   import Arrow.DisruptionsFixtures
+  import Arrow.ShuttlesFixtures
 
   @create_attrs %{
     title: "the great molasses disruption of 2025",
@@ -68,11 +69,25 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     @tag :authenticated_admin
     setup [:create_disruption_v2]
 
+    @tag :authenticated_admin
+    setup [:create_disruption_v2]
+
     test "can activate add replacement service flow", %{conn: conn, disruption_v2: disruption_v2} do
       {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
 
       assert live |> element("button#add_new_replacement_service_button") |> render_click() =~
                "add new replacement service component"
+
+      shuttle = shuttle_fixture()
+
+      stop_map_container =
+        live
+        |> form("#disruption_v2-form")
+        |> render_change(%{"disruption_v2[new_shuttle_id]" => shuttle.id})
+        |> Floki.find("#shuttle-view-map-disruptionsv2-container")
+
+      # make sure the shuttle map container is displayed when we have entered a new shuttle
+      assert [_shuttle_map_div] = stop_map_container
     end
 
     @tag :authenticated_admin
