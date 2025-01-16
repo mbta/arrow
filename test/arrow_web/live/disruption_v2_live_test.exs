@@ -80,8 +80,6 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
 
       shuttle = shuttle_fixture()
 
-      live_component_selector = ~s{[id="shuttle[routes][0]_shape_id_live_select_component"]}
-
       stop_map_container =
         live
         |> form("#disruption_v2-form")
