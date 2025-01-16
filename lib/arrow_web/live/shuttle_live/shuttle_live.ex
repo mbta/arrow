@@ -82,7 +82,13 @@ defmodule ArrowWeb.ShuttleViewLive do
                 <.input field={f_route[:direction_id]} type="text" label="Direction id" />
               </div>
               <div class="col">
-                <.input field={f_route[:direction_desc]} type="text" label="Direction desc" />
+                <.input
+                  field={f_route[:direction_desc]}
+                  type="select"
+                  label="Direction Description"
+                  prompt="Choose a value"
+                  options={Ecto.Enum.values(Arrow.Shuttles.Route, :direction_desc)}
+                />
               </div>
               <div class="col offset-md-1">
                 <.live_select
