@@ -455,7 +455,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
         file_input(new_live, "#shuttle-form", :definition, [
           %{
             name: "valid.xlsx",
-            content: File.read!("test/support/fixtures/xlsx/valid.xlsx")
+            content: File.read!("test/support/fixtures/xlsx/shuttle_live/valid.xlsx")
           }
         ])
 
@@ -493,7 +493,8 @@ defmodule ArrowWeb.ShuttleLiveTest do
         file_input(new_live, "#shuttle-form", :definition, [
           %{
             name: "invalid_missing_tab.xlsx",
-            content: File.read!("test/support/fixtures/xlsx/invalid_missing_tab.xlsx")
+            content:
+              File.read!("test/support/fixtures/xlsx/shuttle_live/invalid_missing_tab.xlsx")
           }
         ])
 
@@ -510,7 +511,8 @@ defmodule ArrowWeb.ShuttleLiveTest do
         file_input(new_live, "#shuttle-form", :definition, [
           %{
             name: "invalid_missing_data.xlsx",
-            content: File.read!("test/support/fixtures/xlsx/invalid_missing_data.xlsx")
+            content:
+              File.read!("test/support/fixtures/xlsx/shuttle_live/invalid_missing_data.xlsx")
           }
         ])
 
@@ -530,7 +532,8 @@ defmodule ArrowWeb.ShuttleLiveTest do
         file_input(new_live, "#shuttle-form", :definition, [
           %{
             name: "invalid_missing_headers.xlsx",
-            content: File.read!("test/support/fixtures/xlsx/invalid_missing_headers.xlsx")
+            content:
+              File.read!("test/support/fixtures/xlsx/shuttle_live/invalid_missing_headers.xlsx")
           }
         ])
 

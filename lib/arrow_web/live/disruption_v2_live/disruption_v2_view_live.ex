@@ -6,6 +6,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   alias Arrow.Adjustment
   alias Arrow.Disruptions
   alias Arrow.Disruptions.DisruptionV2
+  alias Arrow.Shuttles.ActivationUpload
 
   @spec disruption_status_labels :: map()
   def disruption_status_labels, do: %{Approved: true, Pending: false}
@@ -19,11 +20,14 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       "Silver Line": :silver_line
     }
 
-  attr :id, :string
-  attr :form, :any, required: true
-  attr :disruption_v2, :any
-  attr :icon_paths, :any
-  attr :adding_new_service?, :boolean
+  attr(:id, :string)
+  attr(:form, :any, required: true)
+  attr(:disruption_v2, :any)
+  attr(:icon_paths, :any)
+  attr(:show_service_form?, :boolean)
+  attr(:uploads, :any)
+  attr(:new_service, :any)
+  attr(:flash, :any)
 
   def disruption_form(assigns) do
     ~H"""
@@ -67,7 +71,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
               <span
                 class="m-icon m-icon-sm mr-1"
                 style={"background-image: url('#{Map.get(@icon_paths, value)}');"}
-                }
               >
               </span>
               {mode}
@@ -90,7 +93,13 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
           </small>
         </fieldset>
 
-        <.replacement_service_section form={@form} adding_new_service?={@adding_new_service?} />
+        <.replacement_service_section
+          form={@form}
+          show_service_form?={@show_service_form?}
+          uploads={@uploads}
+          new_service={@new_service}
+          flash={@flash}
+        />
 
         <:actions>
           <div class="w-25 mr-2">
@@ -113,14 +122,17 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     """
   end
 
-  attr :adding_new_service?, :boolean, required: true
-  attr :form, :any, required: true
+  attr(:show_service_form?, :boolean, required: true)
+  attr(:form, :any, required: true)
+  attr(:uploads, :any)
+  attr(:flash, :any)
+  attr(:new_service, :any)
 
   defp replacement_service_section(assigns) do
     ~H"""
     <h3>Replacement Service</h3>
     <div>
-      <span :if={!@adding_new_service?} class="text-primary">
+      <span :if={!@show_service_form?} class="text-primary">
         <button
           id="add_new_replacement_service_button"
           class="btn"
@@ -131,18 +143,65 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         </button>
         <label for="add_new_replacement_service_button">add replacement service component</label>
       </span>
-      <div :if={@adding_new_service?} class="border-2 border-dashed border-primary p-2">
+      <div :if={@show_service_form?} class="border-2 border-dashed border-primary p-2">
         <span class="text-primary">add new replacement service component</span>
-        <.shuttle_input field={@form[:new_shuttle_id]} shuttle={input_value(@form, :new_shuttle)} />
+        <.shuttle_input
+          field={@form[:new_replacement_service_shuttle_id]}
+          shuttle={input_value(@form, :new_replaceement_service_shuttle)}
+        />
+        <div class="row mb-3">
+          <div class="col">
+            <.link_button
+              class="btn-primary"
+              phx-click={JS.dispatch("click", to: "##{@uploads.replacement_service.ref}")}
+              target="_blank"
+            >
+              <.live_file_input upload={@uploads.replacement_service} class="hidden" />
+              Upload Replacement Service XLSX
+            </.link_button>
+            <div class="hidden" id="upload">
+              {@new_service}
+            </div>
+          </div>
+        </div>
         <div class="row">
           <.input
-            field={@form[:new_shuttle_start_date]}
+            field={@form[:new_replacement_service_start_date]}
             type="date"
             label="Start date"
             class="col-lg-3"
           />
-          <.input field={@form[:new_shuttle_end_date]} type="date" label="End date" class="col-lg-3" />
-          <.input field={@form[:new_shuttle_activation_reason]} type="text" label="Activation reason" />
+          <.input
+            field={@form[:new_replacement_service_end_date]}
+            type="date"
+            label="End date"
+            class="col-lg-3"
+          />
+          <.input field={@form[:new_replacement_service_reason]} type="text" label="Reason" />
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <%= with {message, errors} <- Phoenix.Flash.get(@flash, :errors) do %>
+              <aside role="alert" class="alert alert-danger">
+                <h4 class="alert-heading">{message}</h4>
+
+                <ul>
+                  <%= for error <- errors do %>
+                    <%= if is_list(error) do %>
+                      <li>{List.first(error)}</li>
+                      <ul>
+                        <%= for suberror <- tl(error) do %>
+                          <li>{suberror}</li>
+                        <% end %>
+                      </ul>
+                    <% else %>
+                      <li>{error}</li>
+                    <% end %>
+                  <% end %>
+                </ul>
+              </aside>
+            <% end %>
+          </div>
         </div>
         <div class="row">
           <div class="col-lg-3">
@@ -175,10 +234,16 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:form_action, :edit)
       |> assign(:title, "edit disruption")
       |> assign(:form, Disruptions.change_disruption_v2(disruption) |> to_form)
-      |> assign(:adding_new_service?, false)
+      |> assign(:show_service_form?, false)
       |> assign(:errors, %{})
       |> assign(:icon_paths, icon_paths(socket))
       |> assign(:disruption_v2, disruption)
+      |> assign(:new_service, nil)
+      |> allow_upload(:replacement_service,
+        accept: ~w(.xlsx),
+        progress: &handle_progress/3,
+        auto_upload: true
+      )
 
     {:ok, socket}
   end
@@ -191,10 +256,16 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:http_action, ~p"/disruptionsv2/new")
       |> assign(:title, "create new disruption")
       |> assign(:form, Disruptions.change_disruption_v2(%DisruptionV2{}) |> to_form)
-      |> assign(:adding_new_service?, false)
+      |> assign(:show_service_form?, false)
       |> assign(:errors, %{})
       |> assign(:icon_paths, icon_paths(socket))
       |> assign(:disruption_v2, %DisruptionV2{})
+      |> assign(:new_service, nil)
+      |> allow_upload(:replacement_service,
+        accept: ~w(.xlsx),
+        progress: &handle_progress/3,
+        auto_upload: true
+      )
 
     {:ok, socket}
   end
@@ -223,15 +294,38 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   end
 
   def handle_event("add_new_replacement_service", _params, socket) do
-    socket = assign(socket, :adding_new_service?, true)
+    socket = assign(socket, :show_service_form?, true)
 
     {:noreply, socket}
   end
 
   def handle_event("cancel_add_new_replacement_service", _params, socket) do
-    socket = assign(socket, :adding_new_service?, false)
+    socket = assign(socket, :show_service_form?, false)
 
     {:noreply, socket}
+  end
+
+  defp handle_progress(:replacement_service, entry, socket) do
+    socket = clear_flash(socket)
+
+    if entry.done? do
+      case consume_uploaded_entry(socket, entry, &ActivationUpload.extract_data_from_upload/1) do
+        {:error, errors} ->
+          {:noreply,
+           put_flash(socket, :errors, {"Failed to upload replacement service:", errors})}
+
+        {:ok, upload} ->
+          dbg(upload)
+
+          socket =
+            socket
+            |> assign(:new_service, inspect(upload))
+
+          {:noreply, put_flash(socket, :info, "Successfully uploaded replacement service")}
+      end
+    else
+      {:noreply, socket}
+    end
   end
 
   defp save_disruption_v2(socket, action, disruption_v2_params) do
