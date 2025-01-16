@@ -31,7 +31,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   end
 
   @doc false
-  def changeset(disruption_v2, attrs) do
+  def changeset(disruption_v2, attrs \\ %{}) do
     disruption_v2
     |> cast(attrs, [:title, :is_active, :description])
     |> cast(attrs, [:mode], force_changes: true)
