@@ -330,38 +330,11 @@ defmodule ArrowWeb.ShuttleViewLive do
     {:noreply, socket |> assign(form: form) |> update_map(change)}
   end
 
-  defp update_second_direction(socket, first_direction) do
-    second_direction =
-      case first_direction do
-        "Inbound" -> "Outbound"
-        "Outbound" -> "Inbound"
-        "North" -> "South"
-        "South" -> "North"
-        "East" -> "West"
-        "West" -> "East"
-      end
-
-    update(socket, :form, fn %{source: changeset} ->
-      existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
-
-      new_routes =
-        Enum.map(existing_routes, fn route_changeset ->
-          update_route_changeset_with_new_direction_desc(route_changeset, :"1", second_direction)
-        end)
-
-      changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
-
-      to_form(changeset)
-    end)
-  end
-
   def handle_event(
         "direction_desc_changed",
         %{"shuttle" => %{"routes" => shuttle_routes}} = params,
         socket
       ) do
-    IO.inspect(params)
-
     socket =
       case shuttle_routes do
         %{"0" => %{"direction_desc" => first_direction}} ->
@@ -500,6 +473,31 @@ defmodule ArrowWeb.ShuttleViewLive do
            put_in(errors, [:route_stops, Access.key(direction_id_string)], error)
          end)}
     end
+  end
+
+  defp update_second_direction(socket, first_direction) do
+    second_direction =
+      case first_direction do
+        "Inbound" -> "Outbound"
+        "Outbound" -> "Inbound"
+        "North" -> "South"
+        "South" -> "North"
+        "East" -> "West"
+        "West" -> "East"
+      end
+
+    update(socket, :form, fn %{source: changeset} ->
+      existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
+
+      new_routes =
+        Enum.map(existing_routes, fn route_changeset ->
+          update_route_changeset_with_new_direction_desc(route_changeset, :"1", second_direction)
+        end)
+
+      changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
+
+      to_form(changeset)
+    end)
   end
 
   defp update_route_changeset_with_uploaded_stops(route_changeset, stop_ids, direction_id) do
