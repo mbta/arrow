@@ -476,21 +476,44 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   end
 
   def handle_event("cancel_add_limit", _params, socket) do
-    socket = assign(socket, :show_limit_form?, false)
+    socket =
+      socket
+      |> update(:form, fn %{source: changeset} ->
+        limits =
+          changeset
+          |> Ecto.Changeset.get_assoc(:limits)
+          |> Enum.reduce([], fn limit, acc ->
+            [Limits.change_limit(limit.data, %{editing?: false}) | acc]
+          end)
+
+        changeset |> Ecto.Changeset.put_assoc(:limits, limits) |> to_form()
+      end)
+      |> assign(:show_limit_form?, false)
 
     {:noreply, socket}
   end
 
-  # def handle_event("edit_limit", %{"limit" => limit_id}, socket) do
-  #   limit = Limits.get_limit!(limit_id)
+  def handle_event("edit_limit", %{"limit" => limit_id}, socket) do
+    {parsed_id, _} = Integer.parse(limit_id)
 
-  #   socket =
-  #     socket
-  #     |> assign(:limit_form, Limits.change_limit(limit) |> to_form())
-  #     |> assign(:limit, limit)
+    socket =
+      update(socket, :form, fn %{source: changeset} ->
+        limits =
+          changeset
+          |> Ecto.Changeset.get_assoc(:limits)
+          |> Enum.reduce([], fn limit, acc ->
+            if limit.data.id == parsed_id do
+              [Limits.change_limit(limit.data, %{editing?: true}) | acc]
+            else
+              [limit | acc]
+            end
+          end)
 
-  #   {:noreply, socket}
-  # end
+        changeset |> Ecto.Changeset.put_assoc(:limits, limits) |> to_form()
+      end)
+
+    {:noreply, assign(socket, :show_limit_form?, true)}
+  end
 
   defp save_disruption_v2(socket, action, disruption_v2_params) do
     save_result =
@@ -507,6 +530,8 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
     case save_result do
       {:ok, disruption} ->
+        disruption = Arrow.Repo.preload(disruption, limits: [:route, :start_stop, :end_stop])
+
         {:noreply,
          socket
          |> put_flash(:info, "Disruption saved successfully")

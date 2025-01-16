@@ -8,7 +8,7 @@ defmodule Arrow.Disruptions do
 
   alias Arrow.Disruptions.DisruptionV2
 
-  @preloads [limits: [:route, :start_stop, :end_stop]]
+  @preloads [limits: [:route, :start_stop, :end_stop, :limit_day_of_weeks]]
 
   @doc """
   Returns the list of disruptionsv2.
