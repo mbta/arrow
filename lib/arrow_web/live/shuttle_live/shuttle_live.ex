@@ -359,13 +359,18 @@ defmodule ArrowWeb.ShuttleViewLive do
 
   def handle_event(
         "direction_desc_changed",
-        %{"shuttle" => %{"routes" => shuttle_routes}} = shuttle,
+        %{"shuttle" => %{"routes" => shuttle_routes}} = params,
         socket
       ) do
+    IO.inspect(params)
+
     socket =
       case shuttle_routes do
-        %{"0" => %{"direction_desc" => first_direction}} -> update_second_direction(socket, first_direction)
-        _ -> socket
+        %{"0" => %{"direction_desc" => first_direction}} ->
+          update_second_direction(socket, first_direction)
+
+        _ ->
+          socket
       end
 
     {:noreply, socket}
