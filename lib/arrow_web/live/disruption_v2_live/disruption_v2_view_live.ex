@@ -7,7 +7,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   alias Arrow.Disruptions
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Shuttles
-  alias ArrowWeb.ShuttleViewLive
+  alias ArrowWeb.ShapeView
 
   @spec disruption_status_labels :: map()
   def disruption_status_labels, do: %{Approved: true, Pending: false}
@@ -116,7 +116,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   end
 
   defp get_shuttle_map_props(shuttle_id) do
-    %{layers: Shuttles.get_shuttle!(shuttle_id).routes |> ShuttleViewLive.routes_to_layers()}
+    %{layers: Shuttles.get_shuttle!(shuttle_id).routes |> ShapeView.routes_to_layers()}
   end
 
   attr :adding_new_service?, :boolean, required: true
