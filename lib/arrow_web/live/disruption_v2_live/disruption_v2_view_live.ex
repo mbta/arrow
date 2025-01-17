@@ -348,6 +348,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
           </div>
           <div class="col-lg-3">
             <.button
+              type="button"
               id="cancel_add_limit_button"
               class="btn-outline-primary w-100"
               data-confirm="Are you sure you want to cancel? All changes to this limit will be lost!"
