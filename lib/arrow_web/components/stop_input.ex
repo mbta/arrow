@@ -38,9 +38,25 @@ defmodule ArrowWeb.StopInput do
         allow_clear={true}
         target={@myself}
         options={@options}
+        value_mapper={&stop_value_mapper(&1, assigns.field)}
       />
     </div>
     """
+  end
+
+  defp stop_value_mapper(text, field) do
+    stop =
+      case Map.get(field.form.source.changes, :display_stop) do
+        %Arrow.Gtfs.Stop{} = stop -> stop
+        %Arrow.Shuttles.Stop{} = stop -> stop
+        _ -> Shuttles.stop_or_gtfs_stop_for_stop_id(text)
+      end
+
+    if stop == nil do
+      {text, text}
+    else
+      option_for_stop(stop)
+    end
   end
 
   def handle_event("live_select_change", %{"id" => live_select_id, "text" => text}, socket) do
