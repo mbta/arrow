@@ -32,11 +32,12 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   attr :errors, :map, default: %{}
   attr :show_service_form?, :boolean
   attr :show_limit_form?, :boolean
+  attr :limit_id_in_form, :integer
 
   def disruption_form(assigns) do
     ~H"""
     <div class="w-75">
-      <.simple_form for={@form} id="disruption_v2-form" phx-submit="save" phx-change="validate">
+      <.simple_form for={@form} id="disruption_v2-form" phx-submit={@action} phx-change="validate">
         <div class="flex flex-row">
           <fieldset class="w-50">
             <legend>Title</legend>
@@ -101,6 +102,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
           form={@form}
           show_limit_form?={@show_limit_form?}
           existing_limits={@disruption_v2.limits}
+          limit_id_in_form={@limit_id_in_form}
         />
 
         <.replacement_service_section form={@form} show_service_form?={@show_service_form?} />
@@ -193,6 +195,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   attr :form, :any, required: true
   attr :existing_limits, :any
   attr :show_limit_form?, :boolean, required: true
+  attr :limit_id_in_form, :integer
 
   defp limit_form_section(assigns) do
     ~H"""
@@ -236,10 +239,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     </.link_button>
     <.inputs_for :let={f_limit} field={@form[:limits]}>
       <div
-        :if={
-          @show_limit_form? and
-            (is_nil(f_limit.data.id) or input_value(f_limit, :editing?) == true)
-        }
+        :if={@show_limit_form? and (is_nil(f_limit.data.id) or f_limit.data.id == @limit_id_in_form)}
         class="container border-2 border-dashed border-primary p-3"
       >
         <input
@@ -391,6 +391,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:errors, %{})
       |> assign(:icon_paths, icon_paths(socket))
       |> assign(:disruption_v2, disruption)
+      |> assign(:limit_id_in_form, nil)
 
     {:ok, socket}
   end
@@ -410,6 +411,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:disruption_v2, disruption)
       |> assign(:show_service_form?, false)
       |> assign(:show_limit_form?, false)
+      |> assign(:limit_id_in_form, nil)
 
     {:ok, socket}
   end
@@ -431,8 +433,40 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     {:noreply, assign(socket, form: form)}
   end
 
-  def handle_event("save", %{"disruption_v2" => disruption_v2_params}, socket) do
-    save_disruption_v2(socket, socket.assigns.form_action, disruption_v2_params)
+  def handle_event("create", %{"disruption_v2" => disruption_v2_params}, socket) do
+    case Disruptions.create_disruption_v2(disruption_v2_params) do
+      {:ok, disruption} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Disruption created successfully")
+         |> assign(:show_limit_form?, false)
+         |> assign(:disruption_v2, disruption)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply,
+         socket
+         |> assign(form: to_form(changeset))
+         |> put_flash(:error, "Error when saving disruption!")}
+    end
+  end
+
+  def handle_event("edit", %{"disruption_v2" => disruption_v2_params}, socket) do
+    case Disruptions.update_disruption_v2(socket.assigns.disruption_v2, disruption_v2_params) do
+      {:ok, disruption} ->
+        disruption = Arrow.Repo.preload(disruption, limits: [:route, :start_stop, :end_stop])
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Disruption updated successfully")
+         |> assign(:show_limit_form?, false)
+         |> assign(:disruption_v2, disruption)}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply,
+         socket
+         |> assign(form: to_form(changeset))
+         |> put_flash(:error, "Error when saving disruption!")}
+    end
   end
 
   def handle_event("add_new_replacement_service", _params, socket) do
@@ -532,13 +566,11 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         limits =
           changeset
           |> Ecto.Changeset.get_assoc(:limits)
-          |> Enum.reduce([], fn limit, acc ->
-            [Limits.change_limit(limit.data, %{editing?: false}) | acc]
-          end)
+          |> Enum.map(&Limits.change_limit(&1.data))
 
         changeset |> Ecto.Changeset.put_assoc(:limits, limits) |> to_form()
       end)
-      |> assign(:show_limit_form?, false)
+      |> assign(show_limit_form?: false, limit_id_in_form: nil)
 
     {:noreply, socket}
   end
@@ -546,57 +578,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   def handle_event("edit_limit", %{"limit" => limit_id}, socket) do
     {parsed_id, _} = Integer.parse(limit_id)
 
-    socket =
-      update(socket, :form, fn %{source: changeset} ->
-        limits =
-          changeset
-          |> Ecto.Changeset.get_assoc(:limits)
-          |> Enum.reduce(
-            [],
-            fn
-              %{data: %{id: ^parsed_id} = data}, acc ->
-                [Limits.change_limit(data, %{editing?: true}) | acc]
-
-              limit, acc ->
-                [limit | acc]
-            end
-          )
-
-        changeset |> Ecto.Changeset.put_assoc(:limits, limits) |> to_form()
-      end)
-
-    {:noreply, assign(socket, :show_limit_form?, true)}
-  end
-
-  defp save_disruption_v2(socket, action, disruption_v2_params) do
-    save_result =
-      case action do
-        :create ->
-          Disruptions.create_disruption_v2(disruption_v2_params)
-
-        :edit ->
-          Disruptions.update_disruption_v2(socket.assigns.disruption_v2, disruption_v2_params)
-
-        _ ->
-          raise "Unknown action for disruption form: #{action}"
-      end
-
-    case save_result do
-      {:ok, disruption} ->
-        disruption = Arrow.Repo.preload(disruption, limits: [:route, :start_stop, :end_stop])
-
-        {:noreply,
-         socket
-         |> put_flash(:info, "Disruption saved successfully")
-         |> assign(:show_limit_form?, false)
-         |> assign(:disruption_v2, disruption)}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply,
-         socket
-         |> assign(form: to_form(changeset))
-         |> put_flash(:error, "Error when saving disruption!")}
-    end
+    {:noreply, assign(socket, show_limit_form?: true, limit_id_in_form: parsed_id)}
   end
 
   @adjustment_kind_icon_names %{
