@@ -468,6 +468,7 @@ defmodule ArrowWeb.CoreComponents do
 
   attr :label, :string, default: "Stop ID"
   attr :class, :string, default: nil
+  attr :type, :atom, default: nil
 
   def stop_input(assigns) do
     assigns =
@@ -482,6 +483,8 @@ defmodule ArrowWeb.CoreComponents do
       field={@field}
       stop_or_gtfs_stop={@stop_or_gtfs_stop}
       class={@class}
+      label={@label}
+      type={@type}
     />
     """
   end

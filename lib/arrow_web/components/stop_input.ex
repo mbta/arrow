@@ -15,6 +15,7 @@ defmodule ArrowWeb.StopInput do
   attr :stop_or_gtfs_stop, :any, required: true
   attr :label, :string, default: "Stop ID"
   attr :class, :string, default: nil
+  attr :type, :atom, default: nil
 
   def render(assigns) do
     # This should only change if the selected value actually changes,

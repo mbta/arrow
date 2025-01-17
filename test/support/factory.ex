@@ -100,4 +100,33 @@ defmodule Arrow.Factory do
     }
     |> merge_attributes(attrs)
   end
+
+  def gtfs_route_factory(attrs \\ %{}) do
+    %Arrow.Gtfs.Route{
+      id: sequence(:source_label, &"gtfs-route-#{&1}"),
+      agency: build(:gtfs_agency),
+      short_name: nil,
+      long_name: "Red Line",
+      desc: "Rapid Transit",
+      type: :heavy_rail,
+      url: "https://www.mbta.com/schedules/Red",
+      color: "DA291C",
+      text_color: "FFFFFF",
+      sort_order: 10_010,
+      fare_class: "Rapid Transit",
+      listed_route: nil,
+      network_id: "rapid_transit"
+    }
+    |> merge_attributes(attrs)
+  end
+
+  def gtfs_agency_factory(attrs \\ %{}) do
+    %Arrow.Gtfs.Agency{
+      id: sequence(:source_label, &"gtfs-agency-#{&1}"),
+      name: "MBTA",
+      url: "https://www.mbta.com",
+      timezone: "ETC"
+    }
+    |> merge_attributes(attrs)
+  end
 end
