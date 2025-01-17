@@ -598,11 +598,7 @@ defmodule ArrowWeb.ShuttleViewLive do
     else
       {:error,
        new_route_stops
-       |> Enum.flat_map(fn %Ecto.Changeset{
-                             errors: errors
-                           } ->
-         errors
-       end)
+       |> Enum.flat_map(fn %Ecto.Changeset{errors: errors} -> errors end)
        |> Enum.map(&elem(&1, 1))}
     end
   end
