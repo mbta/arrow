@@ -4,8 +4,9 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   import Phoenix.HTML.Form
   import Ecto.Query, only: [from: 2]
 
-  alias Arrow.{Adjustment, Disruptions, Limits}
+  alias Arrow.{Adjustment, Disruptions, Limits, Shuttles}
   alias Arrow.Disruptions.{DisruptionV2, Limit}
+  alias ArrowWeb.ShapeView
 
   @days ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
@@ -125,6 +126,10 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     """
   end
 
+  defp get_shuttle_map_props(shuttle_id) do
+    %{layers: Shuttles.get_shuttle!(shuttle_id).routes |> ShapeView.routes_to_layers()}
+  end
+
   attr :show_service_form?, :boolean, required: true
   attr :form, :any, required: true
 
@@ -146,6 +151,13 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       <div :if={@show_service_form?} class="border-2 border-dashed border-primary p-2">
         <span class="text-primary">add new replacement service component</span>
         <.shuttle_input field={@form[:new_shuttle_id]} shuttle={input_value(@form, :new_shuttle)} />
+        {if @form[:new_shuttle_id].value != nil,
+          do:
+            live_react_component(
+              "Components.ShapeStopViewMap",
+              get_shuttle_map_props(@form[:new_shuttle_id].value),
+              id: "shuttle-view-map-disruptionsv2"
+            )}
         <div class="row">
           <.input
             field={@form[:new_shuttle_start_date]}
