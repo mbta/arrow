@@ -316,7 +316,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
                 <input
                   :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
                   value={input_value(f_day_of_week, :start_time)}
-                  name={input_value(f_day_of_week, :start_time)}
+                  name={input_name(f_day_of_week, :start_time)}
                   type="time"
                   disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
                 />
@@ -325,7 +325,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
                 <input
                   :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
                   value={input_value(f_day_of_week, :end_time)}
-                  name={input_value(f_day_of_week, :end_time)}
+                  name={input_name(f_day_of_week, :end_time)}
                   type="time"
                   disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
                 />
