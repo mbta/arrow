@@ -405,7 +405,7 @@ defmodule ArrowWeb.ShuttleViewLive do
 
     changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
 
-    socket = socket |> assign(:form, to_form(changeset)) |> update_map()
+    socket = socket |> assign(form: to_form(changeset)) |> update_map()
 
     {:noreply, socket}
   end
@@ -442,7 +442,7 @@ defmodule ArrowWeb.ShuttleViewLive do
          |> update(:errors, fn errors ->
            put_in(errors, [:route_stops, Access.key(direction_id_string)], nil)
          end)
-         |> assign(:form, to_form(changeset))}
+         |> assign(form: to_form(changeset))}
 
       {:error, error} ->
         {:noreply,
@@ -658,11 +658,11 @@ defmodule ArrowWeb.ShuttleViewLive do
             # Related Ecto error:
             # https://github.com/elixir-ecto/ecto/blob/18288287f18ce205b03b3b3dc8cb80f0f1b06dbe/lib/ecto/changeset/relation.ex#L448-L453
             new_changeset = Shuttles.change_shuttle(shuttle)
-            socket |> assign(:form, to_form(new_changeset)) |> update_map()
+            socket |> assign(form: to_form(new_changeset)) |> update_map()
 
           {:error, _invalid_changeset} ->
             # The changeset from the upload data wasn't valid, so we don't retain it
-            socket |> assign(:form, to_form(changeset)) |> update_map()
+            socket |> assign(form: to_form(changeset)) |> update_map()
         end
 
       {:error, errors} ->
