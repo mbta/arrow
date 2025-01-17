@@ -581,14 +581,14 @@ defmodule ArrowWeb.ShuttleViewLive do
   defp get_new_route_stops_changeset_with_uploaded_stops(stop_ids, direction_id) do
     new_route_stops =
       stop_ids
-      |> Enum.with_index()
+      |> Enum.with_index(1)
       |> Enum.map(fn {stop_id, i} ->
         Arrow.Shuttles.RouteStop.changeset(
           %Arrow.Shuttles.RouteStop{},
           %{
             direction_id: direction_id,
             stop_sequence: i,
-            display_stop_id: Integer.to_string(stop_id)
+            display_stop_id: stop_id
           }
         )
       end)

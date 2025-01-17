@@ -477,7 +477,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       direction_0_stop_rows = Floki.find(html, "#stops-dir-0 > .row")
       direction_1_stop_rows = Floki.find(html, "#stops-dir-1 > .row")
 
-      for {stop_id, index} <- Enum.with_index(direction_0_stop_sequence) do
+      for {stop_id, index} <- Enum.with_index(direction_0_stop_sequence, 1) do
         assert [^stop_id] =
                  Floki.attribute(
                    direction_0_stop_rows,
@@ -486,7 +486,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
                  )
       end
 
-      for {stop_id, index} <- Enum.with_index(direction_1_stop_sequence) do
+      for {stop_id, index} <- Enum.with_index(direction_1_stop_sequence, 1) do
         assert [^stop_id] =
                  Floki.attribute(
                    direction_1_stop_rows,
@@ -520,7 +520,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       direction_0_stop_rows = Floki.find(html, "#stops-dir-0 > .row")
       direction_1_stop_rows = Floki.find(html, "#stops-dir-1 > .row")
 
-      for {_stop_id, index} <- Enum.with_index(direction_0_stop_sequence) do
+      for {_stop_id, index} <- Enum.with_index(direction_0_stop_sequence, 1) do
         assert [] =
                  Floki.attribute(
                    direction_0_stop_rows,
@@ -529,7 +529,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
                  )
       end
 
-      for {_stop_id, index} <- Enum.with_index(direction_1_stop_sequence) do
+      for {_stop_id, index} <- Enum.with_index(direction_1_stop_sequence, 1) do
         assert [] =
                  Floki.attribute(
                    direction_1_stop_rows,
