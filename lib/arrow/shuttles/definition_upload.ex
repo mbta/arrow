@@ -81,7 +81,11 @@ defmodule Arrow.Shuttles.DefinitionUpload do
         end)
         |> Enum.reverse()
 
-      if Enum.empty?(errors), do: {:ok, stop_ids}, else: {:errors, errors}
+      if Enum.empty?(errors) do
+        {:ok, stop_ids |> Enum.map(&Integer.to_string(&1))}
+      else
+        {:errors, errors}
+      end
     else
       {:errors, ["Unable to parse Stop ID column"]}
     end
