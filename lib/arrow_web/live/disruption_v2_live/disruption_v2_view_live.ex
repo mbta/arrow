@@ -103,6 +103,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
           show_limit_form?={@show_limit_form?}
           existing_limits={@disruption_v2.limits}
           limit_id_in_form={@limit_id_in_form}
+          icon_paths={@icon_paths}
         />
 
         <.replacement_service_section form={@form} show_service_form?={@show_service_form?} />
@@ -196,6 +197,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   attr :existing_limits, :any
   attr :show_limit_form?, :boolean, required: true
   attr :limit_id_in_form, :integer
+  attr :icon_paths, :map, required: true
 
   defp limit_form_section(assigns) do
     ~H"""
@@ -203,7 +205,12 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     <%= if Ecto.assoc_loaded?(@existing_limits) do %>
       <div class="mb-3">
         <.table :if={Enum.any?(@existing_limits)} id="limits" rows={@existing_limits}>
-          <:col :let={limit} label="route">{limit.route_id}</:col>
+          <:col :let={limit} label="route">
+            <span
+              class="m-icon m-icon-sm mr-1"
+              style={"background-image: url('#{get_limit_route_icon_url(limit, @icon_paths)}');"}
+            />
+          </:col>
           <:col :let={limit} label="start stop">{limit.start_stop.name}</:col>
           <:col label=""><b>to</b></:col>
           <:col :let={limit} label="end stop">{limit.end_stop.name}</:col>
@@ -353,6 +360,11 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       </div>
     </.inputs_for>
     """
+  end
+
+  defp get_limit_route_icon_url(limit, icon_paths) do
+    kind = Adjustment.kind(%Adjustment{route_id: limit.route.id})
+    Map.get(icon_paths, kind)
   end
 
   defp get_route_options do
