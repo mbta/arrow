@@ -14,7 +14,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       "0" => %{
         :_persistent_id => "0",
         destination: "Broadway",
-        direction_desc: "Southbound",
+        direction_desc: "South",
         direction_id: "0",
         shape_id: "",
         suffix: "",
@@ -23,7 +23,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       "1" => %{
         :_persistent_id => "1",
         destination: "Harvard",
-        direction_desc: "Northbound",
+        direction_desc: "South",
         direction_id: "1",
         shape_id: "",
         suffix: "",
@@ -40,7 +40,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       "0" => %{
         :_persistent_id => "0",
         destination: "Broadway",
-        direction_desc: "Southbound",
+        direction_desc: "South",
         direction_id: "0",
         suffix: "",
         waypoint: ""
@@ -48,7 +48,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       "1" => %{
         :_persistent_id => "1",
         destination: "Harvard",
-        direction_desc: "Northbound",
+        direction_desc: "North",
         direction_id: "1",
         suffix: "",
         waypoint: ""
@@ -107,6 +107,23 @@ defmodule ArrowWeb.ShuttleLiveTest do
 
       assert new_live |> form("#shuttle-form", shuttle: @invalid_attrs) |> render_submit() =~
                "can&#39;t be blank"
+    end
+
+    @tag :authenticated_admin
+    test "second direction is automatically populated with a sane value", %{conn: conn} do
+      {:ok, new_live, _html} = live(conn, ~p"/shuttles/new")
+
+      [second_direction_desc] =
+        new_live
+        |> element("select#shuttle_routes_0_direction_desc")
+        |> render_change(%{
+          "_target" => ["shuttle", "routes", "0", "direction_desc"],
+          "shuttle" => %{"routes" => %{"0" => %{"direction_desc" => "Inbound"}}}
+        })
+        |> Floki.find("select#shuttle_routes_1_direction_desc > [selected=selected]")
+        |> Floki.attribute("value")
+
+      assert second_direction_desc == "Outbound"
     end
   end
 
@@ -242,7 +259,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
         routes: %{
           "0" => %{
             destination: "Broadway",
-            direction_desc: "Southbound",
+            direction_desc: "South",
             direction_id: "0",
             suffix: "",
             waypoint: "",

@@ -7,7 +7,7 @@ defmodule Arrow.Shuttles.Route do
     field :suffix, :string
     field :destination, :string
     field :direction_id, Ecto.Enum, values: [:"0", :"1"]
-    field :direction_desc, :string
+    field :direction_desc, Ecto.Enum, values: [:Inbound, :Outbound, :North, :South, :East, :West]
     field :waypoint, :string
     belongs_to :shuttle, Arrow.Shuttles.Shuttle
     belongs_to :shape, Arrow.Shuttles.Shape

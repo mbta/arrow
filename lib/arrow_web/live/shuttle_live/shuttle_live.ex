@@ -82,7 +82,14 @@ defmodule ArrowWeb.ShuttleViewLive do
                 <.input field={f_route[:direction_id]} type="text" label="Direction id" />
               </div>
               <div class="col">
-                <.input field={f_route[:direction_desc]} type="text" label="Direction desc" />
+                <.input
+                  field={f_route[:direction_desc]}
+                  type="select"
+                  label="Direction Description"
+                  prompt="Choose a value"
+                  phx-change="direction_desc_changed"
+                  options={Ecto.Enum.values(Arrow.Shuttles.Route, :direction_desc)}
+                />
               </div>
               <div class="col offset-md-1">
                 <.live_select
@@ -323,6 +330,23 @@ defmodule ArrowWeb.ShuttleViewLive do
     {:noreply, socket |> assign(form: form) |> update_map(change)}
   end
 
+  def handle_event(
+        "direction_desc_changed",
+        %{"shuttle" => %{"routes" => shuttle_routes}},
+        socket
+      ) do
+    socket =
+      case shuttle_routes do
+        %{"0" => %{"direction_desc" => first_direction}} ->
+          update_second_direction(socket, first_direction)
+
+        _ ->
+          socket
+      end
+
+    {:noreply, socket}
+  end
+
   def handle_event("edit", %{"shuttle" => shuttle_params}, socket) do
     shuttle = Shuttles.get_shuttle!(socket.assigns.shuttle.id)
 
@@ -451,6 +475,31 @@ defmodule ArrowWeb.ShuttleViewLive do
     end
   end
 
+  defp update_second_direction(socket, first_direction) do
+    second_direction =
+      case first_direction do
+        "Inbound" -> "Outbound"
+        "Outbound" -> "Inbound"
+        "North" -> "South"
+        "South" -> "North"
+        "East" -> "West"
+        "West" -> "East"
+      end
+
+    update(socket, :form, fn %{source: changeset} ->
+      existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
+
+      new_routes =
+        Enum.map(existing_routes, fn route_changeset ->
+          update_route_changeset_with_new_direction_desc(route_changeset, :"1", second_direction)
+        end)
+
+      changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
+
+      to_form(changeset)
+    end)
+  end
+
   defp update_route_changeset_with_uploaded_stops(route_changeset, stop_ids, direction_id) do
     if Ecto.Changeset.get_field(route_changeset, :direction_id) == direction_id do
       new_route_stops =
@@ -521,6 +570,19 @@ defmodule ArrowWeb.ShuttleViewLive do
           |> Enum.map_join(", ", fn {:error, msg} -> "#{msg}" end)
 
         {:error, coordinate_errors}
+    end
+  end
+
+  defp update_route_changeset_with_new_direction_desc(
+         route_changeset,
+         direction_id,
+         direction_desc
+       ) do
+    if Ecto.Changeset.get_field(route_changeset, :direction_id) == direction_id do
+      route_changeset
+      |> Ecto.Changeset.put_change(:direction_desc, direction_desc)
+    else
+      route_changeset
     end
   end
 
