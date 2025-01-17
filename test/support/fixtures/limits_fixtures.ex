@@ -4,15 +4,15 @@ defmodule Arrow.LimitsFixtures do
   entities via the `Arrow.Limits` context.
   """
 
-  alias Arrow.GtfsFixtures
+  import Arrow.Factory
 
   @doc """
   Generate a limit.
   """
   def limit_fixture(attrs \\ %{}) do
-    start_stop = GtfsFixtures.stop_fixture()
-    end_stop = GtfsFixtures.stop_fixture()
-    route = GtfsFixtures.route_fixture()
+    start_stop = insert(:gtfs_stop)
+    end_stop = insert(:gtfs_stop)
+    route = insert(:gtfs_route)
 
     {:ok, limit} =
       attrs

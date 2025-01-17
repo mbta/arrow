@@ -1,7 +1,8 @@
 defmodule Arrow.LimitsTest do
   use Arrow.DataCase
 
-  alias Arrow.{GtfsFixtures, Limits}
+  import Arrow.Factory
+  alias Arrow.Limits
 
   describe "limits" do
     alias Arrow.Disruptions.Limit
@@ -21,9 +22,9 @@ defmodule Arrow.LimitsTest do
     end
 
     test "create_limit/1 with valid data creates a limit" do
-      route = GtfsFixtures.route_fixture()
-      start_stop = GtfsFixtures.stop_fixture()
-      end_stop = GtfsFixtures.stop_fixture()
+      route = insert(:gtfs_route)
+      start_stop = insert(:gtfs_stop)
+      end_stop = insert(:gtfs_stop)
 
       valid_attrs = %{
         start_date: ~D[2025-01-08],
@@ -43,9 +44,9 @@ defmodule Arrow.LimitsTest do
     end
 
     test "update_limit/2 with valid data updates the limit" do
-      route = GtfsFixtures.route_fixture()
-      start_stop = GtfsFixtures.stop_fixture()
-      end_stop = GtfsFixtures.stop_fixture()
+      route = insert(:gtfs_route)
+      start_stop = insert(:gtfs_stop)
+      end_stop = insert(:gtfs_stop)
 
       limit =
         limit_fixture(start_stop_id: start_stop.id, end_stop_id: end_stop.id, route_id: route.id)
@@ -58,9 +59,9 @@ defmodule Arrow.LimitsTest do
     end
 
     test "update_limit/2 with invalid data returns error changeset" do
-      route = GtfsFixtures.route_fixture()
-      start_stop = GtfsFixtures.stop_fixture()
-      end_stop = GtfsFixtures.stop_fixture()
+      route = insert(:gtfs_route)
+      start_stop = insert(:gtfs_stop)
+      end_stop = insert(:gtfs_stop)
 
       limit =
         limit_fixture(start_stop_id: start_stop.id, end_stop_id: end_stop.id, route_id: route.id)
