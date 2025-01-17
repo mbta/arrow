@@ -332,7 +332,7 @@ defmodule ArrowWeb.ShuttleViewLive do
 
   def handle_event(
         "direction_desc_changed",
-        %{"shuttle" => %{"routes" => shuttle_routes}} = params,
+        %{"shuttle" => %{"routes" => shuttle_routes}},
         socket
       ) do
     socket =
