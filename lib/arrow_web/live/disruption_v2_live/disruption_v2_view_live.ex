@@ -641,6 +641,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   defp format_day_name(day_name) do
     day_name
+    |> Atom.to_string()
     |> String.slice(0..2)
     |> String.capitalize()
   end

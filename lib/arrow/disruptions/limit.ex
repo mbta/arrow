@@ -9,13 +9,13 @@ defmodule Arrow.Disruptions.Limit do
   alias Arrow.Limits.LimitDayOfWeek
 
   @default_day_of_weeks_list [
-    %LimitDayOfWeek{day_name: "monday"},
-    %LimitDayOfWeek{day_name: "tuesday"},
-    %LimitDayOfWeek{day_name: "wednesday"},
-    %LimitDayOfWeek{day_name: "thursday"},
-    %LimitDayOfWeek{day_name: "friday"},
-    %LimitDayOfWeek{day_name: "saturday"},
-    %LimitDayOfWeek{day_name: "sunday"}
+    %LimitDayOfWeek{day_name: :monday},
+    %LimitDayOfWeek{day_name: :tuesday},
+    %LimitDayOfWeek{day_name: :wednesday},
+    %LimitDayOfWeek{day_name: :thursday},
+    %LimitDayOfWeek{day_name: :friday},
+    %LimitDayOfWeek{day_name: :saturday},
+    %LimitDayOfWeek{day_name: :sunday}
   ]
 
   @type t :: %__MODULE__{

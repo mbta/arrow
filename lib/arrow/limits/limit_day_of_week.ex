@@ -7,7 +7,7 @@ defmodule Arrow.Limits.LimitDayOfWeek do
   alias Arrow.Disruptions.Limit
 
   @type t :: %__MODULE__{
-          day_name: String.t(),
+          day_name: :monday | :tuesday | :wednesday | :thursday | :friday | :saturday | :sunday,
           start_time: Time.t() | nil,
           end_time: Time.t() | nil,
           active?: boolean(),
@@ -16,7 +16,9 @@ defmodule Arrow.Limits.LimitDayOfWeek do
         }
 
   schema "limit_day_of_weeks" do
-    field :day_name, :string
+    field :day_name, Ecto.Enum,
+      values: [:monday, :tuesday, :wednesday, :thursday, :friday, :saturday, :sunday]
+
     field :start_time, :time
     field :end_time, :time
     field :active?, :boolean, source: :is_active, default: false
@@ -31,15 +33,6 @@ defmodule Arrow.Limits.LimitDayOfWeek do
     limit_day_of_week
     |> cast(attrs, [:active?, :day_name, :start_time, :end_time, :limit_id, :all_day?])
     |> validate_required([:day_name])
-    |> validate_inclusion(:day_name, [
-      "monday",
-      "tuesday",
-      "wednesday",
-      "thursday",
-      "friday",
-      "saturday",
-      "sunday"
-    ])
     |> validate_required_times()
     |> validate_start_time_before_end_time()
     |> assoc_constraint(:limit)

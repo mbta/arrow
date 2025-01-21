@@ -32,21 +32,6 @@ CREATE TYPE public.day_name AS ENUM (
 
 
 --
--- Name: day_of_week; Type: TYPE; Schema: public; Owner: -
---
-
-CREATE TYPE public.day_of_week AS ENUM (
-    'monday',
-    'tuesday',
-    'wednesday',
-    'thursday',
-    'friday',
-    'saturday',
-    'sunday'
-);
-
-
---
 -- Name: direction_desc; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -735,7 +720,7 @@ CREATE TABLE public.gtfs_trips (
 CREATE TABLE public.limit_day_of_weeks (
     id bigint NOT NULL,
     is_active boolean,
-    day_name public.day_of_week NOT NULL,
+    day_name character varying(255) NOT NULL,
     start_time time(0) without time zone,
     end_time time(0) without time zone,
     limit_id bigint,

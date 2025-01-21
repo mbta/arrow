@@ -105,7 +105,7 @@ defmodule Arrow.LimitsTest do
       assert {:ok, %LimitDayOfWeek{} = limit_day_of_week} =
                Limits.create_limit_day_of_week(valid_attrs)
 
-      assert limit_day_of_week.day_name == "monday"
+      assert limit_day_of_week.day_name == :monday
       assert limit_day_of_week.start_time == ~T[13:00:00]
       assert limit_day_of_week.end_time == ~T[14:00:00]
     end
@@ -118,7 +118,7 @@ defmodule Arrow.LimitsTest do
       limit_day_of_week = limit_day_of_week_fixture()
 
       update_attrs = %{
-        day_name: "tuesday",
+        day_name: :tuesday,
         start_time: ~T[15:01:01],
         end_time: ~T[16:01:01]
       }
@@ -126,7 +126,7 @@ defmodule Arrow.LimitsTest do
       assert {:ok, %LimitDayOfWeek{} = limit_day_of_week} =
                Limits.update_limit_day_of_week(limit_day_of_week, update_attrs)
 
-      assert limit_day_of_week.day_name == "tuesday"
+      assert limit_day_of_week.day_name == :tuesday
       assert limit_day_of_week.start_time == ~T[15:01:01]
       assert limit_day_of_week.end_time == ~T[16:01:01]
     end

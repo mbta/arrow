@@ -37,7 +37,7 @@ defmodule Arrow.LimitsFixtures do
       attrs
       |> Enum.into(%{
         active?: true,
-        day_name: "monday",
+        day_name: :monday,
         end_time: ~T[15:00:00],
         start_time: ~T[14:00:00]
       })
