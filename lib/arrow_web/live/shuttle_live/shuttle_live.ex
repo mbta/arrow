@@ -87,7 +87,6 @@ defmodule ArrowWeb.ShuttleViewLive do
                   type="select"
                   label="Direction Description"
                   prompt="Choose a value"
-                  phx-change="direction_desc_changed"
                   options={Ecto.Enum.values(Arrow.Shuttles.Route, :direction_desc)}
                 />
               </div>
@@ -457,6 +456,32 @@ defmodule ArrowWeb.ShuttleViewLive do
          |> update(:errors, fn errors ->
            put_in(errors, [:route_stops, Access.key(direction_id_string)], error)
          end)}
+    end
+  end
+
+  defp update_route_changeset_with_uploaded_stops(route_changeset, stop_ids, direction_id) do
+    if Ecto.Changeset.get_field(route_changeset, :direction_id) == direction_id do
+      new_route_stops =
+        stop_ids
+        |> Enum.with_index()
+        |> Enum.map(fn {stop_id, i} ->
+          Arrow.Shuttles.RouteStop.changeset(
+            %Arrow.Shuttles.RouteStop{},
+            %{
+              direction_id: direction_id,
+              stop_sequence: i,
+              display_stop_id: Integer.to_string(stop_id)
+            }
+          )
+        end)
+
+      Ecto.Changeset.put_assoc(
+        route_changeset,
+        :route_stops,
+        new_route_stops
+      )
+    else
+      route_changeset
     end
   end
 

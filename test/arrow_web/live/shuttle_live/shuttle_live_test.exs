@@ -108,23 +108,6 @@ defmodule ArrowWeb.ShuttleLiveTest do
       assert new_live |> form("#shuttle-form", shuttle: @invalid_attrs) |> render_submit() =~
                "can&#39;t be blank"
     end
-
-    @tag :authenticated_admin
-    test "second direction is automatically populated with a sane value", %{conn: conn} do
-      {:ok, new_live, _html} = live(conn, ~p"/shuttles/new")
-
-      [second_direction_desc] =
-        new_live
-        |> element("select#shuttle_routes_0_direction_desc")
-        |> render_change(%{
-          "_target" => ["shuttle", "routes", "0", "direction_desc"],
-          "shuttle" => %{"routes" => %{"0" => %{"direction_desc" => "Inbound"}}}
-        })
-        |> Floki.find("select#shuttle_routes_1_direction_desc > [selected=selected]")
-        |> Floki.attribute("value")
-
-      assert second_direction_desc == "Outbound"
-    end
   end
 
   describe "edit shuttle" do
