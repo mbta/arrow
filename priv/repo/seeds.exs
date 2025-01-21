@@ -135,7 +135,7 @@ route =
     shape_id: 1,
     destination: "Harvard",
     direction_id: :"0",
-    direction_desc: "Southbound",
+    direction_desc: :South,
     suffix: nil,
     waypoint: "Brattle"
   })
@@ -146,7 +146,7 @@ route1 =
     shape_id: 2,
     destination: "Alewife",
     direction_id: :"1",
-    direction_desc: "Northbound",
+    direction_desc: :North,
     suffix: nil,
     waypoint: "Brattle"
   })
