@@ -459,32 +459,6 @@ defmodule ArrowWeb.ShuttleViewLive do
     end
   end
 
-  defp update_route_changeset_with_uploaded_stops(route_changeset, stop_ids, direction_id) do
-    if Ecto.Changeset.get_field(route_changeset, :direction_id) == direction_id do
-      new_route_stops =
-        stop_ids
-        |> Enum.with_index()
-        |> Enum.map(fn {stop_id, i} ->
-          Arrow.Shuttles.RouteStop.changeset(
-            %Arrow.Shuttles.RouteStop{},
-            %{
-              direction_id: direction_id,
-              stop_sequence: i,
-              display_stop_id: Integer.to_string(stop_id)
-            }
-          )
-        end)
-
-      Ecto.Changeset.put_assoc(
-        route_changeset,
-        :route_stops,
-        new_route_stops
-      )
-    else
-      route_changeset
-    end
-  end
-
   @spec get_stop_travel_times(list({:ok, any()})) ::
           {:ok, list(number())} | {:error, any()}
   defp get_stop_travel_times(stop_coordinates) do
