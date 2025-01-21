@@ -48,7 +48,12 @@ defmodule Arrow.Shuttles.ActivationUpload do
   def error_type(:start_time), do: "Start Time"
   def error_type(:end_time), do: "End Time"
   def error_type(:headway), do: "Headway"
-  def error_type(:running_time), do: "Running Time"
+  def error_type(:running_time_0), do: "Running Time"
+  def error_type(:running_time_1), do: "Running Time"
+  def error_type(:first_trip_0), do: "First Trip"
+  def error_type(:first_trip_1), do: "First Trip"
+  def error_type(:last_trip_0), do: "Last Trip"
+  def error_type(:last_trip_1), do: "Last Trip"
   def error_type(error), do: error
 
   @spec get_xlsx_tab_tids(any()) :: {:error, list(String.t())} | {:ok, map()}
@@ -76,7 +81,7 @@ defmodule Arrow.Shuttles.ActivationUpload do
     end
   end
 
-  @spec parse_tabs(any()) :: {:error, [...]} | {:ok, list()}
+  @spec parse_tabs(any()) :: {:error, list()} | {:ok, list()}
   def parse_tabs(tab_map) do
     tab_map
     |> Enum.map(&parse_tab/1)
@@ -88,7 +93,7 @@ defmodule Arrow.Shuttles.ActivationUpload do
   end
 
   @spec parse_tab({any(), atom() | :ets.tid()}) ::
-          {:error, {any(), [...]}} | {:ok, {any(), list()}}
+          {:error, {any(), list()}} | {:ok, {any(), list()}}
   def parse_tab({tab_name, tab_id}) do
     tab = get_tab(tab_id)
 
@@ -156,7 +161,7 @@ defmodule Arrow.Shuttles.ActivationUpload do
     last? = Enum.member?(trips, :last)
 
     if first? && last? do
-      {:ok, trips}
+      {:ok, runtimes}
     else
       values = [{first?, "First"}, {last?, "Last"}] |> Enum.reject(&elem(&1, 0))
 
@@ -230,37 +235,49 @@ defmodule Arrow.Shuttles.ActivationUpload do
     {:error, "malformed row: #{inspect(invalid_row)}"}
   end
 
-  @spec parse_time(binary()) :: {:error, binary()} | {:ok, Time.t()}
+  @spec parse_time(binary()) :: {:error, binary()} | {:ok, String.t()}
   def parse_time(time_string) do
-    time_string = time_string <> ":00"
-    hr_min_sec = String.split(time_string, ":") |> Enum.map(&String.to_integer/1)
-
-    if time_after_midnight?(hr_min_sec) do
-      seconds = parse_time_as_seconds(hr_min_sec)
-      {:ok, Time.from_seconds_after_midnight(rem(seconds, 86_400))}
+    with {:ok, truncated} <- truncate_seconds(time_string),
+         padded <- pad_leading(truncated),
+         [hr, min] <- to_time_int_list(time_string),
+         {:ok, _valid} <- validate_time_format([hr, min]) do
+      {:ok, padded}
     else
-      case Time.from_iso8601(time_string) do
-        {:ok, time} ->
-          {:ok, time}
-
-        {:error, _error} ->
-          {:error, "invalid time: #{time_string}"}
-      end
+      {:error, _time} -> {:error, "invalid time: #{time_string}"}
     end
   end
 
-  @spec time_after_midnight?(any()) :: boolean()
-  def time_after_midnight?([hr, _min, _sec]) when hr >= 24 do
-    true
+  def truncate_seconds(time_string) do
+    split_string = String.split(time_string, ":")
+
+    case split_string do
+      [_hr, _min, _sec] -> {:ok, String.split(time_string, ":") |> Enum.take(2) |> Enum.join(":")}
+      [_hr, _min] -> {:ok, time_string}
+      _ -> {:error, time_string}
+    end
   end
 
-  def time_after_midnight?(_) do
-    false
+  def pad_leading(time_string) do
+    time_length = String.length(time_string)
+
+    case time_length do
+      4 -> String.pad_leading(time_string, 5, "0")
+      7 -> String.pad_leading(time_string, 8, "0")
+      _ -> time_string
+    end
   end
 
-  @spec parse_time_as_seconds(list(integer())) :: number()
-  def parse_time_as_seconds([hr, min, _sec]) do
-    hr * 3600 + min * 60
+  def to_time_int_list(time_string) do
+    String.split(time_string, ":") |> Enum.map(&String.to_integer/1) |> Enum.take(2)
+  end
+
+  @spec validate_time_format(list) :: {:error, list()} | {:ok, list()}
+  def validate_time_format([hr, min]) when hr < 29 and min in 0..59 do
+    {:ok, [hr, min]}
+  end
+
+  def validate_time_format(invalid_format) do
+    {:error, invalid_format}
   end
 
   @spec parse_number(any()) :: {:error, any()} | {:ok, number()}
