@@ -12,7 +12,7 @@ defmodule Arrow.Repo.Migrations.DropShuttlesInvalidDirectionDescriptions do
         WHERE shuttle_route_id IN 
           (SELECT shuttle_route_id FROM shuttle_routes WHERE direction_desc NOT IN (#{get_valid_direction_sql_strings()}));
       """,
-      ""
+      "SELECT 0"
     )
 
     execute(
@@ -20,7 +20,7 @@ defmodule Arrow.Repo.Migrations.DropShuttlesInvalidDirectionDescriptions do
         DELETE FROM shuttle_routes 
         WHERE direction_desc NOT IN (#{get_valid_direction_sql_strings()});
       """,
-      ""
+      "SELECT 0"
     )
   end
 end
