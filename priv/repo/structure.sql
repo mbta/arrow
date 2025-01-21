@@ -720,12 +720,13 @@ CREATE TABLE public.gtfs_trips (
 CREATE TABLE public.limit_day_of_weeks (
     id bigint NOT NULL,
     is_active boolean,
-    day_name character varying(255) NOT NULL,
+    day_name integer NOT NULL,
     start_time time(0) without time zone,
     end_time time(0) without time zone,
     limit_id bigint,
     inserted_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    CONSTRAINT day_name_must_be_in_range CHECK ((day_name <@ int4range(1, 7, '[]'::text)))
 );
 
 

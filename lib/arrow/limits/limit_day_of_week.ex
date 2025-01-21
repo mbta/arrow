@@ -6,8 +6,13 @@ defmodule Arrow.Limits.LimitDayOfWeek do
 
   alias Arrow.Disruptions.Limit
 
+  @day_name_values Enum.with_index(
+                     ~w[monday tuesday wednesday thursday friday saturday sunday]a,
+                     1
+                   )
+
   @type t :: %__MODULE__{
-          day_name: :monday | :tuesday | :wednesday | :thursday | :friday | :saturday | :sunday,
+          day_name: integer(),
           start_time: Time.t() | nil,
           end_time: Time.t() | nil,
           active?: boolean(),
@@ -16,9 +21,7 @@ defmodule Arrow.Limits.LimitDayOfWeek do
         }
 
   schema "limit_day_of_weeks" do
-    field :day_name, Ecto.Enum,
-      values: [:monday, :tuesday, :wednesday, :thursday, :friday, :saturday, :sunday]
-
+    field :day_name, Ecto.Enum, values: @day_name_values
     field :start_time, :time
     field :end_time, :time
     field :active?, :boolean, source: :is_active, default: false
