@@ -8,7 +8,7 @@ defmodule Arrow.Repo.Migrations.DropShuttlesInvalidDirectionDescriptions do
   def change do
     execute("""
       DELETE FROM shuttle_route_stops 
-      WHERE shuttle_route_id NOT IN 
+      WHERE shuttle_route_id IN 
         (SELECT shuttle_route_id FROM shuttle_routes WHERE direction_desc NOT IN (#{get_valid_direction_sql_strings()}));
     """)
 
