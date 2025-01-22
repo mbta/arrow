@@ -9,12 +9,13 @@ defmodule ArrowWeb.LimitSection do
   import Ecto.Query, only: [from: 2]
 
   alias Arrow.{Adjustment, Limits}
-  alias Arrow.Disruptions.DisruptionV2
+  alias Arrow.Disruptions.{DisruptionV2, Limit}
 
   attr :id, :string
   attr :limit_form, :any, required: true
   attr :icon_paths, :map, required: true
   attr :disruption, DisruptionV2, required: true
+  attr :limit, Limit
 
   def render(assigns) do
     ~H"""
@@ -36,7 +37,7 @@ defmodule ArrowWeb.LimitSection do
             <:col :let={limit} label="end date">{limit.end_date}</:col>
             <:action :let={limit}>
               <.button
-                disabled={!is_nil(@limit)}
+                disabled={@show_form?}
                 type="button"
                 phx-click="edit_limit"
                 phx-value-limit={limit.id}
@@ -44,11 +45,11 @@ defmodule ArrowWeb.LimitSection do
               >
                 <.icon name="hero-pencil-solid" class="bg-primary" />
               </.button>
-              <.button disabled={!is_nil(@limit)} type="button">
+              <.button disabled={@show_form?} type="button">
                 <.icon name="hero-document-duplicate-solid" class="bg-primary" />
               </.button>
               <.button
-                disabled={!is_nil(@limit)}
+                disabled={@show_form?}
                 type="button"
                 phx-click="delete_limit"
                 phx-value-limit={limit.id}
@@ -62,12 +63,12 @@ defmodule ArrowWeb.LimitSection do
         </div>
       <% end %>
 
-      <.link_button :if={is_nil(@limit_form)} class="btn-link" phx-click="add_limit">
+      <.link_button :if={!@show_form?} class="btn-link" phx-click="add_limit">
         <.icon name="hero-plus" /> <span>add limit component</span>
       </.link_button>
 
       <.simple_form
-        :if={!is_nil(@limit_form)}
+        :if={@show_form?}
         for={@limit_form}
         id="limit-form"
         phx-submit={@action}
@@ -194,14 +195,24 @@ defmodule ArrowWeb.LimitSection do
   end
 
   def update(%{limit: nil} = assigns, socket) do
-    {:ok, assign(socket, Map.merge(assigns, %{limit_form: nil, action: "create"}))}
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign(limit_form: nil)
+     |> assign(action: "create")
+     |> assign(show_form?: false)}
   end
 
   def update(assigns, socket) do
     limit_form = assigns.limit |> Limits.change_limit() |> to_form()
     action = if is_nil(assigns.limit.id), do: "create", else: "update"
 
-    {:ok, assign(socket, Map.merge(assigns, %{limit_form: limit_form, action: action}))}
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign(limit_form: limit_form)
+     |> assign(action: action)
+     |> assign(show_form?: true)}
   end
 
   def handle_event("validate", %{"limit" => limit_params}, socket) do
@@ -218,7 +229,12 @@ defmodule ArrowWeb.LimitSection do
       {:ok, _} ->
         send(self(), :update_disruption)
         send(self(), {:put_flash, :info, "Limit created successfully"})
-        {:noreply, assign(socket, limit: nil, limit_form: nil)}
+
+        {:noreply,
+         socket
+         |> assign(limit: nil)
+         |> assign(limit_form: nil)
+         |> assign(show_form?: false)}
 
       {:error, changeset} ->
         {:noreply, assign(socket, limit_form: to_form(changeset))}
@@ -232,7 +248,12 @@ defmodule ArrowWeb.LimitSection do
       {:ok, _} ->
         send(self(), :update_disruption)
         send(self(), {:put_flash, :info, "Limit updated successfully"})
-        {:noreply, assign(socket, limit: nil, limit_form: nil)}
+
+        {:noreply,
+         socket
+         |> assign(limit: nil)
+         |> assign(limit_form: nil)
+         |> assign(show_form?: false)}
 
       {:error, changeset} ->
         {:noreply, assign(socket, limit_form: to_form(changeset))}
@@ -240,7 +261,13 @@ defmodule ArrowWeb.LimitSection do
   end
 
   def handle_event("cancel_add_limit", _params, socket) do
-    {:noreply, assign(socket, limit_form: nil, limit: nil)}
+    send(self(), :cancel_limit_form)
+
+    {:noreply,
+     socket
+     |> assign(limit: nil)
+     |> assign(limit_form: nil)
+     |> assign(show_form?: false)}
   end
 
   def handle_event("edit_limit", %{"limit" => limit_id}, socket) do
@@ -250,7 +277,9 @@ defmodule ArrowWeb.LimitSection do
     {:noreply,
      socket
      |> assign(:limit_form, limit |> Limits.change_limit() |> to_form())
-     |> assign(limit: limit, action: "update")}
+     |> assign(limit: limit)
+     |> assign(action: "update")
+     |> assign(show_form?: true)}
   end
 
   def handle_event("delete_limit", %{"limit" => limit_id}, socket) do

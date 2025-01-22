@@ -7,8 +7,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   alias Arrow.Disruptions.{DisruptionV2, Limit}
   alias ArrowWeb.ShapeView
 
-  @days ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
-
   @spec disruption_status_labels :: map()
   def disruption_status_labels, do: %{Approved: true, Pending: false}
 
@@ -20,8 +18,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       Bus: :bus,
       "Silver Line": :silver_line
     }
-
-  def days, do: @days
 
   attr :id, :string
   attr :form, :any, required: true
@@ -336,6 +332,10 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   def handle_info({:put_flash, kind, message}, socket) do
     {:noreply, put_flash(socket, kind, message)}
+  end
+
+  def handle_info(:cancel_limit_form, socket) do
+    {:noreply, assign(socket, limit_in_form: nil)}
   end
 
   @adjustment_kind_icon_names %{
