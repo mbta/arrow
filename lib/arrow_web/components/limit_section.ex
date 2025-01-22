@@ -45,7 +45,13 @@ defmodule ArrowWeb.LimitSection do
               >
                 <.icon name="hero-pencil-solid" class="bg-primary" />
               </.button>
-              <.button disabled={!is_nil(@limit_form)} type="button">
+              <.button
+                disabled={!is_nil(@limit_form)}
+                type="button"
+                phx-click="duplicate_limit"
+                phx-value-limit={limit_row.id}
+                phx-target={@myself}
+              >
                 <.icon name="hero-document-duplicate-solid" class="bg-primary" />
               </.button>
               <.button
@@ -300,6 +306,26 @@ defmodule ArrowWeb.LimitSection do
         send(self(), {:put_flash, :error, "Error when deleting limit!"})
         {:noreply, assign(socket, limit: to_form(changeset))}
     end
+  end
+
+  def handle_event("duplicate_limit", %{"limit" => limit_id}, socket) do
+    {parsed_id, _} = Integer.parse(limit_id)
+
+    duplicated_limit =
+      parsed_id
+      |> Limits.get_limit!()
+      |> Map.from_struct()
+      |> Map.delete(:id)
+      |> Limit.new()
+
+    form = duplicated_limit |> Limits.change_limit() |> to_form()
+
+    {:noreply,
+     socket
+     |> assign(limit_form: form)
+     |> assign(limit: duplicated_limit)
+     |> assign(show_form?: true)
+     |> assign(action: "create")}
   end
 
   defp get_route_options do
