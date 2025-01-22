@@ -8,6 +8,8 @@ defmodule Arrow.Disruptions do
 
   alias Arrow.Disruptions.DisruptionV2
 
+  @preloads [replacement_services: [:shuttle]]
+
   @doc """
   Returns the list of disruptionsv2.
 
@@ -18,7 +20,7 @@ defmodule Arrow.Disruptions do
 
   """
   def list_disruptionsv2 do
-    Repo.all(DisruptionV2)
+    DisruptionV2 |> Repo.all() |> Repo.preload(@preloads)
   end
 
   @doc """
@@ -35,7 +37,7 @@ defmodule Arrow.Disruptions do
       ** (Ecto.NoResultsError)
 
   """
-  def get_disruption_v2!(id), do: Repo.get!(DisruptionV2, id)
+  def get_disruption_v2!(id), do: DisruptionV2 |> Repo.get!(id) |> Repo.preload(@preloads)
 
   @doc """
   Creates a disruption_v2.

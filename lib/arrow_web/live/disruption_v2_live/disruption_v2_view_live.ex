@@ -5,8 +5,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   alias Arrow.Adjustment
   alias Arrow.Disruptions
-  alias Arrow.Disruptions.DisruptionV2
-  alias Arrow.Shuttles.ActivationUpload
+  alias Arrow.Disruptions.{DisruptionV2, ReplacementServiceUpload}
 
   @spec disruption_status_labels :: map()
   def disruption_status_labels, do: %{Approved: true, Pending: false}
@@ -309,7 +308,11 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     socket = clear_flash(socket)
 
     if entry.done? do
-      case consume_uploaded_entry(socket, entry, &ActivationUpload.extract_data_from_upload/1) do
+      case consume_uploaded_entry(
+             socket,
+             entry,
+             &ReplacementServiceUpload.extract_data_from_upload/1
+           ) do
         {:error, errors} ->
           {:noreply,
            put_flash(socket, :errors, {"Failed to upload replacement service:", errors})}

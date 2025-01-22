@@ -1,4 +1,4 @@
-defmodule Arrow.Shuttles.ActivationUpload do
+defmodule Arrow.Disruptions.ReplacementServiceUpload do
   @moduledoc "functions for extracting shuttle activations from xlsx uploads"
 
   @weekday_tab_name "WKDY headways and runtimes"
