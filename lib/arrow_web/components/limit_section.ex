@@ -161,12 +161,13 @@ defmodule ArrowWeb.LimitSection do
                     disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
                   />
                 </div>
-                <div class="col col-lg-1">
-                  <.input
+                <div class="col">
+                  <div
                     :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
-                    field={f_day_of_week[:all_day?]}
-                    type="checkbox"
-                  />
+                    class="flex"
+                  >
+                    <.input class="mr-2" field={f_day_of_week[:all_day?]} type="checkbox" /> all day
+                  </div>
                 </div>
               </div>
             </.inputs_for>
