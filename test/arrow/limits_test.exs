@@ -100,14 +100,14 @@ defmodule Arrow.LimitsTest do
     end
 
     test "create_limit_day_of_week/1 with valid data creates a limit_day_of_week" do
-      valid_attrs = %{day_name: "monday", start_time: ~T[13:00:00], end_time: ~T[14:00:00]}
+      valid_attrs = %{day_name: "monday", start_time: "13:00", end_time: "14:00"}
 
       assert {:ok, %LimitDayOfWeek{} = limit_day_of_week} =
                Limits.create_limit_day_of_week(valid_attrs)
 
       assert limit_day_of_week.day_name == :monday
-      assert limit_day_of_week.start_time == ~T[13:00:00]
-      assert limit_day_of_week.end_time == ~T[14:00:00]
+      assert limit_day_of_week.start_time == "13:00"
+      assert limit_day_of_week.end_time == "14:00"
     end
 
     test "create_limit_day_of_week/1 with invalid data returns error changeset" do
@@ -116,19 +116,14 @@ defmodule Arrow.LimitsTest do
 
     test "update_limit_day_of_week/2 with valid data updates the limit_day_of_week" do
       limit_day_of_week = limit_day_of_week_fixture()
-
-      update_attrs = %{
-        day_name: :tuesday,
-        start_time: ~T[15:01:01],
-        end_time: ~T[16:01:01]
-      }
+      update_attrs = %{day_name: :tuesday, start_time: "15:01", end_time: "16:01"}
 
       assert {:ok, %LimitDayOfWeek{} = limit_day_of_week} =
                Limits.update_limit_day_of_week(limit_day_of_week, update_attrs)
 
       assert limit_day_of_week.day_name == :tuesday
-      assert limit_day_of_week.start_time == ~T[15:01:01]
-      assert limit_day_of_week.end_time == ~T[16:01:01]
+      assert limit_day_of_week.start_time == "15:01"
+      assert limit_day_of_week.end_time == "16:01"
     end
 
     test "update_limit_day_of_week/2 with invalid data returns error changeset" do

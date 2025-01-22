@@ -38,8 +38,8 @@ defmodule Arrow.LimitsFixtures do
       |> Enum.into(%{
         active?: true,
         day_name: :monday,
-        end_time: ~T[15:00:00],
-        start_time: ~T[14:00:00]
+        end_time: "15:00",
+        start_time: "14:00"
       })
       |> Arrow.Limits.create_limit_day_of_week()
 

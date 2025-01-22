@@ -13,8 +13,8 @@ defmodule Arrow.Limits.LimitDayOfWeek do
 
   @type t :: %__MODULE__{
           day_name: integer(),
-          start_time: Time.t() | nil,
-          end_time: Time.t() | nil,
+          start_time: String.t() | nil,
+          end_time: String.t() | nil,
           active?: boolean(),
           all_day?: boolean(),
           limit: Limit.t() | Ecto.Association.NotLoaded.t()
@@ -22,8 +22,8 @@ defmodule Arrow.Limits.LimitDayOfWeek do
 
   schema "limit_day_of_weeks" do
     field :day_name, Ecto.Enum, values: @day_name_values
-    field :start_time, :time
-    field :end_time, :time
+    field :start_time, :string
+    field :end_time, :string
     field :active?, :boolean, source: :is_active, default: false
     field :all_day?, :boolean, virtual: true
     belongs_to :limit, Arrow.Disruptions.Limit
@@ -33,25 +33,27 @@ defmodule Arrow.Limits.LimitDayOfWeek do
 
   @doc false
   def changeset(limit_day_of_week, attrs \\ %{}) do
+    time_regex = ~r/^\d{2}:\d{2}$/
+
     limit_day_of_week
     |> cast(attrs, [:active?, :day_name, :start_time, :end_time, :limit_id, :all_day?])
     |> validate_required([:day_name])
     |> validate_required_times()
+    |> validate_format(:start_time, time_regex, message: "must be in format HH:MM")
+    |> validate_format(:end_time, time_regex, message: "must be in format HH:MM")
     |> validate_start_time_before_end_time()
     |> assoc_constraint(:limit)
   end
 
   @spec validate_required_times(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
   defp validate_required_times(changeset) do
-    cond do
-      not get_field(changeset, :active?) ->
-        changeset
+    all_day? = get_field(changeset, :all_day?) || false
+    active? = get_field(changeset, :active?) || false
 
-      get_field(changeset, :all_day?) ->
-        Ecto.Changeset.change(changeset, %{start_time: nil, end_time: nil})
-
-      true ->
-        validate_required(changeset, [:start_time, :end_time])
+    if all_day? or not active? do
+      changeset
+    else
+      validate_required(changeset, [:start_time, :end_time])
     end
   end
 
@@ -60,15 +62,17 @@ defmodule Arrow.Limits.LimitDayOfWeek do
     start_time = get_field(changeset, :start_time)
     end_time = get_field(changeset, :end_time)
 
-    cond do
-      is_nil(start_time) or is_nil(end_time) ->
-        changeset
+    if is_nil(start_time) or is_nil(end_time) do
+      changeset
+    else
+      start_time_split = String.split(start_time, ":")
+      end_time_split = String.split(end_time, ":")
 
-      not (Time.compare(start_time, end_time) == :lt) ->
+      if List.first(start_time_split) < List.first(end_time_split) do
+        changeset
+      else
         add_error(changeset, :start_time, "start time should be before end time")
-
-      true ->
-        changeset
+      end
     end
   end
 end

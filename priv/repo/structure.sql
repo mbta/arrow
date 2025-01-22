@@ -721,8 +721,8 @@ CREATE TABLE public.limit_day_of_weeks (
     id bigint NOT NULL,
     is_active boolean,
     day_name integer NOT NULL,
-    start_time time(0) without time zone,
-    end_time time(0) without time zone,
+    start_time text,
+    end_time text,
     limit_id bigint,
     inserted_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
@@ -2020,3 +2020,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20241231110033);
 INSERT INTO public."schema_migrations" (version) VALUES (20250109134438);
 INSERT INTO public."schema_migrations" (version) VALUES (20250114140020);
 INSERT INTO public."schema_migrations" (version) VALUES (20250121165457);
+INSERT INTO public."schema_migrations" (version) VALUES (20250122200835);

@@ -142,22 +142,16 @@ defmodule ArrowWeb.LimitSection do
                   </div>
                 </div>
                 <div class="col col-lg-3">
-                  <input
+                  <.input
                     :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
-                    class="form-control"
-                    value={input_value(f_day_of_week, :start_time)}
-                    name={input_name(f_day_of_week, :start_time)}
-                    type="time"
+                    field={f_day_of_week[:start_time]}
                     disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
                   />
                 </div>
                 <div class="col col-lg-3">
-                  <input
+                  <.input
                     :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
-                    class="form-control"
-                    value={input_value(f_day_of_week, :end_time)}
-                    name={input_name(f_day_of_week, :end_time)}
-                    type="time"
+                    field={f_day_of_week[:end_time]}
                     disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
                   />
                 </div>
