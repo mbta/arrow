@@ -81,7 +81,9 @@ defmodule ArrowWeb.LimitSection do
           name={input_name(@limit_form, :disruption_id)}
         />
         <div class="container border-2 border-dashed border-primary p-3">
-          <h4 class="text-primary">add new disruption limit</h4>
+          <h4 class="text-primary">
+            {if @action == "create", do: "add new disruption limit", else: "edit disruption limit"}
+          </h4>
           <div class="row mb-3">
             <div class="col-lg-3">
               <.input
