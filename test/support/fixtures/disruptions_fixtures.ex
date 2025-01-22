@@ -21,4 +21,22 @@ defmodule Arrow.DisruptionsFixtures do
 
     disruption_v2
   end
+
+  @doc """
+  Generate a replacement_service.
+  """
+  def replacement_service_fixture(attrs \\ %{}) do
+    {:ok, replacement_service} =
+      attrs
+      |> Enum.into(%{
+        end_date: ~D[2025-01-22],
+        reason: "some reason",
+        source_workbook_data: %{},
+        source_workbook_filename: "some source_workbook_filename",
+        start_date: ~D[2025-01-21]
+      })
+      |> Arrow.Disruptions.create_replacement_service()
+
+    replacement_service
+  end
 end

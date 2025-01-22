@@ -80,4 +80,99 @@ defmodule Arrow.DisruptionsTest do
       assert %Ecto.Changeset{} = Disruptions.change_disruption_v2(disruption_v2)
     end
   end
+
+  describe "replacement_services" do
+    alias Arrow.Disruptions.ReplacementService
+
+    import Arrow.DisruptionsFixtures
+
+    @invalid_attrs %{
+      reason: nil,
+      start_date: nil,
+      end_date: nil,
+      source_workbook_data: nil,
+      source_workbook_filename: nil
+    }
+
+    test "list_replacement_services/0 returns all replacement_services" do
+      replacement_service = replacement_service_fixture()
+      assert Disruptions.list_replacement_services() == [replacement_service]
+    end
+
+    test "get_replacement_service!/1 returns the replacement_service with given id" do
+      replacement_service = replacement_service_fixture()
+      assert Disruptions.get_replacement_service!(replacement_service.id) == replacement_service
+    end
+
+    test "create_replacement_service/1 with valid data creates a replacement_service" do
+      valid_attrs = %{
+        reason: "some reason",
+        start_date: ~D[2025-01-21],
+        end_date: ~D[2025-01-22],
+        source_workbook_data: %{},
+        source_workbook_filename: "some source_workbook_filename"
+      }
+
+      assert {:ok, %ReplacementService{} = replacement_service} =
+               Disruptions.create_replacement_service(valid_attrs)
+
+      assert replacement_service.reason == "some reason"
+      assert replacement_service.start_date == ~D[2025-01-21]
+      assert replacement_service.end_date == ~D[2025-01-22]
+      assert replacement_service.source_workbook_data == %{}
+      assert replacement_service.source_workbook_filename == "some source_workbook_filename"
+    end
+
+    test "create_replacement_service/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Disruptions.create_replacement_service(@invalid_attrs)
+    end
+
+    test "update_replacement_service/2 with valid data updates the replacement_service" do
+      replacement_service = replacement_service_fixture()
+
+      update_attrs = %{
+        reason: "some updated reason",
+        start_date: ~D[2025-01-22],
+        end_date: ~D[2025-01-23],
+        source_workbook_data: %{},
+        source_workbook_filename: "some updated source_workbook_filename"
+      }
+
+      assert {:ok, %ReplacementService{} = replacement_service} =
+               Disruptions.update_replacement_service(replacement_service, update_attrs)
+
+      assert replacement_service.reason == "some updated reason"
+      assert replacement_service.start_date == ~D[2025-01-22]
+      assert replacement_service.end_date == ~D[2025-01-23]
+      assert replacement_service.source_workbook_data == %{}
+
+      assert replacement_service.source_workbook_filename ==
+               "some updated source_workbook_filename"
+    end
+
+    test "update_replacement_service/2 with invalid data returns error changeset" do
+      replacement_service = replacement_service_fixture()
+
+      assert {:error, %Ecto.Changeset{}} =
+               Disruptions.update_replacement_service(replacement_service, @invalid_attrs)
+
+      assert replacement_service == Disruptions.get_replacement_service!(replacement_service.id)
+    end
+
+    test "delete_replacement_service/1 deletes the replacement_service" do
+      replacement_service = replacement_service_fixture()
+
+      assert {:ok, %ReplacementService{}} =
+               Disruptions.delete_replacement_service(replacement_service)
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Disruptions.get_replacement_service!(replacement_service.id)
+      end
+    end
+
+    test "change_replacement_service/1 returns a replacement_service changeset" do
+      replacement_service = replacement_service_fixture()
+      assert %Ecto.Changeset{} = Disruptions.change_replacement_service(replacement_service)
+    end
+  end
 end
