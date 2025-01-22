@@ -24,23 +24,23 @@ defmodule ArrowWeb.LimitSection do
       <%= if Ecto.assoc_loaded?(@disruption.limits) and Enum.any?(@disruption.limits) do %>
         <div class="mb-3">
           <.table id="limits" rows={@disruption.limits}>
-            <:col :let={limit} label="route">
+            <:col :let={limit_row} label="route">
               <span
                 class="m-icon m-icon-sm mr-1"
-                style={"background-image: url('#{get_limit_route_icon_url(limit, @icon_paths)}');"}
+                style={"background-image: url('#{get_limit_route_icon_url(limit_row, @icon_paths)}');"}
               />
             </:col>
-            <:col :let={limit} label="start stop">{limit.start_stop.name}</:col>
+            <:col :let={limit_row} label="start stop">{limit_row.start_stop.name}</:col>
             <:col label=""><b>to</b></:col>
-            <:col :let={limit} label="end stop">{limit.end_stop.name}</:col>
-            <:col :let={limit} label="start date">{limit.start_date}</:col>
-            <:col :let={limit} label="end date">{limit.end_date}</:col>
-            <:action :let={limit}>
+            <:col :let={limit_row} label="end stop">{limit_row.end_stop.name}</:col>
+            <:col :let={limit_row} label="start date">{limit_row.start_date}</:col>
+            <:col :let={limit_row} label="end date">{limit_row.end_date}</:col>
+            <:action :let={limit_row}>
               <.button
                 disabled={!is_nil(@limit_form)}
                 type="button"
                 phx-click="edit_limit"
-                phx-value-limit={limit.id}
+                phx-value-limit={limit_row.id}
                 phx-target={@myself}
               >
                 <.icon name="hero-pencil-solid" class="bg-primary" />
@@ -52,7 +52,7 @@ defmodule ArrowWeb.LimitSection do
                 disabled={!is_nil(@limit_form)}
                 type="button"
                 phx-click="delete_limit"
-                phx-value-limit={limit.id}
+                phx-value-limit={limit_row.id}
                 phx-target={@myself}
                 data-confirm="Are you sure you want to delete this limit?"
               >
