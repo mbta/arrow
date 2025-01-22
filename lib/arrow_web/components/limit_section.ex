@@ -321,9 +321,12 @@ defmodule ArrowWeb.LimitSection do
     |> Enum.map(&{&1.name, &1.parent_station_id})
   end
 
+  defp format_day_name(day_name) when is_atom(day_name) do
+    day_name |> Atom.to_string() |> format_day_name()
+  end
+
   defp format_day_name(day_name) do
     day_name
-    |> Atom.to_string()
     |> String.slice(0..2)
     |> String.capitalize()
   end
