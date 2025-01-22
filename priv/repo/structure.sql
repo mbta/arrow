@@ -789,6 +789,43 @@ CREATE UNLOGGED TABLE public.oban_peers (
 
 
 --
+-- Name: replacement_services; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.replacement_services (
+    id bigint NOT NULL,
+    reason character varying(255),
+    start_date date,
+    end_date date,
+    source_workbook_data jsonb,
+    source_workbook_filename character varying(255),
+    disruption_id bigint,
+    shuttle_id bigint,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: replacement_services_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.replacement_services_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: replacement_services_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.replacement_services_id_seq OWNED BY public.replacement_services.id;
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1060,6 +1097,13 @@ ALTER TABLE ONLY public.oban_jobs ALTER COLUMN id SET DEFAULT nextval('public.ob
 
 
 --
+-- Name: replacement_services id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.replacement_services ALTER COLUMN id SET DEFAULT nextval('public.replacement_services_id_seq'::regclass);
+
+
+--
 -- Name: shapes id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1327,6 +1371,14 @@ ALTER TABLE ONLY public.oban_peers
 
 
 --
+-- Name: replacement_services replacement_services_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.replacement_services
+    ADD CONSTRAINT replacement_services_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1463,6 +1515,20 @@ CREATE INDEX oban_jobs_meta_index ON public.oban_jobs USING gin (meta);
 --
 
 CREATE INDEX oban_jobs_state_queue_priority_scheduled_at_id_index ON public.oban_jobs USING btree (state, queue, priority, scheduled_at, id);
+
+
+--
+-- Name: replacement_services_disruption_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX replacement_services_disruption_id_index ON public.replacement_services USING btree (disruption_id);
+
+
+--
+-- Name: replacement_services_shuttle_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX replacement_services_shuttle_id_index ON public.replacement_services USING btree (shuttle_id);
 
 
 --
@@ -1738,6 +1804,22 @@ ALTER TABLE ONLY public.gtfs_trips
 
 
 --
+-- Name: replacement_services replacement_services_disruption_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.replacement_services
+    ADD CONSTRAINT replacement_services_disruption_id_fkey FOREIGN KEY (disruption_id) REFERENCES public.disruptionsv2(id);
+
+
+--
+-- Name: replacement_services replacement_services_shuttle_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.replacement_services
+    ADD CONSTRAINT replacement_services_shuttle_id_fkey FOREIGN KEY (shuttle_id) REFERENCES public.shuttles(id);
+
+
+--
 -- Name: shuttle_route_stops shuttle_route_stops_gtfs_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1833,3 +1915,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20241209204043);
 INSERT INTO public."schema_migrations" (version) VALUES (20241210155455);
 INSERT INTO public."schema_migrations" (version) VALUES (20241219160941);
 INSERT INTO public."schema_migrations" (version) VALUES (20241231110033);
+INSERT INTO public."schema_migrations" (version) VALUES (20250122204118);
