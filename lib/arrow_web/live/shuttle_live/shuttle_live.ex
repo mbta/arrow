@@ -82,7 +82,13 @@ defmodule ArrowWeb.ShuttleViewLive do
                 <.input field={f_route[:direction_id]} type="text" label="Direction id" />
               </div>
               <div class="col">
-                <.input field={f_route[:direction_desc]} type="text" label="Direction desc" />
+                <.input
+                  field={f_route[:direction_desc]}
+                  type="select"
+                  label="Direction Description"
+                  prompt="Choose a value"
+                  options={Ecto.Enum.values(Arrow.Shuttles.Route, :direction_desc)}
+                />
               </div>
               <div class="col offset-md-1">
                 <.live_select
@@ -317,10 +323,12 @@ defmodule ArrowWeb.ShuttleViewLive do
   end
 
   def handle_event("validate", %{"shuttle" => shuttle_params}, socket) do
-    change = Shuttles.change_shuttle(socket.assigns.shuttle, shuttle_params)
-    form = to_form(change, action: :validate)
+    form =
+      socket.assigns.shuttle
+      |> Shuttles.change_shuttle(shuttle_params)
+      |> to_form(action: :validate)
 
-    {:noreply, socket |> assign(form: form) |> update_map(change)}
+    {:noreply, socket |> assign(form: form) |> update_map()}
   end
 
   def handle_event("edit", %{"shuttle" => shuttle_params}, socket) do
@@ -403,7 +411,7 @@ defmodule ArrowWeb.ShuttleViewLive do
 
     changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
 
-    socket = socket |> assign(:form, to_form(changeset)) |> update_map(changeset)
+    socket = socket |> assign(form: to_form(changeset)) |> update_map()
 
     {:noreply, socket}
   end
@@ -440,7 +448,7 @@ defmodule ArrowWeb.ShuttleViewLive do
          |> update(:errors, fn errors ->
            put_in(errors, [:route_stops, Access.key(direction_id_string)], nil)
          end)
-         |> assign(:form, to_form(changeset))}
+         |> assign(form: to_form(changeset))}
 
       {:error, error} ->
         {:noreply,
@@ -448,32 +456,6 @@ defmodule ArrowWeb.ShuttleViewLive do
          |> update(:errors, fn errors ->
            put_in(errors, [:route_stops, Access.key(direction_id_string)], error)
          end)}
-    end
-  end
-
-  defp update_route_changeset_with_uploaded_stops(route_changeset, stop_ids, direction_id) do
-    if Ecto.Changeset.get_field(route_changeset, :direction_id) == direction_id do
-      new_route_stops =
-        stop_ids
-        |> Enum.with_index()
-        |> Enum.map(fn {stop_id, i} ->
-          Arrow.Shuttles.RouteStop.changeset(
-            %Arrow.Shuttles.RouteStop{},
-            %{
-              direction_id: direction_id,
-              stop_sequence: i,
-              display_stop_id: Integer.to_string(stop_id)
-            }
-          )
-        end)
-
-      Ecto.Changeset.put_assoc(
-        route_changeset,
-        :route_stops,
-        new_route_stops
-      )
-    else
-      route_changeset
     end
   end
 
@@ -556,7 +538,7 @@ defmodule ArrowWeb.ShuttleViewLive do
         existing_stops
         |> List.delete_at(old)
         |> List.insert_at(new, moved_route_stop)
-        |> Enum.reduce({[], 0}, fn route_stop, {route_stop_changes, stop_sequence} ->
+        |> Enum.reduce({[], 1}, fn route_stop, {route_stop_changes, stop_sequence} ->
           {route_stop_changes ++
              [Arrow.Shuttles.RouteStop.changeset(route_stop, %{stop_sequence: stop_sequence})],
            stop_sequence + 1}
@@ -572,7 +554,9 @@ defmodule ArrowWeb.ShuttleViewLive do
     end
   end
 
-  defp update_map(socket, changeset) do
+  defp update_map(socket) do
+    changeset = socket.assigns.form.source
+
     layers =
       changeset
       |> Ecto.Changeset.get_assoc(:routes, :struct)
@@ -600,23 +584,98 @@ defmodule ArrowWeb.ShuttleViewLive do
     end
   end
 
+  defp get_new_route_stops_changeset_with_uploaded_stops(stop_ids, direction_id) do
+    new_route_stops =
+      stop_ids
+      |> Enum.with_index(1)
+      |> Enum.map(fn {stop_id, i} ->
+        Arrow.Shuttles.RouteStop.changeset(
+          %Arrow.Shuttles.RouteStop{},
+          %{
+            direction_id: direction_id,
+            stop_sequence: i,
+            display_stop_id: stop_id
+          }
+        )
+      end)
+
+    if Enum.all?(new_route_stops, & &1.valid?) do
+      {:ok, new_route_stops}
+    else
+      {:error,
+       new_route_stops
+       |> Enum.flat_map(fn %Ecto.Changeset{errors: errors} -> errors end)
+       |> Enum.map(&elem(&1, 1))}
+    end
+  end
+
   defp populate_stop_ids(socket, stop_ids) do
     changeset = socket.assigns.form.source
     existing_routes = Ecto.Changeset.get_assoc(changeset, :routes)
 
-    new_routes =
-      Enum.map(existing_routes, fn route_changeset ->
+    new_route_stops =
+      existing_routes
+      |> Enum.map(fn route_changeset ->
         direction_id = Ecto.Changeset.get_field(route_changeset, :direction_id)
 
-        update_route_changeset_with_uploaded_stops(
-          route_changeset,
-          elem(stop_ids, direction_id |> Atom.to_string() |> String.to_integer()),
-          direction_id
-        )
+        stop_ids
+        |> elem(direction_id |> Atom.to_string() |> String.to_integer())
+        |> get_new_route_stops_changeset_with_uploaded_stops(direction_id)
       end)
+      |> Enum.split_with(fn
+        {:ok, _} -> true
+        _ -> false
+      end)
+      |> case do
+        {valid_route_stops, []} ->
+          {:ok, valid_route_stops |> Enum.flat_map(&elem(&1, 1))}
 
-    changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
+        {_, errors} ->
+          {:error, errors |> Enum.flat_map(&elem(&1, 1))}
+      end
 
-    socket |> assign(:form, to_form(changeset)) |> update_map(changeset)
+    case new_route_stops do
+      {:ok, route_stops} ->
+        new_routes =
+          Enum.map(existing_routes, fn route_changeset ->
+            direction_id = Ecto.Changeset.get_field(route_changeset, :direction_id)
+
+            direction_new_route_stops =
+              route_stops
+              |> Enum.filter(&(Ecto.Changeset.get_field(&1, :direction_id) == direction_id))
+
+            Ecto.Changeset.put_assoc(
+              route_changeset,
+              :route_stops,
+              direction_new_route_stops
+            )
+          end)
+
+        changeset = Ecto.Changeset.put_assoc(changeset, :routes, new_routes)
+
+        case Ecto.Changeset.apply_action(changeset, :update) do
+          {:ok, shuttle} ->
+            # We replaced any existing associated stops
+            # so we create a new changeset here to track additional changes
+            # Related Ecto error:
+            # https://github.com/elixir-ecto/ecto/blob/18288287f18ce205b03b3b3dc8cb80f0f1b06dbe/lib/ecto/changeset/relation.ex#L448-L453
+            new_changeset = Shuttles.change_shuttle(shuttle)
+            socket |> assign(form: to_form(new_changeset)) |> update_map()
+
+          {:error, _invalid_changeset} ->
+            # The changeset from the upload data wasn't valid, so we don't retain it
+            socket |> assign(form: to_form(changeset)) |> update_map()
+        end
+
+      {:error, errors} ->
+        socket
+        |> put_flash(
+          :errors,
+          {
+            "Failed to upload definition: ",
+            errors |> Enum.map(&translate_error/1)
+          }
+        )
+    end
   end
 end

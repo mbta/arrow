@@ -2019,3 +2019,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20241219160941);
 INSERT INTO public."schema_migrations" (version) VALUES (20241231110033);
 INSERT INTO public."schema_migrations" (version) VALUES (20250109134438);
 INSERT INTO public."schema_migrations" (version) VALUES (20250114140020);
+INSERT INTO public."schema_migrations" (version) VALUES (20250121165457);

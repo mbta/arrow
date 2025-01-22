@@ -3,11 +3,15 @@ defmodule Arrow.Shuttles.Route do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @direction_desc_values [:Inbound, :Outbound, :North, :South, :East, :West]
+
+  def direction_desc_values, do: @direction_desc_values
+
   schema "shuttle_routes" do
     field :suffix, :string
     field :destination, :string
     field :direction_id, Ecto.Enum, values: [:"0", :"1"]
-    field :direction_desc, :string
+    field :direction_desc, Ecto.Enum, values: @direction_desc_values
     field :waypoint, :string
     belongs_to :shuttle, Arrow.Shuttles.Shuttle
     belongs_to :shape, Arrow.Shuttles.Shape

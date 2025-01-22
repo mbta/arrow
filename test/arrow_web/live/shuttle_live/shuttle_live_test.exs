@@ -14,7 +14,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       "0" => %{
         :_persistent_id => "0",
         destination: "Broadway",
-        direction_desc: "Southbound",
+        direction_desc: "South",
         direction_id: "0",
         shape_id: "",
         suffix: "",
@@ -23,7 +23,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       "1" => %{
         :_persistent_id => "1",
         destination: "Harvard",
-        direction_desc: "Northbound",
+        direction_desc: "South",
         direction_id: "1",
         shape_id: "",
         suffix: "",
@@ -40,7 +40,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       "0" => %{
         :_persistent_id => "0",
         destination: "Broadway",
-        direction_desc: "Southbound",
+        direction_desc: "South",
         direction_id: "0",
         suffix: "",
         waypoint: ""
@@ -48,7 +48,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       "1" => %{
         :_persistent_id => "1",
         destination: "Harvard",
-        direction_desc: "Northbound",
+        direction_desc: "North",
         direction_id: "1",
         suffix: "",
         waypoint: ""
@@ -242,7 +242,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
         routes: %{
           "0" => %{
             destination: "Broadway",
-            direction_desc: "Southbound",
+            direction_desc: "South",
             direction_id: "0",
             suffix: "",
             waypoint: "",
@@ -329,7 +329,11 @@ defmodule ArrowWeb.ShuttleLiveTest do
 
       [%{id: stop_id1}, %{id: stop_id2}, %{id: stop_id3}] = [gtfs_stop1, gtfs_stop2, gtfs_stop3]
 
-      assert [%{gtfs_stop_id: ^stop_id2}, %{gtfs_stop_id: ^stop_id1}, %{gtfs_stop_id: ^stop_id3}] =
+      assert [
+               %{gtfs_stop_id: ^stop_id2, stop_sequence: 1, display_stop_id: ^stop_id2},
+               %{gtfs_stop_id: ^stop_id1, stop_sequence: 2, display_stop_id: ^stop_id1},
+               %{gtfs_stop_id: ^stop_id3, stop_sequence: 3, display_stop_id: ^stop_id3}
+             ] =
                direction_0_route.route_stops
     end
 
@@ -461,13 +465,67 @@ defmodule ArrowWeb.ShuttleLiveTest do
 
       direction_0_stop_sequence = ~w(9328 5327 5271)
       direction_1_stop_sequence = ~w(5271 5072 9328)
+
+      (direction_0_stop_sequence ++ direction_1_stop_sequence)
+      |> Enum.uniq()
+      |> Enum.map(fn stop_id ->
+        insert(:gtfs_stop, %{id: stop_id})
+      end)
+
       html = render_upload(definition, "valid.xlsx")
 
       direction_0_stop_rows = Floki.find(html, "#stops-dir-0 > .row")
       direction_1_stop_rows = Floki.find(html, "#stops-dir-1 > .row")
 
-      for {stop_id, index} <- Enum.with_index(direction_0_stop_sequence) do
-        assert [^stop_id] =
+      for {stop_id, index} <- Enum.with_index(direction_0_stop_sequence, 1) do
+        [stop] =
+          Floki.attribute(
+            direction_0_stop_rows,
+            "[data-stop_sequence=#{index}] > div > div.form-group > div > div > div > input[type=text]",
+            "value"
+          )
+
+        assert stop =~ stop_id
+      end
+
+      for {stop_id, index} <- Enum.with_index(direction_1_stop_sequence, 1) do
+        [stop] =
+          Floki.attribute(
+            direction_1_stop_rows,
+            "[data-stop_sequence=#{index}] > div > div.form-group > div > div > div > input[type=text]",
+            "value"
+          )
+
+        assert stop =~ stop_id
+      end
+    end
+
+    @tag :authenticated_admin
+    test "displays error if uploaded stop IDs contain invalid stop IDs", %{conn: conn} do
+      {:ok, new_live, _html} = live(conn, ~p"/shuttles/new")
+
+      definition =
+        file_input(new_live, "#shuttle-form", :definition, [
+          %{
+            name: "valid.xlsx",
+            content: File.read!("test/support/fixtures/xlsx/valid.xlsx")
+          }
+        ])
+
+      direction_0_stop_sequence = ~w(9328 5327 5271)
+      direction_1_stop_sequence = ~w(5271 5072 9328)
+
+      html = render_upload(definition, "valid.xlsx")
+
+      assert html =~ "Failed to upload definition:"
+      assert html =~ "not a valid stop ID &#39;9328"
+      assert html =~ "not a valid stop ID &#39;5072"
+
+      direction_0_stop_rows = Floki.find(html, "#stops-dir-0 > .row")
+      direction_1_stop_rows = Floki.find(html, "#stops-dir-1 > .row")
+
+      for {_stop_id, index} <- Enum.with_index(direction_0_stop_sequence, 1) do
+        assert [] =
                  Floki.attribute(
                    direction_0_stop_rows,
                    "[data-stop_sequence=#{index}] > div > div.form-group > div > div > div > input[type=text]",
@@ -475,8 +533,8 @@ defmodule ArrowWeb.ShuttleLiveTest do
                  )
       end
 
-      for {stop_id, index} <- Enum.with_index(direction_1_stop_sequence) do
-        assert [^stop_id] =
+      for {_stop_id, index} <- Enum.with_index(direction_1_stop_sequence, 1) do
+        assert [] =
                  Floki.attribute(
                    direction_1_stop_rows,
                    "[data-stop_sequence=#{index}] > div > div.form-group > div > div > div > input[type=text]",
