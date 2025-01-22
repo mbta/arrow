@@ -315,15 +315,26 @@ defmodule ArrowWeb.LimitSection do
       parsed_id
       |> Limits.get_limit!()
       |> Map.from_struct()
-      |> Map.delete(:id)
-      |> Limit.new()
+      |> Map.drop([:id, :inserted_at, :updated_at])
 
-    form = duplicated_limit |> Limits.change_limit() |> to_form()
+    duplicated_day_of_weeks =
+      duplicated_limit
+      |> Map.get(:limit_day_of_weeks)
+      |> Enum.map(fn day_of_week ->
+        day_of_week
+        |> Map.from_struct()
+        |> Map.drop([:id, :inserted_at, :updated_at])
+      end)
+
+    form =
+      %Limit{}
+      |> Limits.change_limit(%{duplicated_limit | limit_day_of_weeks: duplicated_day_of_weeks})
+      |> to_form()
 
     {:noreply,
      socket
      |> assign(limit_form: form)
-     |> assign(limit: duplicated_limit)
+     |> assign(limit: Limit.new(duplicated_limit))
      |> assign(show_form?: true)
      |> assign(action: "create")}
   end
