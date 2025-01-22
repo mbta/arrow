@@ -272,9 +272,22 @@ defmodule ArrowWeb.LimitSection do
     {parsed_id, _} = Integer.parse(limit_id)
     limit = Limits.get_limit!(parsed_id)
 
+    day_of_weeks =
+      Enum.map(limit.limit_day_of_weeks, fn day_of_week ->
+        %{
+          day_of_week
+          | all_day?:
+              day_of_week.active? and is_nil(day_of_week.start_time) and
+                is_nil(day_of_week.end_time)
+        }
+      end)
+
     {:noreply,
      socket
-     |> assign(:limit_form, limit |> Limits.change_limit() |> to_form())
+     |> assign(
+       :limit_form,
+       %{limit | limit_day_of_weeks: day_of_weeks} |> Limits.change_limit() |> to_form()
+     )
      |> assign(limit: limit)
      |> assign(action: "update")}
   end
