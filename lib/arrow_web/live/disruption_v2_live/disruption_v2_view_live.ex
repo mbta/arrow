@@ -301,8 +301,10 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         {:noreply,
          socket
          |> clear_flash()
-         |> apply_action(:edit, %{"id" => disruption.id})
+         |> assign(:page_title, "Edit Disruption v2")
+         |> assign(:disruption_v2, disruption)
          |> assign(:form_action, :edit)
+         |> assign(:title, "edit disruption")
          |> push_patch(to: ~p"/disruptionsv2/#{disruption.id}/edit")
          |> assign(:limit_in_form, Limit.new())}
 
