@@ -94,7 +94,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       </.simple_form>
 
       <.live_component
-        id="limits"
+        id="limit_section"
         module={ArrowWeb.LimitSection}
         limit={@limit_in_form}
         icon_paths={@icon_paths}

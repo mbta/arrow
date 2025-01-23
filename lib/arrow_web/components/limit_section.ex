@@ -23,7 +23,7 @@ defmodule ArrowWeb.LimitSection do
       <h3>Limits</h3>
       <%= if Ecto.assoc_loaded?(@disruption.limits) and Enum.any?(@disruption.limits) do %>
         <div class="mb-3">
-          <.table id="limits" rows={@disruption.limits}>
+          <.table id="limits_table" rows={@disruption.limits}>
             <:col :let={limit_row} label="route">
               <span
                 class="m-icon m-icon-sm mr-1"
