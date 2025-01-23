@@ -62,17 +62,35 @@ defmodule Arrow.Limits.LimitDayOfWeek do
     start_time = get_field(changeset, :start_time)
     end_time = get_field(changeset, :end_time)
 
-    if is_nil(start_time) or is_nil(end_time) do
-      changeset
-    else
-      start_time_split = String.split(start_time, ":")
-      end_time_split = String.split(end_time, ":")
+    if changeset.valid? and not is_nil(start_time) and not is_nil(end_time) do
+      [start_hour, start_minute] = String.split(start_time, ":")
+      [end_hour, end_minute] = String.split(end_time, ":")
 
-      if List.first(start_time_split) < List.first(end_time_split) do
+      start_dt = parse_time_string(start_hour, start_minute)
+      end_dt = parse_time_string(end_hour, end_minute)
+
+      if DateTime.before?(start_dt, end_dt) do
         changeset
       else
         add_error(changeset, :start_time, "start time should be before end time")
       end
+    else
+      changeset
     end
+  end
+
+  defp parse_time_string(hour, minute) do
+    hour_as_integer = String.to_integer(hour)
+
+    {:ok, dt, _} =
+      if hour_as_integer < 24 do
+        DateTime.from_iso8601("2025-01-01T#{hour}:#{minute}:00Z")
+      else
+        hour = (hour_as_integer - 24) |> to_string() |> String.pad_leading(2, "0")
+
+        DateTime.from_iso8601("2025-01-02T#{hour}:#{minute}:00Z")
+      end
+
+    dt
   end
 end
