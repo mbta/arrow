@@ -1,8 +1,8 @@
-defmodule Arrow.Shuttles.ActivationUploadTest do
+defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
   @moduledoc false
   use Arrow.DataCase
 
-  import Arrow.Shuttles.ActivationUpload
+  import Arrow.Disruptions.ReplacementServiceUpload
 
   def get_xlsx(%{sheet: sheet}) do
     Xlsxir.multi_extract("test/support/fixtures/xlsx/disruption_v2_live/#{sheet}")

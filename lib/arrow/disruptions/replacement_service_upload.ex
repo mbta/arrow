@@ -1,5 +1,5 @@
-defmodule Arrow.Shuttles.ActivationUpload do
-  @moduledoc "functions for extracting shuttle activations from xlsx uploads"
+defmodule Arrow.Disruptions.ReplacementServiceUpload do
+  @moduledoc "functions for extracting shuttle replacement services from xlsx uploads"
 
   @weekday_tab_name "WKDY headways and runtimes"
   @saturday_tab_name "SAT headways and runtimes"
@@ -16,7 +16,7 @@ defmodule Arrow.Shuttles.ActivationUpload do
   @spec extract_data_from_upload(%{:path => binary(), optional(any()) => any()}) ::
           {:ok, {:error, list()} | {:ok, list()}}
   @doc """
-  Parses a shuttle activation xlsx worksheet and returns a list of data
+  Parses a shuttle replacement service xlsx worksheet and returns a list of data
   """
   def extract_data_from_upload(%{path: xlsx_path}) do
     with tids when is_list(tids) <- Xlsxir.multi_extract(xlsx_path),
