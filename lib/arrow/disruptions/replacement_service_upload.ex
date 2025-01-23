@@ -239,7 +239,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
   def parse_time(time_string) do
     with {:ok, truncated} <- truncate_seconds(time_string),
          padded <- pad_leading(truncated),
-         [hr, min] <- to_time_int_list(time_string),
+         [hr, min] <- to_time_int_list(padded),
          {:ok, _valid} <- validate_time_format([hr, min]) do
       {:ok, padded}
     else
@@ -248,9 +248,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
   end
 
   def truncate_seconds(time_string) do
-    split_string = String.split(time_string, ":")
-
-    case split_string do
+    case String.split(time_string, ":") do
       [_hr, _min, _sec] -> {:ok, String.split(time_string, ":") |> Enum.take(2) |> Enum.join(":")}
       [_hr, _min] -> {:ok, time_string}
       _ -> {:error, time_string}
@@ -258,11 +256,8 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
   end
 
   def pad_leading(time_string) do
-    time_length = String.length(time_string)
-
-    case time_length do
+    case String.length(time_string) do
       4 -> String.pad_leading(time_string, 5, "0")
-      7 -> String.pad_leading(time_string, 8, "0")
       _ -> time_string
     end
   end
