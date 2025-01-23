@@ -384,7 +384,7 @@ defmodule ArrowWeb.CoreComponents do
   def input(assigns) do
     ~H"""
     <div class={["form-group", @class]}>
-      <.label for={@id}>{@label}</.label>
+      <.label :if={@label} for={@id}>{@label}</.label>
       <input
         type={@type}
         name={@name}
