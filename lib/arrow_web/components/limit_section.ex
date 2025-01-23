@@ -271,16 +271,7 @@ defmodule ArrowWeb.LimitSection do
   def handle_event("edit_limit", %{"limit" => limit_id}, socket) do
     {parsed_id, _} = Integer.parse(limit_id)
     limit = Limits.get_limit!(parsed_id)
-
-    day_of_weeks =
-      Enum.map(limit.limit_day_of_weeks, fn day_of_week ->
-        %{
-          day_of_week
-          | all_day?:
-              day_of_week.active? and is_nil(day_of_week.start_time) and
-                is_nil(day_of_week.end_time)
-        }
-      end)
+    day_of_weeks = Enum.map(limit.limit_day_of_weeks, &set_all_day_default/1)
 
     {:noreply,
      socket
@@ -324,6 +315,7 @@ defmodule ArrowWeb.LimitSection do
         day_of_week
         |> Map.from_struct()
         |> Map.drop([:id, :inserted_at, :updated_at])
+        |> set_all_day_default()
       end)
 
     form =
@@ -375,5 +367,14 @@ defmodule ArrowWeb.LimitSection do
   defp get_limit_route_icon_url(limit, icon_paths) do
     kind = Adjustment.kind(%Adjustment{route_id: limit.route.id})
     Map.get(icon_paths, kind)
+  end
+
+  defp set_all_day_default(day_of_week) do
+    %{
+      day_of_week
+      | all_day?:
+          day_of_week.active? and is_nil(day_of_week.start_time) and
+            is_nil(day_of_week.end_time)
+    }
   end
 end
