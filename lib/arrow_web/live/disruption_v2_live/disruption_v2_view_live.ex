@@ -250,8 +250,13 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       {:ok, disruption} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Disruption created successfully")
-         |> assign(:disruption_v2, disruption)}
+         |> clear_flash()
+         |> assign(:page_title, "Edit Disruption v2")
+         |> assign(:disruption_v2, disruption)
+         |> assign(:form_action, :edit)
+         |> assign(:title, "edit disruption")
+         |> push_patch(to: ~p"/disruptionsv2/#{disruption.id}/edit")
+         |> put_flash(:info, "Disruption created successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply,
