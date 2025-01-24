@@ -714,6 +714,78 @@ CREATE TABLE public.gtfs_trips (
 
 
 --
+-- Name: limit_day_of_weeks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.limit_day_of_weeks (
+    id bigint NOT NULL,
+    is_active boolean,
+    day_name integer NOT NULL,
+    start_time text,
+    end_time text,
+    limit_id bigint,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    CONSTRAINT day_name_must_be_in_range CHECK ((day_name <@ int4range(1, 7, '[]'::text)))
+);
+
+
+--
+-- Name: limit_day_of_weeks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.limit_day_of_weeks_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: limit_day_of_weeks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.limit_day_of_weeks_id_seq OWNED BY public.limit_day_of_weeks.id;
+
+
+--
+-- Name: limits; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.limits (
+    id bigint NOT NULL,
+    start_date date,
+    end_date date,
+    disruption_id bigint,
+    route_id character varying,
+    start_stop_id character varying,
+    end_stop_id character varying,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: limits_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.limits_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: limits_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.limits_id_seq OWNED BY public.limits.id;
+
+
+--
 -- Name: oban_jobs; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1046,6 +1118,20 @@ ALTER TABLE ONLY public.disruptionsv2 ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
+-- Name: limit_day_of_weeks id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.limit_day_of_weeks ALTER COLUMN id SET DEFAULT nextval('public.limit_day_of_weeks_id_seq'::regclass);
+
+
+--
+-- Name: limits id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.limits ALTER COLUMN id SET DEFAULT nextval('public.limits_id_seq'::regclass);
+
+
+--
 -- Name: oban_jobs id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1296,6 +1382,22 @@ ALTER TABLE ONLY public.gtfs_trips
 
 
 --
+-- Name: limit_day_of_weeks limit_day_of_weeks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.limit_day_of_weeks
+    ADD CONSTRAINT limit_day_of_weeks_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: limits limits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.limits
+    ADD CONSTRAINT limits_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: oban_jobs non_negative_priority; Type: CHECK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1438,6 +1540,48 @@ CREATE INDEX gtfs_stops_lat_lon_vehicle_type_id_index ON public.gtfs_stops USING
 
 
 --
+-- Name: limit_day_of_weeks_is_active_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX limit_day_of_weeks_is_active_index ON public.limit_day_of_weeks USING btree (is_active);
+
+
+--
+-- Name: limit_day_of_weeks_limit_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX limit_day_of_weeks_limit_id_index ON public.limit_day_of_weeks USING btree (limit_id);
+
+
+--
+-- Name: limits_disruption_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX limits_disruption_id_index ON public.limits USING btree (disruption_id);
+
+
+--
+-- Name: limits_end_stop_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX limits_end_stop_id_index ON public.limits USING btree (end_stop_id);
+
+
+--
+-- Name: limits_route_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX limits_route_id_index ON public.limits USING btree (route_id);
+
+
+--
+-- Name: limits_start_stop_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX limits_start_stop_id_index ON public.limits USING btree (start_stop_id);
+
+
+--
 -- Name: oban_jobs_args_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1512,6 +1656,13 @@ CREATE INDEX stops_stop_lat_stop_lon_stop_id_index ON public.stops USING btree (
 --
 
 CREATE UNIQUE INDEX unique_disruption_weekday ON public.disruption_day_of_weeks USING btree (disruption_revision_id, day_name);
+
+
+--
+-- Name: unique_limit_weekday; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX unique_limit_weekday ON public.limit_day_of_weeks USING btree (limit_id, day_name);
 
 
 --
@@ -1731,6 +1882,46 @@ ALTER TABLE ONLY public.gtfs_trips
 
 
 --
+-- Name: limit_day_of_weeks limit_day_of_weeks_limit_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.limit_day_of_weeks
+    ADD CONSTRAINT limit_day_of_weeks_limit_id_fkey FOREIGN KEY (limit_id) REFERENCES public.limits(id) ON DELETE CASCADE;
+
+
+--
+-- Name: limits limits_disruption_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.limits
+    ADD CONSTRAINT limits_disruption_id_fkey FOREIGN KEY (disruption_id) REFERENCES public.disruptionsv2(id);
+
+
+--
+-- Name: limits limits_end_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.limits
+    ADD CONSTRAINT limits_end_stop_id_fkey FOREIGN KEY (end_stop_id) REFERENCES public.gtfs_stops(id);
+
+
+--
+-- Name: limits limits_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.limits
+    ADD CONSTRAINT limits_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.gtfs_routes(id);
+
+
+--
+-- Name: limits limits_start_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.limits
+    ADD CONSTRAINT limits_start_stop_id_fkey FOREIGN KEY (start_stop_id) REFERENCES public.gtfs_stops(id);
+
+
+--
 -- Name: shuttle_route_stops shuttle_route_stops_gtfs_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1826,4 +2017,7 @@ INSERT INTO public."schema_migrations" (version) VALUES (20241209204043);
 INSERT INTO public."schema_migrations" (version) VALUES (20241210155455);
 INSERT INTO public."schema_migrations" (version) VALUES (20241219160941);
 INSERT INTO public."schema_migrations" (version) VALUES (20241231110033);
+INSERT INTO public."schema_migrations" (version) VALUES (20250109134438);
+INSERT INTO public."schema_migrations" (version) VALUES (20250114140020);
 INSERT INTO public."schema_migrations" (version) VALUES (20250121165457);
+INSERT INTO public."schema_migrations" (version) VALUES (20250122200835);

@@ -11,7 +11,10 @@
 <.disruption_form
   id="disruption_v2_form"
   form={@form}
+  action={@form_action}
   disruption_v2={@disruption_v2}
   icon_paths={@icon_paths}
-  adding_new_service?={@adding_new_service?}
+  errors={@errors}
+  show_service_form?={@show_service_form?}
+  limit_in_form={@limit_in_form}
 />
