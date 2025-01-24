@@ -1,5 +1,10 @@
 defmodule Arrow.Disruptions.ReplacementServiceUpload do
   @moduledoc "functions for extracting shuttle replacement services from xlsx uploads"
+  alias Arrow.Disruptions.ReplacementServiceUpload.{
+    FirstTrip,
+    LastTrip,
+    Runtimes
+  }
 
   @weekday_tab_name "WKDY headways and runtimes"
   @saturday_tab_name "SAT headways and runtimes"
@@ -13,8 +18,17 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
     ~r/Running time\s\(Direction 1,/
   ]
 
+  @type tab_name :: String.t()
+  @type row_index :: integer()
+  @type ok_or_error :: {:ok, String.t() | number()} | {:error, String.t()}
+  @type parsed_row :: %{required(:atom) => ok_or_error()}
+  @type sheet_errors :: {:error, {row_index, parsed_row()}}
+  @type sheet_data :: Runtimes.t() | FirstTrip.t() | LastTrip.t()
+  @type error_tab :: {tab_name(), list(sheet_errors())}
+  @type valid_tab :: {tab_name(), list(sheet_data())}
+
   @spec extract_data_from_upload(%{:path => binary(), optional(any()) => any()}) ::
-          {:ok, {:error, list()} | {:ok, list()}}
+          {:ok, {:error, list(String.t())} | {:ok, list(valid_tab())}}
   @doc """
   Parses a shuttle replacement service xlsx worksheet and returns a list of data
   """
@@ -28,6 +42,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
     end
   end
 
+  @spec error_to_error_message(error_tab()) :: list(String.t())
   def error_to_error_message({tab_name, errors}) when is_list(errors) do
     ["#{tab_name}" | errors |> Enum.map(&error_to_error_message/1)]
   end
@@ -72,38 +87,10 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
         end
       end)
 
-    case Enum.empty?(Map.keys(tab_map)) do
-      true ->
-        {:error, ["Missing tab(s), none found for: #{Enum.join(all_tabs, ", ")}"]}
-
-      false ->
-        {:ok, tab_map}
-    end
-  end
-
-  @spec parse_tabs(any()) :: {:error, list()} | {:ok, list()}
-  def parse_tabs(tab_map) do
-    tab_map
-    |> Enum.map(&parse_tab/1)
-    |> Enum.split_with(&(elem(&1, 0) == :ok))
-    |> case do
-      {rows, []} -> {:ok, rows |> Enum.map(&elem(&1, 1))}
-      {_, errors} -> {:error, errors |> Enum.map(&elem(&1, 1))}
-    end
-  end
-
-  @spec parse_tab({any(), atom() | :ets.tid()}) ::
-          {:error, {any(), list()}} | {:ok, {any(), list()}}
-  def parse_tab({tab_name, tab_id}) do
-    tab = get_tab(tab_id)
-
-    with {:ok, _headers} <- validate_headers(tab),
-         {:ok, runtimes} <- parse_sheet(tab),
-         {:ok, _runtimes_with_first_last} <- validate_first_last(runtimes) do
-      {:ok, {tab_name, runtimes}}
+    if Enum.empty?(Map.keys(tab_map)) do
+      {:error, ["Missing tab(s), none found for: #{Enum.join(all_tabs, ", ")}"]}
     else
-      {:error, error} ->
-        {:error, {tab_name, error}}
+      {:ok, tab_map}
     end
   end
 
@@ -114,6 +101,35 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
     # Cells that have been touched but are empty can return nil
     |> Enum.reject(fn list -> Enum.all?(list, &is_nil/1) end)
     |> tap(fn _ -> Xlsxir.close(tab_id) end)
+  end
+
+  @spec parse_tabs(any()) :: {:error, list(error_tab())} | {:ok, list(valid_tab())}
+  def parse_tabs(tab_map) do
+    tab_map
+    |> Enum.map(&parse_tab/1)
+    |> Enum.split_with(&(elem(&1, 0) == :ok))
+    |> case do
+      {rows, []} -> {:ok, rows |> Enum.map(&elem(&1, 1))}
+      {_, errors} -> {:error, errors |> Enum.map(&elem(&1, 1))}
+    end
+  end
+
+  @type parsed_tab ::
+          {:ok, valid_tab()} | {:error, error_tab()}
+
+  @spec parse_tab({String.t(), atom() | :ets.tid()}) ::
+          parsed_tab()
+  def parse_tab({tab_name, tab_id}) do
+    tab = get_tab(tab_id)
+
+    with {:ok, _headers} <- validate_headers(tab),
+         {:ok, sheet_data} <- parse_sheet(tab),
+         {:ok, _sheet_data_with_first_last} <- ensure_first_last(sheet_data) do
+      {:ok, {tab_name, sheet_data}}
+    else
+      {:error, error} ->
+        {:error, {tab_name, error}}
+    end
   end
 
   defp header_to_string(header_regex) do
@@ -127,20 +143,20 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
   @spec validate_headers(nonempty_maybe_improper_list()) ::
           {:error, list(String.t())} | {:ok, list()}
   def validate_headers([headers | _]) do
-    @headers_regex
-    |> Enum.zip(headers)
-    |> Enum.map(&{&1, String.match?(elem(&1, 1), elem(&1, 0))})
+    headers
+    |> Enum.zip(@headers_regex)
+    |> Enum.map(&{&1, String.match?(elem(&1, 0), elem(&1, 1))})
     |> Enum.split_with(&elem(&1, 1))
     |> case do
       {headers, []} ->
-        {:ok, headers |> Enum.map(fn {key, _val} -> elem(key, 1) end)}
+        {:ok, headers |> Enum.map(fn {key, _val} -> elem(key, 0) end)}
 
       {_, missing} ->
         headers_str = @headers_regex |> Enum.map_join(", ", &header_to_string/1)
 
         missing_header =
           missing
-          |> Enum.map(fn {key, _val} -> elem(key, 0) end)
+          |> Enum.map(fn {key, _val} -> elem(key, 1) end)
           |> Enum.map(&header_to_string/1)
           |> List.first()
 
@@ -149,8 +165,8 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
     end
   end
 
-  @spec validate_first_last(any()) :: {:error, list(String.t())} | {:ok, list()}
-  def validate_first_last(runtimes) do
+  @spec ensure_first_last(list) :: {:error, list(String.t())} | {:ok, list()}
+  def ensure_first_last(runtimes) do
     trips =
       runtimes
       |> Enum.map(&has_first_last_trip_times?/1)
@@ -169,7 +185,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
     end
   end
 
-  @spec has_first_last_trip_times?(any()) :: {false, :none} | {true, :first | :last}
+  @spec has_first_last_trip_times?(map) :: {false, :none} | {true, :first | :last}
   def has_first_last_trip_times?(%{first_trip_0: _, first_trip_1: _}) do
     {true, :first}
   end
@@ -182,7 +198,8 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
     {false, :none}
   end
 
-  @spec parse_sheet(nonempty_maybe_improper_list()) :: {:error, list()} | {:ok, list(map)}
+  @spec parse_sheet(nonempty_maybe_improper_list()) ::
+          {:error, list(sheet_errors)} | {:ok, list(sheet_data)}
   def parse_sheet([_headers | data] = _tab) do
     data
     |> Enum.with_index(fn r, i -> {i + 2, r |> parse_row() |> validate_row()} end)
@@ -206,7 +223,9 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
     end
   end
 
-  @spec parse_row(any()) :: {:error, any()} | {:ok, any()}
+  @spec parse_row(list(any)) ::
+          {:error, String.t()}
+          | parsed_row()
   def parse_row([nil, nil, nil, "First " <> trip_0, "First " <> trip_1]) do
     %{
       first_trip_0: parse_time(trip_0),
@@ -282,4 +301,41 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
       false -> {:error, value}
     end
   end
+end
+
+defmodule(Arrow.Disruptions.ReplacementServiceUpload.FirstTrip) do
+  @moduledoc "struct to represent parsed first trip row"
+  defstruct first_trip_0: nil, first_trip_1: nil
+
+  @type t :: %__MODULE__{
+          first_trip_0: String.t(),
+          first_trip_1: String.t()
+        }
+end
+
+defmodule(Arrow.Disruptions.ReplacementServiceUpload.LastTrip) do
+  @moduledoc "struct to represent parsed last trip row"
+  defstruct last_trip_0: nil, last_trip_1: nil
+
+  @type t :: %__MODULE__{
+          last_trip_0: String.t(),
+          last_trip_1: String.t()
+        }
+end
+
+defmodule(Arrow.Disruptions.ReplacementServiceUpload.Runtimes) do
+  @moduledoc "struct to represent parsed runtimes row"
+  defstruct start_time: nil,
+            end_time: nil,
+            headway: nil,
+            running_time_0: nil,
+            running_time_1: nil
+
+  @type t :: %__MODULE__{
+          start_time: String.t(),
+          end_time: String.t(),
+          headway: number(),
+          running_time_0: number(),
+          running_time_1: number()
+        }
 end
