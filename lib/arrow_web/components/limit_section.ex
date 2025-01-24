@@ -46,6 +46,7 @@ defmodule ArrowWeb.LimitSection do
                 <.icon name="hero-pencil-solid" class="bg-primary" />
               </.button>
               <.button
+                id={"duplicate-limit-#{limit_row.id}"}
                 disabled={!is_nil(@limit_form)}
                 type="button"
                 phx-click="duplicate_limit"

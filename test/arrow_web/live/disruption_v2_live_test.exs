@@ -2,8 +2,9 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
   use ArrowWeb.ConnCase
 
   import Phoenix.LiveViewTest
-  import Arrow.DisruptionsFixtures
-  import Arrow.ShuttlesFixtures
+  import Arrow.{DisruptionsFixtures, LimitsFixtures, ShuttlesFixtures}
+
+  alias Arrow.Disruptions.DisruptionV2
 
   @create_attrs %{
     title: "the great molasses disruption of 2025",
@@ -26,7 +27,13 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
 
   defp create_disruption_v2(_) do
     disruption_v2 = disruption_v2_fixture()
-    %{disruption_v2: disruption_v2}
+    limit = limit_fixture(disruption_id: disruption_v2.id)
+    day_of_week = limit_day_of_week_fixture(limit_id: limit.id)
+
+    %{
+      disruption_v2:
+        struct(disruption_v2, limits: [struct(limit, limit_day_of_weeks: [day_of_week])])
+    }
   end
 
   describe "Changing Disruptions" do
@@ -103,6 +110,28 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
 
       refute live |> element("button#cancel_add_new_replacement_service_button") |> render_click() =~
                "add new replacement service component"
+    end
+  end
+
+  describe "Limit" do
+    @tag :authenticated_admin
+    setup [:create_disruption_v2]
+
+    test "can duplicate a limit", %{
+      conn: conn,
+      disruption_v2: %DisruptionV2{limits: [limit]} = disruption
+    } do
+      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption.id}/edit")
+
+      html = live |> element("button#duplicate-limit-#{limit.id}") |> render_click()
+
+      assert html =~ "add new disruption limit"
+
+      assert html |> Floki.attribute("#limit_start_date", "value") |> List.first() ==
+               "#{limit.start_date}"
+
+      assert html |> Floki.attribute("#limit_end_date", "value") |> List.first() ==
+               "#{limit.end_date}"
     end
   end
 end
