@@ -29,10 +29,13 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
       assert {:error, error} = get_xlsx_tab_tids(tab_tids)
 
       assert [
-               """
-               Missing tab(s), none found for: \
-               WKDY headways and runtimes, SAT headways and runtimes, SUN headways and runtimes\
-               """
+               {"Missing tab(s)",
+                [
+                  """
+                  none found for: \
+                  WKDY headways and runtimes, SAT headways and runtimes, SUN headways and runtimes\
+                  """
+                ]}
              ] =
                error
     end

@@ -57,9 +57,15 @@ defmodule Arrow.Disruptions do
 
   """
   def create_disruption_v2(attrs \\ %{}) do
-    %DisruptionV2{}
-    |> DisruptionV2.changeset(attrs)
-    |> Repo.insert()
+    disruption_v2 =
+      %DisruptionV2{}
+      |> DisruptionV2.changeset(attrs)
+      |> Repo.insert()
+
+    case disruption_v2 do
+      {:ok, disruption_v2} -> {:ok, disruption_v2 |> Repo.preload(@preloads)}
+      err -> err
+    end
   end
 
   @doc """
@@ -75,9 +81,15 @@ defmodule Arrow.Disruptions do
 
   """
   def update_disruption_v2(%DisruptionV2{} = disruption_v2, attrs) do
-    disruption_v2
-    |> DisruptionV2.changeset(attrs)
-    |> Repo.update()
+    update_disruption_v2 =
+      disruption_v2
+      |> DisruptionV2.changeset(attrs)
+      |> Repo.update()
+
+    case update_disruption_v2 do
+      {:ok, disruption_v2} -> {:ok, disruption_v2 |> Repo.preload(@preloads)}
+      err -> err
+    end
   end
 
   @doc """
@@ -138,6 +150,41 @@ defmodule Arrow.Disruptions do
   """
   def get_replacement_service!(id), do: Repo.get!(ReplacementService, id)
 
+  defp workbook_data_from_form(attrs) do
+    workbook = Map.get(attrs, "source_workbook_data")
+
+    workbook_as_map =
+      case is_binary(workbook) do
+        true -> Jason.decode!(workbook)
+        false -> workbook
+      end
+
+    case workbook_as_map do
+      nil ->
+        attrs
+
+      _ ->
+        %{attrs | "source_workbook_data" => workbook_as_map}
+    end
+  end
+
+  @doc """
+  Creates a replacement_service.
+
+  ## Examples
+
+      iex> create_replacement_service_from_form(%{field: value})
+      {:ok, %ReplacementService{}}
+
+      iex> create_replacement_service_from_form(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_replacement_service_from_form(attrs \\ %{}) do
+    attrs = workbook_data_from_form(attrs)
+    create_replacement_service(attrs)
+  end
+
   @doc """
   Creates a replacement_service.
 
@@ -154,6 +201,26 @@ defmodule Arrow.Disruptions do
     %ReplacementService{}
     |> ReplacementService.changeset(attrs)
     |> Repo.insert()
+  end
+
+  @doc """
+  Updates a replacement_service.
+
+  ## Examples
+
+      iex> update_replacement_service_from_form(replacement_service, %{field: new_value})
+      {:ok, %ReplacementService{}}
+
+      iex> update_replacement_service_from_form(replacement_service, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_replacement_service_from_form(%ReplacementService{} = replacement_service, attrs) do
+    attrs = workbook_data_from_form(attrs)
+
+    replacement_service
+    |> ReplacementService.changeset(attrs)
+    |> Repo.update()
   end
 
   @doc """
@@ -188,6 +255,23 @@ defmodule Arrow.Disruptions do
   """
   def delete_replacement_service(%ReplacementService{} = replacement_service) do
     Repo.delete(replacement_service)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking replacement_service changes.
+
+  ## Examples
+
+      iex> change_replacement_service_from_form(replacement_service)
+      %Ecto.Changeset{data: %ReplacementService{}}
+
+  """
+  def change_replacement_service_from_form(
+        %ReplacementService{} = replacement_service,
+        attrs \\ %{}
+      ) do
+    attrs = workbook_data_from_form(attrs)
+    ReplacementService.changeset(replacement_service, attrs)
   end
 
   @doc """

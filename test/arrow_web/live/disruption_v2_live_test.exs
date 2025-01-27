@@ -82,15 +82,17 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     test "can activate add replacement service flow", %{conn: conn, disruption_v2: disruption_v2} do
       {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
 
-      assert live |> element("button#add_new_replacement_service_button") |> render_click() =~
+      assert live |> element("#add_replacement_service") |> render_click() =~
                "add new replacement service component"
 
       shuttle = shuttle_fixture()
 
       stop_map_container =
         live
-        |> form("#disruption_v2-form")
-        |> render_change(%{"disruption_v2[new_shuttle_id]" => shuttle.id})
+        |> form("#replacement_service-form")
+        |> render_change(%{
+          replacement_service: %{shuttle_id: shuttle.id, disruption_id: disruption_v2.id}
+        })
         |> Floki.find("#shuttle-view-map-disruptionsv2-container")
 
       # make sure the shuttle map container is displayed when we have entered a new shuttle
@@ -106,9 +108,9 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     } do
       {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
 
-      live |> element("button#add_new_replacement_service_button") |> render_click()
+      live |> element("#add_replacement_service") |> render_click()
 
-      refute live |> element("button#cancel_add_new_replacement_service_button") |> render_click() =~
+      refute live |> element("button#cancel_add_replacement_service_button") |> render_click() =~
                "add new replacement service component"
     end
   end

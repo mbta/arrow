@@ -40,7 +40,9 @@ defmodule Arrow.Disruptions.ReplacementService do
       :start_date,
       :end_date,
       :source_workbook_data,
-      :source_workbook_filename
+      :source_workbook_filename,
+      :shuttle_id,
+      :disruption_id
     ])
     |> validate_required([
       :start_date,

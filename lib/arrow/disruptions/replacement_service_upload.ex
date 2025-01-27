@@ -42,9 +42,9 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
     end
   end
 
-  @spec error_to_error_message(error_tab()) :: list(String.t())
+  @spec error_to_error_message(error_tab()) :: tuple()
   def error_to_error_message({tab_name, errors}) when is_list(errors) do
-    ["#{tab_name}" | errors |> Enum.map(&error_to_error_message/1)]
+    {"#{tab_name}", errors |> Enum.map(&error_to_error_message/1)}
   end
 
   def error_to_error_message({idx, {:error, row_data}}) when is_list(row_data) do
@@ -88,7 +88,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
       end)
 
     if Enum.empty?(Map.keys(tab_map)) do
-      {:error, ["Missing tab(s), none found for: #{Enum.join(all_tabs, ", ")}"]}
+      {:error, [{"Missing tab(s)", ["none found for: #{Enum.join(all_tabs, ", ")}"]}]}
     else
       {:ok, tab_map}
     end

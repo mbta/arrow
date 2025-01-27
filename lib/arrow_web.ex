@@ -107,6 +107,9 @@ defmodule ArrowWeb do
       use Phoenix.LiveComponent
 
       unquote(html_helpers())
+
+      # Import the `live_react_component` helper
+      import PhoenixLiveReact
     end
   end
 
