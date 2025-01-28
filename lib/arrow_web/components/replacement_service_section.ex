@@ -256,8 +256,6 @@ defmodule ArrowWeb.ReplacementServiceSection do
   end
 
   def handle_event("create", %{"replacement_service" => replacement_service_params}, socket) do
-    dbg(replacement_service_params, printable_limit: :infinity)
-
     case Disruptions.create_replacement_service_from_form(replacement_service_params) do
       {:ok, _} ->
         send(self(), :update_disruption)
@@ -269,12 +267,9 @@ defmodule ArrowWeb.ReplacementServiceSection do
          |> assign(form: nil)}
 
       {:error, changeset} ->
-        dbg(changeset)
-
         {:noreply,
          assign(socket,
-           form: to_form(changeset),
-           errors: [{"Failed to create", [{"Unable to validate", inspect(changeset.errors)}]}]
+           form: to_form(changeset)
          )}
     end
   end
@@ -351,8 +346,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
   end
 
   defp handle_progress(:replacement_service, entry, socket) do
-    socket = clear_flash(socket)
-    socket = socket |> assign(:errors, [])
+    socket = socket |> clear_flash() |> assign(errors: [])
 
     if entry.done? do
       case consume_uploaded_entry(
@@ -361,7 +355,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
              &ReplacementServiceUpload.extract_data_from_upload/1
            ) do
         {:error, errors} ->
-          {:noreply, assign(socket, :errors, [{"Failed to upload replacement service", errors}])}
+          {:noreply, assign(socket, errors: [{"Failed to upload replacement service", errors}])}
 
         {:ok, upload} ->
           socket =

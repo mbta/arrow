@@ -4,6 +4,8 @@ defmodule Arrow.DisruptionsFixtures do
   entities via the `Arrow.Disruptions` context.
   """
 
+  alias Arrow.ShuttlesFixtures
+
   @doc """
   Generate a disruption_v2.
   """
@@ -34,7 +36,9 @@ defmodule Arrow.DisruptionsFixtures do
         reason: "some reason",
         source_workbook_data: %{},
         source_workbook_filename: "some source_workbook_filename",
-        start_date: ~D[2025-01-21]
+        start_date: ~D[2025-01-21],
+        shuttle_id: ShuttlesFixtures.shuttle_fixture().id,
+        disruption_id: disruption_v2_fixture().id
       })
       |> Arrow.Disruptions.create_replacement_service()
 

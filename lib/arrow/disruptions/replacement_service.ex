@@ -48,7 +48,9 @@ defmodule Arrow.Disruptions.ReplacementService do
       :start_date,
       :end_date,
       :source_workbook_data,
-      :source_workbook_filename
+      :source_workbook_filename,
+      :disruption_id,
+      :shuttle_id
     ])
     |> validate_start_date_before_end_date()
     |> assoc_constraint(:shuttle)

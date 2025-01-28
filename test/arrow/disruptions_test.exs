@@ -1,4 +1,6 @@
 defmodule Arrow.DisruptionsTest do
+  alias Arrow.DisruptionsFixtures
+  alias Arrow.ShuttlesFixtures
   use Arrow.DataCase
 
   alias Arrow.Disruptions
@@ -105,12 +107,17 @@ defmodule Arrow.DisruptionsTest do
     end
 
     test "create_replacement_service/1 with valid data creates a replacement_service" do
+      disruption = DisruptionsFixtures.disruption_v2_fixture()
+      shuttle = ShuttlesFixtures.shuttle_fixture()
+
       valid_attrs = %{
         reason: "some reason",
         start_date: ~D[2025-01-21],
         end_date: ~D[2025-01-22],
         source_workbook_data: %{},
-        source_workbook_filename: "some source_workbook_filename"
+        source_workbook_filename: "some source_workbook_filename",
+        shuttle_id: shuttle.id,
+        disruption_id: disruption.id
       }
 
       assert {:ok, %ReplacementService{} = replacement_service} =

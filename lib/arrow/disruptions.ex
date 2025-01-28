@@ -150,22 +150,15 @@ defmodule Arrow.Disruptions do
   """
   def get_replacement_service!(id), do: Repo.get!(ReplacementService, id)
 
-  defp workbook_data_from_form(attrs) do
-    workbook = Map.get(attrs, "source_workbook_data")
-
-    workbook_as_map =
-      case is_binary(workbook) do
-        true -> Jason.decode!(workbook)
-        false -> workbook
-      end
-
-    case workbook_as_map do
-      nil ->
-        attrs
-
-      _ ->
-        %{attrs | "source_workbook_data" => workbook_as_map}
+  defp workbook_data_from_form(%{"source_workbook_data" => data} = attrs) when is_binary(data) do
+    case Jason.decode(data) do
+      {:ok, map} -> %{attrs | "source_workbook_data" => map}
+      {:error, _error} -> attrs
     end
+  end
+
+  defp workbook_data_from_form(attrs) do
+    attrs
   end
 
   @doc """
@@ -218,9 +211,7 @@ defmodule Arrow.Disruptions do
   def update_replacement_service_from_form(%ReplacementService{} = replacement_service, attrs) do
     attrs = workbook_data_from_form(attrs)
 
-    replacement_service
-    |> ReplacementService.changeset(attrs)
-    |> Repo.update()
+    update_replacement_service(replacement_service, attrs)
   end
 
   @doc """
@@ -271,7 +262,7 @@ defmodule Arrow.Disruptions do
         attrs \\ %{}
       ) do
     attrs = workbook_data_from_form(attrs)
-    ReplacementService.changeset(replacement_service, attrs)
+    change_replacement_service(replacement_service, attrs)
   end
 
   @doc """

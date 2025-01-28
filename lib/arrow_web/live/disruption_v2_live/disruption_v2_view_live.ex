@@ -145,7 +145,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:disruption_v2, disruption)
       |> assign(:limit_in_form, nil)
       |> assign(:replacement_service_in_form, nil)
-      |> assign(:new_service, nil)
 
     {:ok, socket}
   end
@@ -167,7 +166,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:show_service_form?, false)
       |> assign(:limit_in_form, nil)
       |> assign(:replacement_service_in_form, nil)
-      |> assign(:new_service, nil)
 
     {:ok, socket}
   end
@@ -215,7 +213,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   def handle_event("edit", %{"disruption_v2" => disruption_v2_params}, socket) do
     case Disruptions.update_disruption_v2(socket.assigns.disruption_v2, disruption_v2_params) do
       {:ok, disruption} ->
-        # This called Repo.preload before but it didn't include limit_day_of_weeks...
         {:noreply,
          socket
          |> put_flash(:info, "Disruption updated successfully")
@@ -302,11 +299,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> clear_flash()
       |> assign(:replacement_service_in_form, %ReplacementService{})
 
-    {:noreply, socket}
-  end
-
-  def handle_event(event, _, socket) do
-    IO.inspect("UNEXPECTED HANDLE EVENT: #{event}")
     {:noreply, socket}
   end
 
