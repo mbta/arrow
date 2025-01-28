@@ -7,6 +7,8 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Arrow.Disruptions
+
   @type t :: %__MODULE__{
           title: String.t() | nil,
           mode: atom() | nil,
@@ -14,7 +16,9 @@ defmodule Arrow.Disruptions.DisruptionV2 do
           description: String.t() | nil,
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil,
-          limits: [Arrow.Disruptions.Limit.t()] | Ecto.Association.NotLoaded.t()
+          limits: [Arrow.Disruptions.Limit.t()] | Ecto.Association.NotLoaded.t(),
+          replacement_services:
+            [Disruptions.ReplacementService.t()] | Ecto.Association.NotLoaded.t()
         }
 
   schema "disruptionsv2" do
@@ -27,6 +31,10 @@ defmodule Arrow.Disruptions.DisruptionV2 do
       foreign_key: :disruption_id,
       on_replace: :delete
 
+    has_many :replacement_services, Disruptions.ReplacementService,
+      foreign_key: :disruption_id,
+      on_replace: :delete
+
     timestamps(type: :utc_datetime)
   end
 
@@ -36,11 +44,12 @@ defmodule Arrow.Disruptions.DisruptionV2 do
     |> cast(attrs, [:title, :is_active, :description])
     |> cast(attrs, [:mode], force_changes: true)
     |> cast_assoc(:limits, with: &Arrow.Disruptions.Limit.changeset/2)
+    |> cast_assoc(:replacement_services, with: &Disruptions.ReplacementService.changeset/2)
     |> validate_required([:title, :mode, :is_active])
   end
 
   def new(attrs \\ %{}) do
-    %__MODULE__{limits: []}
+    %__MODULE__{limits: [], replacement_services: []}
     |> struct!(attrs)
   end
 end

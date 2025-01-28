@@ -8,7 +8,10 @@ defmodule Arrow.Disruptions do
 
   alias Arrow.Disruptions.DisruptionV2
 
-  @preloads [limits: [:route, :start_stop, :end_stop, :limit_day_of_weeks]]
+  @preloads [
+    limits: [:route, :start_stop, :end_stop, :limit_day_of_weeks],
+    replacement_services: [:shuttle]
+  ]
 
   @doc """
   Returns the list of disruptionsv2.
@@ -102,5 +105,101 @@ defmodule Arrow.Disruptions do
   """
   def change_disruption_v2(%DisruptionV2{} = disruption_v2, attrs \\ %{}) do
     DisruptionV2.changeset(disruption_v2, attrs)
+  end
+
+  alias Arrow.Disruptions.ReplacementService
+
+  @doc """
+  Returns the list of replacement_services.
+
+  ## Examples
+
+      iex> list_replacement_services()
+      [%ReplacementService{}, ...]
+
+  """
+  def list_replacement_services do
+    Repo.all(ReplacementService)
+  end
+
+  @doc """
+  Gets a single replacement_service.
+
+  Raises `Ecto.NoResultsError` if the Replacement service does not exist.
+
+  ## Examples
+
+      iex> get_replacement_service!(123)
+      %ReplacementService{}
+
+      iex> get_replacement_service!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_replacement_service!(id), do: Repo.get!(ReplacementService, id)
+
+  @doc """
+  Creates a replacement_service.
+
+  ## Examples
+
+      iex> create_replacement_service(%{field: value})
+      {:ok, %ReplacementService{}}
+
+      iex> create_replacement_service(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_replacement_service(attrs \\ %{}) do
+    %ReplacementService{}
+    |> ReplacementService.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a replacement_service.
+
+  ## Examples
+
+      iex> update_replacement_service(replacement_service, %{field: new_value})
+      {:ok, %ReplacementService{}}
+
+      iex> update_replacement_service(replacement_service, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_replacement_service(%ReplacementService{} = replacement_service, attrs) do
+    replacement_service
+    |> ReplacementService.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a replacement_service.
+
+  ## Examples
+
+      iex> delete_replacement_service(replacement_service)
+      {:ok, %ReplacementService{}}
+
+      iex> delete_replacement_service(replacement_service)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_replacement_service(%ReplacementService{} = replacement_service) do
+    Repo.delete(replacement_service)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking replacement_service changes.
+
+  ## Examples
+
+      iex> change_replacement_service(replacement_service)
+      %Ecto.Changeset{data: %ReplacementService{}}
+
+  """
+  def change_replacement_service(%ReplacementService{} = replacement_service, attrs \\ %{}) do
+    ReplacementService.changeset(replacement_service, attrs)
   end
 end
