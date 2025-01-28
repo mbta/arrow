@@ -7,6 +7,8 @@ defmodule Arrow.Disruptions do
   alias Arrow.Repo
 
   alias Arrow.Disruptions.DisruptionV2
+  alias Arrow.Disruptions.Limit
+  alias Arrow.Disruptions.ReplacementService
 
   @preloads [
     limits: [:route, :start_stop, :end_stop, :limit_day_of_weeks],
@@ -107,8 +109,6 @@ defmodule Arrow.Disruptions do
     DisruptionV2.changeset(disruption_v2, attrs)
   end
 
-  alias Arrow.Disruptions.ReplacementService
-
   @doc """
   Returns the list of replacement_services.
 
@@ -201,5 +201,30 @@ defmodule Arrow.Disruptions do
   """
   def change_replacement_service(%ReplacementService{} = replacement_service, attrs \\ %{}) do
     ReplacementService.changeset(replacement_service, attrs)
+  end
+
+  @doc """
+  Returns all active limits that overlap with the given date range.
+
+  ## Examples
+
+      iex> get_limits_in_date_range(~D[2025-06-01], ~D[2025-06-30])
+      [%Limit{}, ...]
+
+  """
+  def get_limits_in_date_range(start_date, end_date) do
+    from(l in Limit,
+      join: d in assoc(l, :disruption),
+      where: d.is_active == true,
+      where: l.start_date <= ^end_date and l.end_date >= ^start_date,
+      preload: [
+        :disruption,
+        :route,
+        :start_stop,
+        :end_stop,
+        limit_day_of_weeks: :limit
+      ]
+    )
+    |> Repo.all()
   end
 end

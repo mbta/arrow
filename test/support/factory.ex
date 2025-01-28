@@ -54,6 +54,33 @@ defmodule Arrow.Factory do
     %Arrow.Disruption.TripShortName{trip_short_name: "1234"}
   end
 
+  def disruption_v2_factory do
+    %Arrow.Disruptions.DisruptionV2{
+      title: sequence(:title, &"Disruption #{&1}"),
+      mode: :bus,
+      is_active: true
+    }
+  end
+
+  def limit_factory do
+    %Arrow.Disruptions.Limit{
+      start_date: ~D[2025-01-01],
+      end_date: ~D[2025-12-31],
+      disruption: build(:disruption_v2),
+      route: build(:gtfs_route),
+      start_stop: build(:gtfs_stop),
+      end_stop: build(:gtfs_stop)
+    }
+  end
+
+  def limit_day_of_week_factory do
+    %Arrow.Limits.LimitDayOfWeek{
+      day_name: :monday,
+      active?: true,
+      limit: build(:limit)
+    }
+  end
+
   def note_factory do
     %Arrow.Disruption.Note{author: "An author", body: "This is the body."}
   end
