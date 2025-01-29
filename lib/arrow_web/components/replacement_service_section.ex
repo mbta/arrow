@@ -101,20 +101,18 @@ defmodule ArrowWeb.ReplacementServiceSection do
                 id: "shuttle-view-map-disruptionsv2"
               )}
           <div class="row">
-            <div class="form-group col-lg-3">
-              <label class="col-form-label" for="file_name">File name</label>
-              <input
-                id="file_name"
-                disabled={true}
-                class="form-control"
-                label="File name"
+            <div class="col-lg-6">
+              <.input
+                field={@form[:source_workbook_filename]}
                 type="text"
-                value={input_value(@form, :source_workbook_filename)}
+                label="File name"
+                disabled={true}
               />
+              <.input field={@form[:source_workbook_filename]} type="text" class="hidden" />
             </div>
           </div>
           <div class="row">
-            <div class="col-lg-3">
+            <div class="form-group col-lg-6 mt-auto">
               <.link_button
                 class="btn-primary"
                 phx-click={JS.dispatch("click", to: "##{@uploads.replacement_service.ref}")}
@@ -124,13 +122,12 @@ defmodule ArrowWeb.ReplacementServiceSection do
                 Upload Replacement Service XLSX
               </.link_button>
               <.input field={@form[:source_workbook_data]} type="text" class="hidden" />
-              <.input field={@form[:source_workbook_filename]} type="text" class="hidden" />
             </div>
           </div>
           <div class="row">
-            <.input field={@form[:start_date]} type="date" label="Start date" class="col-lg-3" />
-            <.input field={@form[:end_date]} type="date" label="End date" class="col-lg-3" />
-            <.input field={@form[:reason]} type="text" label="Reason" class="col-lg-3" />
+            <.input field={@form[:start_date]} type="date" label="Start date" class="col-lg-4" />
+            <.input field={@form[:end_date]} type="date" label="End date" class="col-lg-4" />
+            <.input field={@form[:reason]} type="text" label="Reason" class="col-lg-4" />
           </div>
           <div class="row">
             <div class="col">
@@ -156,7 +153,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
             </div>
           </div>
           <div class="row">
-            <div class="col-lg-3">
+            <div class="col-lg-4">
               <.button
                 disabled={not Enum.empty?(@errors)}
                 type="submit"
