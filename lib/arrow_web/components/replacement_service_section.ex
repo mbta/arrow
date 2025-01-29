@@ -85,18 +85,16 @@ defmodule ArrowWeb.ReplacementServiceSection do
               do: "add new replacement service component",
               else: "edit disruption replacement service component"}
           </h4>
-          <div class="row">
-            <div class="col">
-              <.shuttle_input field={@form[:shuttle_id]} shuttle={input_value(@form, :shuttle)} />
-            </div>
-          </div>
-          {if not empty_input_value?(@form[:shuttle_id].value),
-            do:
-              live_react_component(
+          <.shuttle_input field={@form[:shuttle_id]} shuttle={input_value(@form, :shuttle)} />
+          <div :if={not empty_input_value?(@form[:shuttle_id].value)} class="row">
+            <div class="col p-0">
+              {live_react_component(
                 "Components.ShapeStopViewMap",
                 get_shuttle_map_props(@form[:shuttle_id].value),
                 id: "shuttle-view-map-disruptionsv2"
               )}
+            </div>
+          </div>
           <div class="row">
             <div class="col-lg-6">
               <.input
