@@ -100,7 +100,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
               <.input
                 field={@form[:source_workbook_filename]}
                 type="text"
-                label="File name"
+                label="filename"
                 disabled={true}
                 id="display_replacement_service_source_workbook_filename"
               />
@@ -117,11 +117,11 @@ defmodule ArrowWeb.ReplacementServiceSection do
                 <.input field={@form[:source_workbook_data]} type="text" class="hidden" />
               </div>
             </div>
-            <.input field={@form[:reason]} type="text" label="Reason" class="col-lg-4" />
+            <.input field={@form[:reason]} type="text" label="reason" class="col-lg-4" />
           </div>
           <div class="row">
-            <.input field={@form[:start_date]} type="date" label="Start date" class="col-lg-4" />
-            <.input field={@form[:end_date]} type="date" label="End date" class="col-lg-4" />
+            <.input field={@form[:start_date]} type="date" label="start date" class="col-lg-4" />
+            <.input field={@form[:end_date]} type="date" label="end date" class="col-lg-4" />
           </div>
           <div class="row">
             <div class="col">
