@@ -122,19 +122,6 @@ defmodule Arrow.Disruptions do
   end
 
   @doc """
-  Returns the list of replacement_services.
-
-  ## Examples
-
-      iex> list_replacement_services()
-      [%ReplacementService{}, ...]
-
-  """
-  def list_replacement_services do
-    Repo.all(ReplacementService)
-  end
-
-  @doc """
   Gets a single replacement_service.
 
   Raises `Ecto.NoResultsError` if the Replacement service does not exist.
