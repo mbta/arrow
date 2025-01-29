@@ -36,9 +36,6 @@ defmodule ArrowWeb.ReplacementServiceSection do
             <:col :let={replacement_service_row} label="end date">
               {replacement_service_row.end_date}
             </:col>
-            <:col :let={replacement_service_row} label="reason">
-              {replacement_service_row.reason}
-            </:col>
             <:action :let={replacement_service_row}>
               <.button
                 disabled={!is_nil(@form)}
@@ -110,25 +107,23 @@ defmodule ArrowWeb.ReplacementServiceSection do
                 id="display_replacement_service_source_workbook_filename"
               />
               <.input field={@form[:source_workbook_filename]} type="text" class="hidden" />
+              <div class="form-group">
+                <.link_button
+                  class="btn-primary"
+                  phx-click={JS.dispatch("click", to: "##{@uploads.replacement_service.ref}")}
+                  target="_blank"
+                >
+                  <.live_file_input upload={@uploads.replacement_service} class="hidden" />
+                  Upload Replacement Service XLSX
+                </.link_button>
+                <.input field={@form[:source_workbook_data]} type="text" class="hidden" />
+              </div>
             </div>
-          </div>
-          <div class="row">
-            <div class="form-group col-lg-6 mt-auto">
-              <.link_button
-                class="btn-primary"
-                phx-click={JS.dispatch("click", to: "##{@uploads.replacement_service.ref}")}
-                target="_blank"
-              >
-                <.live_file_input upload={@uploads.replacement_service} class="hidden" />
-                Upload Replacement Service XLSX
-              </.link_button>
-              <.input field={@form[:source_workbook_data]} type="text" class="hidden" />
-            </div>
+            <.input field={@form[:reason]} type="text" label="Reason" class="col-lg-4" />
           </div>
           <div class="row">
             <.input field={@form[:start_date]} type="date" label="Start date" class="col-lg-4" />
             <.input field={@form[:end_date]} type="date" label="End date" class="col-lg-4" />
-            <.input field={@form[:reason]} type="text" label="Reason" class="col-lg-4" />
           </div>
           <div class="row">
             <div class="col">
