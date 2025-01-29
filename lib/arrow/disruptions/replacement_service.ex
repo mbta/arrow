@@ -7,6 +7,7 @@ defmodule Arrow.Disruptions.ReplacementService do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Arrow.Repo.MapForForm
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Shuttles.Shuttle
 
@@ -24,7 +25,7 @@ defmodule Arrow.Disruptions.ReplacementService do
     field :reason, :string
     field :start_date, :date
     field :end_date, :date
-    field :source_workbook_data, :map
+    field :source_workbook_data, MapForForm
     field :source_workbook_filename, :string
     belongs_to :disruption, DisruptionV2
     belongs_to :shuttle, Shuttle

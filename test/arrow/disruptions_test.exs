@@ -97,8 +97,19 @@ defmodule Arrow.DisruptionsTest do
     }
 
     test "list_replacement_services/0 returns all replacement_services" do
-      replacement_service = replacement_service_fixture()
-      assert Disruptions.list_replacement_services() == [replacement_service]
+      shuttle = ShuttlesFixtures.shuttle_fixture()
+      replacement_service = replacement_service_fixture(%{shuttle_id: shuttle.id})
+
+      replacement_service = %{
+        replacement_service
+        | shuttle: %Ecto.Association.NotLoaded{
+            __cardinality__: :one,
+            __field__: :shuttle,
+            __owner__: Arrow.Disruptions.ReplacementService
+          }
+      }
+
+      assert [^replacement_service] = Disruptions.list_replacement_services()
     end
 
     test "get_replacement_service!/1 returns the replacement_service with given id" do

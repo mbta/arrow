@@ -6,6 +6,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
   use ArrowWeb, :live_component
 
   import Phoenix.HTML.Form
+  alias Phoenix.LiveView
 
   alias Arrow.Disruptions.{DisruptionV2, ReplacementService, ReplacementServiceUpload}
   alias Arrow.{Disruptions, Shuttles}
@@ -107,7 +108,8 @@ defmodule ArrowWeb.ReplacementServiceSection do
                 disabled={true}
                 class="form-control"
                 label="File name"
-                value={@source_workbook_filename}
+                type="text"
+                value={input_value(@form, :source_workbook_filename)}
               />
             </div>
           </div>
@@ -121,17 +123,8 @@ defmodule ArrowWeb.ReplacementServiceSection do
                 <.live_file_input upload={@uploads.replacement_service} class="hidden" />
                 Upload Replacement Service XLSX
               </.link_button>
-              <.input
-                :if={@source_workbook_data != nil}
-                field={@form[:source_workbook_data]}
-                class="hidden"
-                value={Jason.encode_to_iodata!(@source_workbook_data)}
-              />
-              <.input
-                field={@form[:source_workbook_filename]}
-                class="hidden"
-                value={@source_workbook_filename}
-              />
+              <.input field={@form[:source_workbook_data]} type="text" class="hidden" />
+              <.input field={@form[:source_workbook_filename]} type="text" class="hidden" />
             </div>
           </div>
           <div class="row">
@@ -225,7 +218,8 @@ defmodule ArrowWeb.ReplacementServiceSection do
   end
 
   def update(assigns, socket) do
-    form = assigns.replacement_service |> Disruptions.change_replacement_service() |> to_form()
+    replacement_service = assigns.replacement_service
+    form = replacement_service |> Disruptions.change_replacement_service() |> to_form()
     action = if is_nil(assigns.replacement_service.id), do: "create", else: "update"
 
     {:ok,
@@ -234,8 +228,6 @@ defmodule ArrowWeb.ReplacementServiceSection do
      |> assign(form: form)
      |> assign(action: action)
      |> assign(errors: [])
-     |> assign(source_workbook_data: nil)
-     |> assign(source_workbook_filename: nil)
      |> allow_upload(:replacement_service,
        accept: ~w(.xlsx),
        progress: &handle_progress/3,
@@ -246,7 +238,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
   def handle_event("validate", %{"replacement_service" => replacement_service_params}, socket) do
     form =
       socket.assigns.replacement_service
-      |> Disruptions.change_replacement_service_from_form(%{
+      |> Disruptions.change_replacement_service(%{
         replacement_service_params
         | "disruption_id" => socket.assigns.disruption.id
       })
@@ -256,7 +248,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
   end
 
   def handle_event("create", %{"replacement_service" => replacement_service_params}, socket) do
-    case Disruptions.create_replacement_service_from_form(replacement_service_params) do
+    case Disruptions.create_replacement_service(replacement_service_params) do
       {:ok, _} ->
         send(self(), :update_disruption)
         send(self(), {:put_flash, :info, "Replacement service created successfully"})
@@ -279,7 +271,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
       Disruptions.get_replacement_service!(socket.assigns.replacement_service.id)
 
     case(
-      Disruptions.update_replacement_service_from_form(
+      Disruptions.update_replacement_service(
         replacement_service,
         replacement_service_params
       )
@@ -299,12 +291,16 @@ defmodule ArrowWeb.ReplacementServiceSection do
   end
 
   def handle_event("cancel_add_replacement_service", _params, socket) do
-    send(self(), :cancel_form)
+    send(self(), :cancel_replacement_service_form)
 
     {:noreply,
      socket
      |> assign(replacement_service: nil)
      |> assign(form: nil)}
+  end
+
+  def handle_event("selection_recovery", _params, socket) do
+    {:noreply, socket}
   end
 
   def handle_event(
@@ -349,22 +345,36 @@ defmodule ArrowWeb.ReplacementServiceSection do
     socket = socket |> clear_flash() |> assign(errors: [])
 
     if entry.done? do
+      %LiveView.UploadEntry{client_name: client_name} = entry
+
       case consume_uploaded_entry(
              socket,
              entry,
              &ReplacementServiceUpload.extract_data_from_upload/1
            ) do
         {:error, errors} ->
-          {:noreply, assign(socket, errors: [{"Failed to upload replacement service", errors}])}
+          {:noreply, assign(socket, errors: [{"Failed to upload from #{client_name}", errors}])}
 
-        {:ok, upload} ->
-          socket =
-            socket
-            |> put_flash(:info, "Successfully uploaded replacement service")
-            |> assign(source_workbook_data: upload |> Enum.into(%{}))
-            |> assign(source_workbook_filename: "TODO")
+        {:ok, data} ->
+          case Jason.encode_to_iodata(Enum.into(data, %{})) do
+            {:ok, iodata} ->
+              changeset = socket.assigns.form.source
 
-          {:noreply, socket}
+              changeset =
+                changeset
+                |> Ecto.Changeset.put_change(:source_workbook_data, iodata)
+                |> Ecto.Changeset.put_change(:source_workbook_filename, client_name)
+
+              socket =
+                socket
+                |> put_flash(:info, "Successfully uploaded replacement service")
+                |> assign(form: to_form(changeset))
+
+              {:noreply, socket}
+
+            {:error, error} ->
+              {:error, [{"Data encoding failed", error}]}
+          end
       end
     else
       {:noreply, socket}
