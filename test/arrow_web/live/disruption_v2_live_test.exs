@@ -113,6 +113,56 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       refute live |> element("button#cancel_add_replacement_service_button") |> render_click() =~
                "add new replacement service component"
     end
+
+    @tag :authenticated_admin
+    setup [:create_disruption_v2]
+
+    test "can add and save a replacement service", %{
+      conn: conn,
+      disruption_v2: disruption_v2
+    } do
+      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+
+      assert live |> element("#add_replacement_service") |> render_click() =~
+               "add new replacement service component"
+
+      shuttle = shuttle_fixture()
+
+      data = Jason.encode!(workbook_data())
+
+      valid_attrs = %{
+        end_date: ~D[2025-01-22],
+        reason: "some reason",
+        source_workbook_data: data,
+        source_workbook_filename: "some source_workbook_filename",
+        start_date: ~D[2025-01-21],
+        shuttle_id: shuttle.id,
+        disruption_id: disruption_v2.id
+      }
+
+      replacement_service_form =
+        live
+        |> form("#replacement_service-form")
+        |> render_change(%{replacement_service: valid_attrs})
+
+      replacement_service_workbook_filename =
+        replacement_service_form
+        |> Floki.attribute("#display_replacement_service_source_workbook_filename", "value")
+
+      replacement_service_workbook_data =
+        replacement_service_form
+        |> Floki.attribute("#replacement_service_source_workbook_data", "value")
+
+      assert ["some source_workbook_filename"] = replacement_service_workbook_filename
+      assert [^data] = replacement_service_workbook_data
+
+      assert live
+             |> form("#replacement_service-form")
+             |> render_submit(%{replacement_service: valid_attrs})
+
+      html = render(live)
+      assert html =~ "Replacement service created successfully"
+    end
   end
 
   describe "Limit" do

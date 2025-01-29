@@ -107,6 +107,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
                 type="text"
                 label="File name"
                 disabled={true}
+                id="display_replacement_service_source_workbook_filename"
               />
               <.input field={@form[:source_workbook_filename]} type="text" class="hidden" />
             </div>

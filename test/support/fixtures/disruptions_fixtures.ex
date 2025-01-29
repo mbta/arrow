@@ -5,6 +5,7 @@ defmodule Arrow.DisruptionsFixtures do
   """
 
   alias Arrow.ShuttlesFixtures
+  alias Arrow.DisruptionFixtures.WorkbookDataFixtures
 
   @doc """
   Generate a disruption_v2.
@@ -26,6 +27,13 @@ defmodule Arrow.DisruptionsFixtures do
   end
 
   @doc """
+  Exposes workbook data fixture for tests
+  """
+  def workbook_data() do
+    WorkbookDataFixtures.workbook_data()
+  end
+
+  @doc """
   Generate a replacement_service.
   """
   def replacement_service_fixture(attrs \\ %{}) do
@@ -34,7 +42,7 @@ defmodule Arrow.DisruptionsFixtures do
       |> Enum.into(%{
         end_date: ~D[2025-01-22],
         reason: "some reason",
-        source_workbook_data: %{},
+        source_workbook_data: workbook_data(),
         source_workbook_filename: "some source_workbook_filename",
         start_date: ~D[2025-01-21],
         shuttle_id: ShuttlesFixtures.shuttle_fixture().id,
