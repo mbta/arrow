@@ -339,6 +339,28 @@ defmodule ArrowWeb.ReplacementServiceSection do
     end
   end
 
+  def update_form_with_workbook_data(socket, data, client_name) do
+    case Jason.encode_to_iodata(Enum.into(data, %{})) do
+      {:ok, iodata} ->
+        changeset = socket.assigns.form.source
+
+        changeset =
+          changeset
+          |> Ecto.Changeset.put_change(:source_workbook_data, iodata)
+          |> Ecto.Changeset.put_change(:source_workbook_filename, client_name)
+
+        socket =
+          socket
+          |> put_flash(:info, "Successfully uploaded replacement service workbook")
+          |> assign(form: to_form(changeset, action: :validate))
+
+        {:noreply, socket}
+
+      {:error, error} ->
+        {:error, [{"Data encoding failed", error}]}
+    end
+  end
+
   defp handle_progress(:replacement_service, entry, socket) do
     socket = socket |> clear_flash() |> assign(errors: [])
 
@@ -354,25 +376,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
           {:noreply, assign(socket, errors: [{"Failed to upload from #{client_name}", errors}])}
 
         {:ok, data} ->
-          case Jason.encode_to_iodata(Enum.into(data, %{})) do
-            {:ok, iodata} ->
-              changeset = socket.assigns.form.source
-
-              changeset =
-                changeset
-                |> Ecto.Changeset.put_change(:source_workbook_data, iodata)
-                |> Ecto.Changeset.put_change(:source_workbook_filename, client_name)
-
-              socket =
-                socket
-                |> put_flash(:info, "Successfully uploaded replacement service")
-                |> assign(form: to_form(changeset))
-
-              {:noreply, socket}
-
-            {:error, error} ->
-              {:error, [{"Data encoding failed", error}]}
-          end
+          update_form_with_workbook_data(socket, data, client_name)
       end
     else
       {:noreply, socket}

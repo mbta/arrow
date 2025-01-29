@@ -139,7 +139,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:form_action, :edit)
       |> assign(:title, "edit disruption")
       |> assign(:form, Disruptions.change_disruption_v2(disruption) |> to_form)
-      |> assign(:show_service_form?, false)
       |> assign(:errors, %{})
       |> assign(:icon_paths, icon_paths(socket))
       |> assign(:disruption_v2, disruption)
@@ -163,7 +162,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:errors, %{})
       |> assign(:icon_paths, icon_paths(socket))
       |> assign(:disruption_v2, disruption)
-      |> assign(:show_service_form?, false)
       |> assign(:limit_in_form, nil)
       |> assign(:replacement_service_in_form, nil)
 
@@ -226,12 +224,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     end
   end
 
-  def handle_event("add_new_replacement_service", _params, socket) do
-    socket = assign(socket, :show_service_form?, true)
-
-    {:noreply, socket}
-  end
-
   def handle_event(
         "add_limit",
         _,
@@ -254,7 +246,11 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         {:noreply,
          socket
          |> assign(form: to_form(changeset))
-         |> put_flash(:error, "Error when saving disruption!")}
+         |> put_flash(
+           :errors,
+           {"Error when saving disruption!",
+            ["Please define the disruption before adding a limit"]}
+         )}
     end
   end
 
@@ -289,7 +285,11 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         {:noreply,
          socket
          |> assign(form: to_form(changeset))
-         |> put_flash(:error, "Error when saving disruption!")}
+         |> put_flash(
+           :errors,
+           {"Error when saving disruption!",
+            ["Please define the disruption before adding replacement service"]}
+         )}
     end
   end
 

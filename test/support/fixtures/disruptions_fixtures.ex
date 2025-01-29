@@ -4,8 +4,8 @@ defmodule Arrow.DisruptionsFixtures do
   entities via the `Arrow.Disruptions` context.
   """
 
-  alias Arrow.ShuttlesFixtures
   alias Arrow.DisruptionFixtures.WorkbookDataFixtures
+  alias Arrow.ShuttlesFixtures
 
   @doc """
   Generate a disruption_v2.
@@ -29,7 +29,7 @@ defmodule Arrow.DisruptionsFixtures do
   @doc """
   Exposes workbook data fixture for tests
   """
-  def workbook_data() do
+  def workbook_data do
     WorkbookDataFixtures.workbook_data()
   end
 

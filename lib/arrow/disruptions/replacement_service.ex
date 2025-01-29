@@ -7,8 +7,8 @@ defmodule Arrow.Disruptions.ReplacementService do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Arrow.Repo.MapForForm
   alias Arrow.Disruptions.DisruptionV2
+  alias Arrow.Repo.MapForForm
   alias Arrow.Shuttles.Shuttle
 
   @type t :: %__MODULE__{
