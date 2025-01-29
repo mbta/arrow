@@ -107,7 +107,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
               <.input field={@form[:source_workbook_filename]} type="text" class="hidden" />
               <div class="form-group">
                 <.link_button
-                  class="btn-primary"
+                  class="btn-primary btn-sm"
                   phx-click={JS.dispatch("click", to: "##{@uploads.replacement_service.ref}")}
                   target="_blank"
                 >
@@ -151,7 +151,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
               <.button
                 disabled={not Enum.empty?(@errors)}
                 type="submit"
-                class="btn btn-primary w-100"
+                class="btn btn-primary btn-sm w-100"
                 phx-target={@myself}
               >
                 save component
@@ -161,7 +161,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
               <.button
                 type="button"
                 id="cancel_add_replacement_service_button"
-                class="btn-outline-primary w-100"
+                class="btn-outline-primary btn-sm w-100"
                 data-confirm="Are you sure you want to cancel? All changes to this replacement service component will be lost!"
                 phx-click="cancel_add_replacement_service"
                 phx-target={@myself}
