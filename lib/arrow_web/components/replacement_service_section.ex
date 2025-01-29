@@ -124,7 +124,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
             <.input field={@form[:end_date]} type="date" label="end date" class="col-lg-4" />
           </div>
           <div class="row">
-            <div class="col">
+            <div class="col p-0">
               <%= if not Enum.empty?(@errors) do %>
                 <div :for={{message, errors} <- @errors}>
                   <aside role="alert" class="alert alert-danger">
