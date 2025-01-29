@@ -340,7 +340,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
   end
 
   def update_form_with_workbook_data(socket, data, client_name) do
-    case Jason.encode_to_iodata(Enum.into(data, %{})) do
+    case Jason.encode_to_iodata(data) do
       {:ok, iodata} ->
         changeset = socket.assigns.form.source
 

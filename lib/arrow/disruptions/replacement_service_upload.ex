@@ -6,6 +6,8 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
     Runtimes
   }
 
+  @version 1
+
   @weekday_tab_name "WKDY headways and runtimes"
   @saturday_tab_name "SAT headways and runtimes"
   @sunday_tab_name "SUN headways and runtimes"
@@ -26,6 +28,10 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
   @type sheet_data :: Runtimes.t() | FirstTrip.t() | LastTrip.t()
   @type error_tab :: {tab_name(), list(sheet_errors())}
   @type valid_tab :: {tab_name(), list(sheet_data())}
+  @type versioned_data :: %{
+          required(String.t()) => number(),
+          required(tab_name) => list(sheet_data())
+        }
 
   @spec extract_data_from_upload(%{:path => binary(), optional(any()) => any()}) ::
           {:ok, {:error, list(String.t())} | {:ok, list(valid_tab())}}
@@ -35,8 +41,9 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
   def extract_data_from_upload(%{path: xlsx_path}) do
     with tids when is_list(tids) <- Xlsxir.multi_extract(xlsx_path),
          {:ok, tab_map} <- get_xlsx_tab_tids(tids),
-         {:ok, data} <- parse_tabs(tab_map) do
-      {:ok, {:ok, data}}
+         {:ok, data} <- parse_tabs(tab_map),
+         {:ok, versioned_data} <- add_version(data) do
+      {:ok, {:ok, versioned_data}}
     else
       {:error, error} -> {:ok, {:error, error |> Enum.map(&error_to_error_message/1)}}
     end
@@ -70,6 +77,11 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
   def error_type(:last_trip_0), do: "Last Trip"
   def error_type(:last_trip_1), do: "Last Trip"
   def error_type(error), do: error
+
+  @spec add_version(list(valid_tab())) :: {:ok, versioned_data()}
+  def add_version(data) do
+    {:ok, data |> Enum.into(%{"version" => @version})}
+  end
 
   @spec get_xlsx_tab_tids(any()) :: {:error, list(String.t())} | {:ok, map()}
   def get_xlsx_tab_tids(tab_tids) do

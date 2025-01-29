@@ -4,16 +4,26 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
 
   import Arrow.Disruptions.ReplacementServiceUpload
 
+  @xlsx_dir "test/support/fixtures/xlsx/disruption_v2_live"
+
   def get_xlsx(%{sheet: sheet}) do
-    Xlsxir.multi_extract("test/support/fixtures/xlsx/disruption_v2_live/#{sheet}")
+    Xlsxir.multi_extract("#{@xlsx_dir}/#{sheet}")
   end
 
   def extract_single_sheet(%{sheet: sheet}) do
     [{:ok, tab0_tid} | _tabs] =
-      Xlsxir.multi_extract("test/support/fixtures/xlsx/disruption_v2_live/#{sheet}")
+      Xlsxir.multi_extract("#{@xlsx_dir}/#{sheet}")
 
     name = Xlsxir.get_info(tab0_tid, :name)
     %{name: name, tid: tab0_tid}
+  end
+
+  describe "extract_data_from_upload/1" do
+    @tag sheet: "example.xlsx"
+    test "extracts the data from the upload", %{sheet: sheet} do
+      data = extract_data_from_upload(%{path: "#{@xlsx_dir}/#{sheet}"})
+      assert {:ok, {:ok, %{"version" => 1, "SAT headways and runtimes" => _sheet_data}}} = data
+    end
   end
 
   describe "get_xlsx_tab_tids/1" do

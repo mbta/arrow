@@ -5,6 +5,7 @@ defmodule Arrow.DisruptionFixtures.WorkbookDataFixtures do
   """
   def workbook_data do
     %{
+      "version" => 1,
       "WKDY headways and runtimes" => [
         %{
           "end_time" => "06:00",
