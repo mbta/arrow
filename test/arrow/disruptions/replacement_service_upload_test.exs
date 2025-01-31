@@ -2,6 +2,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
   @moduledoc false
   use Arrow.DataCase
 
+  import ExUnit.CaptureLog
   import Arrow.Disruptions.ReplacementServiceUpload
 
   @xlsx_dir "test/support/fixtures/xlsx/disruption_v2_live"
@@ -23,6 +24,15 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
     test "extracts the data from the upload", %{sheet: sheet} do
       data = extract_data_from_upload(%{path: "#{@xlsx_dir}/#{sheet}"})
       assert {:ok, {:ok, %{"version" => 1, "SAT headways and runtimes" => _sheet_data}}} = data
+    end
+
+    test "catches exceptions and returns a generic error for the user if unable to parse the upload" do
+      assert capture_log(fn ->
+               data = extract_data_from_upload(%{path: "#{@xlsx_dir}/"})
+
+               error = format_warning()
+               assert {:ok, {:error, [{^error, []}]}} = data
+             end) =~ "ReplacementServiceUpload failed to parse XLSX"
     end
   end
 
@@ -55,7 +65,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
     @tag sheet: "example.xlsx"
     test "validates the spreadsheet headers are in the expected format", context do
       %{tid: tab0_tid} = extract_single_sheet(context)
-      tab = get_tab(tab0_tid)
+      tab = get_tab_rows(tab0_tid)
       assert {:ok, headers} = validate_headers(tab)
 
       assert headers == [
@@ -70,7 +80,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
     @tag sheet: "missing_header.xlsx"
     test "errors if the spreadsheet headers are not in the expected format", context do
       %{tid: tab0_tid} = extract_single_sheet(context)
-      tab = get_tab(tab0_tid)
+      tab = get_tab_rows(tab0_tid)
       assert {:error, error} = validate_headers(tab)
 
       assert [
@@ -86,6 +96,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
     @tag sheet: "example.xlsx"
     test "validates the data", context do
       %{tid: tid, name: name} = extract_single_sheet(context)
+      tab = get_tab_rows(tid)
 
       assert {
                :ok,
@@ -102,12 +113,13 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
                    | _rest
                  ]
                }
-             } = parse_tab({name, tid})
+             } = parse_tab({name, tab})
     end
 
     @tag sheet: "bad_last_time.xlsx"
     test "errors if the data is invalid", context do
       %{tid: tid, name: name} = extract_single_sheet(context)
+      tab = get_tab_rows(tid)
 
       assert {
                :error,
@@ -115,12 +127,13 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
                  "SUN headways and runtimes",
                  [{23, {:error, [last_trip_0: "invalid time: 24:80"]}}]
                }
-             } = parse_tab({name, tid})
+             } = parse_tab({name, tab})
     end
 
     @tag sheet: "missing_first_last_trip.xlsx"
     test "errors if the data is missing first and last trip times", context do
       %{tid: tid, name: name} = extract_single_sheet(context)
+      tab = get_tab_rows(tid)
 
       assert {
                :error,
@@ -128,7 +141,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
                  "SUN headways and runtimes",
                  ["Missing row for First and Last trip times"]
                }
-             } = parse_tab({name, tid})
+             } = parse_tab({name, tab})
     end
   end
 
@@ -158,7 +171,8 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
     end
 
     test "errors if a row is not as expected" do
-      {:error, "malformed row: " <> _rest} = parse_row(["invalid", "row", nil, nil])
+      {:error, "malformed row, unexpected values" <> _rest} =
+        parse_row(["invalid", "row", nil, nil])
     end
   end
 
@@ -204,6 +218,57 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
 
       assert "invalid time: 29:01" = time_string
     end
+
+    test "parses NaiveDateTime with valid format" do
+      assert {:ok, time_string} =
+               parse_time(%NaiveDateTime{
+                 hour: 5,
+                 minute: 1,
+                 year: 2025,
+                 month: 1,
+                 day: 1,
+                 second: 0
+               })
+
+      assert "05:01" = time_string
+    end
+
+    test "parses NaiveDateTime with valid format after noon" do
+      assert {:ok, time_string} =
+               parse_time(%NaiveDateTime{
+                 hour: 15,
+                 minute: 1,
+                 year: 2025,
+                 month: 1,
+                 day: 1,
+                 second: 0
+               })
+
+      assert "15:01" = time_string
+    end
+
+    test "errors with NaiveDateTime with possibly ambiguous after midnight values" do
+      assert {:error, time_string} =
+               parse_time(%NaiveDateTime{
+                 hour: 1,
+                 minute: 1,
+                 year: 2025,
+                 month: 1,
+                 day: 1,
+                 second: 0
+               })
+
+      assert "invalid time: 01:01:00, expecting times after midnight as 25:01" = time_string
+    end
+
+    test "errors with an erlang :calendar_date value for time" do
+      days = :calendar.date_to_gregorian_days(2025, 1, 1)
+
+      assert {:error, time_string} =
+               parse_time(:calendar.gregorian_days_to_date(days))
+
+      assert "invalid time: date 2025-01-01" = time_string
+    end
   end
 
   describe "parse_number/1" do
@@ -212,11 +277,34 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
     end
 
     test "errors if passed a number as a string (not expected from input)" do
-      assert {:error, "3"} = parse_number("3")
+      assert {:error, "invalid number: 3"} = parse_number("3")
     end
 
     test "errors if passed a string" do
-      assert {:error, "some_string"} = parse_number("some_string")
+      assert {:error, "invalid number: some_string"} = parse_number("some_string")
+    end
+
+    test "errors if passed a NaiveDateTime" do
+      assert {:error, number} =
+               parse_number(%NaiveDateTime{
+                 hour: 15,
+                 minute: 1,
+                 year: 2025,
+                 month: 1,
+                 day: 1,
+                 second: 0
+               })
+
+      assert "invalid number: 15:01:00" = number
+    end
+
+    test "errors if passed an erlang :calendar_date" do
+      days = :calendar.date_to_gregorian_days(2025, 1, 1)
+
+      assert {:error, number} =
+               parse_number(:calendar.gregorian_days_to_date(days))
+
+      assert "invalid number: date 2025-01-01" = number
     end
   end
 end
