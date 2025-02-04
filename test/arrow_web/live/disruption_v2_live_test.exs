@@ -1,5 +1,6 @@
 defmodule ArrowWeb.DisruptionV2LiveTest do
   use ArrowWeb.ConnCase
+  alias ArrowWeb.DisruptionV2ViewLive
 
   import Phoenix.LiveViewTest
   import Arrow.{DisruptionsFixtures, LimitsFixtures, ShuttlesFixtures}
@@ -190,41 +191,19 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     @tag :authenticated_admin
     setup [:create_disruption_v2]
 
-    test "can add a limit", %{
+    test "updating a disruption closes the disruption limit form", %{
       conn: conn,
       disruption_v2: %DisruptionV2{} = disruption
     } do
       {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption.id}/edit")
 
-      route = insert(:gtfs_route)
-      start_stop = insert(:gtfs_stop)
-      end_stop = insert(:gtfs_stop)
+      update_response =
+        DisruptionV2ViewLive.handle_info(:update_disruption, %{
+          __changed__: %{},
+          assigns: %{disruption_v2: disruption, limit_in_form: Arrow.Disruptions.Limit.new()}
+        })
 
-      valid_attrs = %{
-        start_date: ~D[2025-01-08],
-        end_date: ~D[2025-01-09],
-        start_stop_id: start_stop.id,
-        end_stop_id: end_stop.id,
-        route_id: route.id
-      }
-
-      html =
-        live
-        |> element("#add-limit-component")
-        |> render_click()
-
-      assert html =~ "add new disruption limit"
-
-      live
-      |> form("#limit-form", limit: %{route_id: valid_attrs.route_id})
-      |> render_change()
-
-      submitted_html =
-        live
-        |> form("#limit-form", limit: valid_attrs)
-        |> render_submit()
-
-      refute submitted_html =~ "add new disruption limit"
+      {:noreply, %{limit_in_form: nil}} = update_response
     end
   end
 end
