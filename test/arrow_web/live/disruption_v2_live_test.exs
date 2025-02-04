@@ -5,6 +5,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
   import Arrow.{DisruptionsFixtures, LimitsFixtures, ShuttlesFixtures}
 
   alias Arrow.Disruptions.DisruptionV2
+  import Arrow.Factory
 
   @create_attrs %{
     title: "the great molasses disruption of 2025",
@@ -184,6 +185,46 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
 
       assert html |> Floki.attribute("#limit_end_date", "value") |> List.first() ==
                "#{limit.end_date}"
+    end
+
+    @tag :authenticated_admin
+    setup [:create_disruption_v2]
+
+    test "can add a limit", %{
+      conn: conn,
+      disruption_v2: %DisruptionV2{} = disruption
+    } do
+      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption.id}/edit")
+
+      route = insert(:gtfs_route)
+      start_stop = insert(:gtfs_stop)
+      end_stop = insert(:gtfs_stop)
+
+      valid_attrs = %{
+        start_date: ~D[2025-01-08],
+        end_date: ~D[2025-01-09],
+        start_stop_id: start_stop.id,
+        end_stop_id: end_stop.id,
+        route_id: route.id
+      }
+
+      html =
+        live
+        |> element("#add-limit-component")
+        |> render_click()
+
+      assert html =~ "add new disruption limit"
+
+      live
+      |> form("#limit-form", limit: %{route_id: valid_attrs.route_id})
+      |> render_change()
+
+      submitted_html =
+        live
+        |> form("#limit-form", limit: valid_attrs)
+        |> render_submit()
+
+      refute submitted_html =~ "add new disruption limit"
     end
   end
 end
