@@ -334,7 +334,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     disruption = Disruptions.get_disruption_v2!(socket.assigns.disruption_v2.id)
     form = disruption |> Disruptions.change_disruption_v2() |> to_form()
 
-    {:noreply, socket |> assign(limit_form: nil, disruption_v2: disruption, form: form)}
+    {:noreply, socket |> assign(limit_in_form: nil, disruption_v2: disruption, form: form)}
   end
 
   def handle_info({:put_flash, kind, message}, socket) do
