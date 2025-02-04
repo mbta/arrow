@@ -96,6 +96,7 @@ defmodule ArrowWeb.LimitSection do
             <div class="col-lg-3">
               <.input
                 class="h-100"
+                id="select-route-id"
                 field={@limit_form[:route_id]}
                 type="select"
                 label="route"
