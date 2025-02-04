@@ -36,9 +36,6 @@ defmodule ArrowWeb.ReplacementServiceSection do
             <:col :let={replacement_service_row} label="end date">
               {replacement_service_row.end_date}
             </:col>
-            <:col :let={replacement_service_row} label="reason">
-              {replacement_service_row.reason}
-            </:col>
             <:action :let={replacement_service_row}>
               <.button
                 disabled={!is_nil(@form)}
@@ -88,50 +85,46 @@ defmodule ArrowWeb.ReplacementServiceSection do
               do: "add new replacement service component",
               else: "edit disruption replacement service component"}
           </h4>
-          <div class="row">
-            <div class="col">
-              <.shuttle_input field={@form[:shuttle_id]} shuttle={input_value(@form, :shuttle)} />
-            </div>
-          </div>
-          {if not empty_input_value?(@form[:shuttle_id].value),
-            do:
-              live_react_component(
+          <.shuttle_input field={@form[:shuttle_id]} shuttle={input_value(@form, :shuttle)} />
+          <div :if={not empty_input_value?(@form[:shuttle_id].value)} class="row">
+            <div class="col p-0">
+              {live_react_component(
                 "Components.ShapeStopViewMap",
                 get_shuttle_map_props(@form[:shuttle_id].value),
                 id: "shuttle-view-map-disruptionsv2"
               )}
+            </div>
+          </div>
           <div class="row">
             <div class="col-lg-6">
               <.input
                 field={@form[:source_workbook_filename]}
                 type="text"
-                label="File name"
+                label="filename"
                 disabled={true}
                 id="display_replacement_service_source_workbook_filename"
               />
               <.input field={@form[:source_workbook_filename]} type="text" class="hidden" />
+              <div class="form-group">
+                <.link_button
+                  class="btn-primary btn-sm"
+                  phx-click={JS.dispatch("click", to: "##{@uploads.replacement_service.ref}")}
+                  target="_blank"
+                >
+                  <.live_file_input upload={@uploads.replacement_service} class="hidden" />
+                  Upload Replacement Service XLSX
+                </.link_button>
+                <.input field={@form[:source_workbook_data]} type="text" class="hidden" />
+              </div>
             </div>
+            <.input field={@form[:reason]} type="text" label="reason" class="col-lg-4" />
           </div>
           <div class="row">
-            <div class="form-group col-lg-6 mt-auto">
-              <.link_button
-                class="btn-primary"
-                phx-click={JS.dispatch("click", to: "##{@uploads.replacement_service.ref}")}
-                target="_blank"
-              >
-                <.live_file_input upload={@uploads.replacement_service} class="hidden" />
-                Upload Replacement Service XLSX
-              </.link_button>
-              <.input field={@form[:source_workbook_data]} type="text" class="hidden" />
-            </div>
+            <.input field={@form[:start_date]} type="date" label="start date" class="col-lg-4" />
+            <.input field={@form[:end_date]} type="date" label="end date" class="col-lg-4" />
           </div>
           <div class="row">
-            <.input field={@form[:start_date]} type="date" label="Start date" class="col-lg-4" />
-            <.input field={@form[:end_date]} type="date" label="End date" class="col-lg-4" />
-            <.input field={@form[:reason]} type="text" label="Reason" class="col-lg-4" />
-          </div>
-          <div class="row">
-            <div class="col">
+            <div class="col p-0">
               <%= if not Enum.empty?(@errors) do %>
                 <div :for={{message, errors} <- @errors}>
                   <aside role="alert" class="alert alert-danger">
@@ -158,7 +151,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
               <.button
                 disabled={not Enum.empty?(@errors)}
                 type="submit"
-                class="btn btn-primary w-100"
+                class="btn btn-primary btn-sm w-100"
                 phx-target={@myself}
               >
                 save component
@@ -168,7 +161,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
               <.button
                 type="button"
                 id="cancel_add_replacement_service_button"
-                class="btn-outline-primary w-100"
+                class="btn-outline-primary btn-sm w-100"
                 data-confirm="Are you sure you want to cancel? All changes to this replacement service component will be lost!"
                 phx-click="cancel_add_replacement_service"
                 phx-target={@myself}
