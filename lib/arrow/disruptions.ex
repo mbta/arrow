@@ -57,9 +57,15 @@ defmodule Arrow.Disruptions do
 
   """
   def create_disruption_v2(attrs \\ %{}) do
-    %DisruptionV2{}
-    |> DisruptionV2.changeset(attrs)
-    |> Repo.insert()
+    disruption_v2 =
+      %DisruptionV2{}
+      |> DisruptionV2.changeset(attrs)
+      |> Repo.insert()
+
+    case disruption_v2 do
+      {:ok, disruption_v2} -> {:ok, disruption_v2 |> Repo.preload(@preloads)}
+      err -> err
+    end
   end
 
   @doc """
@@ -75,9 +81,15 @@ defmodule Arrow.Disruptions do
 
   """
   def update_disruption_v2(%DisruptionV2{} = disruption_v2, attrs) do
-    disruption_v2
-    |> DisruptionV2.changeset(attrs)
-    |> Repo.update()
+    update_disruption_v2 =
+      disruption_v2
+      |> DisruptionV2.changeset(attrs)
+      |> Repo.update()
+
+    case update_disruption_v2 do
+      {:ok, disruption_v2} -> {:ok, disruption_v2 |> Repo.preload(@preloads)}
+      err -> err
+    end
   end
 
   @doc """
@@ -110,19 +122,6 @@ defmodule Arrow.Disruptions do
   end
 
   @doc """
-  Returns the list of replacement_services.
-
-  ## Examples
-
-      iex> list_replacement_services()
-      [%ReplacementService{}, ...]
-
-  """
-  def list_replacement_services do
-    Repo.all(ReplacementService)
-  end
-
-  @doc """
   Gets a single replacement_service.
 
   Raises `Ecto.NoResultsError` if the Replacement service does not exist.
@@ -136,7 +135,8 @@ defmodule Arrow.Disruptions do
       ** (Ecto.NoResultsError)
 
   """
-  def get_replacement_service!(id), do: Repo.get!(ReplacementService, id)
+  def get_replacement_service!(id),
+    do: Repo.get!(ReplacementService, id) |> Repo.preload(@preloads[:replacement_services])
 
   @doc """
   Creates a replacement_service.
@@ -151,9 +151,15 @@ defmodule Arrow.Disruptions do
 
   """
   def create_replacement_service(attrs \\ %{}) do
-    %ReplacementService{}
-    |> ReplacementService.changeset(attrs)
-    |> Repo.insert()
+    create_replacement_service =
+      %ReplacementService{}
+      |> ReplacementService.changeset(attrs)
+      |> Repo.insert()
+
+    case create_replacement_service do
+      {:ok, rs} -> {:ok, rs |> Repo.preload(@preloads[:replacement_services])}
+      err -> err
+    end
   end
 
   @doc """
@@ -169,9 +175,15 @@ defmodule Arrow.Disruptions do
 
   """
   def update_replacement_service(%ReplacementService{} = replacement_service, attrs) do
-    replacement_service
-    |> ReplacementService.changeset(attrs)
-    |> Repo.update()
+    update_replacement_service =
+      replacement_service
+      |> ReplacementService.changeset(attrs)
+      |> Repo.update()
+
+    case update_replacement_service do
+      {:ok, rs} -> {:ok, rs |> Repo.preload(@preloads[:replacement_services])}
+      err -> err
+    end
   end
 
   @doc """

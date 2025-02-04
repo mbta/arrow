@@ -8,6 +8,7 @@ defmodule Arrow.Disruptions.ReplacementService do
   import Ecto.Changeset
 
   alias Arrow.Disruptions.DisruptionV2
+  alias Arrow.Repo.MapForForm
   alias Arrow.Shuttles.Shuttle
 
   @type t :: %__MODULE__{
@@ -24,7 +25,7 @@ defmodule Arrow.Disruptions.ReplacementService do
     field :reason, :string
     field :start_date, :date
     field :end_date, :date
-    field :source_workbook_data, :map
+    field :source_workbook_data, MapForForm
     field :source_workbook_filename, :string
     belongs_to :disruption, DisruptionV2
     belongs_to :shuttle, Shuttle
@@ -40,13 +41,17 @@ defmodule Arrow.Disruptions.ReplacementService do
       :start_date,
       :end_date,
       :source_workbook_data,
-      :source_workbook_filename
+      :source_workbook_filename,
+      :shuttle_id,
+      :disruption_id
     ])
     |> validate_required([
       :start_date,
       :end_date,
       :source_workbook_data,
-      :source_workbook_filename
+      :source_workbook_filename,
+      :disruption_id,
+      :shuttle_id
     ])
     |> validate_start_date_before_end_date()
     |> assoc_constraint(:shuttle)
