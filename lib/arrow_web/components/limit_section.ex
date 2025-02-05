@@ -70,7 +70,12 @@ defmodule ArrowWeb.LimitSection do
         </div>
       <% end %>
 
-      <.link_button :if={is_nil(@limit_form)} class="btn-link" phx-click="add_limit">
+      <.link_button
+        :if={is_nil(@limit_form)}
+        class="btn-link"
+        phx-click="add_limit"
+        id="add-limit-component"
+      >
         <.icon name="hero-plus" /> <span>add limit component</span>
       </.link_button>
 
@@ -95,6 +100,7 @@ defmodule ArrowWeb.LimitSection do
             <div class="col-lg-3">
               <.input
                 class="h-100"
+                id="select-route-id"
                 field={@limit_form[:route_id]}
                 type="select"
                 label="route"

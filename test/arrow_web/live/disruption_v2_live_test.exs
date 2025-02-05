@@ -1,10 +1,12 @@
 defmodule ArrowWeb.DisruptionV2LiveTest do
   use ArrowWeb.ConnCase
+  alias ArrowWeb.DisruptionV2ViewLive
 
   import Phoenix.LiveViewTest
   import Arrow.{DisruptionsFixtures, LimitsFixtures, ShuttlesFixtures}
 
   alias Arrow.Disruptions.DisruptionV2
+  import Arrow.Factory
 
   @create_attrs %{
     title: "the great molasses disruption of 2025",
@@ -184,6 +186,24 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
 
       assert html |> Floki.attribute("#limit_end_date", "value") |> List.first() ==
                "#{limit.end_date}"
+    end
+
+    @tag :authenticated_admin
+    setup [:create_disruption_v2]
+
+    test "updating a disruption closes the disruption limit form", %{
+      conn: conn,
+      disruption_v2: %DisruptionV2{} = disruption
+    } do
+      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption.id}/edit")
+
+      update_response =
+        DisruptionV2ViewLive.handle_info(:update_disruption, %{
+          __changed__: %{},
+          assigns: %{disruption_v2: disruption, limit_in_form: Arrow.Disruptions.Limit.new()}
+        })
+
+      {:noreply, %{limit_in_form: nil}} = update_response
     end
   end
 end

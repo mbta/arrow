@@ -310,7 +310,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     {:noreply,
      socket
      |> assign(
-       limit_form: nil,
+       limit_in_form: nil,
        replacement_service_form: nil,
        disruption_v2: disruption,
        form: form
