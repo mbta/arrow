@@ -113,51 +113,55 @@ defmodule Arrow.Disruptions.ReplacementService do
             &(&1.direction_id == direction_id |> Integer.to_string() |> String.to_existing_atom())
           )
 
-        Enum.map(start_times, fn start_time ->
-          total_runtime =
-            headway_periods
-            |> Map.get(start_of_hour(start_time))
-            |> Map.get("running_time_#{direction_id}")
-
-          total_times_to_next_stop =
-            Enum.reduce(shuttle_route.route_stops, 0, fn route_stop, acc ->
-              if is_nil(route_stop.time_to_next_stop) do
-                acc
-              else
-                acc + Decimal.to_float(route_stop.time_to_next_stop)
-              end
-            end)
-
-          {_, stop_times} =
-            Enum.reduce(shuttle_route.route_stops, {start_time, []}, fn route_stop,
-                                                                        {current_stop_time,
-                                                                         stop_times} ->
-              {if is_nil(route_stop.time_to_next_stop) do
-                 current_stop_time
-               else
-                 time_to_next_stop = Decimal.to_float(route_stop.time_to_next_stop)
-
-                 add_minutes(
-                   current_stop_time,
-                   round(time_to_next_stop / total_times_to_next_stop * total_runtime)
-                 )
-               end,
-               stop_times ++
-                 [
-                   %{
-                     stop_id: route_stop.display_stop_id,
-                     stop_time: current_stop_time
-                   }
-                 ]}
-            end)
-
-          %{
-            stop_times: stop_times
-          }
-        end)
+        Enum.map(
+          start_times,
+          &build_stop_times_for_start_time(&1, direction_id, headway_periods, shuttle_route)
+        )
       end
 
     %{"0" => direction_0_trips, "1" => direction_1_trips}
+  end
+
+  defp build_stop_times_for_start_time(start_time, direction_id, headway_periods, shuttle_route) do
+    total_runtime =
+      headway_periods
+      |> Map.get(start_of_hour(start_time))
+      |> Map.get("running_time_#{direction_id}")
+
+    total_times_to_next_stop =
+      Enum.reduce(shuttle_route.route_stops, 0, fn route_stop, acc ->
+        if is_nil(route_stop.time_to_next_stop) do
+          acc
+        else
+          acc + Decimal.to_float(route_stop.time_to_next_stop)
+        end
+      end)
+
+    {_, stop_times} =
+      Enum.reduce(shuttle_route.route_stops, {start_time, []}, fn route_stop,
+                                                                  {current_stop_time, stop_times} ->
+        {if is_nil(route_stop.time_to_next_stop) do
+           current_stop_time
+         else
+           time_to_next_stop = Decimal.to_float(route_stop.time_to_next_stop)
+
+           add_minutes(
+             current_stop_time,
+             round(time_to_next_stop / total_times_to_next_stop * total_runtime)
+           )
+         end,
+         stop_times ++
+           [
+             %{
+               stop_id: route_stop.display_stop_id,
+               stop_time: current_stop_time
+             }
+           ]}
+      end)
+
+    %{
+      stop_times: stop_times
+    }
   end
 
   defp do_make_trip_start_times(
