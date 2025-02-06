@@ -98,15 +98,17 @@ defmodule Arrow.ShuttlesFixtures do
     if include_times_to_next_stop do
       route_stops
       |> Enum.with_index()
-      |> Enum.map(fn {route_stop, index} ->
-        if index < length(route_stops) - 1 do
-          Map.put(route_stop, "time_to_next_stop", 60 * (index + 1))
-        else
-          route_stop
-        end
-      end)
+      |> Enum.map(&add_time_to_next_stop(&1, route_stops))
     else
       route_stops
+    end
+  end
+
+  defp add_time_to_next_stop({route_stop, index}, route_stops) do
+    if index < length(route_stops) - 1 do
+      Map.put(route_stop, "time_to_next_stop", 60 * (index + 1))
+    else
+      route_stop
     end
   end
 
