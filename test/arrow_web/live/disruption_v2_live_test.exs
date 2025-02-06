@@ -6,7 +6,6 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
   import Arrow.{DisruptionsFixtures, LimitsFixtures, ShuttlesFixtures}
 
   alias Arrow.Disruptions.DisruptionV2
-  import Arrow.Factory
 
   @create_attrs %{
     title: "the great molasses disruption of 2025",
@@ -195,7 +194,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       conn: conn,
       disruption_v2: %DisruptionV2{} = disruption
     } do
-      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption.id}/edit")
+      {:ok, _live, _html} = live(conn, ~p"/disruptionsv2/#{disruption.id}/edit")
 
       update_response =
         DisruptionV2ViewLive.handle_info(:update_disruption, %{
