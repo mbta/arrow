@@ -32,13 +32,15 @@ defmodule ArrowWeb.ReplacementServiceSection do
           class="container border-2 border-dashed border-secondary border-mb-3 pt-3 mb-3"
         >
           <div class="row">
-            <div class="col-lg-6">
+            <div class="col-lg-1 pr-0">
               <span
-                class="m-icon m-icon-sm mr-1"
+                class="m-icon m-icon-lg"
                 style={"background-image: url('#{get_bus_icon_url(@icon_paths)}');"}
               />
+            </div>
+            <div class="col pl-0">
               {replacement_service.shuttle.shuttle_name}
-              <div class="ml-4 text-sm">
+              <div class="text-sm">
                 Activated via <i>{replacement_service.source_workbook_filename}</i>
               </div>
             </div>
@@ -215,7 +217,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
   end
 
   def get_bus_icon_url(icon_paths) do
-    Map.get(icon_paths, :bus)
+    Map.get(icon_paths, :bus_outline)
   end
 
   def update(%{replacement_service: nil} = assigns, socket) do

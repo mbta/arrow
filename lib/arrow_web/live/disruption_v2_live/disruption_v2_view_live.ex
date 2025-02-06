@@ -360,6 +360,10 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       :subway,
       Phoenix.VerifiedRoutes.static_path(socket, "/images/icon-mode-subway-small.svg")
     )
+    |> Map.put(
+      :bus_outline,
+      Phoenix.VerifiedRoutes.static_path(socket, "/images/icon-bus-outline-small.svg")
+    )
   end
 
   defp apply_action(socket, :edit, %{"id" => id}) do
