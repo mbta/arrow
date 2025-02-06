@@ -75,8 +75,7 @@ defmodule Arrow.Disruptions.ReplacementService do
     end
   end
 
-  # TODO: more detailed return type
-  @spec trips_with_times(t(), String.t()) :: any()
+  @spec trips_with_times(t(), String.t()) :: map()
   def trips_with_times(
         %__MODULE__{source_workbook_data: source_workbook_data, shuttle: shuttle},
         day_of_week
@@ -115,16 +114,45 @@ defmodule Arrow.Disruptions.ReplacementService do
           )
 
         Enum.map(start_times, fn start_time ->
+          total_runtime =
+            headway_periods
+            |> Map.get(start_of_hour(start_time))
+            |> Map.get("running_time_#{direction_id}")
+
+          total_times_to_next_stop =
+            Enum.reduce(shuttle_route.route_stops, 0, fn route_stop, acc ->
+              if is_nil(route_stop.time_to_next_stop) do
+                acc
+              else
+                acc + Decimal.to_float(route_stop.time_to_next_stop)
+              end
+            end)
+
+          {_, stop_times} =
+            Enum.reduce(shuttle_route.route_stops, {start_time, []}, fn route_stop,
+                                                                        {current_stop_time,
+                                                                         stop_times} ->
+              {if is_nil(route_stop.time_to_next_stop) do
+                 current_stop_time
+               else
+                 time_to_next_stop = Decimal.to_float(route_stop.time_to_next_stop)
+
+                 add_minutes(
+                   current_stop_time,
+                   round(time_to_next_stop / total_times_to_next_stop * total_runtime)
+                 )
+               end,
+               stop_times ++
+                 [
+                   %{
+                     stop_id: route_stop.display_stop_id,
+                     stop_time: current_stop_time
+                   }
+                 ]}
+            end)
+
           %{
-            stop_times:
-              shuttle_route.route_stops
-              |> Enum.with_index()
-              |> Enum.map(fn {route_stop, index} ->
-                %{
-                  stop_id: route_stop.display_stop_id,
-                  stop_time: add_minutes(start_time, index * 5)
-                }
-              end)
+            stop_times: stop_times
           }
         end)
       end
