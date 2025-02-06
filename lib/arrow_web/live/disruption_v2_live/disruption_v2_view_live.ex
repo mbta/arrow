@@ -103,6 +103,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         module={ArrowWeb.ReplacementServiceSection}
         replacement_service={@replacement_service_in_form}
         disruption={@disruption_v2}
+        icon_paths={@icon_paths}
       />
 
       <div class="d-flex justify-content-center">

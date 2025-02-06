@@ -19,7 +19,7 @@ defmodule ArrowWeb.LimitSection do
 
   def render(assigns) do
     ~H"""
-    <div id={@id}>
+    <section id={@id}>
       <h3>Limits</h3>
       <%= if Ecto.assoc_loaded?(@disruption.limits) and Enum.any?(@disruption.limits) do %>
         <div class="mb-3">
@@ -200,7 +200,7 @@ defmodule ArrowWeb.LimitSection do
           </div>
         </div>
       </.simple_form>
-    </div>
+    </section>
     """
   end
 
