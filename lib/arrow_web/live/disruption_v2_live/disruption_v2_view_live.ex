@@ -103,6 +103,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         module={ArrowWeb.ReplacementServiceSection}
         replacement_service={@replacement_service_in_form}
         disruption={@disruption_v2}
+        icon_paths={@icon_paths}
       />
 
       <div class="d-flex justify-content-center">
@@ -358,6 +359,10 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     |> Map.put(
       :subway,
       Phoenix.VerifiedRoutes.static_path(socket, "/images/icon-mode-subway-small.svg")
+    )
+    |> Map.put(
+      :bus_outline,
+      Phoenix.VerifiedRoutes.static_path(socket, "/images/icon-bus-outline-small.svg")
     )
   end
 

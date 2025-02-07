@@ -19,45 +19,69 @@ defmodule ArrowWeb.ReplacementServiceSection do
   attr :uploads, :any
   attr :source_workbook_data, :any
   attr :source_workbook_filename, :string
+  attr :icon_paths, :map, required: true
 
   def render(assigns) do
     ~H"""
-    <div id={@id}>
-      <h3>Replacement Services</h3>
+    <section id={@id}>
+      <h3>Replacement Service</h3>
       <%= if Ecto.assoc_loaded?(@disruption.replacement_services) and Enum.any?(@disruption.replacement_services) do %>
-        <div class="mb-3">
-          <.table id="replacement_services_table" rows={@disruption.replacement_services}>
-            <:col :let={replacement_service_row} label="shuttle">
-              {replacement_service_row.shuttle.shuttle_name}
-            </:col>
-            <:col :let={replacement_service_row} label="start date">
-              {replacement_service_row.start_date}
-            </:col>
-            <:col :let={replacement_service_row} label="end date">
-              {replacement_service_row.end_date}
-            </:col>
-            <:action :let={replacement_service_row}>
+        <div
+          :for={replacement_service <- @disruption.replacement_services}
+          id="replacement_services_list"
+          class="container border-2 border-dashed border-secondary border-mb-3 pt-3 mb-3"
+        >
+          <div class="row">
+            <div class="col-lg-1 pr-lg-0">
+              <span
+                class="m-icon m-icon-lg"
+                style={"background-image: url('#{get_bus_icon_url(@icon_paths)}');"}
+              />
+            </div>
+            <div class="col pl-lg-0">
+              {replacement_service.shuttle.shuttle_name}
+              <div class="text-sm">
+                Activated via <i>{replacement_service.source_workbook_filename}</i>
+              </div>
+            </div>
+            <div class="col-lg-3 text-sm">
+              <div>start date</div>
+              <div>
+                {replacement_service.start_date}
+              </div>
+            </div>
+            <div class="col-lg-3 text-sm">
+              <div>end date</div>
+              {replacement_service.end_date}
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-lg-11">
               <.button
+                class="btn-link btn-sm pl-0"
                 disabled={!is_nil(@form)}
                 type="button"
                 phx-click="edit_replacement_service"
-                phx-value-replacement_service={replacement_service_row.id}
+                phx-value-replacement_service={replacement_service.id}
                 phx-target={@myself}
               >
-                <.icon name="hero-pencil-solid" class="bg-primary" />
+                <.icon name="hero-pencil-solid" class="bg-primary" /> Edit/Manage Activation
               </.button>
+            </div>
+            <div class="col-lg-1">
               <.button
+                class="btn-sm"
                 disabled={!is_nil(@form)}
                 type="button"
                 phx-click="delete_replacement_service"
-                phx-value-replacement_service={replacement_service_row.id}
+                phx-value-replacement_service={replacement_service.id}
                 phx-target={@myself}
-                data-confirm="Are you sure you want to delete this replacement_service?"
+                data-confirm="Are you sure you want to delete this replacement service?"
               >
                 <.icon name="hero-trash-solid" class="bg-primary" />
               </.button>
-            </:action>
-          </.table>
+            </div>
+          </div>
         </div>
       <% end %>
 
@@ -67,7 +91,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
         class="btn-link"
         phx-click="add_replacement_service"
       >
-        <.icon name="hero-plus" /> <span>add replacement_service component</span>
+        <.icon name="hero-plus" /> <span>add replacement service component</span>
       </.link_button>
 
       <.simple_form
@@ -172,7 +196,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
           </div>
         </div>
       </.simple_form>
-    </div>
+    </section>
     """
   end
 
@@ -190,6 +214,10 @@ defmodule ArrowWeb.ReplacementServiceSection do
 
   def get_shuttle_map_props(shuttle_id) do
     %{layers: Shuttles.get_shuttle!(shuttle_id).routes |> ShapeView.routes_to_layers()}
+  end
+
+  def get_bus_icon_url(icon_paths) do
+    Map.get(icon_paths, :bus_outline)
   end
 
   def update(%{replacement_service: nil} = assigns, socket) do
