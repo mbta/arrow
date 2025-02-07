@@ -156,4 +156,47 @@ defmodule Arrow.Factory do
     }
     |> merge_attributes(attrs)
   end
+
+  def shuttle_factory do
+    %Arrow.Shuttles.Shuttle{
+      status: :draft,
+      shuttle_name: "Test shuttle",
+      disrupted_route_id: "Red"
+    }
+  end
+
+  def replacement_service_factory do
+    %Arrow.Disruptions.ReplacementService{
+      reason: "Maintenance",
+      start_date: Date.utc_today(),
+      end_date: Date.utc_today() |> Date.add(6),
+      source_workbook_data: build(:replacement_service_workbook_data),
+      source_workbook_filename: "file.xlsx",
+      disruption: build(:disruption_v2),
+      shuttle: build(:shuttle)
+    }
+  end
+
+  def replacement_service_workbook_data_factory do
+    %{
+      "WKDY headways and runtimes" => [
+        %{
+          "end_time" => "06:00",
+          "headway" => 10,
+          "running_time_0" => 25,
+          "running_time_1" => 15,
+          "start_time" => "05:00"
+        },
+        %{
+          "end_time" => "07:00",
+          "headway" => 15,
+          "running_time_0" => 30,
+          "running_time_1" => 20,
+          "start_time" => "06:00"
+        },
+        %{"first_trip_0" => "05:10", "first_trip_1" => "05:10"},
+        %{"last_trip_0" => "06:30", "last_trip_1" => "06:30"}
+      ]
+    }
+  end
 end

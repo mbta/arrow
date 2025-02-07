@@ -69,10 +69,10 @@ defmodule Arrow.ShuttlesFixtures do
   def unique_shuttle_route_destination,
     do: "some shuttle_route_destination#{System.unique_integer([:positive])}"
 
-  defp shuttle_route_stops do
+  defp shuttle_route_stops(include_times_to_next_stop) do
     [stop1, stop2, stop3, stop4] = insert_list(4, :gtfs_stop)
 
-    [
+    route_stops = [
       %{
         "direction_id" => "0",
         "stop_sequence" => "1",
@@ -94,12 +94,28 @@ defmodule Arrow.ShuttlesFixtures do
         "display_stop_id" => stop4.id
       }
     ]
+
+    if include_times_to_next_stop do
+      route_stops
+      |> Enum.with_index()
+      |> Enum.map(&add_time_to_next_stop(&1, route_stops))
+    else
+      route_stops
+    end
   end
 
-  defp shuttle_routes(include_stops) do
+  defp add_time_to_next_stop({route_stop, index}, route_stops) do
+    if index < length(route_stops) - 1 do
+      Map.put(route_stop, "time_to_next_stop", 60 * (index + 1))
+    else
+      route_stop
+    end
+  end
+
+  defp shuttle_routes(include_stops, include_times_to_next_stop) do
     shape1 = shape_fixture()
     shape2 = shape_fixture()
-    route_stops = if include_stops, do: shuttle_route_stops(), else: []
+    route_stops = if include_stops, do: shuttle_route_stops(include_times_to_next_stop), else: []
 
     [
       %{
@@ -128,13 +144,13 @@ defmodule Arrow.ShuttlesFixtures do
   @doc """
   Generate a shuttle.
   """
-  def shuttle_fixture(attrs \\ %{}, include_stops \\ false) do
+  def shuttle_fixture(attrs \\ %{}, include_stops \\ false, include_times_to_next_stop \\ false) do
     {:ok, shuttle} =
       attrs
       |> Enum.into(%{
         shuttle_name: unique_shuttle_shuttle_name(),
         status: :draft,
-        routes: shuttle_routes(include_stops)
+        routes: shuttle_routes(include_stops, include_times_to_next_stop)
       })
       |> Arrow.Shuttles.create_shuttle()
 
