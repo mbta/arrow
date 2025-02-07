@@ -75,8 +75,16 @@ defmodule Arrow.Disruptions.ReplacementService do
     end
   end
 
-  @spec trips_with_times(t(), String.t()) :: map()
-  def trips_with_times(
+  @spec schedule_service_types() :: list(atom())
+  def schedule_service_types(), do: [:weekday, :saturday, :sunday]
+
+  def trips_with_times(replacement_service, :weekday), do: do_trips_with_times(replacement_service, "WKDY")
+
+  def trips_with_times(replacement_service, :saturday), do: do_trips_with_times(replacement_service, "SAT")
+
+  def trips_with_times(replacement_service, :sunday), do: do_trips_with_times(replacement_service, "SUN")
+
+  defp do_trips_with_times(
         %__MODULE__{source_workbook_data: source_workbook_data, shuttle: shuttle},
         day_of_week
       ) do
@@ -198,7 +206,7 @@ defmodule Arrow.Disruptions.ReplacementService do
   defp add_minutes(gtfs_time_string, minutes_to_add) do
     [hours, minutes] = gtfs_time_string |> String.split(":") |> Enum.map(&String.to_integer/1)
 
-    final_minutes = hours * 60 + minutes + minutes_to_add
+    final_minutes = ceil(hours * 60 + minutes + minutes_to_add)
 
     result_hours = div(final_minutes, 60)
     result_minutes = rem(final_minutes, 60)
