@@ -32,13 +32,13 @@ defmodule ArrowWeb.ReplacementServiceSection do
           class="container border-2 border-dashed border-secondary border-mb-3 pt-3 mb-3"
         >
           <div class="row">
-            <div class="col-lg-1 pr-0">
+            <div class="col-lg-1 pr-lg-0">
               <span
                 class="m-icon m-icon-lg"
                 style={"background-image: url('#{get_bus_icon_url(@icon_paths)}');"}
               />
             </div>
-            <div class="col pl-0">
+            <div class="col pl-lg-0">
               {replacement_service.shuttle.shuttle_name}
               <div class="text-sm">
                 Activated via <i>{replacement_service.source_workbook_filename}</i>
