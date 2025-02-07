@@ -24,6 +24,21 @@ defmodule ArrowWeb.API.ReplacementServiceController do
           preload: [:disruption, shuttle: {s, routes: {sr, route_stops: [:gtfs_stop, :stop]}}]
         )
         |> Repo.all()
+        |> Enum.map(fn rs ->
+          Map.from_struct(rs)
+          |> Map.put(
+            :timetable,
+
+            ReplacementService.schedule_service_types()
+            |> Enum.map(fn service_type ->
+              {service_type, ReplacementService.trips_with_times(rs, service_type)}
+            end)
+            |> Enum.into(%{})
+          )
+         |> Map.put("foo", "bar")
+        end)
+        dbg()
+
       render(conn, "index.json-api", data: data)
     else
       {:error, :invalid_date} ->
@@ -37,5 +52,4 @@ defmodule ArrowWeb.API.ReplacementServiceController do
         |> json(%{error: "End date must be after start date"})
     end
   end
-
 end

@@ -9,7 +9,7 @@ defmodule Arrow.Disruptions.ReplacementServiceTest do
       shuttle = Arrow.ShuttlesFixtures.shuttle_fixture(%{}, true, true)
       replacement_service = build(:replacement_service, %{shuttle: shuttle})
 
-      result = ReplacementService.trips_with_times(replacement_service, "WKDY")
+      result = ReplacementService.trips_with_times(replacement_service, :weekday)
 
       assert %{"0" => direction_0_trips, "1" => direction_1_trips} = result
       assert length(direction_0_trips) == 8

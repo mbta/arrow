@@ -2,7 +2,7 @@ defmodule ArrowWeb.API.ReplacementServiceView do
   use ArrowWeb, :html
   use JaSerializer.PhoenixView
 
-  attributes([:start_date, :end_date, :reason])
+  attributes([:start_date, :end_date, :reason, :timetable])
 
   has_one :shuttle,
     serializer: ArrowWeb.API.ShuttleView,
