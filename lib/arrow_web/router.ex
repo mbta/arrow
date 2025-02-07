@@ -85,8 +85,9 @@ defmodule ArrowWeb.Router do
   end
 
   scope "/api", as: :api, alias: ArrowWeb.API do
-    pipe_through([:redirect_prod_http, :json_api, :authenticate_api])
+    # pipe_through([:redirect_prod_http, :json_api, :authenticate_api])
 
+    get("/replacement_service", ReplacementServiceController, :index)
     get("/shuttles", ShuttleController, :index)
     get("/limits", LimitController, :index)
     resources("/disruptions", DisruptionController, only: [:index])
