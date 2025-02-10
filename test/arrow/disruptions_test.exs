@@ -182,7 +182,8 @@ defmodule Arrow.DisruptionsTest do
     test "returns pertinent day of week string keys" do
       replacement_service = build(:replacement_service)
 
-      assert ["WKDY"] = Disruptions.days_of_week_for_replacement_service(replacement_service)
+      assert ["WKDY", "SAT"] =
+               Disruptions.days_of_week_for_replacement_service(replacement_service)
     end
   end
 

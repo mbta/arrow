@@ -67,6 +67,13 @@ defmodule ArrowWeb.ReplacementServiceSection do
               >
                 <.icon name="hero-pencil-solid" class="bg-primary" /> Edit/Manage Activation
               </.button>
+              <a
+                class="btn-link btn-sm pl-0"
+                href={~p"/replacement_services/#{replacement_service.id}/timetable"}
+                target="_blank"
+              >
+                <.icon name="hero-table-cells" class="bg-primary" /> View Parsed Timetables
+              </a>
             </div>
             <div class="col-lg-1">
               <.button
