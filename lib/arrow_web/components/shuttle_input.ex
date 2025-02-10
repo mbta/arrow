@@ -4,11 +4,11 @@ defmodule ArrowWeb.ShuttleInput do
   shuttle autocomplete
   """
 
-  alias Phoenix.HTML.FormField
   use ArrowWeb, :live_component
 
   alias Arrow.Shuttles
   alias Arrow.Shuttles.Shuttle
+  alias Phoenix.HTML.FormField
 
   attr :id, :string, required: true
   attr :field, :any, required: true
@@ -57,6 +57,9 @@ defmodule ArrowWeb.ShuttleInput do
     {:noreply, socket}
   end
 
+  # This credo:disable can be removed once a new phoenix_html release is cut
+  # https://github.com/phoenixframework/phoenix_html/commit/1bea177dfb6d6e3e326ee60dab87175a6d92e88d
+  # credo:disable-for-next-line Credo.Check.Warning.SpecWithStruct
   @spec shuttle_value_mapper(String.t(), %FormField{}) ::
           {String.t(), integer() | String.t()}
   defp shuttle_value_mapper(text, field) do
