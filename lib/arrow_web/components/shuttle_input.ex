@@ -4,6 +4,7 @@ defmodule ArrowWeb.ShuttleInput do
   shuttle autocomplete
   """
 
+  alias Phoenix.HTML.FormField
   use ArrowWeb, :live_component
 
   alias Arrow.Shuttles
@@ -37,6 +38,7 @@ defmodule ArrowWeb.ShuttleInput do
         options={@options}
         placeholder="Search for a route…"
         update_min_len={0}
+        value_mapper={&shuttle_value_mapper(&1, assigns.field)}
       />
     </div>
     """
@@ -53,6 +55,23 @@ defmodule ArrowWeb.ShuttleInput do
     send_update(LiveSelect.Component, id: live_select_id, options: new_opts)
 
     {:noreply, socket}
+  end
+
+  @spec shuttle_value_mapper(String.t(), %FormField{}) ::
+          {String.t(), integer() | String.t()}
+  defp shuttle_value_mapper(text, field) do
+    shuttle =
+      case field.value do
+        nil -> nil
+        "" -> nil
+        shuttle_id -> Shuttles.get_shuttle!(shuttle_id)
+      end
+
+    if shuttle == nil do
+      {text, text}
+    else
+      option_for_shuttle(shuttle)
+    end
   end
 
   @spec option_for_shuttle(Shuttle.t()) :: {String.t(), integer()}
