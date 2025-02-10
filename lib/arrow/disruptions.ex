@@ -250,6 +250,13 @@ defmodule Arrow.Disruptions do
     end)
     |> Enum.reject(&is_nil(&1))
     |> List.flatten()
+    |> Enum.sort_by(fn day_of_week ->
+      case day_of_week do
+        "WKDY" -> 1
+        "SAT" -> 2
+        "SUN" -> 3
+      end
+    end)
   end
 
   @spec replacement_service_trips_with_times(ReplacementService.t(), String.t()) :: map()
@@ -330,7 +337,14 @@ defmodule Arrow.Disruptions do
          stop_times ++
            [
              %{
-               stop_id: route_stop.display_stop_id,
+               stop_id:
+                 case route_stop do
+                   %Arrow.Shuttles.RouteStop{stop: %Arrow.Shuttles.Stop{stop_id: stop_id}} ->
+                     stop_id
+
+                   %Arrow.Shuttles.RouteStop{gtfs_stop_id: gtfs_stop_id} ->
+                     gtfs_stop_id
+                 end,
                stop_time: current_stop_time
              }
            ]}
