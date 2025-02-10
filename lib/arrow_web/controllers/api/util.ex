@@ -1,6 +1,9 @@
 defmodule ArrowWeb.API.Util do
+  @moduledoc false
+
   @spec parse_date(String.t()) :: {:ok, Date.t()} | {:error, :invalid_date}
   def parse_date(nil), do: {:error, :invalid_date}
+
   def parse_date(date_string) do
     case Date.from_iso8601(date_string) do
       {:ok, date} -> {:ok, date}
