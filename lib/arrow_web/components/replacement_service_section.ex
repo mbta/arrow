@@ -28,7 +28,6 @@ defmodule ArrowWeb.ReplacementServiceSection do
       <%= if Ecto.assoc_loaded?(@disruption.replacement_services) and Enum.any?(@disruption.replacement_services) do %>
         <div
           :for={replacement_service <- @disruption.replacement_services}
-          id="replacement_services_list"
           class="container border-2 border-dashed border-secondary border-mb-3 pt-3 mb-3"
         >
           <div class="row">
