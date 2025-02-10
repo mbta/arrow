@@ -12,7 +12,7 @@ defmodule Arrow.Disruptions do
 
   @preloads [
     limits: [:route, :start_stop, :end_stop, :limit_day_of_weeks],
-    replacement_services: [:shuttle]
+    replacement_services: [shuttle: [routes: [:route_stops]]]
   ]
 
   @doc """
@@ -375,7 +375,7 @@ defmodule Arrow.Disruptions do
   defp add_minutes(gtfs_time_string, minutes_to_add) do
     [hours, minutes] = gtfs_time_string |> String.split(":") |> Enum.map(&String.to_integer/1)
 
-    final_minutes = hours * 60 + minutes + minutes_to_add
+    final_minutes = round(hours * 60 + minutes + minutes_to_add)
 
     result_hours = div(final_minutes, 60)
     result_minutes = rem(final_minutes, 60)
