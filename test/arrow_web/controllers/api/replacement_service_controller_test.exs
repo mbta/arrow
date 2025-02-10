@@ -14,6 +14,7 @@ defmodule ArrowWeb.API.ReplacementServiceControllerTest do
                })
     end
 
+    @tag :authenticated
     test "gives 400 for invalid date range", %{conn: conn} do
       assert %{status: 400} =
                get(conn, "/api/replacement-service", %{
