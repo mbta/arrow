@@ -240,6 +240,18 @@ defmodule Arrow.Disruptions do
     |> Repo.all()
   end
 
+  @spec days_of_week_for_replacement_service(ReplacementService.t()) :: [String.t()]
+  def days_of_week_for_replacement_service(%ReplacementService{
+        source_workbook_data: source_workbook_data
+      }) do
+    source_workbook_data
+    |> Enum.map(fn {key, _data} ->
+      Regex.run(~r/(.*) headways and runtimes/, key, capture: :all_but_first)
+    end)
+    |> Enum.reject(&is_nil(&1))
+    |> List.flatten()
+  end
+
   @spec replacement_service_trips_with_times(ReplacementService.t(), String.t()) :: map()
   def replacement_service_trips_with_times(
         %ReplacementService{source_workbook_data: source_workbook_data, shuttle: shuttle},
