@@ -40,6 +40,7 @@ defmodule ArrowWeb.StopInput do
         target={@myself}
         options={@options}
         value_mapper={&stop_value_mapper(&1, assigns.field)}
+        phx-focus="clear"
       />
     </div>
     """
@@ -73,6 +74,12 @@ defmodule ArrowWeb.StopInput do
       end
 
     send_update(LiveSelect.Component, id: live_select_id, options: new_opts)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("clear", %{"id" => id}, socket) do
+    send_update(LiveSelect.Component, options: [], id: id)
 
     {:noreply, socket}
   end

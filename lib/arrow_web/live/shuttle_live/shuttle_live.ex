@@ -98,6 +98,7 @@ defmodule ArrowWeb.ShuttleViewLive do
                   options={shape_options_mapper(@shapes)}
                   value_mapper={&shape_value_mapper/1}
                   allow_clear={true}
+                  phx-focus="live_select_clear"
                 />
               </div>
             </div>
@@ -366,6 +367,12 @@ defmodule ArrowWeb.ShuttleViewLive do
       |> Enum.map(&shape_option_mapper/1)
 
     send_update(LiveSelect.Component, id: live_select_id, options: shapes)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("live_select_clear", %{"id" => id}, socket) do
+    send_update(LiveSelect.Component, options: [], id: id)
 
     {:noreply, socket}
   end
