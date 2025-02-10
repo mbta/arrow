@@ -21,6 +21,7 @@ defmodule ArrowWeb.API.ReplacementServiceController do
           join: rs in assoc(sr, :route_stops),
           left_join: gs in assoc(rs, :gtfs_stop),
           left_join: st in assoc(rs, :stop),
+          where: r.start_date <= ^end_date and r.end_date >= ^start_date,
           preload: [:disruption, shuttle: {s, routes: {sr, route_stops: [:gtfs_stop, :stop]}}]
         )
         |> Repo.all()
@@ -28,16 +29,13 @@ defmodule ArrowWeb.API.ReplacementServiceController do
           Map.from_struct(rs)
           |> Map.put(
             :timetable,
-
             ReplacementService.schedule_service_types()
             |> Enum.map(fn service_type ->
               {service_type, ReplacementService.trips_with_times(rs, service_type)}
             end)
             |> Enum.into(%{})
           )
-         |> Map.put("foo", "bar")
         end)
-        dbg()
 
       render(conn, "index.json-api", data: data)
     else

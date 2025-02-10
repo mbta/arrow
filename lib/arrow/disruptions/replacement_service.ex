@@ -21,6 +21,12 @@ defmodule Arrow.Disruptions.ReplacementService do
           shuttle: Shuttle.t() | Ecto.Association.NotLoaded.t()
         }
 
+  @service_type_to_workbook_abbreviation %{
+    :weekday => "WKDY",
+    :sunday => "SUN",
+    :saturday => "SAT"
+  }
+
   schema "replacement_services" do
     field :reason, :string
     field :start_date, :date
@@ -75,19 +81,26 @@ defmodule Arrow.Disruptions.ReplacementService do
     end
   end
 
-  @spec schedule_service_types() :: list(atom())
-  def schedule_service_types(), do: [:weekday, :saturday, :sunday]
+  @spec schedule_service_types :: list(atom())
+  def schedule_service_types, do: [:weekday, :saturday, :sunday]
 
-  def trips_with_times(replacement_service, :weekday), do: do_trips_with_times(replacement_service, "WKDY")
+  def trips_with_times(
+        %__MODULE__{source_workbook_data: workbook_data} = replacement_service,
+        service_type_atom
+      ) do
+    service_type_abbreviation = Map.get(@service_type_to_workbook_abbreviation, service_type_atom)
 
-  def trips_with_times(replacement_service, :saturday), do: do_trips_with_times(replacement_service, "SAT")
-
-  def trips_with_times(replacement_service, :sunday), do: do_trips_with_times(replacement_service, "SUN")
+    if Map.has_key?(workbook_data, service_type_abbreviation) do
+      do_trips_with_times(replacement_service, service_type_abbreviation)
+    else
+      nil
+    end
+  end
 
   defp do_trips_with_times(
-        %__MODULE__{source_workbook_data: source_workbook_data, shuttle: shuttle},
-        day_of_week
-      ) do
+         %__MODULE__{source_workbook_data: source_workbook_data, shuttle: shuttle},
+         day_of_week
+       ) do
     day_of_week_data = Map.get(source_workbook_data, day_of_week <> " headways and runtimes")
 
     {first_trips, last_trips, headway_periods} =
