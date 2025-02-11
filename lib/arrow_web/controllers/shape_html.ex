@@ -2,6 +2,7 @@ defmodule ArrowWeb.ShapeView do
   use ArrowWeb, :html
   alias Arrow.Shuttles
   alias Arrow.Shuttles.{Route, RouteStop, Shape, ShapesUpload}
+  alias Phoenix.Controller
 
   embed_templates "shape_html/*"
 
