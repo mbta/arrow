@@ -51,6 +51,7 @@ defmodule ArrowWeb.Router do
     put("/disruptions/:id/row_status", DisruptionController, :update_row_status)
     post("/disruptions/:id/notes", NoteController, :create)
 
+    get("/disruptionsv2", DisruptionV2Controller, :index)
     live("/disruptionsv2/new", DisruptionV2ViewLive, :new)
     live("/disruptionsv2/:id/edit", DisruptionV2ViewLive, :edit)
 
