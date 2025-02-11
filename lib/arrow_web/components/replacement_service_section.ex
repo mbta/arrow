@@ -110,7 +110,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
               else: "edit disruption replacement service component"}
           </h4>
           <.shuttle_input field={@form[:shuttle_id]} shuttle={input_value(@form, :shuttle)} />
-          <div :if={not empty_input_value?(@form[:shuttle_id].value)} class="row">
+          <div :if={not empty_input_value?(@form[:shuttle_id].value)} class="row relative z-0">
             <div class="col p-0">
               {live_react_component(
                 "Components.ShapeStopViewMap",
