@@ -1,5 +1,5 @@
 defmodule ArrowWeb.CoreComponentsTest do
-  use ArrowWeb.ConnCase, async: true
+  use ArrowWeb.ConnCase
 
   import ArrowWeb.CoreComponents
   import Phoenix.Component
