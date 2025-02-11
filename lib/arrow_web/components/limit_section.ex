@@ -19,7 +19,7 @@ defmodule ArrowWeb.LimitSection do
 
   def render(assigns) do
     ~H"""
-    <div id={@id}>
+    <section id={@id}>
       <h3>Limits</h3>
       <%= if Ecto.assoc_loaded?(@disruption.limits) and Enum.any?(@disruption.limits) do %>
         <div class="mb-3">
@@ -70,7 +70,12 @@ defmodule ArrowWeb.LimitSection do
         </div>
       <% end %>
 
-      <.link_button :if={is_nil(@limit_form)} class="btn-link" phx-click="add_limit">
+      <.link_button
+        :if={is_nil(@limit_form)}
+        class="btn-link"
+        phx-click="add_limit"
+        id="add-limit-component"
+      >
         <.icon name="hero-plus" /> <span>add limit component</span>
       </.link_button>
 
@@ -95,6 +100,7 @@ defmodule ArrowWeb.LimitSection do
             <div class="col-lg-3">
               <.input
                 class="h-100"
+                id="select-route-id"
                 field={@limit_form[:route_id]}
                 type="select"
                 label="route"
@@ -175,7 +181,7 @@ defmodule ArrowWeb.LimitSection do
           </div>
           <div class="row">
             <div class="col-lg-3">
-              <.button type="submit" class="btn btn-primary w-100" phx-target={@myself}>
+              <.button type="submit" class="btn-primary btn-sm w-100" phx-target={@myself}>
                 save limit
               </.button>
             </div>
@@ -183,7 +189,7 @@ defmodule ArrowWeb.LimitSection do
               <.button
                 type="button"
                 id="cancel_add_limit_button"
-                class="btn-outline-primary w-100"
+                class="btn-outline-primary btn-sm w-100"
                 data-confirm="Are you sure you want to cancel? All changes to this limit will be lost!"
                 phx-click="cancel_add_limit"
                 phx-target={@myself}
@@ -194,7 +200,7 @@ defmodule ArrowWeb.LimitSection do
           </div>
         </div>
       </.simple_form>
-    </div>
+    </section>
     """
   end
 

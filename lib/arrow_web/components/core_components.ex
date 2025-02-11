@@ -394,7 +394,7 @@ defmodule ArrowWeb.CoreComponents do
         type={@type}
         name={@name}
         id={@id}
-        value={Phoenix.HTML.Form.normalize_value(@type, @value)}
+        value={custom_normalize_value(@type, @value)}
         class={[
           "form-control",
           @errors != [] && "is-invalid"
@@ -404,6 +404,15 @@ defmodule ArrowWeb.CoreComponents do
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
+  end
+
+  def custom_normalize_value("text", value) when is_map(value) do
+    iodata = Jason.encode_to_iodata!(value)
+    Phoenix.HTML.Form.normalize_value("text", iodata)
+  end
+
+  def custom_normalize_value(type, value) do
+    Phoenix.HTML.Form.normalize_value(type, value)
   end
 
   @doc """

@@ -1,5 +1,6 @@
 defmodule ArrowWeb.DisruptionV2LiveTest do
   use ArrowWeb.ConnCase
+  alias ArrowWeb.DisruptionV2ViewLive
 
   import Phoenix.LiveViewTest
   import Arrow.{DisruptionsFixtures, LimitsFixtures, ShuttlesFixtures}
@@ -82,15 +83,17 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     test "can activate add replacement service flow", %{conn: conn, disruption_v2: disruption_v2} do
       {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
 
-      assert live |> element("button#add_new_replacement_service_button") |> render_click() =~
+      assert live |> element("#add_replacement_service") |> render_click() =~
                "add new replacement service component"
 
       shuttle = shuttle_fixture()
 
       stop_map_container =
         live
-        |> form("#disruption_v2-form")
-        |> render_change(%{"disruption_v2[new_shuttle_id]" => shuttle.id})
+        |> form("#replacement_service-form")
+        |> render_change(%{
+          replacement_service: %{shuttle_id: shuttle.id, disruption_id: disruption_v2.id}
+        })
         |> Floki.find("#shuttle-view-map-disruptionsv2-container")
 
       # make sure the shuttle map container is displayed when we have entered a new shuttle
@@ -106,10 +109,60 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     } do
       {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
 
-      live |> element("button#add_new_replacement_service_button") |> render_click()
+      live |> element("#add_replacement_service") |> render_click()
 
-      refute live |> element("button#cancel_add_new_replacement_service_button") |> render_click() =~
+      refute live |> element("button#cancel_add_replacement_service_button") |> render_click() =~
                "add new replacement service component"
+    end
+
+    @tag :authenticated_admin
+    setup [:create_disruption_v2]
+
+    test "can add and save a replacement service", %{
+      conn: conn,
+      disruption_v2: disruption_v2
+    } do
+      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+
+      assert live |> element("#add_replacement_service") |> render_click() =~
+               "add new replacement service component"
+
+      shuttle = shuttle_fixture()
+
+      data = Jason.encode!(workbook_data())
+
+      valid_attrs = %{
+        end_date: ~D[2025-01-22],
+        reason: "some reason",
+        source_workbook_data: data,
+        source_workbook_filename: "some source_workbook_filename",
+        start_date: ~D[2025-01-21],
+        shuttle_id: shuttle.id,
+        disruption_id: disruption_v2.id
+      }
+
+      replacement_service_form =
+        live
+        |> form("#replacement_service-form")
+        |> render_change(%{replacement_service: valid_attrs})
+
+      replacement_service_workbook_filename =
+        replacement_service_form
+        |> Floki.attribute("#display_replacement_service_source_workbook_filename", "value")
+
+      replacement_service_workbook_data =
+        replacement_service_form
+        |> Floki.attribute("#replacement_service_source_workbook_data", "value")
+
+      assert ["some source_workbook_filename"] = replacement_service_workbook_filename
+      assert [^data] = replacement_service_workbook_data
+
+      assert live
+             |> form("#replacement_service-form")
+             |> render_submit(%{replacement_service: valid_attrs})
+
+      html = render(live)
+      assert html =~ "Replacement service created successfully"
     end
   end
 
@@ -132,6 +185,24 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
 
       assert html |> Floki.attribute("#limit_end_date", "value") |> List.first() ==
                "#{limit.end_date}"
+    end
+
+    @tag :authenticated_admin
+    setup [:create_disruption_v2]
+
+    test "updating a disruption closes the disruption limit form", %{
+      conn: conn,
+      disruption_v2: %DisruptionV2{} = disruption
+    } do
+      {:ok, _live, _html} = live(conn, ~p"/disruptionsv2/#{disruption.id}/edit")
+
+      update_response =
+        DisruptionV2ViewLive.handle_info(:update_disruption, %{
+          __changed__: %{},
+          assigns: %{disruption_v2: disruption, limit_in_form: Arrow.Disruptions.Limit.new()}
+        })
+
+      {:noreply, %{limit_in_form: nil}} = update_response
     end
   end
 end

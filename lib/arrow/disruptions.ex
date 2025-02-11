@@ -57,9 +57,15 @@ defmodule Arrow.Disruptions do
 
   """
   def create_disruption_v2(attrs \\ %{}) do
-    %DisruptionV2{}
-    |> DisruptionV2.changeset(attrs)
-    |> Repo.insert()
+    disruption_v2 =
+      %DisruptionV2{}
+      |> DisruptionV2.changeset(attrs)
+      |> Repo.insert()
+
+    case disruption_v2 do
+      {:ok, disruption_v2} -> {:ok, disruption_v2 |> Repo.preload(@preloads)}
+      err -> err
+    end
   end
 
   @doc """
@@ -75,9 +81,15 @@ defmodule Arrow.Disruptions do
 
   """
   def update_disruption_v2(%DisruptionV2{} = disruption_v2, attrs) do
-    disruption_v2
-    |> DisruptionV2.changeset(attrs)
-    |> Repo.update()
+    update_disruption_v2 =
+      disruption_v2
+      |> DisruptionV2.changeset(attrs)
+      |> Repo.update()
+
+    case update_disruption_v2 do
+      {:ok, disruption_v2} -> {:ok, disruption_v2 |> Repo.preload(@preloads)}
+      err -> err
+    end
   end
 
   @doc """
@@ -110,19 +122,6 @@ defmodule Arrow.Disruptions do
   end
 
   @doc """
-  Returns the list of replacement_services.
-
-  ## Examples
-
-      iex> list_replacement_services()
-      [%ReplacementService{}, ...]
-
-  """
-  def list_replacement_services do
-    Repo.all(ReplacementService)
-  end
-
-  @doc """
   Gets a single replacement_service.
 
   Raises `Ecto.NoResultsError` if the Replacement service does not exist.
@@ -136,7 +135,8 @@ defmodule Arrow.Disruptions do
       ** (Ecto.NoResultsError)
 
   """
-  def get_replacement_service!(id), do: Repo.get!(ReplacementService, id)
+  def get_replacement_service!(id),
+    do: Repo.get!(ReplacementService, id) |> Repo.preload(@preloads[:replacement_services])
 
   @doc """
   Creates a replacement_service.
@@ -151,9 +151,15 @@ defmodule Arrow.Disruptions do
 
   """
   def create_replacement_service(attrs \\ %{}) do
-    %ReplacementService{}
-    |> ReplacementService.changeset(attrs)
-    |> Repo.insert()
+    create_replacement_service =
+      %ReplacementService{}
+      |> ReplacementService.changeset(attrs)
+      |> Repo.insert()
+
+    case create_replacement_service do
+      {:ok, rs} -> {:ok, rs |> Repo.preload(@preloads[:replacement_services])}
+      err -> err
+    end
   end
 
   @doc """
@@ -169,9 +175,15 @@ defmodule Arrow.Disruptions do
 
   """
   def update_replacement_service(%ReplacementService{} = replacement_service, attrs) do
-    replacement_service
-    |> ReplacementService.changeset(attrs)
-    |> Repo.update()
+    update_replacement_service =
+      replacement_service
+      |> ReplacementService.changeset(attrs)
+      |> Repo.update()
+
+    case update_replacement_service do
+      {:ok, rs} -> {:ok, rs |> Repo.preload(@preloads[:replacement_services])}
+      err -> err
+    end
   end
 
   @doc """
@@ -226,5 +238,140 @@ defmodule Arrow.Disruptions do
       ]
     )
     |> Repo.all()
+  end
+
+  @spec replacement_service_trips_with_times(ReplacementService.t(), String.t()) :: map()
+  def replacement_service_trips_with_times(
+        %ReplacementService{source_workbook_data: source_workbook_data, shuttle: shuttle},
+        day_of_week
+      ) do
+    day_of_week_data = Map.get(source_workbook_data, day_of_week <> " headways and runtimes")
+
+    {first_trips, last_trips, headway_periods} =
+      Enum.reduce(day_of_week_data, {%{}, %{}, %{}}, fn data,
+                                                        {first_trips, last_trips, headway_periods} ->
+        case data do
+          %{"first_trip_0" => first_trip_0, "first_trip_1" => first_trip_1} ->
+            {%{0 => first_trip_0, 1 => first_trip_1}, last_trips, headway_periods}
+
+          %{"last_trip_0" => last_trip_0, "last_trip_1" => last_trip_1} ->
+            {first_trips, %{0 => last_trip_0, 1 => last_trip_1}, headway_periods}
+
+          %{"start_time" => start_time} = headway_period ->
+            {first_trips, last_trips, Map.put(headway_periods, start_time, headway_period)}
+        end
+      end)
+
+    [direction_0_trips, direction_1_trips] =
+      for direction_id <- [0, 1] do
+        start_times =
+          do_make_trip_start_times(
+            first_trips[direction_id],
+            last_trips[direction_id],
+            [],
+            headway_periods
+          )
+
+        shuttle_route =
+          Enum.find(
+            shuttle.routes,
+            &(&1.direction_id == direction_id |> Integer.to_string() |> String.to_existing_atom())
+          )
+
+        Enum.map(
+          start_times,
+          &build_stop_times_for_start_time(&1, direction_id, headway_periods, shuttle_route)
+        )
+      end
+
+    %{"0" => direction_0_trips, "1" => direction_1_trips}
+  end
+
+  defp build_stop_times_for_start_time(start_time, direction_id, headway_periods, shuttle_route) do
+    total_runtime =
+      headway_periods
+      |> Map.get(start_of_hour(start_time))
+      |> Map.get("running_time_#{direction_id}")
+
+    total_times_to_next_stop =
+      Enum.reduce(shuttle_route.route_stops, 0, fn route_stop, acc ->
+        if is_nil(route_stop.time_to_next_stop) do
+          acc
+        else
+          acc + Decimal.to_float(route_stop.time_to_next_stop)
+        end
+      end)
+
+    {_, stop_times} =
+      Enum.reduce(shuttle_route.route_stops, {start_time, []}, fn route_stop,
+                                                                  {current_stop_time, stop_times} ->
+        {if is_nil(route_stop.time_to_next_stop) do
+           current_stop_time
+         else
+           time_to_next_stop = Decimal.to_float(route_stop.time_to_next_stop)
+
+           add_minutes(
+             current_stop_time,
+             round(time_to_next_stop / total_times_to_next_stop * total_runtime)
+           )
+         end,
+         stop_times ++
+           [
+             %{
+               stop_id: route_stop.display_stop_id,
+               stop_time: current_stop_time
+             }
+           ]}
+      end)
+
+    %{
+      stop_times: stop_times
+    }
+  end
+
+  defp do_make_trip_start_times(
+         first_trip_start_time,
+         last_trip_start_time,
+         trip_start_times,
+         _headway_periods
+       )
+       when first_trip_start_time > last_trip_start_time,
+       do: trip_start_times
+
+  defp do_make_trip_start_times(
+         first_trip_start_time,
+         last_trip_start_time,
+         trip_start_times,
+         headway_periods
+       ) do
+    headway =
+      headway_periods |> Map.get(start_of_hour(first_trip_start_time)) |> Map.get("headway")
+
+    first_trip_start_time
+    |> add_minutes(headway)
+    |> do_make_trip_start_times(
+      last_trip_start_time,
+      trip_start_times ++ [first_trip_start_time],
+      headway_periods
+    )
+  end
+
+  defp start_of_hour(gtfs_time_string) do
+    String.slice(gtfs_time_string, 0..1) <> ":00"
+  end
+
+  defp add_minutes(gtfs_time_string, minutes_to_add) do
+    [hours, minutes] = gtfs_time_string |> String.split(":") |> Enum.map(&String.to_integer/1)
+
+    final_minutes = hours * 60 + minutes + minutes_to_add
+
+    result_hours = div(final_minutes, 60)
+    result_minutes = rem(final_minutes, 60)
+
+    Enum.map_join(
+      [result_hours, result_minutes],
+      ":",
+      &(&1 |> Integer.to_string() |> String.pad_leading(2, "0"))
+    )
   end
 end

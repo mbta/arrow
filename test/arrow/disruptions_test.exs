@@ -1,4 +1,6 @@
 defmodule Arrow.DisruptionsTest do
+  alias Arrow.DisruptionsFixtures
+  alias Arrow.ShuttlesFixtures
   use Arrow.DataCase
 
   alias Arrow.Disruptions
@@ -94,23 +96,23 @@ defmodule Arrow.DisruptionsTest do
       source_workbook_filename: nil
     }
 
-    test "list_replacement_services/0 returns all replacement_services" do
-      replacement_service = replacement_service_fixture()
-      assert Disruptions.list_replacement_services() == [replacement_service]
-    end
-
     test "get_replacement_service!/1 returns the replacement_service with given id" do
       replacement_service = replacement_service_fixture()
       assert Disruptions.get_replacement_service!(replacement_service.id) == replacement_service
     end
 
     test "create_replacement_service/1 with valid data creates a replacement_service" do
+      disruption = DisruptionsFixtures.disruption_v2_fixture()
+      shuttle = ShuttlesFixtures.shuttle_fixture()
+
       valid_attrs = %{
         reason: "some reason",
         start_date: ~D[2025-01-21],
         end_date: ~D[2025-01-22],
         source_workbook_data: %{},
-        source_workbook_filename: "some source_workbook_filename"
+        source_workbook_filename: "some source_workbook_filename",
+        shuttle_id: shuttle.id,
+        disruption_id: disruption.id
       }
 
       assert {:ok, %ReplacementService{} = replacement_service} =
@@ -173,6 +175,91 @@ defmodule Arrow.DisruptionsTest do
     test "change_replacement_service/1 returns a replacement_service changeset" do
       replacement_service = replacement_service_fixture()
       assert %Ecto.Changeset{} = Disruptions.change_replacement_service(replacement_service)
+    end
+  end
+
+  describe "replacement_service_trips_with_times/2" do
+    test "generates trip times" do
+      shuttle = Arrow.ShuttlesFixtures.shuttle_fixture(%{}, true, true)
+      replacement_service = build(:replacement_service, %{shuttle: shuttle})
+
+      result = Disruptions.replacement_service_trips_with_times(replacement_service, "WKDY")
+
+      assert %{"0" => direction_0_trips, "1" => direction_1_trips} = result
+      assert length(direction_0_trips) == 8
+      assert length(direction_1_trips) == 8
+
+      assert Enum.each(direction_0_trips, fn %{stop_times: stop_times} ->
+               length(stop_times) == 4
+             end)
+
+      assert Enum.each(direction_1_trips, fn %{stop_times: stop_times} ->
+               length(stop_times) == 4
+             end)
+
+      assert direction_0_trips
+             |> Enum.filter(
+               &match?(
+                 %{
+                   stop_times: [
+                     %{stop_id: _, stop_time: "05:10"},
+                     %{stop_id: _, stop_time: "05:14"},
+                     %{stop_id: _, stop_time: "05:22"},
+                     %{stop_id: _, stop_time: "05:35"}
+                   ]
+                 },
+                 &1
+               )
+             )
+             |> length() == 1
+
+      assert direction_0_trips
+             |> Enum.filter(
+               &match?(
+                 %{
+                   stop_times: [
+                     %{stop_id: _, stop_time: "06:30"},
+                     %{stop_id: _, stop_time: "06:35"},
+                     %{stop_id: _, stop_time: "06:45"},
+                     %{stop_id: _, stop_time: "07:00"}
+                   ]
+                 },
+                 &1
+               )
+             )
+             |> length() == 1
+
+      assert direction_1_trips
+             |> Enum.filter(
+               &match?(
+                 %{
+                   stop_times: [
+                     %{stop_id: _, stop_time: "05:10"},
+                     %{stop_id: _, stop_time: "05:13"},
+                     %{stop_id: _, stop_time: "05:18"},
+                     %{stop_id: _, stop_time: "05:26"}
+                   ]
+                 },
+                 &1
+               )
+             )
+             |> length() == 1
+
+      assert direction_1_trips
+             |> Enum.filter(
+               &match?(
+                 %{
+                   stop_times: [
+                     %{stop_id: _, stop_time: "06:30"},
+                     %{stop_id: _, stop_time: "06:33"},
+                     %{stop_id: _, stop_time: "06:40"},
+                     %{stop_id: _, stop_time: "06:50"}
+                   ]
+                 },
+                 &1
+               )
+             )
+             |> length() == 1
     end
   end
 end
