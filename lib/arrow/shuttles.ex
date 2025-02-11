@@ -464,6 +464,16 @@ defmodule Arrow.Shuttles do
     end
   end
 
+  @doc """
+  Gets a displayable name for a stop or GTFS stop, preferring the
+  description if available but falling back on name if needed.
+  """
+  @spec stop_display_name(Stop.t() | GtfsStop.t()) :: String.t()
+  def stop_display_name(%Stop{stop_desc: stop_desc, stop_name: stop_name}),
+    do: if(stop_desc != "", do: stop_desc, else: stop_name)
+
+  def stop_display_name(%GtfsStop{desc: desc, name: name}), do: desc || name
+
   @spec stops_or_gtfs_stops_by_search_string(String.t()) :: [Stop.t() | GtfsStop.t()]
   def stops_or_gtfs_stops_by_search_string(string) do
     sanitized_string = Arrow.Util.sanitized_string_for_sql_like(string)
