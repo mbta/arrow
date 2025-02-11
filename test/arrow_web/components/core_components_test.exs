@@ -61,7 +61,7 @@ defmodule ArrowWeb.CoreComponentsTest do
     end
 
     test "first link is to /disruptionsv2 when on Disruptions page, without permission" do
-      assigns = %{page: "/shapes"}
+      assigns = %{page: "/disruptionsv2"}
 
       hrefs =
         ~H"""
