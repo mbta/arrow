@@ -16,6 +16,11 @@ defmodule ArrowWeb.CoreComponents do
   """
   use Phoenix.Component
 
+  use Phoenix.VerifiedRoutes,
+    router: ArrowWeb.Router,
+    endpoint: ArrowWeb.Endpoint,
+    statics: ArrowWeb.static_paths()
+
   alias Phoenix.LiveView.JS
   use Gettext, backend: ArrowWeb.Gettext
 
@@ -568,6 +573,47 @@ defmodule ArrowWeb.CoreComponents do
       </div>
       <div class="flex-none">{render_slot(@actions)}</div>
     </header>
+    """
+  end
+
+  @doc """
+  Renders the Arrow navigation bar.
+
+  Bar renders as a col assuming it's inside a row, so that other content (e.g. search bar)
+  can be placed alongside it.
+  """
+  attr :page, :string, required: true
+  attr :create_disruption_permission?, :boolean, default: false
+
+  def navbar(assigns) do
+    pages = [
+      {~p"/disruptionsv2", "Disruptions"},
+      {~p"/shuttles", "Shuttle Definitions"},
+      {~p"/shapes", "Shuttle Shapes"},
+      {~p"/stops", "Shuttle Stops"}
+    ]
+
+    pages = if assigns[:page] == ~p"/disruptionsv2", do: tl(pages), else: pages
+    assigns = assign(assigns, :pages, pages)
+
+    ~H"""
+    <div class="col">
+      <%= case {@page, @create_disruption_permission?} do %>
+        <% {"/disruptionsv2", true} -> %>
+          <a class="btn btn-primary mr-1" href={~p"/disruptionsv2/new"}>+ Create New</a>
+        <% {"/disruptionsv2", false} -> %>
+          <a class="btn btn-primary mr-1" href={~p"/disruptionsv2"}>Disruptions</a>
+        <% _ -> %>
+      <% end %>
+      <a
+        :for={{page, label} <- @pages}
+        class={"btn mr-1 btn-" <> if(page == @page, do: "primary", else: "outline-secondary")}
+        href={page}
+      >
+        {label}
+      </a>
+      <a class="btn btn-warning" href={~p"/"}>Switch to Arrow v1</a>
+    </div>
     """
   end
 
