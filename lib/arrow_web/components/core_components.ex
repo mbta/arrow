@@ -613,14 +613,14 @@ defmodule ArrowWeb.CoreComponents do
     <div class="col">
       <%= case {@page, @create_disruption_permission?} do %>
         <% {"/disruptionsv2", true} -> %>
-          <a class="btn btn-primary mr-1" href={~p"/disruptionsv2/new"}>+ Create new</a>
+          <a class="btn btn-primary" href={~p"/disruptionsv2/new"}>+ Create new</a>
         <% {"/disruptionsv2", false} -> %>
-          <a class="btn btn-primary mr-1" href={~p"/disruptionsv2"}>Disruptions</a>
+          <a class="btn btn-primary" href={~p"/disruptionsv2"}>Disruptions</a>
         <% _ -> %>
       <% end %>
       <%= for {page, label} <- @pages do %>
         <a
-          class={"btn mr-1 btn-" <> if(page == @page, do: "primary", else: "outline-secondary")}
+          class={"btn btn-" <> if(page == @page, do: "primary", else: "outline-secondary")}
           href={page}
         >
           {label}
