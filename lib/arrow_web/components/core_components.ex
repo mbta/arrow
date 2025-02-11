@@ -618,13 +618,14 @@ defmodule ArrowWeb.CoreComponents do
           <a class="btn btn-primary mr-1" href={~p"/disruptionsv2"}>Disruptions</a>
         <% _ -> %>
       <% end %>
-      <a
-        :for={{page, label} <- @pages}
-        class={"btn mr-1 btn-" <> if(page == @page, do: "primary", else: "outline-secondary")}
-        href={page}
-      >
-        {label}
-      </a>
+      <%= for {page, label} <- @pages do %>
+        <a
+          class={"btn mr-1 btn-" <> if(page == @page, do: "primary", else: "outline-secondary")}
+          href={page}
+        >
+          {label}
+        </a>
+      <% end %>
       <a class="btn btn-warning" href={~p"/"}>Switch to Arrow v1</a>
     </div>
     """
