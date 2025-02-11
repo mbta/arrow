@@ -602,6 +602,10 @@ defmodule ArrowWeb.CoreComponents do
       {~p"/stops", "Shuttle Stops"}
     ]
 
+    if assigns[:page] not in Enum.map(pages, &elem(&1, 0)) do
+      raise "navbar component used on an unrecognized page: #{assigns[:page]}"
+    end
+
     pages = if assigns[:page] == ~p"/disruptionsv2", do: tl(pages), else: pages
     assigns = assign(assigns, :pages, pages)
 
