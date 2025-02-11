@@ -18,7 +18,7 @@ defmodule ArrowWeb.CoreComponentsTest do
 
       assert [primary_link] = primary_links
 
-      assert Floki.text(primary_link) =~ "Shuttle Definitions"
+      assert Floki.text(primary_link) =~ "Shuttle definitions"
     end
 
     test "other v2 page links have .btn-outline-secondary" do
