@@ -597,9 +597,9 @@ defmodule ArrowWeb.CoreComponents do
   def navbar(assigns) do
     pages = [
       {~p"/disruptionsv2", "Disruptions"},
-      {~p"/shuttles", "Shuttle Definitions"},
-      {~p"/shapes", "Shuttle Shapes"},
-      {~p"/stops", "Shuttle Stops"}
+      {~p"/shuttles", "Shuttle definitions"},
+      {~p"/shapes", "Shuttle shapes"},
+      {~p"/stops", "Shuttle stops"}
     ]
 
     if assigns[:page] not in Enum.map(pages, &elem(&1, 0)) do
@@ -613,7 +613,7 @@ defmodule ArrowWeb.CoreComponents do
     <div class="col">
       <%= case {@page, @create_disruption_permission?} do %>
         <% {"/disruptionsv2", true} -> %>
-          <a class="btn btn-primary mr-1" href={~p"/disruptionsv2/new"}>+ Create New</a>
+          <a class="btn btn-primary mr-1" href={~p"/disruptionsv2/new"}>+ Create new</a>
         <% {"/disruptionsv2", false} -> %>
           <a class="btn btn-primary mr-1" href={~p"/disruptionsv2"}>Disruptions</a>
         <% _ -> %>
