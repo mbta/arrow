@@ -6,20 +6,20 @@ defmodule ArrowWeb.CoreComponentsTest do
   import Phoenix.LiveViewTest
 
   describe "navbar" do
-    test "link corresponding to current page has .btn-primary and no href" do
+    test "link corresponding to current page has .btn-secondary and no href" do
       assigns = %{page: "/shuttles"}
 
-      primary_links =
+      current_page_links =
         ~H"""
         <.navbar page={@page} />
         """
         |> rendered_to_string()
-        |> Floki.find("a.btn-primary")
+        |> Floki.find("a.btn-secondary")
 
-      assert [primary_link] = primary_links
+      assert [current_page_link] = current_page_links
 
-      assert Floki.text(primary_link) =~ "Shuttle definitions"
-      assert Floki.attribute(primary_link, "href") == []
+      assert Floki.text(current_page_link) =~ "Shuttle definitions"
+      assert Floki.attribute(current_page_link, "href") == []
     end
 
     test "other v2 page links have .btn-outline-secondary and href" do

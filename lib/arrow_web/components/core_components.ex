@@ -620,7 +620,9 @@ defmodule ArrowWeb.CoreComponents do
       <% end %>
       <%= for {page, label} <- @pages do %>
         <% current? = page == @page %>
-        <a :if={current?} class="btn btn-primary navbar-current-page" aria-disabled="true">{label}</a>
+        <a :if={current?} class="btn btn-secondary navbar-current-page" aria-disabled="true">
+          {label}
+        </a>
         <a :if={not current?} class="btn btn-outline-secondary" href={page}>{label}</a>
       <% end %>
       <a class="btn btn-warning" href={~p"/"}>Switch to Arrow v1</a>
