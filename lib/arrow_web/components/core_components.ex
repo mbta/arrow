@@ -588,7 +588,7 @@ defmodule ArrowWeb.CoreComponents do
   @doc """
   Renders the Arrow navigation bar.
 
-  Bar renders as a col assuming it's inside a row, so that other content (e.g. search bar)
+  Bar renders as a col assuming it's inside a row, so that other content (e.g. search input)
   can be placed alongside it.
   """
   attr :page, :string, required: true
@@ -619,12 +619,9 @@ defmodule ArrowWeb.CoreComponents do
         <% _ -> %>
       <% end %>
       <%= for {page, label} <- @pages do %>
-        <a
-          class={"btn btn-" <> if(page == @page, do: "primary", else: "outline-secondary")}
-          href={page}
-        >
-          {label}
-        </a>
+        <% current? = page == @page %>
+        <a :if={current?} class="btn btn-primary navbar-current-page" aria-disabled="true">{label}</a>
+        <a :if={not current?} class="btn btn-outline-secondary" href={page}>{label}</a>
       <% end %>
       <a class="btn btn-warning" href={~p"/"}>Switch to Arrow v1</a>
     </div>

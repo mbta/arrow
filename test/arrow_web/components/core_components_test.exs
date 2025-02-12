@@ -6,7 +6,7 @@ defmodule ArrowWeb.CoreComponentsTest do
   import Phoenix.LiveViewTest
 
   describe "navbar" do
-    test "link corresponding to current page has .btn-primary" do
+    test "link corresponding to current page has .btn-primary and no href" do
       assigns = %{page: "/shuttles"}
 
       primary_links =
@@ -19,9 +19,10 @@ defmodule ArrowWeb.CoreComponentsTest do
       assert [primary_link] = primary_links
 
       assert Floki.text(primary_link) =~ "Shuttle definitions"
+      assert Floki.attribute(primary_link, "href") == []
     end
 
-    test "other v2 page links have .btn-outline-secondary" do
+    test "other v2 page links have .btn-outline-secondary and href" do
       assigns = %{page: "/shuttles"}
 
       secondary_links =
@@ -32,6 +33,7 @@ defmodule ArrowWeb.CoreComponentsTest do
         |> Floki.find("a.btn-outline-secondary")
 
       assert length(secondary_links) == 3
+      assert length(Floki.attribute(secondary_links, "href")) == 3
     end
 
     test "first link is to /disruptionsv2 when not on Disruptions page" do
@@ -47,7 +49,7 @@ defmodule ArrowWeb.CoreComponentsTest do
       assert ["/disruptionsv2" | _] = hrefs
     end
 
-    test "first link is to /disruptionsv2/new when on Disruptions page, with permission" do
+    test "first link is to /disruptionsv2/new when on Disruptions page, with create permission" do
       assigns = %{page: "/disruptionsv2", create_disruption_permission?: true}
 
       hrefs =
@@ -60,7 +62,7 @@ defmodule ArrowWeb.CoreComponentsTest do
       assert ["/disruptionsv2/new" | _] = hrefs
     end
 
-    test "first link is to /disruptionsv2 when on Disruptions page, without permission" do
+    test "first link is to /disruptionsv2 when on Disruptions page, without create permission" do
       assigns = %{page: "/disruptionsv2"}
 
       hrefs =
