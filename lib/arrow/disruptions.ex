@@ -12,7 +12,7 @@ defmodule Arrow.Disruptions do
 
   @preloads [
     limits: [:route, :start_stop, :end_stop, :limit_day_of_weeks],
-    replacement_services: [:shuttle]
+    replacement_services: [shuttle: [routes: [:route_stops]]]
   ]
 
   @doc """
@@ -240,6 +240,25 @@ defmodule Arrow.Disruptions do
     |> Repo.all()
   end
 
+  @spec days_of_week_for_replacement_service(ReplacementService.t()) :: [String.t()]
+  def days_of_week_for_replacement_service(%ReplacementService{
+        source_workbook_data: source_workbook_data
+      }) do
+    source_workbook_data
+    |> Enum.map(fn {key, _data} ->
+      Regex.run(~r/(.*) headways and runtimes/, key, capture: :all_but_first)
+    end)
+    |> Enum.reject(&is_nil(&1))
+    |> List.flatten()
+    |> Enum.sort_by(fn day_of_week ->
+      case day_of_week do
+        "WKDY" -> 1
+        "SAT" -> 2
+        "SUN" -> 3
+      end
+    end)
+  end
+
   @spec replacement_service_trips_with_times(ReplacementService.t(), String.t()) :: map()
   def replacement_service_trips_with_times(
         %ReplacementService{source_workbook_data: source_workbook_data, shuttle: shuttle},
@@ -318,7 +337,14 @@ defmodule Arrow.Disruptions do
          stop_times ++
            [
              %{
-               stop_id: route_stop.display_stop_id,
+               stop_id:
+                 case route_stop do
+                   %Arrow.Shuttles.RouteStop{stop: %Arrow.Shuttles.Stop{stop_id: stop_id}} ->
+                     stop_id
+
+                   %Arrow.Shuttles.RouteStop{gtfs_stop_id: gtfs_stop_id} ->
+                     gtfs_stop_id
+                 end,
                stop_time: current_stop_time
              }
            ]}
@@ -363,7 +389,7 @@ defmodule Arrow.Disruptions do
   defp add_minutes(gtfs_time_string, minutes_to_add) do
     [hours, minutes] = gtfs_time_string |> String.split(":") |> Enum.map(&String.to_integer/1)
 
-    final_minutes = hours * 60 + minutes + minutes_to_add
+    final_minutes = round(hours * 60 + minutes + minutes_to_add)
 
     result_hours = div(final_minutes, 60)
     result_minutes = rem(final_minutes, 60)

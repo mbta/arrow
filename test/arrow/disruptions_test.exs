@@ -178,6 +178,15 @@ defmodule Arrow.DisruptionsTest do
     end
   end
 
+  describe "days_of_week_for_replacement_service/1" do
+    test "returns pertinent day of week string keys" do
+      replacement_service = build(:replacement_service)
+
+      assert ["WKDY", "SAT"] =
+               Disruptions.days_of_week_for_replacement_service(replacement_service)
+    end
+  end
+
   describe "replacement_service_trips_with_times/2" do
     test "generates trip times" do
       shuttle = Arrow.ShuttlesFixtures.shuttle_fixture(%{}, true, true)
