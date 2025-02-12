@@ -606,17 +606,20 @@ defmodule ArrowWeb.CoreComponents do
       raise "navbar component used on an unrecognized page: #{assigns[:page]}"
     end
 
-    pages = if assigns[:page] == ~p"/disruptionsv2", do: tl(pages), else: pages
-    assigns = assign(assigns, :pages, pages)
+    homepage? = assigns[:page] == ~p"/disruptionsv2"
+    pages = if homepage?, do: tl(pages), else: pages
+
+    assigns = assign(assigns, pages: pages, homepage?: homepage?)
 
     ~H"""
     <div class="col">
-      <%= case {@page, @create_disruption_permission?} do %>
-        <% {"/disruptionsv2", true} -> %>
-          <a class="btn btn-primary" href={~p"/disruptionsv2/new"}>+ Create new</a>
-        <% {"/disruptionsv2", false} -> %>
-          <a class="btn btn-primary" href={~p"/disruptionsv2"}>Disruptions</a>
-        <% _ -> %>
+      <%= if @homepage? do %>
+        <a :if={@create_disruption_permission?} class="btn btn-primary" href={~p"/disruptionsv2/new"}>
+          + Create new
+        </a>
+        <a :if={not @create_disruption_permission?} class="btn btn-primary" href={~p"/disruptionsv2"}>
+          Disruptions
+        </a>
       <% end %>
       <%= for {page, label} <- @pages do %>
         <% current? = page == @page %>
