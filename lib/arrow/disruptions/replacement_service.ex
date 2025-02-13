@@ -90,7 +90,7 @@ defmodule Arrow.Disruptions.ReplacementService do
       ) do
     service_type_abbreviation = Map.get(@service_type_to_workbook_abbreviation, service_type_atom)
 
-    if Map.has_key?(workbook_data, service_type_abbreviation) do
+    if Map.has_key?(workbook_data, workbook_column_from_day_of_week(service_type_abbreviation)) do
       do_trips_with_times(replacement_service, service_type_abbreviation)
     else
       nil
@@ -101,7 +101,7 @@ defmodule Arrow.Disruptions.ReplacementService do
          %__MODULE__{source_workbook_data: source_workbook_data, shuttle: shuttle},
          day_of_week
        ) do
-    day_of_week_data = Map.get(source_workbook_data, day_of_week <> " headways and runtimes")
+    day_of_week_data = Map.get(source_workbook_data, workbook_column_from_day_of_week(day_of_week))
 
     {first_trips, last_trips, headway_periods} =
       Enum.reduce(day_of_week_data, {%{}, %{}, %{}}, fn data,
@@ -142,6 +142,8 @@ defmodule Arrow.Disruptions.ReplacementService do
 
     %{"0" => direction_0_trips, "1" => direction_1_trips}
   end
+
+  defp workbook_column_from_day_of_week(day_of_week), do: day_of_week <> " headways and runtimes"
 
   defp build_stop_times_for_start_time(start_time, direction_id, headway_periods, shuttle_route) do
     total_runtime =
