@@ -60,6 +60,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
               <.button
                 class="btn-link btn-sm pl-0"
                 disabled={!is_nil(@form)}
+                id={"edit_replacement_service-#{replacement_service.id}"}
                 type="button"
                 phx-click="edit_replacement_service"
                 phx-value-replacement_service={replacement_service.id}
