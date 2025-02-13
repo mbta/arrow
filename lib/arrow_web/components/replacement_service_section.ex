@@ -28,7 +28,6 @@ defmodule ArrowWeb.ReplacementServiceSection do
       <%= if Ecto.assoc_loaded?(@disruption.replacement_services) and Enum.any?(@disruption.replacement_services) do %>
         <div
           :for={replacement_service <- @disruption.replacement_services}
-          id="replacement_services_list"
           class="container border-2 border-dashed border-secondary border-mb-3 pt-3 mb-3"
         >
           <div class="row">
@@ -60,6 +59,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
               <.button
                 class="btn-link btn-sm pl-0"
                 disabled={!is_nil(@form)}
+                id={"edit_replacement_service-#{replacement_service.id}"}
                 type="button"
                 phx-click="edit_replacement_service"
                 phx-value-replacement_service={replacement_service.id}
