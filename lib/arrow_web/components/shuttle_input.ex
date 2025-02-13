@@ -37,6 +37,7 @@ defmodule ArrowWeb.ShuttleInput do
         options={@options}
         placeholder="Search for a route…"
         update_min_len={0}
+        phx-focus="clear"
       />
     </div>
     """
@@ -51,6 +52,12 @@ defmodule ArrowWeb.ShuttleInput do
       end
 
     send_update(LiveSelect.Component, id: live_select_id, options: new_opts)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("clear", %{"id" => id}, socket) do
+    send_update(LiveSelect.Component, options: [], id: id)
 
     {:noreply, socket}
   end
