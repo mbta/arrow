@@ -101,7 +101,8 @@ defmodule Arrow.Disruptions.ReplacementService do
          %__MODULE__{source_workbook_data: source_workbook_data, shuttle: shuttle},
          day_of_week
        ) do
-    day_of_week_data = Map.get(source_workbook_data, workbook_column_from_day_of_week(day_of_week))
+    day_of_week_data =
+      Map.get(source_workbook_data, workbook_column_from_day_of_week(day_of_week))
 
     {first_trips, last_trips, headway_periods} =
       Enum.reduce(day_of_week_data, {%{}, %{}, %{}}, fn data,
