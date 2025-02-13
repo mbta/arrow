@@ -1,0 +1,15 @@
+<div class="row my-3">
+  <.navbar
+    page={Controller.current_path(@conn)}
+    create_disruption_permission?={Permissions.authorize?(:create_disruption, @user)}
+  />
+  <%= form_tag(Controller.current_path(@conn), method: "get", class: "col-3") do %>
+    <div class="input-group">
+      <input type="text" name="search" class="form-control" placeholder="search" />
+
+      <div class="input-group-append">
+        <button type="submit" class="btn btn-outline-secondary" title="search">🔎</button>
+      </div>
+    </div>
+  <% end %>
+</div>

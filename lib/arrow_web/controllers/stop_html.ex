@@ -1,6 +1,8 @@
 defmodule ArrowWeb.StopView do
   use ArrowWeb, :html
 
+  alias Phoenix.Controller
+
   embed_templates "stop_html/*"
 
   def format_timestamp(%DateTime{} = dt) do

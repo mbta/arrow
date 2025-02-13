@@ -16,6 +16,11 @@ defmodule ArrowWeb.CoreComponents do
   """
   use Phoenix.Component
 
+  use Phoenix.VerifiedRoutes,
+    router: ArrowWeb.Router,
+    endpoint: ArrowWeb.Endpoint,
+    statics: ArrowWeb.static_paths()
+
   alias Phoenix.LiveView.JS
   use Gettext, backend: ArrowWeb.Gettext
 
@@ -577,6 +582,54 @@ defmodule ArrowWeb.CoreComponents do
       </div>
       <div class="flex-none">{render_slot(@actions)}</div>
     </header>
+    """
+  end
+
+  @doc """
+  Renders the Arrow navigation bar.
+
+  Bar renders as a col assuming it's inside a row, so that other content (e.g. search input)
+  can be placed alongside it.
+  """
+  attr :page, :string, required: true
+  attr :create_disruption_permission?, :boolean, default: false
+
+  def navbar(assigns) do
+    pages = [
+      {~p"/disruptionsv2", "Disruptions"},
+      {~p"/shuttles", "Shuttle definitions"},
+      {~p"/shapes", "Shuttle shapes"},
+      {~p"/stops", "Shuttle stops"}
+    ]
+
+    if assigns[:page] not in Enum.map(pages, &elem(&1, 0)) do
+      raise "navbar component used on an unrecognized page: #{assigns[:page]}"
+    end
+
+    homepage? = assigns[:page] == ~p"/disruptionsv2"
+    pages = if homepage?, do: tl(pages), else: pages
+
+    assigns = assign(assigns, pages: pages, homepage?: homepage?)
+
+    ~H"""
+    <div class="col">
+      <%= if @homepage? do %>
+        <a :if={@create_disruption_permission?} class="btn btn-primary" href={~p"/disruptionsv2/new"}>
+          + Create new
+        </a>
+        <a :if={not @create_disruption_permission?} class="btn btn-primary" href={~p"/disruptionsv2"}>
+          Disruptions
+        </a>
+      <% end %>
+      <%= for {page, label} <- @pages do %>
+        <% current? = page == @page %>
+        <a :if={current?} class="btn btn-secondary navbar-current-page" aria-disabled="true">
+          {label}
+        </a>
+        <a :if={not current?} class="btn btn-outline-secondary" href={page}>{label}</a>
+      <% end %>
+      <a class="btn btn-warning" href={~p"/"}>Switch to Arrow v1</a>
+    </div>
     """
   end
 
