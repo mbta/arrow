@@ -31,7 +31,8 @@ defmodule ArrowWeb.API.ReplacementServiceController do
             :timetable,
             ReplacementService.schedule_service_types()
             |> Enum.map(fn service_type ->
-              {service_type, ReplacementService.trips_with_times(replacement_service, service_type)}
+              {service_type,
+               ReplacementService.trips_with_times(replacement_service, service_type)}
             end)
             |> Enum.into(%{})
           )

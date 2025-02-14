@@ -84,6 +84,7 @@ defmodule Arrow.Disruptions.ReplacementService do
 
   @spec schedule_service_types :: list(atom())
   def schedule_service_types, do: [:weekday, :saturday, :sunday]
+
   def trips_with_times(
         %__MODULE__{source_workbook_data: workbook_data} = replacement_service,
         service_type_atom
@@ -104,6 +105,7 @@ defmodule Arrow.Disruptions.ReplacementService do
     # TODO: find a way to ensure that display_stop_id is always populate on every shuttle route stop
     # regardless of from where the shuttle comes (e.g. if a shuttle comes from a join, it should still have display_stop_id populated)
     shuttle = Shuttles.populate_display_stop_ids(shuttle)
+
     day_of_week_data =
       Map.get(source_workbook_data, workbook_column_from_day_of_week(day_of_week))
 
