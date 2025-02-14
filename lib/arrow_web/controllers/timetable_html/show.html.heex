@@ -3,13 +3,15 @@
 </.header>
 
 <div>
-  <div class="my-4 flex space-x-6">
+  <div class="my-4 flex space-x-6" role="menubar">
     <a
       :for={{day_of_week_key, day_of_week_name} <- @day_of_week_options}
       href={
         ~p"/replacement_services/#{@replacement_service_id}/timetable?day_of_week=#{day_of_week_key}&direction_id=#{@direction_id}"
       }
       class={"py-2 #{if @day_of_week == day_of_week_key, do: "text-blue-900 border-b-2 border-t-0 border-x-0 border-b-blue-900 border-solid", else: "text-black"}"}
+      role="menuitem"
+      aria-current={if @day_of_week == day_of_week_key, do: "page"}
     >
       {day_of_week_name}
     </a>
