@@ -102,7 +102,7 @@ defmodule Arrow.Disruptions.ReplacementService do
          %__MODULE__{source_workbook_data: source_workbook_data, shuttle: shuttle},
          day_of_week
        ) do
-    # TODO: find a way to ensure that display_stop_id is always populate on every shuttle route stop
+    # to do: find a way to ensure that display_stop_id is always populate on every shuttle route stop
     # regardless of from where the shuttle comes
     # (e.g. if a shuttle comes from a join, it should still have display_stop_id populated)
     shuttle = Shuttles.populate_display_stop_ids(shuttle)
