@@ -9,8 +9,8 @@ defmodule Arrow.Disruptions.ReplacementService do
 
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Repo.MapForForm
-  alias Arrow.Shuttles.Shuttle
   alias Arrow.Shuttles
+  alias Arrow.Shuttles.Shuttle
 
   @type t :: %__MODULE__{
           reason: String.t() | nil,
@@ -103,7 +103,8 @@ defmodule Arrow.Disruptions.ReplacementService do
          day_of_week
        ) do
     # TODO: find a way to ensure that display_stop_id is always populate on every shuttle route stop
-    # regardless of from where the shuttle comes (e.g. if a shuttle comes from a join, it should still have display_stop_id populated)
+    # regardless of from where the shuttle comes
+    # (e.g. if a shuttle comes from a join, it should still have display_stop_id populated)
     shuttle = Shuttles.populate_display_stop_ids(shuttle)
 
     day_of_week_data =
