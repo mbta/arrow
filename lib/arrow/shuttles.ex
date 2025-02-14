@@ -344,7 +344,7 @@ defmodule Arrow.Shuttles do
   end
 
   @spec populate_display_stop_ids(map()) :: map()
-  defp populate_display_stop_ids(shuttle) do
+  def populate_display_stop_ids(shuttle) do
     %{
       shuttle
       | routes:

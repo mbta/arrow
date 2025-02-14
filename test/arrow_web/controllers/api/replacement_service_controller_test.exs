@@ -63,7 +63,25 @@ defmodule ArrowWeb.API.ReplacementServiceControllerTest do
                      "reason" => ^expected_reason,
                      "start_date" => ^active_start_date_formatted,
                      "end_date" => ^active_end_date_formatted,
-                     "timetable" => %{"saturday" => _saturday, "sunday" => _sunday}
+                     "timetable" => %{
+                       "saturday" => nil,
+                       "sunday" => nil,
+                       "weekday" => %{
+                         "0" => [
+                           %{
+                             "stop_times" => [
+                               %{
+                                 "stop_id" => shuttle_route_stop_id,
+                                 "stop_time" => shuttle_stop_time
+                               }
+                               | _
+                             ]
+                           }
+                           | _
+                         ],
+                         "1" => _
+                       }
+                     }
                    }
                  }
                ],
@@ -77,6 +95,9 @@ defmodule ArrowWeb.API.ReplacementServiceControllerTest do
       assert Enum.any?(included_list, &match?(%{"type" => "shuttle"}, &1))
       assert Enum.any?(included_list, &match?(%{"type" => "shuttle_route"}, &1))
       assert Enum.any?(included_list, &match?(%{"type" => "shuttle_route_stop"}, &1))
+
+      assert is_binary(shuttle_route_stop_id) and String.length(shuttle_route_stop_id) > 0
+      assert is_binary(shuttle_stop_time) and String.length(shuttle_stop_time) > 0
     end
   end
 end
