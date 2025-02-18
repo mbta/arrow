@@ -76,7 +76,7 @@ config :arrow, dev_routes: true
 
 # Set prefix env for s3 uploads
 config :arrow,
-  shape_storage_enabled?: false,
+  shape_storage_enabled?: true,
   shape_storage_prefix_env: "dev/local/",
   gtfs_archive_storage_enabled?: true,
   gtfs_archive_storage_prefix_env: "dev/local/"
