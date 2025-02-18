@@ -353,19 +353,17 @@ defmodule Arrow.Shuttles do
               route
               | route_stops:
                   Enum.map(route.route_stops, fn route_stop ->
-                    Map.put(
-                      route_stop,
-                      :display_stop_id,
-                      case route_stop do
-                        %RouteStop{stop: %Stop{stop_id: stop_id}} -> stop_id
-                        %RouteStop{gtfs_stop_id: gtfs_stop_id} -> gtfs_stop_id
-                      end
-                    )
+                    Map.put(route_stop, :display_stop_id, get_display_stop_id(route_stop))
                   end)
             }
           end)
     }
   end
+
+  @spec get_display_stop_id(RouteStop.t()) :: String.t()
+  def get_display_stop_id(%RouteStop{stop: %Stop{stop_id: stop_id}}), do: stop_id
+
+  def get_display_stop_id(%RouteStop{gtfs_stop_id: gtfs_stop_id}), do: gtfs_stop_id
 
   @spec get_stop_coordinates(RouteStop.t() | Stop.t() | GtfsStop.t()) ::
           {:ok, map()} | {:error, any}

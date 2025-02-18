@@ -9,6 +9,7 @@ defmodule Arrow.Disruptions do
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Disruptions.Limit
   alias Arrow.Disruptions.ReplacementService
+  alias Arrow.Shuttles
 
   @preloads [
     limits: [:route, :start_stop, :end_stop, :limit_day_of_weeks],
@@ -306,6 +307,8 @@ defmodule Arrow.Disruptions do
     %{"0" => direction_0_trips, "1" => direction_1_trips}
   end
 
+  @spec build_stop_times_for_start_time(String.t(), String.t(), map(), Shuttles.Route.t()) ::
+          map()
   defp build_stop_times_for_start_time(start_time, direction_id, headway_periods, shuttle_route) do
     total_runtime =
       headway_periods
@@ -337,14 +340,7 @@ defmodule Arrow.Disruptions do
          stop_times ++
            [
              %{
-               stop_id:
-                 case route_stop do
-                   %Arrow.Shuttles.RouteStop{stop: %Arrow.Shuttles.Stop{stop_id: stop_id}} ->
-                     stop_id
-
-                   %Arrow.Shuttles.RouteStop{gtfs_stop_id: gtfs_stop_id} ->
-                     gtfs_stop_id
-                 end,
+               stop_id: Shuttles.get_display_stop_id(route_stop),
                stop_time: current_stop_time
              }
            ]}

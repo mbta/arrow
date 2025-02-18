@@ -451,6 +451,20 @@ defmodule Arrow.ShuttlesTest do
     end
   end
 
+  describe "get_display_stop_id/1" do
+    test "gets ID of Arrow stop" do
+      route_stop = build(:route_stop, stop: build(:stop, stop_id: "test_stop_id"))
+
+      assert Shuttles.get_display_stop_id(route_stop) == "test_stop_id"
+    end
+
+    test "gets ID of GTFS stop" do
+      route_stop = build(:route_stop, gtfs_stop_id: "test_gtfs_stop_id")
+
+      assert Shuttles.get_display_stop_id(route_stop) == "test_gtfs_stop_id"
+    end
+  end
+
   describe "get_stop_coordinates/1" do
     test "gets the stop coordinates for an Arrow stop from a RouteStop" do
       lat = 42.38758
