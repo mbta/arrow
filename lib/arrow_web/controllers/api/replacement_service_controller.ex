@@ -1,9 +1,7 @@
 defmodule ArrowWeb.API.ReplacementServiceController do
   use ArrowWeb, :controller
-  import Ecto.Query, only: [from: 2]
 
   alias Arrow.Disruptions.ReplacementService
-  alias Arrow.Repo
   alias ArrowWeb.API.Util
   alias Plug.Conn
 
