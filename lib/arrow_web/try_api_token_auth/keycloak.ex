@@ -8,6 +8,8 @@ defmodule ArrowWeb.TryApiTokenAuth.Keycloak do
   def sign_in(conn, auth_token) do
     with {:ok, user_id} <- lookup_user_id(auth_token.username),
          {:ok, roles} <- lookup_user_roles(user_id) do
+
+      Logger.warning("Found roles #{IO.inspect(roles)} for #{IO.inspect(user_id)}")
       conn
       |> Guardian.Plug.sign_in(
         ArrowWeb.AuthManager,
