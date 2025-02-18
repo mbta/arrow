@@ -165,7 +165,7 @@ defmodule Arrow.Factory do
     }
   end
 
-  def replacement_service_factory do
+  def replacement_service_factory(attrs) do
     %Arrow.Disruptions.ReplacementService{
       reason: "Maintenance",
       start_date: Date.utc_today(),
@@ -175,6 +175,7 @@ defmodule Arrow.Factory do
       disruption: build(:disruption_v2),
       shuttle: build(:shuttle)
     }
+    |> merge_attributes(attrs)
   end
 
   def replacement_service_workbook_data_factory do

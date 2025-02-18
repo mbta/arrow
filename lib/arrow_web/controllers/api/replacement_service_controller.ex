@@ -1,15 +1,17 @@
-defmodule ArrowWeb.API.LimitController do
+defmodule ArrowWeb.API.ReplacementServiceController do
   use ArrowWeb, :controller
 
-  alias Arrow.Disruptions
+  alias Arrow.Disruptions.ReplacementService
   alias ArrowWeb.API.Util
+  alias Plug.Conn
 
+  @spec index(Conn.t(), map()) :: Conn.t()
   def index(conn, params) do
     with {:ok, start_date} <- Util.parse_date(params["start_date"]),
          {:ok, end_date} <- Util.parse_date(params["end_date"]),
          :ok <- Util.validate_date_order(start_date, end_date) do
-      limits = Disruptions.get_limits_in_date_range(start_date, end_date)
-      render(conn, "index.json-api", data: limits)
+      data = ReplacementService.get_replacement_services_with_timetables(start_date, end_date)
+      render(conn, "index.json-api", data: data)
     else
       {:error, :invalid_date} ->
         conn
