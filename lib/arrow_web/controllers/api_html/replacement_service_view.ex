@@ -6,9 +6,9 @@ defmodule ArrowWeb.API.ReplacementServiceView do
 
   has_one :shuttle,
     serializer: ArrowWeb.API.ShuttleView,
-    include: true
+    include: false
 
   has_one :disruption,
     serializer: ArrowWeb.API.DisruptionV2View,
-    include: true
+    include: false
 end

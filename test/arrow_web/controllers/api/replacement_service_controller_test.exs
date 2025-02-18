@@ -85,16 +85,8 @@ defmodule ArrowWeb.API.ReplacementServiceControllerTest do
                    }
                  }
                ],
-               "included" => included_list,
                "jsonapi" => _
              } = res
-
-      refute Enum.empty?(included_list)
-
-      assert Enum.any?(included_list, &match?(%{"type" => "disruption_v2"}, &1))
-      assert Enum.any?(included_list, &match?(%{"type" => "shuttle"}, &1))
-      assert Enum.any?(included_list, &match?(%{"type" => "shuttle_route"}, &1))
-      assert Enum.any?(included_list, &match?(%{"type" => "shuttle_route_stop"}, &1))
 
       assert is_binary(shuttle_route_stop_id) and String.length(shuttle_route_stop_id) > 0
       assert is_binary(shuttle_stop_time) and String.length(shuttle_stop_time) > 0

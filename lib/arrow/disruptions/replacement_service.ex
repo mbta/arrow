@@ -6,8 +6,10 @@ defmodule Arrow.Disruptions.ReplacementService do
   """
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query, only: [from: 2]
 
   alias Arrow.Disruptions.DisruptionV2
+  alias Arrow.Repo
   alias Arrow.Repo.MapForForm
   alias Arrow.Shuttles
   alias Arrow.Shuttles.Shuttle
@@ -82,6 +84,41 @@ defmodule Arrow.Disruptions.ReplacementService do
     end
   end
 
+  defp add_timetable(%__MODULE__{} = replacement_service) do
+    Map.from_struct(replacement_service)
+    |> Map.put(
+      :timetable,
+      schedule_service_types()
+      |> Enum.map(fn service_type ->
+        {service_type, trips_with_times(replacement_service, service_type)}
+      end)
+      |> Enum.into(%{})
+    )
+  end
+
+  @spec get_replacement_services_with_timetables(Date.t(), Date.t()) ::
+          list(%{
+            reason: String.t(),
+            disruption: DisruptionV2.t(),
+            shuttle: Shuttle.t(),
+            timetable: map()
+          })
+  def get_replacement_services_with_timetables(start_date, end_date) do
+    from(r in __MODULE__,
+      # where: r.start_date >= ^start_date and r.end_date <= ^end_date,
+      join: s in assoc(r, :shuttle),
+      join: d in assoc(r, :disruption),
+      join: sr in assoc(s, :routes),
+      join: rs in assoc(sr, :route_stops),
+      left_join: gs in assoc(rs, :gtfs_stop),
+      left_join: st in assoc(rs, :stop),
+      where: r.start_date <= ^end_date and r.end_date >= ^start_date,
+      preload: [:disruption, shuttle: {s, routes: {sr, route_stops: [:gtfs_stop, :stop]}}]
+    )
+    |> Repo.all()
+    |> Enum.map(&add_timetable/1)
+  end
+
   @spec schedule_service_types :: list(atom())
   def schedule_service_types, do: [:weekday, :saturday, :sunday]
 
@@ -91,39 +128,46 @@ defmodule Arrow.Disruptions.ReplacementService do
       ) do
     service_type_abbreviation = Map.get(@service_type_to_workbook_abbreviation, service_type_atom)
 
-    if Map.has_key?(workbook_data, workbook_column_from_day_of_week(service_type_abbreviation)) do
-      do_trips_with_times(replacement_service, service_type_abbreviation)
+    if day_of_week_data =
+         Map.get(workbook_data, workbook_column_from_day_of_week(service_type_abbreviation)) do
+      do_trips_with_times(replacement_service, day_of_week_data)
     else
       nil
     end
   end
 
+  defp reduce_workbook_data(
+         %{"first_trip_0" => first_trip_0, "first_trip_1" => first_trip_1},
+         {_first_trips, last_trips, headway_periods}
+       ) do
+    {%{0 => first_trip_0, 1 => first_trip_1}, last_trips, headway_periods}
+  end
+
+  defp reduce_workbook_data(
+         %{"last_trip_0" => last_trip_0, "last_trip_1" => last_trip_1},
+         {first_trips, _last_trips, headway_periods}
+       ) do
+    {first_trips, %{0 => last_trip_0, 1 => last_trip_1}, headway_periods}
+  end
+
+  defp reduce_workbook_data(
+         %{"start_time" => start_time} = headway_period,
+         {first_trips, last_trips, headway_periods}
+       ) do
+    {first_trips, last_trips, Map.put(headway_periods, start_time, headway_period)}
+  end
+
   defp do_trips_with_times(
-         %__MODULE__{source_workbook_data: source_workbook_data, shuttle: shuttle},
-         day_of_week
+         %__MODULE__{shuttle: shuttle},
+         day_of_week_data
        ) do
     # to do: find a way to ensure that display_stop_id is always populate on every shuttle route stop
     # regardless of from where the shuttle comes
     # (e.g. if a shuttle comes from a join, it should still have display_stop_id populated)
     shuttle = Shuttles.populate_display_stop_ids(shuttle)
 
-    day_of_week_data =
-      Map.get(source_workbook_data, workbook_column_from_day_of_week(day_of_week))
-
     {first_trips, last_trips, headway_periods} =
-      Enum.reduce(day_of_week_data, {%{}, %{}, %{}}, fn data,
-                                                        {first_trips, last_trips, headway_periods} ->
-        case data do
-          %{"first_trip_0" => first_trip_0, "first_trip_1" => first_trip_1} ->
-            {%{0 => first_trip_0, 1 => first_trip_1}, last_trips, headway_periods}
-
-          %{"last_trip_0" => last_trip_0, "last_trip_1" => last_trip_1} ->
-            {first_trips, %{0 => last_trip_0, 1 => last_trip_1}, headway_periods}
-
-          %{"start_time" => start_time} = headway_period ->
-            {first_trips, last_trips, Map.put(headway_periods, start_time, headway_period)}
-        end
-      end)
+      Enum.reduce(day_of_week_data, {%{}, %{}, %{}}, &reduce_workbook_data/2)
 
     [direction_0_trips, direction_1_trips] =
       for direction_id <- [0, 1] do

@@ -12,32 +12,7 @@ defmodule ArrowWeb.API.ReplacementServiceController do
     with {:ok, start_date} <- Util.parse_date(params["start_date"]),
          {:ok, end_date} <- Util.parse_date(params["end_date"]),
          :ok <- Util.validate_date_order(start_date, end_date) do
-      data =
-        from(r in ReplacementService,
-          # where: r.start_date >= ^start_date and r.end_date <= ^end_date,
-          join: s in assoc(r, :shuttle),
-          join: d in assoc(r, :disruption),
-          join: sr in assoc(s, :routes),
-          join: rs in assoc(sr, :route_stops),
-          left_join: gs in assoc(rs, :gtfs_stop),
-          left_join: st in assoc(rs, :stop),
-          where: r.start_date <= ^end_date and r.end_date >= ^start_date,
-          preload: [:disruption, shuttle: {s, routes: {sr, route_stops: [:gtfs_stop, :stop]}}]
-        )
-        |> Repo.all()
-        |> Enum.map(fn replacement_service ->
-          Map.from_struct(replacement_service)
-          |> Map.put(
-            :timetable,
-            ReplacementService.schedule_service_types()
-            |> Enum.map(fn service_type ->
-              {service_type,
-               ReplacementService.trips_with_times(replacement_service, service_type)}
-            end)
-            |> Enum.into(%{})
-          )
-        end)
-
+      data = ReplacementService.get_replacement_services_with_timetables(start_date, end_date)
       render(conn, "index.json-api", data: data)
     else
       {:error, :invalid_date} ->
