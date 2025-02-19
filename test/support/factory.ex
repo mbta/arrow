@@ -197,6 +197,24 @@ defmodule Arrow.Factory do
         },
         %{"first_trip_0" => "05:10", "first_trip_1" => "05:10"},
         %{"last_trip_0" => "06:30", "last_trip_1" => "06:30"}
+      ],
+      "SAT headways and runtimes" => [
+        %{
+          "end_time" => "06:00",
+          "headway" => 10,
+          "running_time_0" => 25,
+          "running_time_1" => 15,
+          "start_time" => "05:00"
+        },
+        %{
+          "end_time" => "07:00",
+          "headway" => 15,
+          "running_time_0" => 30,
+          "running_time_1" => 20,
+          "start_time" => "06:00"
+        },
+        %{"first_trip_0" => "05:10", "first_trip_1" => "05:10"},
+        %{"last_trip_0" => "06:30", "last_trip_1" => "06:30"}
       ]
     }
   end

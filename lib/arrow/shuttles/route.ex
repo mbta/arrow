@@ -3,9 +3,22 @@ defmodule Arrow.Shuttles.Route do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Arrow.Shuttles
+
   @direction_desc_values [:Inbound, :Outbound, :North, :South, :East, :West]
 
   def direction_desc_values, do: @direction_desc_values
+
+  @type t :: %__MODULE__{
+          suffix: String.t(),
+          destination: String.t(),
+          direction_id: :"0" | :"1",
+          direction_desc: :Inbound | :Outbound | :North | :South | :East | :West,
+          waypoint: String.t(),
+          shuttle: Shuttles.Shuttle.t() | Ecto.Association.NotLoaded.t() | nil,
+          shape: Shuttles.Shape.t() | Ecto.Association.NotLoaded.t() | nil,
+          route_stops: [Shuttles.RouteStop.t()] | Ecto.Association.NotLoaded.t() | nil
+        }
 
   schema "shuttle_routes" do
     field :suffix, :string
