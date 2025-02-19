@@ -57,19 +57,14 @@ defmodule ArrowWeb.TimetableController do
         end
       end)
 
-    first_stop =
-      sample_trip.stop_times
-      |> Enum.at(0)
-      |> Map.get(:stop_id)
-      |> Shuttles.stop_or_gtfs_stop_for_stop_id()
-      |> Shuttles.stop_display_name()
-
-    last_stop =
-      sample_trip.stop_times
-      |> Enum.at(-1)
-      |> Map.get(:stop_id)
-      |> Shuttles.stop_or_gtfs_stop_for_stop_id()
-      |> Shuttles.stop_display_name()
+    [first_stop, last_stop] =
+      [List.first(sample_trip.stop_times), List.last(sample_trip.stop_times)]
+      |> Enum.map(fn stop ->
+        stop
+        |> Map.get(:stop_id)
+        |> Shuttles.stop_or_gtfs_stop_for_stop_id()
+        |> Shuttles.stop_display_name()
+      end)
 
     render(conn, :show,
       replacement_service_id: replacement_service,
