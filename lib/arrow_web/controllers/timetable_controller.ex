@@ -9,11 +9,7 @@ defmodule ArrowWeb.TimetableController do
 
     available_days_of_week = Disruptions.days_of_week_for_replacement_service(replacement_service)
 
-    day_of_week =
-      case Map.get(params, "day_of_week") do
-        nil -> Enum.at(available_days_of_week, 0)
-        day_of_week -> day_of_week
-      end
+    day_of_week = Map.get(params, "day_of_week", Enum.at(available_days_of_week, 0))
 
     trips_with_times =
       Disruptions.replacement_service_trips_with_times(replacement_service, day_of_week)
