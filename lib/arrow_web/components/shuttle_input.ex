@@ -8,6 +8,7 @@ defmodule ArrowWeb.ShuttleInput do
 
   alias Arrow.Shuttles
   alias Arrow.Shuttles.Shuttle
+  alias Phoenix.HTML.FormField
 
   attr :id, :string, required: true
   attr :field, :any, required: true
@@ -37,6 +38,7 @@ defmodule ArrowWeb.ShuttleInput do
         options={@options}
         placeholder="Search for a route…"
         update_min_len={0}
+        value_mapper={&shuttle_value_mapper(&1, assigns.field)}
       />
     </div>
     """
@@ -53,6 +55,26 @@ defmodule ArrowWeb.ShuttleInput do
     send_update(LiveSelect.Component, id: live_select_id, options: new_opts)
 
     {:noreply, socket}
+  end
+
+  # This credo:disable can be removed once a new phoenix_html release is cut
+  # https://github.com/phoenixframework/phoenix_html/commit/1bea177dfb6d6e3e326ee60dab87175a6d92e88d
+  # credo:disable-for-next-line Credo.Check.Warning.SpecWithStruct
+  @spec shuttle_value_mapper(String.t(), %FormField{}) ::
+          {String.t(), integer() | String.t()}
+  defp shuttle_value_mapper(text, field) do
+    shuttle =
+      case field.value do
+        nil -> nil
+        "" -> nil
+        shuttle_id -> Shuttles.get_shuttle!(shuttle_id)
+      end
+
+    if shuttle == nil do
+      {text, text}
+    else
+      option_for_shuttle(shuttle)
+    end
   end
 
   @spec option_for_shuttle(Shuttle.t()) :: {String.t(), integer()}
