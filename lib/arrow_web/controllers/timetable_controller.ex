@@ -14,11 +14,7 @@ defmodule ArrowWeb.TimetableController do
     trips_with_times =
       Disruptions.replacement_service_trips_with_times(replacement_service, day_of_week)
 
-    direction_id =
-      case Map.get(params, "direction_id") do
-        nil -> trips_with_times |> Map.keys() |> Enum.at(0)
-        direction_id -> direction_id
-      end
+    direction_id = Map.get(params, "direction_id", "0")
 
     sample_trip = trips_with_times |> Map.get(direction_id) |> Enum.at(0)
 
