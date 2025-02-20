@@ -261,6 +261,32 @@ defmodule Arrow.ShuttlesTest do
     end
   end
 
+  describe "stop_display_name/1" do
+    test "Arrow stop, description" do
+      stop = build(:stop, %{stop_desc: "Test description"})
+
+      assert Shuttles.stop_display_name(stop) == "Test description"
+    end
+
+    test "Arrow stop, name" do
+      stop = build(:stop, %{stop_desc: "", stop_name: "Test name"})
+
+      assert Shuttles.stop_display_name(stop) == "Test name"
+    end
+
+    test "GTFS stop, description" do
+      gtfs_stop = build(:gtfs_stop, desc: "Test description")
+
+      assert Shuttles.stop_display_name(gtfs_stop) == "Test description"
+    end
+
+    test "GTFS stop, name" do
+      gtfs_stop = build(:gtfs_stop, desc: nil, name: "Test name")
+
+      assert Shuttles.stop_display_name(gtfs_stop) == "Test name"
+    end
+  end
+
   describe "stops_or_gtfs_stops_by_search_string/1" do
     test "finds Arrow stop by stop ID" do
       insert(:stop, %{stop_id: "12"})
@@ -422,6 +448,20 @@ defmodule Arrow.ShuttlesTest do
 
       assert {:error, "Unable to retrieve estimates: unknown error"} =
                Shuttles.get_travel_times([coord1, coord2])
+    end
+  end
+
+  describe "get_display_stop_id/1" do
+    test "gets ID of Arrow stop" do
+      route_stop = build(:route_stop, stop: build(:stop, stop_id: "test_stop_id"))
+
+      assert Shuttles.get_display_stop_id(route_stop) == "test_stop_id"
+    end
+
+    test "gets ID of GTFS stop" do
+      route_stop = build(:route_stop, gtfs_stop_id: "test_gtfs_stop_id")
+
+      assert Shuttles.get_display_stop_id(route_stop) == "test_gtfs_stop_id"
     end
   end
 

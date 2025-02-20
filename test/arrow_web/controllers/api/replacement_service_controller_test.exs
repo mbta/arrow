@@ -28,9 +28,10 @@ defmodule ArrowWeb.API.ReplacementServiceControllerTest do
       shuttle = shuttle_fixture(%{}, true, true)
 
       _inactive_replacement =
-        replacement_service_factory(%{
+        insert(:replacement_service, %{
           start_date: ~D[2024-01-01],
-          end_date: ~D[2024-01-02]
+          end_date: ~D[2024-01-02],
+          shuttle: shuttle
         })
 
       active_start = ~D[2025-01-01]
@@ -38,13 +39,12 @@ defmodule ArrowWeb.API.ReplacementServiceControllerTest do
       expected_reason = "active today"
 
       _active_replacement =
-        replacement_service_factory(%{
+        insert(:replacement_service, %{
           reason: expected_reason,
           start_date: active_start,
           end_date: active_end,
           shuttle: shuttle
         })
-        |> insert()
 
       active_start_date_formatted = Date.to_iso8601(active_start)
       active_end_date_formatted = Date.to_iso8601(active_end)
@@ -64,7 +64,7 @@ defmodule ArrowWeb.API.ReplacementServiceControllerTest do
                      "start_date" => ^active_start_date_formatted,
                      "end_date" => ^active_end_date_formatted,
                      "timetable" => %{
-                       "saturday" => nil,
+                       "saturday" => %{"0" => _, "1" => _},
                        "sunday" => nil,
                        "weekday" => %{
                          "0" => [

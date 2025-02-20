@@ -1,0 +1,43 @@
+<.header>
+  view timetable: {@shuttle_name}
+</.header>
+
+<div>
+  <div class="my-4 flex space-x-6" role="menubar">
+    <a
+      :for={{day_of_week_key, day_of_week_name} <- @day_of_week_options}
+      href={
+        ~p"/replacement_services/#{@replacement_service_id}/timetable?day_of_week=#{day_of_week_key}&direction_id=#{@direction_id}"
+      }
+      class={"py-2 #{if @day_of_week == day_of_week_key, do: "text-blue-900 border-b-2 border-t-0 border-x-0 border-b-blue-900 border-solid", else: "text-black"}"}
+      role="menuitem"
+      aria-current={if @day_of_week == day_of_week_key, do: "page"}
+    >
+      {day_of_week_name}
+    </a>
+  </div>
+
+  <div>
+    <h3>{@first_stop} to {@last_stop}</h3>
+    <a href={
+      ~p"/replacement_services/#{@replacement_service_id}/timetable?day_of_week=#{@day_of_week}&direction_id=#{if @direction_id == "0", do: "1", else: "0"}"
+    }>
+      Switch directions
+    </a>
+  </div>
+
+  <table class="overflow-scroll w-full table-fixed block p-4">
+    <thead>
+      <th class="border-2 border-black border-solid p-3">Stop</th>
+      <th class="border-2 border-black border-solid p-3">stop_id</th>
+      <th :for={_ <- 1..@num_trips} class="border-2 border-black border-solid" />
+    </thead>
+    <tr :for={{stop_display_name, stop_id, times} <- @stop_times_by_stop}>
+      <td class="border-2 border-black border-solid p-3">{stop_display_name}</td>
+      <td class="border-2 border-black border-solid p-3">{stop_id}</td>
+      <td :for={time <- times} class="border-2 border-black border-solid p-3">{time}</td>
+    </tr>
+  </table>
+</div>
+
+<.button class="btn btn-primary" onclick="window.close();">Close</.button>

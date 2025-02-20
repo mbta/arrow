@@ -10,14 +10,15 @@ defmodule Arrow.Shuttles.RouteStop do
   @type t :: %__MODULE__{
           direction_id: :"0" | :"1",
           stop_sequence: integer(),
-          time_to_next_stop: float(),
+          time_to_next_stop: float() | nil,
           display_stop_id: String.t(),
           display_stop: Arrow.Shuttles.Stop.t() | Arrow.Gtfs.Stop.t() | nil,
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil,
           shuttle_route: Arrow.Gtfs.Level.t() | Ecto.Association.NotLoaded.t() | nil,
           stop: Arrow.Shuttles.Stop.t() | Ecto.Association.NotLoaded.t() | nil,
-          gtfs_stop: Arrow.Gtfs.Stop.t() | Ecto.Association.NotLoaded.t() | nil
+          gtfs_stop: Arrow.Gtfs.Stop.t() | Ecto.Association.NotLoaded.t() | nil,
+          gtfs_stop_id: String.t() | nil
         }
 
   schema "shuttle_route_stops" do
