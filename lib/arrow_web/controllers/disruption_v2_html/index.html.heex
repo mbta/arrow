@@ -1,6 +1,6 @@
 <div class="row my-3">
   <.navbar
-    page={Controller.current_path(@conn)}
+    page={Controller.current_path(@conn, %{})}
     create_disruption_permission?={Permissions.authorize?(:create_disruption, @user)}
   />
   <%= form_tag(Controller.current_path(@conn), method: "get", class: "col-3") do %>
@@ -14,8 +14,23 @@
   <% end %>
 </div>
 
+<div class="row my-3">
+  <div class="col">
+    {link("⬒ #{if(Filters.calendar?(@filters), do: "list", else: "calendar")} view",
+      class: "ml-auto btn btn-outline-secondary",
+      to: update_filters_path(@conn, Filters.toggle_view(@filters))
+    )}
+  </div>
+</div>
+
 <div class="row">
   <div class="col">
-    <._table conn={@conn} disruptions={@disruptions} />
+    <%= if Filters.calendar?(@filters) do %>
+      <div class="my-3">
+        {react_component("Components.DisruptionCalendar", DCalendar.props(@disruptions))}
+      </div>
+    <% else %>
+      <._table conn={@conn} disruptions={@disruptions} />
+    <% end %>
   </div>
 </div>
