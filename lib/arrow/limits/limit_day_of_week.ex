@@ -93,4 +93,13 @@ defmodule Arrow.Limits.LimitDayOfWeek do
 
     dt
   end
+
+  @spec day_number(t()) :: 1 | 2 | 3 | 4 | 5 | 6 | 7
+  def day_number(%{day_name: :monday}), do: 1
+  def day_number(%{day_name: :tuesday}), do: 2
+  def day_number(%{day_name: :wednesday}), do: 3
+  def day_number(%{day_name: :thursday}), do: 4
+  def day_number(%{day_name: :friday}), do: 5
+  def day_number(%{day_name: :saturday}), do: 6
+  def day_number(%{day_name: :sunday}), do: 7
 end

@@ -3,6 +3,8 @@ defmodule ArrowWeb.DisruptionV2View do
 
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Permissions
+  alias __MODULE__.Calendar, as: DCalendar
+  alias ArrowWeb.DisruptionV2Controller.Filters
   alias Phoenix.Controller
 
   embed_templates "disruption_v2_html/*"
@@ -66,5 +68,9 @@ defmodule ArrowWeb.DisruptionV2View do
 
   defp format_date(date) do
     Calendar.strftime(date, "%m/%d/%y")
+  end
+
+  defp update_filters_path(conn, filters) do
+    Controller.current_path(conn, Filters.to_params(filters))
   end
 end
