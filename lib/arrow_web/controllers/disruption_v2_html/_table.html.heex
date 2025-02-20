@@ -1,0 +1,55 @@
+<table class="table m-disruption-table border-top-dark">
+  <thead>
+    <tr>
+      <th></th>
+      <th></th>
+      <th>Title</th>
+      <th>Limits</th>
+      <th>Replacement Service</th>
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <%= for disruption <- @disruptions do %>
+      <% {start_date, end_date} = get_dates(disruption) %>
+      <tr>
+        <td>
+          <.button class="btn-link btn-sm" type="button">
+            <.icon name="hero-pencil-square-solid" />
+          </.button>
+        </td>
+
+        <td>
+          <div class="d-flex flex-column">
+            <%= for route <- disrupted_routes(disruption) do %>
+              <.route_icon conn={@conn} route_id={route} size="sm" class="my-1 mr-2" />
+            <% end %>
+          </div>
+        </td>
+
+        <td><b>{disruption.title}</b></td>
+
+        <td>
+          <%= for limit <- disruption.limits do %>
+            {limit.start_stop.name} to {limit.end_stop.name}<br />
+          <% end %>
+        </td>
+
+        <td>
+          <%= for service <- disruption.replacement_services do %>
+            {service.shuttle.shuttle_name}
+          <% end %>
+        </td>
+
+        <td>{format_date(start_date)}</td>
+
+        <td>{format_date(end_date)}</td>
+
+        <td>{if disruption.is_active, do: "Approved", else: "Pending"}</td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
