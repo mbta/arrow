@@ -90,8 +90,4 @@ defmodule Arrow.Disruptions.Limit do
     %__MODULE__{limit_day_of_weeks: @default_day_of_weeks_list}
     |> struct!(attrs)
   end
-
-  def display_label(%__MODULE__{start_stop: start_stop, end_stop: end_stop}) do
-    "#{start_stop.name} to #{end_stop.name}"
-  end
 end
