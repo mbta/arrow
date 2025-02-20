@@ -25,7 +25,7 @@
         <td>
           <div class="d-flex flex-column">
             <%= for route <- disrupted_routes(disruption) do %>
-              {route_icon(@conn, route, "sm", class: "my-1 mr-2")}
+              <.route_icon conn={@conn} route_id={route} size="sm" class="my-1 mr-2" />
             <% end %>
           </div>
         </td>
