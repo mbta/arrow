@@ -18,32 +18,17 @@ defmodule ArrowWeb.DisruptionV2View.Calendar do
     Enum.flat_map(disruptions, &events/1)
   end
 
-  defp events(%DisruptionV2{
-         id: id,
-         limits: [limit],
-         replacement_services: [],
-         is_active: is_active
-       }) do
-    events(id, limit, "(disruption #{id})", is_active)
-  end
+  defp events(%DisruptionV2{limits: [], replacement_services: []}), do: []
 
   defp events(%DisruptionV2{
          id: id,
-         limits: [],
-         replacement_services: [replacement_service],
-         is_active: is_active
-       }) do
-    events(id, replacement_service, "(disruption #{id})", is_active)
-  end
-
-  defp events(%DisruptionV2{
-         id: id,
+         title: title,
          limits: limits,
          replacement_services: replacement_services,
          is_active: is_active
        }) do
-    Enum.flat_map(limits, &events(id, &1, Limit.display_label(&1), is_active)) ++
-      Enum.flat_map(replacement_services, &events(id, &1, &1.shuttle.shuttle_name, is_active))
+    Enum.flat_map(limits, &events(id, &1, title, is_active)) ++
+      Enum.flat_map(replacement_services, &events(id, &1, title, is_active))
   end
 
   defp events(
