@@ -94,14 +94,4 @@ defmodule Arrow.Disruptions.Limit do
   def display_label(%__MODULE__{start_stop: start_stop, end_stop: end_stop}) do
     "#{start_stop.name} to #{end_stop.name}"
   end
-
-  @spec route(t()) :: atom()
-  def route(%__MODULE__{route_id: "Blue"}), do: :blue_line
-  def route(%__MODULE__{route_id: "Orange"}), do: :orange_line
-  def route(%__MODULE__{route_id: "Red"}), do: :red_line
-  def route(%__MODULE__{route_id: "Mattapan"}), do: :mattapan_line
-  def route(%__MODULE__{route_id: "Green-B"}), do: :green_line_b
-  def route(%__MODULE__{route_id: "Green-C"}), do: :green_line_c
-  def route(%__MODULE__{route_id: "Green-D"}), do: :green_line_d
-  def route(%__MODULE__{route_id: "Green-E"}), do: :green_line_e
 end

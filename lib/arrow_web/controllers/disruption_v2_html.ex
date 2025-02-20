@@ -1,9 +1,9 @@
 defmodule ArrowWeb.DisruptionV2View do
   use ArrowWeb, :html
 
+  alias __MODULE__.Calendar, as: DCalendar
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Permissions
-  alias __MODULE__.Calendar, as: DCalendar
   alias ArrowWeb.DisruptionV2Controller.Filters
   alias Phoenix.Controller
 

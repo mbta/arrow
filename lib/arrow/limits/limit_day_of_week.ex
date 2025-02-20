@@ -12,7 +12,7 @@ defmodule Arrow.Limits.LimitDayOfWeek do
                    )
 
   @type t :: %__MODULE__{
-          day_name: integer(),
+          day_name: atom(),
           start_time: String.t() | nil,
           end_time: String.t() | nil,
           active?: boolean(),
