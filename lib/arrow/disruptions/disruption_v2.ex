@@ -52,4 +52,15 @@ defmodule Arrow.Disruptions.DisruptionV2 do
     %__MODULE__{limits: [], replacement_services: []}
     |> struct!(attrs)
   end
+
+  @spec route(String.t()) :: atom() | nil
+  def route("Blue"), do: :blue_line
+  def route("Orange"), do: :orange_line
+  def route("Red"), do: :red_line
+  def route("Mattapan"), do: :mattapan_line
+  def route("Green-B"), do: :green_line_b
+  def route("Green-C"), do: :green_line_c
+  def route("Green-D"), do: :green_line_d
+  def route("Green-E"), do: :green_line_e
+  def route(_), do: nil
 end
