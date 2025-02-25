@@ -15,7 +15,20 @@
 </div>
 
 <div class="row my-3">
-  <div class="col">
+  <div class="col flex">
+    <%= for kind <- disruption_kinds() do %>
+      <% show_as_active? = MapSet.size(@filters.kinds) == 0 or kind in @filters.kinds %>
+      <% active_class = if(show_as_active?, do: "active", else: "") %>
+
+      <.link
+        class={"d-flex mr-1 m-disruption-index__route_filter #{active_class}"}
+        aria-label={kind |> to_string() |> String.replace("_", " ")}
+        href={update_filters_path(@conn, Filters.toggle_kind(@filters, kind))}
+      >
+        {disruption_kind_icon(@conn, kind, "lg")}
+      </.link>
+    <% end %>
+
     {link("⬒ #{if(Filters.calendar?(@filters), do: "list", else: "calendar")} view",
       class: "ml-auto btn btn-outline-secondary",
       to: update_filters_path(@conn, Filters.toggle_view(@filters))
