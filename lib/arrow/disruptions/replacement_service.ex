@@ -228,7 +228,7 @@ defmodule Arrow.Disruptions.ReplacementService do
            [
              %{
                stop_id: route_stop.display_stop_id,
-               stop_time: current_stop_time
+               stop_time: "#{current_stop_time}:00"
              }
            ]}
       end)
