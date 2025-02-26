@@ -37,6 +37,15 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     }
   end
 
+  defp create_disruption_v2_with_replacement_service(context) do
+    %{disruption_v2: disruption_v2} = create_disruption_v2(context)
+    rs = replacement_service_fixture(%{disruption_id: disruption_v2.id})
+
+    %{
+      disruption_v2: %{disruption_v2 | replacement_services: [rs]}
+    }
+  end
+
   describe "Changing Disruptions" do
     @tag :authenticated_admin
     test "saves new disruption_v2", %{conn: conn} do
@@ -163,6 +172,112 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
 
       html = render(live)
       assert html =~ "Replacement service created successfully"
+    end
+
+    @tag :authenticated_admin
+
+    setup [:create_disruption_v2_with_replacement_service]
+
+    test "can change shuttle when editing replacement service", %{
+      conn: conn,
+      disruption_v2: disruption_v2
+    } do
+      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+
+      replacement_service = List.first(disruption_v2.replacement_services)
+
+      replacement_service_shuttle_id_input = "#replacement_service_shuttle_id"
+      replacement_service_shuttle_id_text_input = "#replacement_service_shuttle_id_text_input"
+
+      assert live
+             |> element("#edit_replacement_service-#{replacement_service.id}")
+             |> render_click() =~
+               "Edit/Manage Activation"
+
+      html = render(live)
+
+      assert html
+             |> Floki.find(replacement_service_shuttle_id_input)
+             |> Floki.attribute("value")
+             |> List.first() =~ "#{replacement_service.shuttle.id}"
+
+      assert html
+             |> Floki.find(replacement_service_shuttle_id_text_input)
+             |> Floki.attribute("value")
+             |> List.first() =~ "#{replacement_service.shuttle.shuttle_name}"
+
+      new_shuttle = shuttle_fixture()
+      refute new_shuttle.id == replacement_service.shuttle.id
+
+      updated_shuttle_input_html =
+        live
+        |> form("#replacement_service-form")
+        |> render_change(%{
+          replacement_service: %{shuttle_id: new_shuttle.id, disruption_id: disruption_v2.id}
+        })
+
+      assert updated_shuttle_input_html
+             |> Floki.find(replacement_service_shuttle_id_input)
+             |> Floki.attribute("value")
+             |> List.first() =~ "#{new_shuttle.id}"
+
+      assert updated_shuttle_input_html
+             |> Floki.find(replacement_service_shuttle_id_text_input)
+             |> Floki.attribute("value")
+             |> List.first() =~ "#{new_shuttle.shuttle_name}"
+    end
+
+    @tag :authenticated_admin
+    setup [:create_disruption_v2_with_replacement_service]
+
+    test "shuttle input handles form updates when editing replacement service", %{
+      conn: conn,
+      disruption_v2: disruption_v2
+    } do
+      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+
+      replacement_service = List.first(disruption_v2.replacement_services)
+      shuttle = replacement_service.shuttle
+
+      replacement_service_shuttle_id_input = "#replacement_service_shuttle_id"
+      replacement_service_shuttle_id_text_input = "#replacement_service_shuttle_id_text_input"
+
+      assert live
+             |> element("#edit_replacement_service-#{replacement_service.id}")
+             |> render_click() =~
+               "Edit/Manage Activation"
+
+      html = render(live)
+
+      assert html
+             |> Floki.find(replacement_service_shuttle_id_input)
+             |> Floki.attribute("value")
+             |> List.first() =~ "#{shuttle.id}"
+
+      assert html
+             |> Floki.find(replacement_service_shuttle_id_text_input)
+             |> Floki.attribute("value")
+             |> List.first() =~ "#{shuttle.shuttle_name}"
+
+      updated_shuttle_input_html =
+        live
+        |> form("#replacement_service-form")
+        |> render_change(%{
+          replacement_service: %{
+            shuttle_id: shuttle.id,
+            disruption_id: disruption_v2.id
+          }
+        })
+
+      assert updated_shuttle_input_html
+             |> Floki.find(replacement_service_shuttle_id_input)
+             |> Floki.attribute("value")
+             |> List.first() =~ "#{shuttle.id}"
+
+      assert updated_shuttle_input_html
+             |> Floki.find(replacement_service_shuttle_id_text_input)
+             |> Floki.attribute("value")
+             |> List.first() =~ "#{shuttle.shuttle_name}"
     end
   end
 
