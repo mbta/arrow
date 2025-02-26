@@ -12,9 +12,11 @@ defmodule ArrowWeb.DisruptionV2Controller do
   def index(conn, params) do
     filters = Filters.from_params(params)
 
+    disruptions = Filters.apply_to_disruptions(Disruptions.list_disruptionsv2(), filters)
+
     render(conn, "index.html",
       user: conn.assigns.current_user,
-      disruptions: Disruptions.list_disruptionsv2(),
+      disruptions: disruptions,
       filters: filters
     )
   end

@@ -8,6 +8,8 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
   alias __MODULE__.{Calendar, Table}
   import __MODULE__.Helpers
 
+  alias Arrow.Disruptions.DisruptionV2
+
   @empty_set MapSet.new()
 
   defmodule Behaviour do
@@ -20,9 +22,21 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
 
   @behaviour Behaviour
 
-  @type t :: %__MODULE__{view: Calendar.t() | Table.t()}
+  @type t :: %__MODULE__{kinds: MapSet.t(atom()), view: Calendar.t() | Table.t()}
 
   defstruct kinds: @empty_set, only_approved?: false, search: nil, view: %Table{}
+
+  @disruption_kind_routes %{
+    blue_line: ["Blue"],
+    orange_line: ["Orange"],
+    red_line: ["Red"],
+    mattapan_line: ["Mattapan"],
+    green_line: ["Green-B", "Green-C", "Green-D", "Green-E"],
+    green_line_b: ["Green-B"],
+    green_line_c: ["Green-C"],
+    green_line_d: ["Green-D"],
+    green_line_e: ["Green-E"]
+  }
 
   @spec calendar?(%__MODULE__{}) :: boolean
   def calendar?(%__MODULE__{view: %Calendar{}}), do: true
@@ -87,5 +101,22 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
       {key, value} when is_list(value) -> Enum.map(value, &{"#{key}[]", &1})
       {key, value} -> [{key, value}]
     end)
+  end
+
+  @spec apply_to_disruptions([DisruptionV2.t()], t()) :: [DisruptionV2.t()]
+  def apply_to_disruptions(disruptions, filters) do
+    disruptions
+    |> Enum.filter(fn disruption ->
+      apply_kinds_filter(disruption, filters)
+    end)
+  end
+
+  defp apply_kinds_filter(_disruption, %__MODULE__{kinds: kinds}) when kinds == @empty_set,
+    do: true
+
+  defp apply_kinds_filter(disruption, %__MODULE__{kinds: kinds}) do
+    kind_routes = kinds |> Enum.map(&@disruption_kind_routes[&1]) |> List.flatten()
+
+    Enum.any?(disruption.limits, fn limit -> limit.route.id in kind_routes end)
   end
 end
