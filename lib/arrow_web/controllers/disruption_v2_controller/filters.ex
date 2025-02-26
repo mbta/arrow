@@ -8,8 +8,6 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
   alias __MODULE__.{Calendar, Table}
   import __MODULE__.Helpers
 
-  alias Arrow.Disruptions.DisruptionV2
-
   @empty_set MapSet.new()
 
   defmodule Behaviour do
@@ -22,21 +20,13 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
 
   @behaviour Behaviour
 
-  @type t :: %__MODULE__{kinds: MapSet.t(atom()), view: Calendar.t() | Table.t()}
+  @type t :: %__MODULE__{
+          kinds: MapSet.t(atom()),
+          only_approved?: boolean(),
+          view: Calendar.t() | Table.t()
+        }
 
   defstruct kinds: @empty_set, only_approved?: false, search: nil, view: %Table{}
-
-  @disruption_kind_routes %{
-    blue_line: ["Blue"],
-    orange_line: ["Orange"],
-    red_line: ["Red"],
-    mattapan_line: ["Mattapan"],
-    green_line: ["Green-B", "Green-C", "Green-D", "Green-E"],
-    green_line_b: ["Green-B"],
-    green_line_c: ["Green-C"],
-    green_line_d: ["Green-D"],
-    green_line_e: ["Green-E"]
-  }
 
   @spec calendar?(%__MODULE__{}) :: boolean
   def calendar?(%__MODULE__{view: %Calendar{}}), do: true
@@ -54,6 +44,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
     %__MODULE__{
       kinds:
         params |> Map.get("kinds", []) |> Enum.map(&String.to_existing_atom/1) |> MapSet.new(),
+      only_approved?: not is_nil(params["only_approved"]),
       view: view_mod.from_params(params)
     }
   end
@@ -74,6 +65,11 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
     struct!(filters, kinds: new_kinds)
   end
 
+  @spec toggle_only_approved(t()) :: t()
+  def toggle_only_approved(%__MODULE__{only_approved?: only_approved} = filters) do
+    %__MODULE__{filters | only_approved?: !only_approved}
+  end
+
   @spec toggle_view(%__MODULE__{}) :: %__MODULE__{}
   def toggle_view(%__MODULE__{view: %Calendar{}} = filters), do: %{filters | view: %Table{}}
   def toggle_view(%__MODULE__{view: %Table{}} = filters), do: %{filters | view: %Calendar{}}
@@ -81,6 +77,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
   @impl true
   def to_params(%__MODULE__{
         kinds: kinds,
+        only_approved?: only_approved?,
         view: %{__struct__: view_mod} = view
       }) do
     %{}
@@ -90,6 +87,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
       "kinds",
       kinds |> MapSet.to_list() |> Enum.map(&to_string/1) |> Enum.sort()
     )
+    |> put_if(only_approved?, "only_approved", "true")
     |> Map.merge(view_mod.to_params(view))
   end
 
@@ -101,22 +99,5 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
       {key, value} when is_list(value) -> Enum.map(value, &{"#{key}[]", &1})
       {key, value} -> [{key, value}]
     end)
-  end
-
-  @spec apply_to_disruptions([DisruptionV2.t()], t()) :: [DisruptionV2.t()]
-  def apply_to_disruptions(disruptions, filters) do
-    disruptions
-    |> Enum.filter(fn disruption ->
-      apply_kinds_filter(disruption, filters)
-    end)
-  end
-
-  defp apply_kinds_filter(_disruption, %__MODULE__{kinds: kinds}) when kinds == @empty_set,
-    do: true
-
-  defp apply_kinds_filter(disruption, %__MODULE__{kinds: kinds}) do
-    kind_routes = kinds |> Enum.map(&@disruption_kind_routes[&1]) |> List.flatten()
-
-    Enum.any?(disruption.limits, fn limit -> limit.route.id in kind_routes end)
   end
 end

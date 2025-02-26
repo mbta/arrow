@@ -396,4 +396,25 @@ defmodule Arrow.Disruptions do
       &(&1 |> Integer.to_string() |> String.pad_leading(2, "0"))
     )
   end
+
+  def start_end_dates(%DisruptionV2{limits: [], replacement_services: []}) do
+    {nil, nil}
+  end
+
+  def start_end_dates(%DisruptionV2{
+        limits: limits,
+        replacement_services: replacement_services
+      }) do
+    min_date =
+      (limits ++ replacement_services)
+      |> Enum.map(& &1.start_date)
+      |> Enum.min(Date, fn -> ~D[9999-12-31] end)
+
+    max_date =
+      (limits ++ replacement_services)
+      |> Enum.map(& &1.end_date)
+      |> Enum.max(Date, fn -> ~D[0000-01-01] end)
+
+    {min_date, max_date}
+  end
 end
