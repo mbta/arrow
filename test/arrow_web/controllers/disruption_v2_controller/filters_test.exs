@@ -137,7 +137,7 @@ defmodule ArrowWeb.DisruptionV2Controller.FiltersTest do
     test "functions as to_params/1 but flattens lists into query-param format" do
       filters = %Filters{search: "test", kinds: set(~w(red_line blue_line)a)}
 
-      expected = [{"kinds[]", "blue_line"}, {"kinds[]", "red_line"}]
+      expected = [{"kinds[]", "blue_line"}, {"kinds[]", "red_line"}, {"search", "test"}]
       assert Filters.to_flat_params(filters) == expected
     end
   end
