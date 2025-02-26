@@ -41,10 +41,16 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
   def from_params(params) when is_map(params) do
     view_mod = if(params["view"] == "calendar", do: Calendar, else: Table)
 
+    search =
+      if params["search"] in [nil, ""] or String.trim(params["search"]) == "",
+        do: nil,
+        else: params["search"]
+
     %__MODULE__{
       kinds:
         params |> Map.get("kinds", []) |> Enum.map(&String.to_existing_atom/1) |> MapSet.new(),
       only_approved?: not is_nil(params["only_approved"]),
+      search: search,
       view: view_mod.from_params(params)
     }
   end
@@ -78,6 +84,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
   def to_params(%__MODULE__{
         kinds: kinds,
         only_approved?: only_approved?,
+        search: search,
         view: %{__struct__: view_mod} = view
       }) do
     %{}
@@ -88,6 +95,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
       kinds |> MapSet.to_list() |> Enum.map(&to_string/1) |> Enum.sort()
     )
     |> put_if(only_approved?, "only_approved", "true")
+    |> put_if(not is_nil(search), "search", search)
     |> Map.merge(view_mod.to_params(view))
   end
 

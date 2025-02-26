@@ -31,7 +31,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Index do
     Enum.filter(
       disruptions,
       &(apply_kinds_filter(&1, filters) and apply_only_approved_filter(&1, filters) and
-          apply_past_filter(&1, filters))
+          apply_past_filter(&1, filters) and apply_search_filter(&1, filters))
     )
   end
 
@@ -59,4 +59,38 @@ defmodule ArrowWeb.DisruptionV2Controller.Index do
   end
 
   defp apply_past_filter(_disruption, _filter), do: true
+
+  defp apply_search_filter(_disruption, %Filters{search: nil}), do: true
+
+  defp apply_search_filter(%DisruptionV2{} = disruption, %Filters{search: search}) do
+    title_contains?(disruption, search) or
+      limits_contains?(disruption, search) or
+      replacement_services_contains?(disruption, search)
+  end
+
+  defp title_contains?(disruption, search) do
+    string_contains?(disruption.title, search)
+  end
+
+  defp limits_contains?(%DisruptionV2{limits: limits}, search) do
+    Enum.any?(limits, fn limit ->
+      string_contains?(limit.start_stop.name, search) ||
+        string_contains?(limit.end_stop.name, search)
+    end)
+  end
+
+  defp replacement_services_contains?(
+         %DisruptionV2{replacement_services: replacement_services},
+         search
+       ) do
+    Enum.any?(replacement_services, fn replacement_service ->
+      string_contains?(replacement_service.shuttle.shuttle_name, search)
+    end)
+  end
+
+  defp string_contains?(string, search) do
+    string
+    |> String.downcase()
+    |> String.contains?(String.downcase(search))
+  end
 end
