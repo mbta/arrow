@@ -45,11 +45,23 @@ const sortable = {
   },
 } as ViewHook
 
+const LimitTime = {
+  mounted() {
+    this.el.addEventListener("input", (_e) => {
+      let match = this.el.value.match(/^(\d{2})(\d{2})$/)
+      if (match) {
+        this.el.value = `${match[1]}:${match[2]}`
+      }
+    })
+  },
+} as ViewHook
+
 // https://github.com/fidr/phoenix_live_react
 const hooks = {
   LiveReact,
   sortable,
   ...live_select,
+  LimitTime,
 }
 
 const csrfToken = document

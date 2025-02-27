@@ -159,6 +159,7 @@ defmodule ArrowWeb.LimitSection do
                     :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
                     field={f_day_of_week[:start_time]}
                     disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
+                    phx-hook="LimitTime"
                   />
                 </div>
                 <div class="col col-lg-3">
@@ -166,6 +167,7 @@ defmodule ArrowWeb.LimitSection do
                     :if={normalize_value("checkbox", input_value(f_day_of_week, :active?))}
                     field={f_day_of_week[:end_time]}
                     disabled={normalize_value("checkbox", input_value(f_day_of_week, :all_day?))}
+                    phx-hook="LimitTime"
                   />
                 </div>
                 <div class="col">
