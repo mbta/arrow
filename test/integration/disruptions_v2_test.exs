@@ -2,6 +2,7 @@ defmodule Arrow.Integration.DisruptionsV2Test do
   use ExUnit.Case, async: true
   use Wallaby.Feature
   import Wallaby.Browser, except: [text: 1]
+  import Wallaby.Query
   import Arrow.{DisruptionsFixtures, LimitsFixtures}
 
   @moduletag :integration
@@ -15,6 +16,7 @@ defmodule Arrow.Integration.DisruptionsV2Test do
 
     session
     |> visit("/disruptionsv2")
+    |> click(link("include past"))
     |> assert_text(disruption.title)
     |> assert_text("01/01/24")
     |> assert_text("01/01/25")
