@@ -76,7 +76,7 @@ defmodule Arrow.Shuttles.Shuttle do
           add_error(
             changeset,
             :status,
-            "cannot set to a non-active status while in use as a replacement servie"
+            "cannot set to a non-active status while in use as a replacement service"
           )
         else
           changeset

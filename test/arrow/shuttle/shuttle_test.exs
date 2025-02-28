@@ -178,7 +178,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
                valid?: false,
                errors: [
                  status:
-                   {"cannot set to a non-active status while in use as a replacement servie", []}
+                   {"cannot set to a non-active status while in use as a replacement service", []}
                ]
              } = changeset
     end
