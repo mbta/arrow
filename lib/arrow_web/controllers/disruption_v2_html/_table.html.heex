@@ -14,7 +14,7 @@
 
   <tbody>
     <%= for disruption <- @disruptions do %>
-      <% {start_date, end_date} = get_dates(disruption) %>
+      <% {start_date, end_date} = Disruptions.start_end_dates(disruption) %>
       <tr>
         <td>
           <a href={~p"/disruptionsv2/#{disruption.id}/edit"} class="btn-link btn-sm">

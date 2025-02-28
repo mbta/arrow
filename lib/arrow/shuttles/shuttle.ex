@@ -2,6 +2,10 @@ defmodule Arrow.Shuttles.Shuttle do
   @moduledoc "schema for a shuttle for the db"
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
+
+  alias Arrow.Disruptions.ReplacementService
+  alias Arrow.Repo
 
   @type id :: integer
   @type t :: %__MODULE__{
@@ -59,7 +63,24 @@ defmodule Arrow.Shuttles.Shuttle do
         end
 
       _ ->
-        changeset
+        id = get_field(changeset, :id)
+
+        replacement_services =
+          if is_nil(id) do
+            []
+          else
+            Repo.all(from r in ReplacementService, where: r.shuttle_id == ^id)
+          end
+
+        if length(replacement_services) > 0 do
+          add_error(
+            changeset,
+            :status,
+            "cannot set to a non-active status while in use as a replacement service"
+          )
+        else
+          changeset
+        end
     end
   end
 

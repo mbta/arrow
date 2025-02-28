@@ -20,7 +20,11 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
 
   @behaviour Behaviour
 
-  @type t :: %__MODULE__{view: Calendar.t() | Table.t()}
+  @type t :: %__MODULE__{
+          kinds: MapSet.t(atom()),
+          only_approved?: boolean(),
+          view: Calendar.t() | Table.t()
+        }
 
   defstruct kinds: @empty_set, only_approved?: false, search: nil, view: %Table{}
 
@@ -37,7 +41,12 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
   def from_params(params) when is_map(params) do
     view_mod = if(params["view"] == "calendar", do: Calendar, else: Table)
 
-    %__MODULE__{view: view_mod.from_params(params)}
+    %__MODULE__{
+      kinds:
+        params |> Map.get("kinds", []) |> Enum.map(&String.to_existing_atom/1) |> MapSet.new(),
+      only_approved?: not is_nil(params["only_approved"]),
+      view: view_mod.from_params(params)
+    }
   end
 
   @impl true
@@ -50,16 +59,35 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
     %__MODULE__{view: view_mod.reset(view)}
   end
 
+  @spec toggle_kind(%__MODULE__{}, atom()) :: %__MODULE__{}
+  def toggle_kind(%__MODULE__{kinds: kinds} = filters, kind) do
+    new_kinds = if(kind in kinds, do: MapSet.delete(kinds, kind), else: MapSet.put(kinds, kind))
+    struct!(filters, kinds: new_kinds)
+  end
+
+  @spec toggle_only_approved(t()) :: t()
+  def toggle_only_approved(%__MODULE__{only_approved?: only_approved} = filters) do
+    %__MODULE__{filters | only_approved?: !only_approved}
+  end
+
   @spec toggle_view(%__MODULE__{}) :: %__MODULE__{}
   def toggle_view(%__MODULE__{view: %Calendar{}} = filters), do: %{filters | view: %Table{}}
   def toggle_view(%__MODULE__{view: %Table{}} = filters), do: %{filters | view: %Calendar{}}
 
   @impl true
   def to_params(%__MODULE__{
+        kinds: kinds,
+        only_approved?: only_approved?,
         view: %{__struct__: view_mod} = view
       }) do
     %{}
     |> put_if(view_mod == Calendar, "view", "calendar")
+    |> put_if(
+      kinds != @empty_set,
+      "kinds",
+      kinds |> MapSet.to_list() |> Enum.map(&to_string/1) |> Enum.sort()
+    )
+    |> put_if(only_approved?, "only_approved", "true")
     |> Map.merge(view_mod.to_params(view))
   end
 
