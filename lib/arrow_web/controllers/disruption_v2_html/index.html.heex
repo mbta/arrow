@@ -59,7 +59,7 @@
         {react_component("Components.DisruptionCalendar", DCalendar.props(@disruptions))}
       </div>
     <% else %>
-      <._table conn={@conn} disruptions={@disruptions} />
+      <._table conn={@conn} disruptions={@disruptions} filters={@filters} />
     <% end %>
   </div>
 </div>
