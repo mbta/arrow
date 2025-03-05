@@ -63,5 +63,110 @@ defmodule ArrowWeb.DisruptionV2ControllerTest do
 
       refute resp =~ "Test disruption"
     end
+
+    @tag :authenticated
+    test "lists disruptions that match a search query on title", %{conn: conn} do
+      insert(:disruption_v2, title: "Test disruption Alpha")
+      insert(:disruption_v2, title: "Test disruption Beta")
+
+      resp = conn |> get(~p"/disruptionsv2?search=Alpha") |> html_response(200)
+
+      assert resp =~ "Test disruption Alpha"
+      refute resp =~ "Test disruption Beta"
+    end
+
+    @tag :authenticated
+    test "lists disruptions that match a search query on stop names", %{conn: conn} do
+      route = insert(:gtfs_route)
+      start_stop = insert(:gtfs_stop, name: "UniqueStopName Station")
+      end_stop = insert(:gtfs_stop, name: "Regular Station")
+
+      insert(:limit,
+        disruption: build(:disruption_v2, title: "Matching Disruption"),
+        route: route,
+        start_stop: start_stop,
+        end_stop: end_stop
+      )
+
+      insert(:limit,
+        disruption: build(:disruption_v2, title: "Nonmatching Disruption"),
+        route: route
+      )
+
+      resp = conn |> get(~p"/disruptionsv2?search=UniqueStopName") |> html_response(200)
+
+      assert resp =~ "Matching Disruption"
+      refute resp =~ "Nonmatching Disruption"
+    end
+
+    @tag :authenticated
+    test "lists disruptions that match a search query on shuttle names", %{conn: conn} do
+      route = insert(:gtfs_route)
+
+      disruption_with_shuttle = insert(:disruption_v2, title: "Matching Disruption")
+      disruption_without_shuttle = insert(:disruption_v2, title: "Nonmatching Disruption")
+
+      matching_shuttle =
+        Arrow.ShuttlesFixtures.shuttle_fixture(
+          %{
+            shuttle_name: "Right Bus",
+            status: :active
+          },
+          true,
+          true
+        )
+
+      Arrow.DisruptionsFixtures.replacement_service_fixture(%{
+        disruption_id: disruption_with_shuttle.id,
+        shuttle_id: matching_shuttle.id,
+        start_date: Date.utc_today(),
+        end_date: Date.add(Date.utc_today(), 30)
+      })
+
+      wrong_shuttle =
+        Arrow.ShuttlesFixtures.shuttle_fixture(
+          %{
+            shuttle_name: "Wrong Bus",
+            status: :active
+          },
+          true,
+          true
+        )
+
+      Arrow.DisruptionsFixtures.replacement_service_fixture(%{
+        disruption_id: disruption_without_shuttle.id,
+        shuttle_id: wrong_shuttle.id,
+        start_date: Date.utc_today(),
+        end_date: Date.add(Date.utc_today(), 30)
+      })
+
+      insert(:limit, disruption: disruption_with_shuttle, route: route)
+      insert(:limit, disruption: disruption_without_shuttle, route: route)
+
+      resp = conn |> get(~p"/disruptionsv2?search=Right") |> html_response(200)
+
+      assert resp =~ "Matching Disruption"
+      refute resp =~ "Nonmatching Disruption"
+    end
+
+    @tag :authenticated
+    test "search is case-insensitive", %{conn: conn} do
+      insert(:disruption_v2, title: "Case Sensitive Test")
+
+      resp = conn |> get(~p"/disruptionsv2?search=case sensitive") |> html_response(200)
+
+      assert resp =~ "Case Sensitive Test"
+    end
+
+    @tag :authenticated
+    test "empty search string returns all disruptions", %{conn: conn} do
+      insert(:disruption_v2, title: "Test disruption Alpha")
+      insert(:disruption_v2, title: "Test disruption Beta")
+
+      resp = conn |> get(~p"/disruptionsv2?search=") |> html_response(200)
+
+      assert resp =~ "Alpha"
+      assert resp =~ "Beta"
+    end
   end
 end
