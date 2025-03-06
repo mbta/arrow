@@ -33,14 +33,18 @@ defmodule Arrow.Limits.LimitDayOfWeek do
 
   @doc false
   def changeset(limit_day_of_week, attrs \\ %{}) do
-    time_regex = ~r/^\d{2}:\d{2}$/
+    time_regex = ~r/^\d{2}:[0-5][0-9]$/
 
     limit_day_of_week
     |> cast(attrs, [:active?, :day_name, :start_time, :end_time, :limit_id, :all_day?])
     |> validate_required([:day_name])
     |> validate_required_times()
-    |> validate_format(:start_time, time_regex, message: "must be in format HH:MM")
-    |> validate_format(:end_time, time_regex, message: "must be in format HH:MM")
+    |> validate_format(:start_time, time_regex,
+      message: "must be a valid GTFS time in format HH:MM"
+    )
+    |> validate_format(:end_time, time_regex,
+      message: "must be a valid GTFS time in format HH:MM"
+    )
     |> validate_start_time_before_end_time()
     |> assoc_constraint(:limit)
   end
