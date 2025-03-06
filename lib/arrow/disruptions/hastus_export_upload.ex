@@ -1,6 +1,8 @@
 defmodule Arrow.Disruptions.HastusExportUpload do
   alias Arrow.Util
 
+  require Logger
+
   @type error_message :: String.t()
   @type error_details :: list(String.t())
   @type rescued_exception_error :: {:ok, {:error, list({error_message(), []})}}
@@ -22,9 +24,9 @@ defmodule Arrow.Disruptions.HastusExportUpload do
   Parses a HASTUS export and returns a list of data
   Includes a rescue clause to catch errors while parsing user-provided data
   """
-  # @spec extract_data_from_upload(%{:path => binary()}) ::
-  #         {:ok, {:error, list({error_message, error_details})} | {:ok, versioned_data()}}
-  #         | rescued_exception_error()
+  @spec extract_data_from_upload(%{:path => binary()}) ::
+          {:ok, {:errors, list(error_message)} | {:ok, list(map())}}
+          | rescued_exception_error()
   def extract_data_from_upload(%{path: zip_path}) do
     with {:ok, zip_file_data} <- File.read(zip_path),
          {:ok, unzipped_file_list} <-
@@ -36,6 +38,14 @@ defmodule Arrow.Disruptions.HastusExportUpload do
       {:errors, errors} ->
         {:ok, {:errors, errors}}
     end
+  rescue
+    e ->
+      Logger.warning(
+        "HastusExportUpload failed to parse zip, message=#{Exception.format(:error, e, __STACKTRACE__)}"
+      )
+
+      # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
+      {:ok, {:errors, ["Could not parse zip."]}}
   end
 
   defp read_csvs(unzip) do
@@ -112,8 +122,28 @@ defmodule Arrow.Disruptions.HastusExportUpload do
 
   defp get_unzipped_file_path(filename), do: ~c"#{@tmp_dir}/#{filename}"
 
-  defp parse_export(file_map) do
-    File.rm_rf!(@tmp_dir) |> IO.inspect()
-    file_map
+  defp parse_export(%{"all_calendar.txt" => calendar}) do
+    imported_service =
+      Enum.map(calendar, fn %{
+                              "service_id" => service_id,
+                              "start_date" => start_date_string,
+                              "end_date" => end_date_string
+                            } ->
+        [start_year, start_month, start_day] =
+          Regex.run(~r/^(\d{4})(\d{2})(\d{2})/, start_date_string, capture: :all_but_first)
+
+        [end_year, end_month, end_day] =
+          Regex.run(~r/^(\d{4})(\d{2})(\d{2})/, end_date_string, capture: :all_but_first)
+
+        %{
+          service_id: service_id,
+          start_date: Date.from_iso8601!("#{start_year}-#{start_month}-#{start_day}"),
+          end_date: Date.from_iso8601!("#{end_year}-#{end_month}-#{end_day}")
+        }
+      end)
+
+    _ = File.rm_rf!(@tmp_dir)
+
+    imported_service
   end
 end

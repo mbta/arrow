@@ -12,7 +12,6 @@ defmodule ArrowWeb.HastusExportSection do
   attr :form, :any, required: true
   attr :uploads, :any
   attr :disruption, DisruptionV2, required: true
-  attr :source_export_data, :any
   attr :source_export_filename, :any
 
   def render(assigns) do
@@ -29,9 +28,9 @@ defmodule ArrowWeb.HastusExportSection do
       </.link_button>
 
       <.simple_form
-        :if={!is_nil(@form)}
+        :if={@show_upload_form}
         for={@form}
-        id="hastus_export-form"
+        id="upload-form"
         phx-submit={@action}
         phx-change="validate"
         phx-target={@myself}
@@ -65,6 +64,16 @@ defmodule ArrowWeb.HastusExportSection do
           </div>
         </div>
       </.simple_form>
+
+      <.simple_form
+        :if={@show_service_import_form}
+        for={@form}
+        id="service-import-form"
+        phx-submit={@action}
+        phx-change="validate"
+        phx-target={@myself}
+      >
+      </.simple_form>
     </section>
     """
   end
@@ -75,8 +84,8 @@ defmodule ArrowWeb.HastusExportSection do
      |> assign(assigns)
      |> assign(form: nil)
      |> assign(action: "create")
-     |> assign(errors: [])
-     |> assign(source_export_data: nil)
+     |> assign(show_upload_form: false)
+     |> assign(show_service_import_form: false)
      |> assign(source_export_filename: nil)
      |> allow_upload(:hastus_export,
        accept: ~w(.zip),
@@ -95,7 +104,8 @@ defmodule ArrowWeb.HastusExportSection do
      |> assign(assigns)
      |> assign(form: form)
      |> assign(action: action)
-     |> assign(errors: [])
+     |> assign(show_upload_form: true)
+     |> assign(show_service_import_form: false)
      |> allow_upload(:hastus_export,
        accept: ~w(.zip),
        progress: &handle_progress/3,
@@ -117,7 +127,7 @@ defmodule ArrowWeb.HastusExportSection do
   end
 
   defp handle_progress(:hastus_export, entry, socket) do
-    socket = socket |> clear_flash() |> assign(errors: [])
+    socket = clear_flash(socket)
 
     if entry.done? do
       %LiveView.UploadEntry{client_name: client_name} = entry
@@ -132,8 +142,13 @@ defmodule ArrowWeb.HastusExportSection do
           {:noreply, socket}
 
         {:ok, data} ->
-          {:noreply, socket}
-          # update_form_with_workbook_data(socket, data, client_name)
+          form =
+            socket.assigns.hastus_export
+            |> HastusExport.changeset(%{services: data, source_export_filename: client_name})
+            |> to_form()
+
+          {:noreply,
+           assign(socket, form: form, show_upload_form: false, show_service_import_form: true)}
       end
     else
       {:noreply, socket}
