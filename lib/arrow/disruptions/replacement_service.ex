@@ -122,10 +122,10 @@ defmodule Arrow.Disruptions.ReplacementService do
   @spec schedule_service_types :: list(atom())
   def schedule_service_types, do: [:weekday, :saturday, :sunday]
 
-  def trips_with_times(
-        %__MODULE__{source_workbook_data: workbook_data} = replacement_service,
-        service_type_atom
-      ) do
+  defp trips_with_times(
+         %__MODULE__{source_workbook_data: workbook_data} = replacement_service,
+         service_type_atom
+       ) do
     service_type_abbreviation = Map.get(@service_type_to_workbook_abbreviation, service_type_atom)
 
     if day_of_week_data =
@@ -228,14 +228,12 @@ defmodule Arrow.Disruptions.ReplacementService do
            [
              %{
                stop_id: route_stop.display_stop_id,
-               stop_time: current_stop_time
+               stop_time: "#{current_stop_time}:00"
              }
            ]}
       end)
 
-    %{
-      stop_times: stop_times
-    }
+    stop_times
   end
 
   defp do_make_trip_start_times(

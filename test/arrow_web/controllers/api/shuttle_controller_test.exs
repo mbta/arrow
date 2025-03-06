@@ -96,6 +96,8 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
           route = route_map[id |> String.to_integer()]
           assert to_string(route.destination) == attributes["destination"]
           assert to_string(route.direction_id) == attributes["direction_id"]
+          # Will always be disabled in test because we don't actually upload shape files
+          assert "disabled" == attributes["shape_id"]
 
         %{"type" => "gtfs_stop", "attributes" => attributes, "id" => id} ->
           stop = stop_map[id]
