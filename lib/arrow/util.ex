@@ -6,4 +6,9 @@ defmodule Arrow.Util do
     # See https://github.blog/engineering/like-injection/
     Regex.replace(~r/([\%_])/, string, fn _, x -> "\\#{x}" end) <> "%"
   end
+
+  @spec prepend_if(list(), boolean(), any()) :: list()
+  def prepend_if(list, condition, item) do
+    if condition, do: [item | list], else: list
+  end
 end

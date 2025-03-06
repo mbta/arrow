@@ -5,7 +5,8 @@ defmodule ArrowWeb.HastusExportSection do
 
   use ArrowWeb, :live_component
 
-  alias Arrow.Disruptions.{DisruptionV2, HastusExport}
+  alias Arrow.Disruptions.{DisruptionV2, HastusExport, HastusExportUpload}
+  alias Phoenix.LiveView
 
   attr :id, :string
   attr :form, :any, required: true
@@ -27,36 +28,43 @@ defmodule ArrowWeb.HastusExportSection do
         <.icon name="hero-plus" /> <span>upload HASTUS export</span>
       </.link_button>
 
-      <div :if={!is_nil(@form)} class="container border-2 border-dashed border-primary p-3">
-        <h4 class="text-primary">
-          add a new service schedule
-        </h4>
-        <h5>Upload a new HASTUS export</h5>
-        <div class="row">
-          <div class="col-lg-3">
-            <.button
-              type="button"
-              class="btn-primary btn-sm w-100"
-              phx-click={JS.dispatch("click", to: "##{@uploads.hastus_export.ref}")}
-              target="_blank"
-            >
-              <.live_file_input upload={@uploads.hastus_export} class="hidden" /> Upload HASTUS .zip
-            </.button>
-            <.input field={@form[:source_export_data]} type="text" class="hidden" />
-          </div>
-          <div class="col-lg-3">
-            <.button
-              type="button"
-              id="cancel_add_hastus_export_button"
-              class="btn-outline-primary btn-sm w-100"
-              phx-click="cancel_add_hastus_export"
-              phx-target={@myself}
-            >
-              cancel
-            </.button>
+      <.simple_form
+        :if={!is_nil(@form)}
+        for={@form}
+        id="hastus_export-form"
+        phx-submit={@action}
+        phx-change="validate"
+        phx-target={@myself}
+      >
+        <div class="container border-2 border-dashed border-primary p-3">
+          <h4 class="text-primary">
+            add a new service schedule
+          </h4>
+          <h5>Upload a new HASTUS export</h5>
+          <div class="row">
+            <div class="col-lg-3">
+              <.link_button
+                class="btn-primary btn-sm w-100"
+                phx-click={JS.dispatch("click", to: "##{@uploads.hastus_export.ref}")}
+                target="_blank"
+              >
+                <.live_file_input upload={@uploads.hastus_export} class="hidden" /> Upload HASTUS .zip
+              </.link_button>
+            </div>
+            <div class="col-lg-3">
+              <.button
+                type="button"
+                id="cancel_add_hastus_export_button"
+                class="btn-outline-primary btn-sm w-100"
+                phx-click="cancel_add_hastus_export"
+                phx-target={@myself}
+              >
+                cancel
+              </.button>
+            </div>
           </div>
         </div>
-      </div>
+      </.simple_form>
     </section>
     """
   end
@@ -104,9 +112,31 @@ defmodule ArrowWeb.HastusExportSection do
      |> assign(form: nil)}
   end
 
-  defp handle_progress(:hastus_export, _entry, socket) do
+  def handle_event("validate", _, socket) do
+    {:noreply, socket}
+  end
+
+  defp handle_progress(:hastus_export, entry, socket) do
     socket = socket |> clear_flash() |> assign(errors: [])
 
-    {:noreply, socket}
+    if entry.done? do
+      %LiveView.UploadEntry{client_name: client_name} = entry
+
+      case consume_uploaded_entry(
+             socket,
+             entry,
+             &HastusExportUpload.extract_data_from_upload/1
+           ) do
+        {:errors, errors} ->
+          send(self(), {:put_flash, :errors, {"Failed to upload from #{client_name}:", errors}})
+          {:noreply, socket}
+
+        {:ok, data} ->
+          {:noreply, socket}
+          # update_form_with_workbook_data(socket, data, client_name)
+      end
+    else
+      {:noreply, socket}
+    end
   end
 end
