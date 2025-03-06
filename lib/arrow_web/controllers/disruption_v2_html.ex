@@ -65,6 +65,45 @@ defmodule ArrowWeb.DisruptionV2View do
     """
   end
 
+  attr :conn, Plug.Conn, required: true
+  attr :filters, ArrowWeb.DisruptionV2Controller.Filters, required: true
+  attr :field, :atom, required: true
+  attr :label, :string, required: true
+
+  defp sort_link(assigns) do
+    %{view: %{sort: sort_state, active_sort: active_field}} = assigns.filters
+
+    # Current state values
+    active? = assigns.field == active_field
+    direction = Map.fetch!(sort_state, assigns.field)
+
+    # New state values, if this sort link is clicked
+    new_direction =
+      case {active?, direction} do
+        {true, :asc} -> :desc
+        {true, :desc} -> :asc
+        {false, dir} -> dir
+      end
+
+    new_sort = %{sort_state | assigns.field => new_direction}
+
+    assigns =
+      assign(assigns,
+        icon: Map.fetch!(%{asc: "↑", desc: "↓"}, direction),
+        active?: active?,
+        new_sort: new_sort
+      )
+
+    ~H"""
+    <a
+      class={["m-disruption-table__sortable", @active? and "active"]}
+      href={update_view_path(@conn, @filters, sort: @new_sort, active_sort: @field)}
+    >
+      {@label}<span class="mx-1 m-disruption-table__sortable-indicator">{@icon}</span>
+    </a>
+    """
+  end
+
   @spec route_icon_path(Plug.Conn.t(), atom()) :: String.t()
   defp route_icon_path(conn, route_id) do
     Routes.static_path(conn, "/images/icon-#{@route_icon_names[route_id]}-small.svg")
@@ -100,5 +139,11 @@ defmodule ArrowWeb.DisruptionV2View do
 
   defp update_view_path(conn, %{view: view} = filters, key, value) do
     update_filters_path(conn, %{filters | view: %{view | key => value}})
+  end
+
+  defp update_view_path(conn, filters, updater) do
+    view = Enum.reduce(updater, filters.view, fn {key, value}, view -> %{view | key => value} end)
+
+    update_filters_path(conn, %{filters | view: view})
   end
 end
