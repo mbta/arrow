@@ -12,7 +12,6 @@ defmodule ArrowWeb.HastusExportSection do
   attr :id, :string
   attr :form, :any, required: true
   attr :uploads, :any
-  attr :source_export_filename, :any
   attr :icon_paths, :map, required: true
 
   @route_icon_names %{
@@ -158,7 +157,6 @@ defmodule ArrowWeb.HastusExportSection do
      |> assign(action: "create")
      |> assign(show_upload_form: false)
      |> assign(show_service_import_form: false)
-     |> assign(source_export_filename: nil)
      |> allow_upload(:hastus_export,
        accept: ~w(.zip),
        progress: &handle_progress/3,
@@ -209,8 +207,8 @@ defmodule ArrowWeb.HastusExportSection do
              entry,
              &ExportUpload.extract_data_from_upload/1
            ) do
-        {:errors, errors} ->
-          send(self(), {:put_flash, :errors, {"Failed to upload from #{client_name}:", errors}})
+        {:error, error} ->
+          send(self(), {:put_flash, :error, "Failed to upload from #{client_name}: #{error}"})
           {:noreply, socket}
 
         {:ok, data, route} ->
@@ -218,6 +216,7 @@ defmodule ArrowWeb.HastusExportSection do
             socket.assigns.form.source
             |> Ecto.Changeset.put_change(:services, data)
             |> Ecto.Changeset.put_change(:route_id, route)
+            |> Ecto.Changeset.put_change(:source_export_filename, client_name)
             |> to_form()
 
           {:noreply,

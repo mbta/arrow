@@ -27,19 +27,19 @@ defmodule Arrow.Hastus.ExportUpload do
   Includes a rescue clause to catch errors while parsing user-provided data
   """
   @spec extract_data_from_upload(%{:path => binary()}) ::
-          {:ok, {:errors, list(error_message)} | {:ok, list(map())}} | rescued_exception_error()
+          {:ok, {:error, error_message} | {:ok, list(map())}} | rescued_exception_error()
   def extract_data_from_upload(%{path: zip_path}) do
     with {:ok, zip_file_data} <- File.read(zip_path),
          {:ok, unzipped_file_list} <-
            :zip.unzip(zip_file_data, [{:file_list, @filenames}, {:cwd, @tmp_dir}]),
          {:ok, file_map} <- read_csvs(unzipped_file_list),
          revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
-         :ok <- validate_trip_shapes(revenue_trips, file_map["all_shapes.txt"]),
+         :ok <- validate_trip_shapes(revenue_trips),
          {:ok, route} <- infer_route(revenue_trips, file_map["all_stop_times.txt"]) do
       {:ok, {:ok, parse_export(file_map), route}}
     else
-      {:errors, errors} ->
-        {:ok, {:errors, errors}}
+      {:error, error} ->
+        {:ok, {:error, error}}
     end
   rescue
     e ->
@@ -48,14 +48,14 @@ defmodule Arrow.Hastus.ExportUpload do
       )
 
       # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
-      {:ok, {:errors, ["Could not parse zip."]}}
+      {:ok, {:error, "Could not parse zip."}}
   end
 
   defp read_csvs(unzip) do
     missing_files = Enum.filter(@filenames, &(get_unzipped_file_path(&1) not in unzip))
 
     if Enum.any?(missing_files) do
-      {:errors,
+      {:error,
        ["The following files are missing from the export: #{Enum.join(missing_files, ", ")}"]}
     else
       map =
@@ -75,15 +75,15 @@ defmodule Arrow.Hastus.ExportUpload do
     end
   end
 
-  defp validate_trip_shapes(revenue_trips, exported_shapes) do
-    shape_ids = Enum.map(exported_shapes, & &1["shape_id"])
-
+  defp validate_trip_shapes(revenue_trips) do
     trips_with_invalid_shapes =
       revenue_trips
-      |> Stream.filter(&(&1["shape_id"] not in shape_ids))
+      |> Stream.filter(&(&1["shape_id"] in [nil, ""]))
       |> Stream.map(& &1["trip_id"])
 
-    if Enum.any?(trips_with_invalid_shapes), do: :error, else: :ok
+    if Enum.any?(trips_with_invalid_shapes),
+      do: {:error, "Trips found with invalid shapes"},
+      else: :ok
   end
 
   defp infer_route(revenue_trips, exported_stop_times) do
@@ -108,7 +108,7 @@ defmodule Arrow.Hastus.ExportUpload do
     case routes do
       [route] -> {:ok, route}
       ["Green-B", "Green-C", "Green-D", "Green-E"] -> {:ok, "Green"}
-      _ -> {:errors, ["Export contains more than one route"]}
+      _ -> {:error, "Export contains more than one route"}
     end
   end
 
