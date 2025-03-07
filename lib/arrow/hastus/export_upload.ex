@@ -26,8 +26,7 @@ defmodule Arrow.Hastus.ExportUpload do
   Includes a rescue clause to catch errors while parsing user-provided data
   """
   @spec extract_data_from_upload(%{:path => binary()}) ::
-          {:ok, {:errors, list(error_message)} | {:ok, list(map())}}
-          | rescued_exception_error()
+          {:ok, {:errors, list(error_message)} | {:ok, list(map())}} | rescued_exception_error()
   def extract_data_from_upload(%{path: zip_path}) do
     with {:ok, zip_file_data} <- File.read(zip_path),
          {:ok, unzipped_file_list} <-
@@ -123,32 +122,56 @@ defmodule Arrow.Hastus.ExportUpload do
 
   defp get_unzipped_file_path(filename), do: ~c"#{@tmp_dir}/#{filename}"
 
-  defp parse_export(%{"all_calendar.txt" => calendar}) do
+  defp parse_export(%{"all_calendar.txt" => calendar, "all_calendar_dates.txt" => calendar_dates}) do
     imported_service =
-      Enum.map(calendar, fn %{
-                              "service_id" => service_id,
-                              "start_date" => start_date_string,
-                              "end_date" => end_date_string
-                            } ->
-        [start_year, start_month, start_day] =
-          Regex.run(~r/^(\d{4})(\d{2})(\d{2})/, start_date_string, capture: :all_but_first)
+      Enum.reduce(Stream.concat(calendar, calendar_dates), [], fn
+        # calendar rows
+        %{
+          "service_id" => service_id,
+          "start_date" => start_date_string,
+          "end_date" => end_date_string
+        },
+        acc ->
+          [start_year, start_month, start_day] = extract_date_parts(start_date_string)
+          [end_year, end_month, end_day] = extract_date_parts(end_date_string)
 
-        [end_year, end_month, end_day] =
-          Regex.run(~r/^(\d{4})(\d{2})(\d{2})/, end_date_string, capture: :all_but_first)
+          date = %ServiceDate{
+            start_date: Date.from_iso8601!("#{start_year}-#{start_month}-#{start_day}"),
+            end_date: Date.from_iso8601!("#{end_year}-#{end_month}-#{end_day}")
+          }
 
-        %Service{
-          service_id: service_id,
-          service_dates: [
-            %ServiceDate{
-              start_date: Date.from_iso8601!("#{start_year}-#{start_month}-#{start_day}"),
-              end_date: Date.from_iso8601!("#{end_year}-#{end_month}-#{end_day}")
-            }
-          ]
-        }
+          add_or_update_list(acc, service_id, date)
+
+        # calendar_dates rows
+        %{"service_id" => service_id, "date" => date_string}, acc ->
+          [year, month, day] = extract_date_parts(date_string)
+
+          date = %ServiceDate{
+            start_date: Date.from_iso8601!("#{year}-#{month}-#{day}"),
+            end_date: Date.from_iso8601!("#{year}-#{month}-#{day}")
+          }
+
+          add_or_update_list(acc, service_id, date)
       end)
 
     _ = File.rm_rf!(@tmp_dir)
 
     imported_service
   end
+
+  defp extract_date_parts(date_string),
+    do: Regex.run(~r/^(\d{4})(\d{2})(\d{2})/, date_string, capture: :all_but_first)
+
+  def add_or_update_list([], new_service_id, new_date),
+    do: [%Service{service_id: new_service_id, service_dates: [new_date]}]
+
+  def add_or_update_list(
+        [h = %{service_id: service_id, service_dates: existing_dates} | t],
+        service_id,
+        new_date
+      ),
+      do: [%{h | service_dates: existing_dates ++ [new_date]} | t]
+
+  def add_or_update_list([h | t], new_service_id, new_date),
+    do: [h | add_or_update_list(t, new_service_id, new_date)]
 end
