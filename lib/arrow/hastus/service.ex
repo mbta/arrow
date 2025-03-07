@@ -8,6 +8,7 @@ defmodule Arrow.Hastus.Service do
           service_id: String.t(),
           start_date: Date.t(),
           end_date: Date.t(),
+          import?: boolean(),
           hastus_export: HastusExport.t() | Ecto.Association.NotLoaded.t()
         }
 
@@ -15,6 +16,7 @@ defmodule Arrow.Hastus.Service do
     field :service_id, :string
     field :start_date, :date
     field :end_date, :date
+    field :import?, :boolean, virtual: true
     belongs_to :hastus_export, Arrow.Disruptions.HastusExport
   end
 

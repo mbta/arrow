@@ -4,6 +4,7 @@ defmodule ArrowWeb.HastusExportSection do
   """
 
   use ArrowWeb, :live_component
+  import Phoenix.HTML.Form
 
   alias Arrow.Disruptions.{DisruptionV2, HastusExport, HastusExportUpload}
   alias Phoenix.LiveView
@@ -73,6 +74,42 @@ defmodule ArrowWeb.HastusExportSection do
         phx-change="validate"
         phx-target={@myself}
       >
+        <div class="container border-2 border-dashed border-primary p-3">
+          <h4 class="text-primary mb-0">
+            add a new service schedule
+          </h4>
+          <.input field={@form[:source_export_filename]} type="text" class="hidden" />
+          <div class="text-success mb-3">
+            <strong>
+              <i>Successfully imported export {input_value(@form, :source_export_filename)}!</i>
+            </strong>
+          </div>
+          <.inputs_for :let={f_service} field={@form[:services]}>
+            <div class="row mb-3">
+              <div class="col-lg-2">
+                <strong>service ID </strong>
+              </div>
+              <div class="col-lg-10">
+                {input_value(f_service, :service_id)}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-lg-2"></div>
+              <div class="col-lg-2">
+                <strong>import?</strong>
+                <.input field={f_service[:import?]} type="checkbox" />
+              </div>
+              <div class="col-lg-4">
+                <strong>start date</strong>
+                <.input field={f_service[:start_date]} type="date" />
+              </div>
+              <div class="col-lg-4">
+                <strong>end date</strong>
+                <.input field={f_service[:end_date]} type="date" />
+              </div>
+            </div>
+          </.inputs_for>
+        </div>
       </.simple_form>
     </section>
     """
