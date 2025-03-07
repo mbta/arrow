@@ -319,7 +319,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     socket =
       socket
       |> clear_flash()
-      |> assign(:hastus_export_in_form, %Export{})
+      |> assign(:hastus_export_in_form, %Export{services: []})
 
     {:noreply, socket}
   end

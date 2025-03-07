@@ -1,4 +1,5 @@
 defmodule Arrow.Hastus.ExportUpload do
+  alias Arrow.Hastus.{Service, ServiceDate}
   alias Arrow.Util
 
   require Logger
@@ -135,10 +136,14 @@ defmodule Arrow.Hastus.ExportUpload do
         [end_year, end_month, end_day] =
           Regex.run(~r/^(\d{4})(\d{2})(\d{2})/, end_date_string, capture: :all_but_first)
 
-        %{
+        %Service{
           service_id: service_id,
-          start_date: Date.from_iso8601!("#{start_year}-#{start_month}-#{start_day}"),
-          end_date: Date.from_iso8601!("#{end_year}-#{end_month}-#{end_day}")
+          service_dates: [
+            %ServiceDate{
+              start_date: Date.from_iso8601!("#{start_year}-#{start_month}-#{start_day}"),
+              end_date: Date.from_iso8601!("#{end_year}-#{end_month}-#{end_day}")
+            }
+          ]
         }
       end)
 

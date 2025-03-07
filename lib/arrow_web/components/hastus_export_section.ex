@@ -96,16 +96,31 @@ defmodule ArrowWeb.HastusExportSection do
               <div class="col-lg-2"></div>
               <div class="col-lg-2">
                 <strong>import?</strong>
-                <.input field={f_service[:import?]} type="checkbox" />
               </div>
               <div class="col-lg-4">
                 <strong>start date</strong>
-                <.input field={f_service[:start_date]} type="date" />
               </div>
               <div class="col-lg-4">
                 <strong>end date</strong>
-                <.input field={f_service[:end_date]} type="date" />
               </div>
+            </div>
+            <div class="row">
+              <.inputs_for :let={f_date} field={f_service[:service_dates]}>
+                <div class="col-lg-2"></div>
+                <%= if f_date.index == 0 do %>
+                  <div class="col-lg-2">
+                    <.input field={f_service[:import?]} type="checkbox" />
+                  </div>
+                <% else %>
+                  <div class="col-lg-2"></div>
+                <% end %>
+                <div class="col-lg-4">
+                  <.input field={f_date[:start_date]} type="date" />
+                </div>
+                <div class="col-lg-4">
+                  <.input field={f_date[:end_date]} type="date" />
+                </div>
+              </.inputs_for>
             </div>
           </.inputs_for>
         </div>
@@ -179,8 +194,8 @@ defmodule ArrowWeb.HastusExportSection do
 
         {:ok, data} ->
           form =
-            socket.assigns.hastus_export
-            |> Export.changeset(%{services: data, source_export_filename: client_name})
+            socket.assigns.form.source
+            |> Ecto.Changeset.put_change(:services, data)
             |> to_form()
 
           {:noreply,
