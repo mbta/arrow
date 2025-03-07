@@ -1,6 +1,7 @@
 defmodule Arrow.Hastus.ExportUpload do
+  import Ecto.Query, only: [from: 2]
+
   alias Arrow.Hastus.{Service, ServiceDate}
-  alias Arrow.Util
 
   require Logger
 
@@ -32,8 +33,10 @@ defmodule Arrow.Hastus.ExportUpload do
          {:ok, unzipped_file_list} <-
            :zip.unzip(zip_file_data, [{:file_list, @filenames}, {:cwd, @tmp_dir}]),
          {:ok, file_map} <- read_csvs(unzipped_file_list),
-         :ok <- validate_export(file_map) do
-      {:ok, {:ok, parse_export(file_map)}}
+         revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
+         :ok <- validate_trip_shapes(revenue_trips, file_map["all_shapes.txt"]),
+         {:ok, route} <- infer_route(revenue_trips, file_map["all_stop_times.txt"]) do
+      {:ok, {:ok, parse_export(file_map), route}}
     else
       {:errors, errors} ->
         {:ok, {:errors, errors}}
@@ -72,52 +75,41 @@ defmodule Arrow.Hastus.ExportUpload do
     end
   end
 
-  defp validate_export(file_map) do
-    exported_trips = file_map["all_trips.txt"]
-    exported_shapes = file_map["all_shapes.txt"]
-    exported_routes = file_map["all_routes.txt"]
-
-    errors =
-      []
-      |> Util.prepend_if(
-        :error == validate_trip_shapes(exported_trips, exported_shapes),
-        "Trips found with missing/invalid shape IDs."
-      )
-      |> Util.prepend_if(
-        :error == validate_trip_routes(exported_trips, exported_routes),
-        "Trips found with missing/invalid route IDs."
-      )
-
-    if Enum.any?(errors) do
-      {:errors, errors}
-    else
-      :ok
-    end
-  end
-
-  defp validate_trip_shapes(exported_trips, exported_shapes) do
+  defp validate_trip_shapes(revenue_trips, exported_shapes) do
     shape_ids = Enum.map(exported_shapes, & &1["shape_id"])
 
     trips_with_invalid_shapes =
-      exported_trips
-      |> Enum.filter(&(&1["shape_id"] not in shape_ids))
-      |> Enum.map(& &1["trip_id"])
+      revenue_trips
+      |> Stream.filter(&(&1["shape_id"] not in shape_ids))
+      |> Stream.map(& &1["trip_id"])
 
     if Enum.any?(trips_with_invalid_shapes), do: :error, else: :ok
   end
 
-  defp validate_trip_routes(exported_trips, exported_routes) do
-    exported_trip_routes =
-      exported_trips
-      |> Enum.map(fn
-        %{"route_id" => route_id} ->
-          Enum.find(exported_routes, &(&1["route_id"] == route_id))["route_short_name"]
-      end)
+  defp infer_route(revenue_trips, exported_stop_times) do
+    revenue_trip_ids = Enum.map(revenue_trips, & &1["trip_id"])
+
+    exported_stop_ids =
+      exported_stop_times
+      |> Enum.filter(&(&1["trip_id"] in revenue_trip_ids))
+      |> Enum.map(& &1["stop_id"])
       |> Enum.uniq()
 
-    if length(exported_trip_routes) != 1 or Enum.any?(exported_trip_routes, &is_nil/1),
-      do: :error,
-      else: :ok
+    routes =
+      Arrow.Repo.all(
+        from st in Arrow.Gtfs.StopTime,
+          where: st.stop_id in ^exported_stop_ids,
+          join: t in Arrow.Gtfs.Trip,
+          on: t.id == st.trip_id,
+          select: t.route_id,
+          distinct: t.route_id
+      )
+
+    case routes do
+      [route] -> {:ok, route}
+      ["Green-B", "Green-C", "Green-D", "Green-E"] -> {:ok, "Green"}
+      _ -> {:errors, ["Export contains more than one route"]}
+    end
   end
 
   defp get_unzipped_file_path(filename), do: ~c"#{@tmp_dir}/#{filename}"
@@ -162,16 +154,18 @@ defmodule Arrow.Hastus.ExportUpload do
   defp extract_date_parts(date_string),
     do: Regex.run(~r/^(\d{4})(\d{2})(\d{2})/, date_string, capture: :all_but_first)
 
-  def add_or_update_list([], new_service_id, new_date),
+  defp add_or_update_list([], new_service_id, new_date),
     do: [%Service{service_id: new_service_id, service_dates: [new_date]}]
 
-  def add_or_update_list(
-        [h = %{service_id: service_id, service_dates: existing_dates} | t],
-        service_id,
-        new_date
-      ),
-      do: [%{h | service_dates: existing_dates ++ [new_date]} | t]
+  defp add_or_update_list(
+         [h = %{service_id: service_id, service_dates: existing_dates} | t],
+         service_id,
+         new_date
+       ),
+       do: [%{h | service_dates: existing_dates ++ [new_date]} | t]
 
-  def add_or_update_list([h | t], new_service_id, new_date),
+  defp add_or_update_list([h | t], new_service_id, new_date),
     do: [h | add_or_update_list(t, new_service_id, new_date)]
+
+  defp revenue_trip?(%{"route_id" => route_id}), do: Regex.match?(~r/^\d+_*-.+$/, route_id)
 end

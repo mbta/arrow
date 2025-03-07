@@ -13,6 +13,14 @@ defmodule ArrowWeb.HastusExportSection do
   attr :form, :any, required: true
   attr :uploads, :any
   attr :source_export_filename, :any
+  attr :icon_paths, :map, required: true
+
+  @route_icon_names %{
+    "Blue" => :blue_line,
+    "Green" => :green_line,
+    "Orange" => :orange_line,
+    "Red" => :red_line
+  }
 
   def render(assigns) do
     ~H"""
@@ -83,10 +91,23 @@ defmodule ArrowWeb.HastusExportSection do
               <i>Successfully imported export {input_value(@form, :source_export_filename)}!</i>
             </strong>
           </div>
+          <div class="row mb-3">
+            <.input field={@form[:route_id]} type="text" class="hidden" />
+            <div class="col-lg-2">
+              <strong>route</strong>
+            </div>
+            <div class="col-lg-10">
+              <span
+                class="m-icon m-icon-sm mr-1"
+                style={"background-image: url('#{route_icon_path(@icon_paths, input_value(@form, :route_id))}');"}
+              />
+              {input_value(@form, :route_id)} line
+            </div>
+          </div>
           <.inputs_for :let={f_service} field={@form[:services]}>
             <div class="row mb-3">
               <div class="col-lg-2">
-                <strong>service ID </strong>
+                <strong>service ID</strong>
               </div>
               <div class="col-lg-10">
                 {input_value(f_service, :service_id)}
@@ -192,10 +213,11 @@ defmodule ArrowWeb.HastusExportSection do
           send(self(), {:put_flash, :errors, {"Failed to upload from #{client_name}:", errors}})
           {:noreply, socket}
 
-        {:ok, data} ->
+        {:ok, data, route} ->
           form =
             socket.assigns.form.source
             |> Ecto.Changeset.put_change(:services, data)
+            |> Ecto.Changeset.put_change(:route_id, route)
             |> to_form()
 
           {:noreply,
@@ -204,5 +226,9 @@ defmodule ArrowWeb.HastusExportSection do
     else
       {:noreply, socket}
     end
+  end
+
+  defp route_icon_path(icon_paths, route_id) do
+    Map.get(icon_paths, @route_icon_names[route_id])
   end
 end

@@ -103,6 +103,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       <.live_component
         id="hastus_export_section"
         module={ArrowWeb.HastusExportSection}
+        icon_paths={@icon_paths}
         hastus_export={@hastus_export_in_form}
       />
 
