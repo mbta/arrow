@@ -2,14 +2,14 @@ defmodule Arrow.Hastus.Service do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Arrow.Disruptions.HastusExport
+  alias Arrow.Hastus.Export
 
   @type t :: %__MODULE__{
           service_id: String.t(),
           start_date: Date.t(),
           end_date: Date.t(),
           import?: boolean(),
-          hastus_export: HastusExport.t() | Ecto.Association.NotLoaded.t()
+          export: Export.t() | Ecto.Association.NotLoaded.t()
         }
 
   embedded_schema do
@@ -17,7 +17,7 @@ defmodule Arrow.Hastus.Service do
     field :start_date, :date
     field :end_date, :date
     field :import?, :boolean, virtual: true
-    belongs_to :hastus_export, Arrow.Disruptions.HastusExport
+    belongs_to :export, Arrow.Hastus.Service
   end
 
   @doc false
@@ -26,7 +26,7 @@ defmodule Arrow.Hastus.Service do
       :service_id,
       :start_date,
       :end_date,
-      :hastus_export_id
+      :export_id
     ])
   end
 end

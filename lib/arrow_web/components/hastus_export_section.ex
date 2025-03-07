@@ -6,13 +6,12 @@ defmodule ArrowWeb.HastusExportSection do
   use ArrowWeb, :live_component
   import Phoenix.HTML.Form
 
-  alias Arrow.Disruptions.{DisruptionV2, HastusExport, HastusExportUpload}
+  alias Arrow.Hastus.{Export, ExportUpload}
   alias Phoenix.LiveView
 
   attr :id, :string
   attr :form, :any, required: true
   attr :uploads, :any
-  attr :disruption, DisruptionV2, required: true
   attr :source_export_filename, :any
 
   def render(assigns) do
@@ -133,7 +132,7 @@ defmodule ArrowWeb.HastusExportSection do
 
   def update(assigns, socket) do
     hastus_export = assigns.hastus_export
-    form = hastus_export |> HastusExport.changeset(%{}) |> to_form()
+    form = hastus_export |> Export.changeset(%{}) |> to_form()
     action = if is_nil(assigns.hastus_export.id), do: "create", else: "update"
 
     {:ok,
@@ -172,7 +171,7 @@ defmodule ArrowWeb.HastusExportSection do
       case consume_uploaded_entry(
              socket,
              entry,
-             &HastusExportUpload.extract_data_from_upload/1
+             &ExportUpload.extract_data_from_upload/1
            ) do
         {:errors, errors} ->
           send(self(), {:put_flash, :errors, {"Failed to upload from #{client_name}:", errors}})
@@ -181,7 +180,7 @@ defmodule ArrowWeb.HastusExportSection do
         {:ok, data} ->
           form =
             socket.assigns.hastus_export
-            |> HastusExport.changeset(%{services: data, source_export_filename: client_name})
+            |> Export.changeset(%{services: data, source_export_filename: client_name})
             |> to_form()
 
           {:noreply,

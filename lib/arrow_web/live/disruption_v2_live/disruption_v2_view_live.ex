@@ -2,7 +2,8 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   use ArrowWeb, :live_view
 
   alias Arrow.{Adjustment, Disruptions}
-  alias Arrow.Disruptions.{DisruptionV2, HastusExport, Limit, ReplacementService}
+  alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
+  alias Arrow.Hastus.Export
 
   @spec disruption_status_labels :: map()
   def disruption_status_labels, do: %{Approved: true, Pending: false}
@@ -103,7 +104,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         id="hastus_export_section"
         module={ArrowWeb.HastusExportSection}
         hastus_export={@hastus_export_in_form}
-        disruption={@disruption_v2}
       />
 
       <.live_component
@@ -319,7 +319,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     socket =
       socket
       |> clear_flash()
-      |> assign(:hastus_export_in_form, %HastusExport{})
+      |> assign(:hastus_export_in_form, %Export{})
 
     {:noreply, socket}
   end

@@ -1,4 +1,4 @@
-defmodule Arrow.Disruptions.HastusExportUpload do
+defmodule Arrow.Hastus.ExportUpload do
   alias Arrow.Util
 
   require Logger
@@ -41,7 +41,7 @@ defmodule Arrow.Disruptions.HastusExportUpload do
   rescue
     e ->
       Logger.warning(
-        "HastusExportUpload failed to parse zip, message=#{Exception.format(:error, e, __STACKTRACE__)}"
+        "Hastus.ExportUpload failed to parse zip, message=#{Exception.format(:error, e, __STACKTRACE__)}"
       )
 
       # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
