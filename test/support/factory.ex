@@ -147,6 +147,79 @@ defmodule Arrow.Factory do
     |> merge_attributes(attrs)
   end
 
+  def gtfs_calendar_factory(attrs \\ %{}) do
+    %Arrow.Gtfs.Calendar{
+      monday: true,
+      tuesday: true,
+      wednesday: true,
+      thursday: true,
+      friday: true,
+      saturday: false,
+      sunday: false,
+      start_date: ~D[2025-01-01],
+      end_date: ~D[2026-01-01]
+    }
+    |> merge_attributes(attrs)
+  end
+
+  def gtfs_service_factory(attrs \\ %{}) do
+    %Arrow.Gtfs.Service{
+      id: sequence(:source_label, &"gtfs-service-#{&1}"),
+      calendar: build(:gtfs_calendar),
+      calendar_dates: []
+    }
+    |> merge_attributes(attrs)
+  end
+
+  def gtfs_trip_factory(attrs \\ %{}) do
+    %Arrow.Gtfs.Trip{
+      id: sequence(:source_label, &"gtfs-trip-#{&1}"),
+      service: build(:gtfs_service),
+      route: build(:gtfs_route),
+      headsign: "Test Headsign",
+      short_name: "Test Short Name",
+      direction_id: 0,
+      wheelchair_accessible: :accessible,
+      bikes_allowed: :bikes_allowed
+    }
+    |> merge_attributes(attrs)
+  end
+
+  def gtfs_direction_factory(attrs \\ %{}) do
+    %Arrow.Gtfs.Direction{
+      direction_id: 0,
+      desc: "South",
+      destination: "Elsewhere",
+      route: build(:gtfs_route)
+    }
+    |> merge_attributes(attrs)
+  end
+
+  def gtfs_stop_time_factory(attrs \\ %{}) do
+    %Arrow.Gtfs.StopTime{
+      trip: build(:gtfs_trip),
+      stop_sequence: sequence(:stop_sequence, & &1),
+      arrival_time: "12:00:00",
+      departure_time: "12:00:00",
+      stop: build(:gtfs_stop),
+      pickup_type: 0,
+      drop_off_type: 0
+    }
+    |> merge_attributes(attrs)
+  end
+
+  def gtfs_route_pattern_factory(attrs \\ %{}) do
+    %Arrow.Gtfs.RoutePattern{
+      id: sequence(:source_label, &"gtfs-route-pattern-#{&1}"),
+      direction_id: 0,
+      name: "Test Route Pattern",
+      typicality: :typical,
+      sort_order: sequence(:sort_order, & &1),
+      canonical: 1
+    }
+    |> merge_attributes(attrs)
+  end
+
   def gtfs_agency_factory(attrs \\ %{}) do
     %Arrow.Gtfs.Agency{
       id: sequence(:source_label, &"gtfs-agency-#{&1}"),
