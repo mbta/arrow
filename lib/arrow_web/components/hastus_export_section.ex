@@ -13,6 +13,7 @@ defmodule ArrowWeb.HastusExportSection do
   attr :form, :any, required: true
   attr :uploads, :any
   attr :icon_paths, :map, required: true
+  attr :error, :string
 
   @route_icon_names %{
     "Blue" => :blue_line,
@@ -68,6 +69,9 @@ defmodule ArrowWeb.HastusExportSection do
                 cancel
               </.button>
             </div>
+          </div>
+          <div :if={not is_nil(@error)} class="text-danger">
+            {@error}
           </div>
         </div>
       </.simple_form>
@@ -157,6 +161,7 @@ defmodule ArrowWeb.HastusExportSection do
      |> assign(action: "create")
      |> assign(show_upload_form: false)
      |> assign(show_service_import_form: false)
+     |> assign(error: nil)
      |> allow_upload(:hastus_export,
        accept: ~w(.zip),
        progress: &handle_progress/3,
@@ -176,6 +181,7 @@ defmodule ArrowWeb.HastusExportSection do
      |> assign(action: action)
      |> assign(show_upload_form: true)
      |> assign(show_service_import_form: false)
+     |> assign(error: nil)
      |> allow_upload(:hastus_export,
        accept: ~w(.zip),
        progress: &handle_progress/3,
@@ -197,7 +203,7 @@ defmodule ArrowWeb.HastusExportSection do
   end
 
   defp handle_progress(:hastus_export, entry, socket) do
-    socket = clear_flash(socket)
+    socket = socket |> clear_flash() |> assign(error: nil)
 
     if entry.done? do
       %LiveView.UploadEntry{client_name: client_name} = entry
@@ -208,8 +214,7 @@ defmodule ArrowWeb.HastusExportSection do
              &ExportUpload.extract_data_from_upload/1
            ) do
         {:error, error} ->
-          send(self(), {:put_flash, :error, "Failed to upload from #{client_name}: #{error}"})
-          {:noreply, socket}
+          {:noreply, assign(socket, error: error)}
 
         {:ok, data, route} ->
           form =
