@@ -1,4 +1,6 @@
 defmodule Arrow.Hastus.ServiceDate do
+  @moduledoc "schema for a HASTUS service date for the db"
+
   use Ecto.Schema
   import Ecto.Changeset
 

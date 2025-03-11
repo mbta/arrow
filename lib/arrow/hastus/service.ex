@@ -1,4 +1,6 @@
 defmodule Arrow.Hastus.Service do
+  @moduledoc "schema for a HASTUS service for the db"
+
   use Ecto.Schema
   import Ecto.Changeset
 

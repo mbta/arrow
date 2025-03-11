@@ -1,4 +1,6 @@
 defmodule Arrow.Hastus.Export do
+  @moduledoc "schema for a HASTUS export for the db"
+
   use Ecto.Schema
 
   import Ecto.Changeset
