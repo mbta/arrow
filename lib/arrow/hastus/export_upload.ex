@@ -43,6 +43,7 @@ defmodule Arrow.Hastus.ExportUpload do
       {:ok, {:ok, parse_export(file_map), route}}
     else
       {:error, error} ->
+        _ = File.rm_rf!(@tmp_dir)
         {:ok, {:error, error}}
     end
   rescue
