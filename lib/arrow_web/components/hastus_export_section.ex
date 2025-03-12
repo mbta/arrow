@@ -93,7 +93,9 @@ defmodule ArrowWeb.HastusExportSection do
           <h4 class="text-primary mb-0">
             add a new service schedule
           </h4>
-          <.input field={@form[:source_export_filename]} type="text" class="hidden" />
+          <.input field={@form[:s3_path]} type="text" class="hidden" />
+          <.input field={@form[:disruption_id]} type="text" class="hidden" />
+          <.input field={@form[:line_id]} type="text" class="hidden" />
           <div class="text-success mb-3">
             <strong>
               <i>Successfully imported export {@uploaded_file_name}!</i>
@@ -113,12 +115,13 @@ defmodule ArrowWeb.HastusExportSection do
             </div>
           </div>
           <.inputs_for :let={f_service} field={@form[:services]}>
+            <.input field={f_service[:name]} type="text" class="hidden" />
             <div class="row mb-3">
               <div class="col-lg-2">
                 <strong>service ID</strong>
               </div>
               <div class="col-lg-10">
-                {input_value(f_service, :service_id)}
+                {input_value(f_service, :name)}
               </div>
             </div>
             <div class="row">
@@ -152,6 +155,25 @@ defmodule ArrowWeb.HastusExportSection do
               </.inputs_for>
             </div>
           </.inputs_for>
+          <div class="row">
+            <div class="col-lg-4">
+              <.button type="submit" class="btn btn-primary btn-sm w-100" phx-target={@myself}>
+                save
+              </.button>
+            </div>
+            <div class="col-lg-3">
+              <.button
+                type="button"
+                id="cancel_add_hastus_export_button"
+                class="btn-outline-primary btn-sm w-100"
+                data-confirm="Are you sure you want to cancel? All changes to this HASTUS export will be lost!"
+                phx-click="cancel_add_hastus_export"
+                phx-target={@myself}
+              >
+                cancel
+              </.button>
+            </div>
+          </div>
         </div>
       </.simple_form>
     </section>
@@ -196,13 +218,36 @@ defmodule ArrowWeb.HastusExportSection do
      )}
   end
 
+  def handle_event("create", %{"export" => export_params}, socket) do
+    case Hastus.create_export(export_params) do
+      {:ok, _} ->
+        send(self(), :update_disruption)
+        send(self(), {:put_flash, :info, "HASTUS export created successfully"})
+
+        {:noreply,
+         socket
+         |> assign(hastus_export: nil)
+         |> assign(form: nil)
+         |> assign(show_upload_form: false)
+         |> assign(show_service_import_form: false)}
+
+      {:error, changeset} ->
+        {:noreply,
+         assign(socket,
+           form: to_form(changeset)
+         )}
+    end
+  end
+
   def handle_event("cancel_add_hastus_export", _params, socket) do
     send(self(), :cancel_hastus_export_form)
 
     {:noreply,
      socket
      |> assign(hastus_export: nil)
-     |> assign(form: nil)}
+     |> assign(form: nil)
+     |> assign(show_upload_form: false)
+     |> assign(show_service_import_form: false)}
   end
 
   def handle_event("validate", _, socket) do
@@ -227,12 +272,12 @@ defmodule ArrowWeb.HastusExportSection do
           form =
             socket.assigns.hastus_export
             |> Hastus.change_export(%{
-              services: data,
-              line_id: line,
-              s3_path: client_name,
-              disruption_id: socket.assigns.disruption.id
+              "services" => data,
+              "line_id" => line,
+              "s3_path" => client_name,
+              "disruption_id" => socket.assigns.disruption.id
             })
-            |> to_form()
+            |> to_form(action: :validate)
 
           {:noreply,
            assign(socket,

@@ -25,7 +25,7 @@ defmodule Arrow.Hastus.Service do
   @doc false
   def changeset(service, attrs) do
     service
-    |> cast(attrs, [:name])
+    |> cast(attrs, [:name, :export_id])
     |> validate_required([:name])
     |> cast_assoc(:service_dates, with: &ServiceDate.changeset/2)
     |> assoc_constraint(:export)

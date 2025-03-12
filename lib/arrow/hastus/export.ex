@@ -28,8 +28,10 @@ defmodule Arrow.Hastus.Export do
   @doc false
   def changeset(export, attrs) do
     export
-    |> cast(attrs, [:s3_path])
+    |> cast(attrs, [:s3_path, :line_id, :disruption_id])
     |> validate_required([:s3_path])
     |> cast_assoc(:services, with: &Service.changeset/2)
+    |> assoc_constraint(:line)
+    |> assoc_constraint(:disruption)
   end
 end

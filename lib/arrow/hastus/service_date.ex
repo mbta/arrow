@@ -23,7 +23,7 @@ defmodule Arrow.Hastus.ServiceDate do
   @doc false
   def changeset(service_date, attrs) do
     service_date
-    |> cast(attrs, [:start_date, :end_date])
+    |> cast(attrs, [:start_date, :end_date, :service_id])
     |> validate_required([:start_date, :end_date])
     |> assoc_constraint(:service)
   end
