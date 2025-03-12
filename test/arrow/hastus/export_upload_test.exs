@@ -4,7 +4,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
 
   import Arrow.Factory
 
-  alias Arrow.Hastus.{ExportUpload, Service}
+  alias Arrow.Hastus.ExportUpload
 
   @export_dir "test/support/fixtures/hastus"
 
@@ -40,10 +40,10 @@ defmodule Arrow.Hastus.ExportUploadTest do
       assert {:ok,
               {:ok,
                [
-                 %Service{service_id: "RTL12025-hmb15wg1-Weekday-01"},
-                 %Service{service_id: "RTL12025-hmb15016-Saturday-01"},
-                 %Service{service_id: "RTL12025-hmb15017-Sunday-01"},
-                 %Service{service_id: "RTL12025-hmb15mo1-Weekday-01"}
+                 %{name: "RTL12025-hmb15wg1-Weekday-01"},
+                 %{name: "RTL12025-hmb15016-Saturday-01"},
+                 %{name: "RTL12025-hmb15017-Sunday-01"},
+                 %{name: "RTL12025-hmb15mo1-Weekday-01"}
                ], "line-Blue"}} = data
     end
 

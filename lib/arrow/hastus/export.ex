@@ -18,7 +18,7 @@ defmodule Arrow.Hastus.Export do
 
   schema "hastus_exports" do
     field :s3_path, :string
-    has_many :services, Arrow.Hastus.Service
+    has_many :services, Arrow.Hastus.Service, on_delete: :delete_all
     belongs_to :line, Arrow.Gtfs.Line, type: :string
     belongs_to :disruption, Arrow.Disruptions.DisruptionV2
 

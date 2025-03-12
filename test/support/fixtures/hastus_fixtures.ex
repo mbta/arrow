@@ -4,6 +4,8 @@ defmodule Arrow.HastusFixtures do
   entities via the `Arrow.Hastus` context.
   """
 
+  @preloads [:line, :disruption, services: [:service_dates]]
+
   @doc """
   Generate a export.
   """
@@ -11,11 +13,12 @@ defmodule Arrow.HastusFixtures do
     {:ok, export} =
       attrs
       |> Enum.into(%{
-        s3_path: "some s3_path"
+        s3_path: "some s3_path",
+        services: [%{name: "some service"}]
       })
       |> Arrow.Hastus.create_export()
 
-    export
+    Arrow.Repo.preload(export, @preloads)
   end
 
   @doc """
@@ -39,8 +42,8 @@ defmodule Arrow.HastusFixtures do
     {:ok, service_date} =
       attrs
       |> Enum.into(%{
-        end_date: ~U[2025-03-11 17:17:00Z],
-        start_date: ~U[2025-03-11 17:17:00Z]
+        end_date: ~D[2025-03-11],
+        start_date: ~D[2025-03-11]
       })
       |> Arrow.Hastus.create_service_date()
 

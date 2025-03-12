@@ -15,7 +15,7 @@ defmodule Arrow.Hastus.ServiceDate do
   schema "hastus_service_dates" do
     field :start_date, :date
     field :end_date, :date
-    belongs_to :service, Arrow.Hastus.Service
+    belongs_to :service, Arrow.Hastus.Service, on_replace: :delete
 
     timestamps(type: :utc_datetime)
   end

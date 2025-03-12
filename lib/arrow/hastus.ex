@@ -6,6 +6,8 @@ defmodule Arrow.Hastus do
   import Ecto.Query, warn: false
   alias Arrow.Repo
 
+  @preloads [:line, :disruption, services: [:service_dates]]
+
   alias Arrow.Hastus.Export
 
   @doc """
@@ -18,7 +20,7 @@ defmodule Arrow.Hastus do
 
   """
   def list_exports do
-    Repo.all(Export)
+    Export |> Repo.all() |> Repo.preload(@preloads)
   end
 
   @doc """
@@ -35,7 +37,7 @@ defmodule Arrow.Hastus do
       ** (Ecto.NoResultsError)
 
   """
-  def get_export!(id), do: Repo.get!(Export, id)
+  def get_export!(id), do: Export |> Repo.get!(id) |> Repo.preload(@preloads)
 
   @doc """
   Creates a export.

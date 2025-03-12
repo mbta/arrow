@@ -21,7 +21,7 @@ defmodule Arrow.HastusTest do
     end
 
     test "create_export/1 with valid data creates a export" do
-      valid_attrs = %{s3_path: "some s3_path"}
+      valid_attrs = %{s3_path: "some s3_path", services: [%{name: "some name"}]}
 
       assert {:ok, %Export{} = export} = Hastus.create_export(valid_attrs)
       assert export.s3_path == "some s3_path"
@@ -129,11 +129,11 @@ defmodule Arrow.HastusTest do
     end
 
     test "create_service_date/1 with valid data creates a service_date" do
-      valid_attrs = %{start_date: ~U[2025-03-11 17:17:00Z], end_date: ~U[2025-03-11 17:17:00Z]}
+      valid_attrs = %{start_date: ~D[2025-03-11], end_date: ~D[2025-03-11]}
 
       assert {:ok, %ServiceDate{} = service_date} = Hastus.create_service_date(valid_attrs)
-      assert service_date.start_date == ~U[2025-03-11 17:17:00Z]
-      assert service_date.end_date == ~U[2025-03-11 17:17:00Z]
+      assert service_date.start_date == ~D[2025-03-11]
+      assert service_date.end_date == ~D[2025-03-11]
     end
 
     test "create_service_date/1 with invalid data returns error changeset" do
@@ -142,16 +142,21 @@ defmodule Arrow.HastusTest do
 
     test "update_service_date/2 with valid data updates the service_date" do
       service_date = service_date_fixture()
-      update_attrs = %{start_date: ~U[2025-03-12 17:17:00Z], end_date: ~U[2025-03-12 17:17:00Z]}
+      update_attrs = %{start_date: ~D[2025-03-12], end_date: ~D[2025-03-12]}
 
-      assert {:ok, %ServiceDate{} = service_date} = Hastus.update_service_date(service_date, update_attrs)
-      assert service_date.start_date == ~U[2025-03-12 17:17:00Z]
-      assert service_date.end_date == ~U[2025-03-12 17:17:00Z]
+      assert {:ok, %ServiceDate{} = service_date} =
+               Hastus.update_service_date(service_date, update_attrs)
+
+      assert service_date.start_date == ~D[2025-03-12]
+      assert service_date.end_date == ~D[2025-03-12]
     end
 
     test "update_service_date/2 with invalid data returns error changeset" do
       service_date = service_date_fixture()
-      assert {:error, %Ecto.Changeset{}} = Hastus.update_service_date(service_date, @invalid_attrs)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Hastus.update_service_date(service_date, @invalid_attrs)
+
       assert service_date == Hastus.get_service_date!(service_date.id)
     end
 
