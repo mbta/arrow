@@ -128,7 +128,7 @@ defmodule Arrow.Factory do
     |> merge_attributes(attrs)
   end
 
-  def gtfs_route_factory() do
+  def gtfs_route_factory do
     %Arrow.Gtfs.Route{
       id: sequence(:source_label, &"gtfs-route-#{&1}"),
       agency: build(:gtfs_agency),
@@ -146,7 +146,7 @@ defmodule Arrow.Factory do
     }
   end
 
-  def gtfs_line_factory() do
+  def gtfs_line_factory do
     %Arrow.Gtfs.Line{
       id: sequence(:source_label, &"gtfs-line-#{&1}"),
       short_name: "",
@@ -159,7 +159,7 @@ defmodule Arrow.Factory do
     }
   end
 
-  def gtfs_calendar_factory() do
+  def gtfs_calendar_factory do
     %Arrow.Gtfs.Calendar{
       monday: true,
       tuesday: true,
@@ -173,7 +173,7 @@ defmodule Arrow.Factory do
     }
   end
 
-  def gtfs_service_factory() do
+  def gtfs_service_factory do
     %Arrow.Gtfs.Service{
       id: sequence(:source_label, &"gtfs-service-#{&1}"),
       calendar: build(:gtfs_calendar),
@@ -181,7 +181,7 @@ defmodule Arrow.Factory do
     }
   end
 
-  def gtfs_trip_factory() do
+  def gtfs_trip_factory do
     %Arrow.Gtfs.Trip{
       id: sequence(:source_label, &"gtfs-trip-#{&1}"),
       service: build(:gtfs_service),
@@ -194,7 +194,7 @@ defmodule Arrow.Factory do
     }
   end
 
-  def gtfs_direction_factory() do
+  def gtfs_direction_factory do
     %Arrow.Gtfs.Direction{
       direction_id: 0,
       desc: "South",
@@ -203,7 +203,7 @@ defmodule Arrow.Factory do
     }
   end
 
-  def gtfs_stop_time_factory() do
+  def gtfs_stop_time_factory do
     %Arrow.Gtfs.StopTime{
       trip: build(:gtfs_trip),
       stop_sequence: sequence(:stop_sequence, & &1),
@@ -215,7 +215,7 @@ defmodule Arrow.Factory do
     }
   end
 
-  def gtfs_route_pattern_factory() do
+  def gtfs_route_pattern_factory do
     %Arrow.Gtfs.RoutePattern{
       id: sequence(:source_label, &"gtfs-route-pattern-#{&1}"),
       direction_id: 0,
@@ -226,7 +226,7 @@ defmodule Arrow.Factory do
     }
   end
 
-  def gtfs_agency_factory() do
+  def gtfs_agency_factory do
     %Arrow.Gtfs.Agency{
       id: sequence(:source_label, &"gtfs-agency-#{&1}"),
       name: "MBTA",
