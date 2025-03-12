@@ -12,16 +12,19 @@ defmodule Arrow.Hastus.ServiceDate do
           service: Service.t() | Ecto.Association.NotLoaded.t()
         }
 
-  embedded_schema do
+  schema "hastus_service_dates" do
     field :start_date, :date
     field :end_date, :date
     belongs_to :service, Arrow.Hastus.Service
+
+    timestamps(type: :utc_datetime)
   end
 
   @doc false
-  def changeset(date, attrs) do
-    date
+  def changeset(service_date, attrs) do
+    service_date
     |> cast(attrs, [:start_date, :end_date])
+    |> validate_required([:start_date, :end_date])
     |> assoc_constraint(:service)
   end
 end

@@ -7,23 +7,26 @@ defmodule Arrow.Hastus.Service do
   alias Arrow.Hastus.{Export, ServiceDate}
 
   @type t :: %__MODULE__{
-          service_id: String.t(),
+          name: String.t(),
           service_dates: list(ServiceDate) | Ecto.Association.NotLoaded.t(),
           import?: boolean(),
           export: Export.t() | Ecto.Association.NotLoaded.t()
         }
 
-  embedded_schema do
-    field :service_id, :string
+  schema "hastus_services" do
+    field :name, :string
     field :import?, :boolean, virtual: true
     has_many :service_dates, Arrow.Hastus.ServiceDate
     belongs_to :export, Arrow.Hastus.Service
+
+    timestamps(type: :utc_datetime)
   end
 
   @doc false
   def changeset(service, attrs) do
     service
-    |> cast(attrs, [:service_id])
+    |> cast(attrs, [:name])
+    |> validate_required([:name])
     |> cast_assoc(:service_dates, with: &ServiceDate.changeset/2)
     |> assoc_constraint(:export)
   end
