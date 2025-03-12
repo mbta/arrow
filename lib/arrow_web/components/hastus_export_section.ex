@@ -244,10 +244,7 @@ defmodule ArrowWeb.HastusExportSection do
            |> assign(show_service_import_form: false)}
 
         {:error, changeset} ->
-          {:noreply,
-           assign(socket,
-             form: to_form(changeset)
-           )}
+          {:noreply, assign(socket, form: to_form(changeset))}
       end
     end
   end
