@@ -8,7 +8,7 @@ defmodule ArrowWeb.HastusExportSection do
 
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Hastus
-  alias Arrow.Hastus.{Export, ExportUpload}
+  alias Arrow.Hastus.{Export, ExportUpload, ServiceDate}
   alias Phoenix.LiveView
 
   attr :id, :string
@@ -157,6 +157,18 @@ defmodule ArrowWeb.HastusExportSection do
                 </div>
               </.inputs_for>
             </div>
+            <div class="row mb-4">
+              <div class="col-lg-4"></div>
+              <.button
+                type="button"
+                class="btn btn-primary ml-3 btn-sm"
+                value={f_service.index}
+                phx-click="add_timeframe"
+                phx-target={@myself}
+              >
+                Add Another Timeframe
+              </.button>
+            </div>
           </.inputs_for>
           <div class="row">
             <div class="col-lg-4">
@@ -261,6 +273,26 @@ defmodule ArrowWeb.HastusExportSection do
   end
 
   def handle_event("validate", _, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("add_timeframe", %{"value" => index}, socket) do
+    {index, _} = Integer.parse(index)
+
+    socket =
+      update(socket, :form, fn %{source: changeset} ->
+        updated_services =
+          changeset
+          |> Ecto.Changeset.get_assoc(:services)
+          |> update_in([Access.at(index)], fn service ->
+            existing_dates = Ecto.Changeset.get_assoc(service, :service_dates)
+            Ecto.Changeset.put_change(service, :service_dates, existing_dates ++ [%ServiceDate{}])
+          end)
+
+        changeset = Ecto.Changeset.put_assoc(changeset, :services, updated_services)
+        to_form(changeset)
+      end)
+
     {:noreply, socket}
   end
 
