@@ -30,7 +30,7 @@ defmodule Arrow.Hastus.Export do
     export
     |> cast(attrs, [:s3_path, :line_id, :disruption_id])
     |> validate_required([:s3_path])
-    |> cast_assoc(:services, with: &Service.changeset/2)
+    |> cast_assoc(:services, with: &Service.changeset/2, required: true)
     |> assoc_constraint(:line)
     |> assoc_constraint(:disruption)
   end

@@ -163,14 +163,14 @@ defmodule Arrow.Hastus.ExportUpload do
     do: Regex.run(~r/^(\d{4})(\d{2})(\d{2})/, date_string, capture: :all_but_first)
 
   defp add_or_update_list([], new_service_id, new_date),
-    do: [%{name: new_service_id, service_dates: [new_date]}]
+    do: [%{name: new_service_id, service_dates: [new_date], import?: true}]
 
   defp add_or_update_list(
          [h = %{service_id: service_id, service_dates: existing_dates} | t],
          service_id,
          new_date
        ),
-       do: [%{h | service_dates: existing_dates ++ [new_date]} | t]
+       do: [%{h | service_dates: existing_dates ++ [new_date], import?: true} | t]
 
   defp add_or_update_list([h | t], new_service_id, new_date),
     do: [h | add_or_update_list(t, new_service_id, new_date)]

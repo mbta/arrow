@@ -93,6 +93,9 @@ defmodule ArrowWeb.HastusExportSection do
           <h4 class="text-primary mb-0">
             add a new service schedule
           </h4>
+          <div :if={not is_nil(@error)} class="text-danger">
+            {@error}
+          </div>
           <.input field={@form[:s3_path]} type="text" class="hidden" />
           <.input field={@form[:disruption_id]} type="text" class="hidden" />
           <.input field={@form[:line_id]} type="text" class="hidden" />
@@ -219,23 +222,33 @@ defmodule ArrowWeb.HastusExportSection do
   end
 
   def handle_event("create", %{"export" => export_params}, socket) do
-    case Hastus.create_export(export_params) do
-      {:ok, _} ->
-        send(self(), :update_disruption)
-        send(self(), {:put_flash, :info, "HASTUS export created successfully"})
+    imported_services =
+      for {key, value} <- export_params["services"],
+          value["import?"] == "true",
+          into: %{},
+          do: {key, value}
 
-        {:noreply,
-         socket
-         |> assign(hastus_export: nil)
-         |> assign(form: nil)
-         |> assign(show_upload_form: false)
-         |> assign(show_service_import_form: false)}
+    if imported_services == %{} do
+      {:noreply, assign(socket, error: "You must import at least one service")}
+    else
+      case Hastus.create_export(%{export_params | "services" => imported_services}) do
+        {:ok, _} ->
+          send(self(), :update_disruption)
+          send(self(), {:put_flash, :info, "HASTUS export created successfully"})
 
-      {:error, changeset} ->
-        {:noreply,
-         assign(socket,
-           form: to_form(changeset)
-         )}
+          {:noreply,
+           socket
+           |> assign(hastus_export: nil)
+           |> assign(form: nil)
+           |> assign(show_upload_form: false)
+           |> assign(show_service_import_form: false)}
+
+        {:error, changeset} ->
+          {:noreply,
+           assign(socket,
+             form: to_form(changeset)
+           )}
+      end
     end
   end
 
