@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.10 (Debian 15.10-1.pgdg120+1)
+-- Dumped from database version 15.10 (Homebrew)
 -- Dumped by pg_dump version 15.10 (Homebrew)
 
 SET statement_timeout = 0;
@@ -1585,6 +1585,13 @@ CREATE INDEX disruption_trip_short_names_disruption_id_index ON public.disruptio
 
 
 --
+-- Name: gtfs_stop_times_stop_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX gtfs_stop_times_stop_id_index ON public.gtfs_stop_times USING btree (stop_id);
+
+
+--
 -- Name: gtfs_stops_lat_lon_vehicle_type_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2104,3 +2111,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250114140020);
 INSERT INTO public."schema_migrations" (version) VALUES (20250121165457);
 INSERT INTO public."schema_migrations" (version) VALUES (20250122200835);
 INSERT INTO public."schema_migrations" (version) VALUES (20250122204118);
+INSERT INTO public."schema_migrations" (version) VALUES (20250312131506);
