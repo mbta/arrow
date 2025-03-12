@@ -106,6 +106,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         module={ArrowWeb.HastusExportSection}
         icon_paths={@icon_paths}
         hastus_export={@hastus_export_in_form}
+        disruption={@disruption_v2}
         user_id={@user_id}
       />
 

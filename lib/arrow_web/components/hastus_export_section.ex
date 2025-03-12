@@ -6,6 +6,8 @@ defmodule ArrowWeb.HastusExportSection do
   use ArrowWeb, :live_component
   import Phoenix.HTML.Form
 
+  alias Arrow.Disruptions.DisruptionV2
+  alias Arrow.Hastus
   alias Arrow.Hastus.{Export, ExportUpload}
   alias Phoenix.LiveView
 
@@ -15,6 +17,8 @@ defmodule ArrowWeb.HastusExportSection do
   attr :icon_paths, :map, required: true
   attr :error, :string
   attr :user_id, :string
+  attr :uploaded_file_name, :string
+  attr :disruption, DisruptionV2, required: true
 
   @line_icon_names %{
     "line-Blue" => :blue_line,
@@ -92,7 +96,7 @@ defmodule ArrowWeb.HastusExportSection do
           <.input field={@form[:source_export_filename]} type="text" class="hidden" />
           <div class="text-success mb-3">
             <strong>
-              <i>Successfully imported export {input_value(@form, :source_export_filename)}!</i>
+              <i>Successfully imported export {@uploaded_file_name}!</i>
             </strong>
           </div>
           <div class="row mb-3">
@@ -163,6 +167,7 @@ defmodule ArrowWeb.HastusExportSection do
      |> assign(show_upload_form: false)
      |> assign(show_service_import_form: false)
      |> assign(error: nil)
+     |> assign(uploaded_file_name: nil)
      |> allow_upload(:hastus_export,
        accept: ~w(.zip),
        progress: &handle_progress/3,
@@ -183,6 +188,7 @@ defmodule ArrowWeb.HastusExportSection do
      |> assign(show_upload_form: true)
      |> assign(show_service_import_form: false)
      |> assign(error: nil)
+     |> assign(uploaded_file_name: nil)
      |> allow_upload(:hastus_export,
        accept: ~w(.zip),
        progress: &handle_progress/3,
@@ -219,14 +225,22 @@ defmodule ArrowWeb.HastusExportSection do
 
         {:ok, data, line} ->
           form =
-            socket.assigns.form.source
-            |> Ecto.Changeset.put_change(:services, data)
-            |> Ecto.Changeset.put_change(:line_id, line)
-            |> Ecto.Changeset.put_change(:source_export_filename, client_name)
+            socket.assigns.hastus_export
+            |> Hastus.change_export(%{
+              services: data,
+              line_id: line,
+              s3_path: client_name,
+              disruption_id: socket.assigns.disruption.id
+            })
             |> to_form()
 
           {:noreply,
-           assign(socket, form: form, show_upload_form: false, show_service_import_form: true)}
+           assign(socket,
+             form: form,
+             show_upload_form: false,
+             show_service_import_form: true,
+             uploaded_file_name: client_name
+           )}
       end
     else
       {:noreply, socket}

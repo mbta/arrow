@@ -5,8 +5,6 @@ defmodule Arrow.Hastus.ExportUpload do
 
   import Ecto.Query, only: [from: 2]
 
-  alias Arrow.Hastus.{Service, ServiceDate}
-
   require Logger
 
   @type error_message :: String.t()
@@ -137,7 +135,7 @@ defmodule Arrow.Hastus.ExportUpload do
           [start_year, start_month, start_day] = extract_date_parts(start_date_string)
           [end_year, end_month, end_day] = extract_date_parts(end_date_string)
 
-          date = %ServiceDate{
+          date = %{
             start_date: Date.from_iso8601!("#{start_year}-#{start_month}-#{start_day}"),
             end_date: Date.from_iso8601!("#{end_year}-#{end_month}-#{end_day}")
           }
@@ -148,7 +146,7 @@ defmodule Arrow.Hastus.ExportUpload do
         %{"service_id" => service_id, "date" => date_string}, acc ->
           [year, month, day] = extract_date_parts(date_string)
 
-          date = %ServiceDate{
+          date = %{
             start_date: Date.from_iso8601!("#{year}-#{month}-#{day}"),
             end_date: Date.from_iso8601!("#{year}-#{month}-#{day}")
           }
@@ -165,7 +163,7 @@ defmodule Arrow.Hastus.ExportUpload do
     do: Regex.run(~r/^(\d{4})(\d{2})(\d{2})/, date_string, capture: :all_but_first)
 
   defp add_or_update_list([], new_service_id, new_date),
-    do: [%Service{name: new_service_id, service_dates: [new_date]}]
+    do: [%{name: new_service_id, service_dates: [new_date]}]
 
   defp add_or_update_list(
          [h = %{service_id: service_id, service_dates: existing_dates} | t],
