@@ -11,7 +11,8 @@ defmodule Arrow.Hastus.ExportUploadTest do
   describe "extract_data_from_upload/1" do
     @tag export: "example.zip"
     test "extracts data from export", %{export: export} do
-      route = insert(:gtfs_route, id: "Blue")
+      line = insert(:gtfs_line, id: "line-Blue")
+      route = insert(:gtfs_route, id: "Blue", line_id: line.id)
 
       direction = insert(:gtfs_direction, direction_id: 0, route_id: route.id, route: route)
 
@@ -43,7 +44,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
                  %Service{service_id: "RTL12025-hmb15016-Saturday-01"},
                  %Service{service_id: "RTL12025-hmb15017-Sunday-01"},
                  %Service{service_id: "RTL12025-hmb15mo1-Weekday-01"}
-               ], "Blue"}} = data
+               ], "line-Blue"}} = data
     end
 
     @tag export: "trips_no_shapes.zip"

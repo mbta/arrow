@@ -131,11 +131,11 @@ defmodule ArrowWeb.HastusExportSection do
         {:error, error} ->
           {:noreply, assign(socket, error: error)}
 
-        {:ok, data, route} ->
+        {:ok, data, line} ->
           form =
             socket.assigns.form.source
             |> Ecto.Changeset.put_change(:services, data)
-            |> Ecto.Changeset.put_change(:route_id, route)
+            |> Ecto.Changeset.put_change(:line_id, line)
             |> Ecto.Changeset.put_change(:source_export_filename, client_name)
             |> to_form()
 

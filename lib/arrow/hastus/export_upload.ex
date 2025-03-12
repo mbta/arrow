@@ -39,8 +39,8 @@ defmodule Arrow.Hastus.ExportUpload do
          {:ok, file_map} <- read_csvs(unzipped_file_list),
          revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
          :ok <- validate_trip_shapes(revenue_trips),
-         {:ok, route} <- infer_route(revenue_trips, file_map["all_stop_times.txt"]) do
-      {:ok, {:ok, parse_export(file_map), route}}
+         {:ok, line} <- infer_line(revenue_trips, file_map["all_stop_times.txt"]) do
+      {:ok, {:ok, parse_export(file_map), line}}
     else
       {:error, error} ->
         _ = File.rm_rf!(@tmp_dir)
@@ -91,7 +91,7 @@ defmodule Arrow.Hastus.ExportUpload do
       else: :ok
   end
 
-  defp infer_route(revenue_trips, exported_stop_times) do
+  defp infer_line(revenue_trips, exported_stop_times) do
     revenue_trip_ids = Enum.map(revenue_trips, & &1["trip_id"])
 
     exported_stop_ids =
@@ -100,19 +100,21 @@ defmodule Arrow.Hastus.ExportUpload do
       |> Enum.map(& &1["stop_id"])
       |> Enum.uniq()
 
-    routes =
+    lines =
       Arrow.Repo.all(
         from st in Arrow.Gtfs.StopTime,
           where: st.stop_id in ^exported_stop_ids,
           join: t in Arrow.Gtfs.Trip,
           on: t.id == st.trip_id,
-          select: t.route_id,
-          distinct: t.route_id
+          join: r in Arrow.Gtfs.Route,
+          on: r.id == t.route_id,
+          select: r.line_id,
+          distinct: r.line_id
       )
 
-    case routes do
-      [route] -> {:ok, route}
-      ["Green-B", "Green-C", "Green-D", "Green-E"] -> {:ok, "Green"}
+    case lines do
+      [line] -> {:ok, line}
+      [] -> {:error, "Export does not contain any valid routes"}
       _ -> {:error, "Export contains more than one route"}
     end
   end

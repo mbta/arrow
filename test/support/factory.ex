@@ -147,6 +147,20 @@ defmodule Arrow.Factory do
     |> merge_attributes(attrs)
   end
 
+  def gtfs_line_factory(attrs \\ %{}) do
+    %Arrow.Gtfs.Line{
+      id: sequence(:source_label, &"gtfs-line-#{&1}"),
+      short_name: "",
+      long_name: "Red Line",
+      desc: "",
+      url: "",
+      color: "DA291C",
+      text_color: "FFFFFF",
+      sort_order: 10_010
+    }
+    |> merge_attributes(attrs)
+  end
+
   def gtfs_calendar_factory(attrs \\ %{}) do
     %Arrow.Gtfs.Calendar{
       monday: true,
