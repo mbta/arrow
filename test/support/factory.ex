@@ -128,7 +128,7 @@ defmodule Arrow.Factory do
     |> merge_attributes(attrs)
   end
 
-  def gtfs_route_factory(attrs \\ %{}) do
+  def gtfs_route_factory do
     %Arrow.Gtfs.Route{
       id: sequence(:source_label, &"gtfs-route-#{&1}"),
       agency: build(:gtfs_agency),
@@ -144,17 +144,95 @@ defmodule Arrow.Factory do
       listed_route: nil,
       network_id: "rapid_transit"
     }
-    |> merge_attributes(attrs)
   end
 
-  def gtfs_agency_factory(attrs \\ %{}) do
+  def gtfs_line_factory do
+    %Arrow.Gtfs.Line{
+      id: sequence(:source_label, &"gtfs-line-#{&1}"),
+      short_name: "",
+      long_name: "Red Line",
+      desc: "",
+      url: "",
+      color: "DA291C",
+      text_color: "FFFFFF",
+      sort_order: 10_010
+    }
+  end
+
+  def gtfs_calendar_factory do
+    %Arrow.Gtfs.Calendar{
+      monday: true,
+      tuesday: true,
+      wednesday: true,
+      thursday: true,
+      friday: true,
+      saturday: false,
+      sunday: false,
+      start_date: ~D[2025-01-01],
+      end_date: ~D[2026-01-01]
+    }
+  end
+
+  def gtfs_service_factory do
+    %Arrow.Gtfs.Service{
+      id: sequence(:source_label, &"gtfs-service-#{&1}"),
+      calendar: build(:gtfs_calendar),
+      calendar_dates: []
+    }
+  end
+
+  def gtfs_trip_factory do
+    %Arrow.Gtfs.Trip{
+      id: sequence(:source_label, &"gtfs-trip-#{&1}"),
+      service: build(:gtfs_service),
+      route: build(:gtfs_route),
+      headsign: "Test Headsign",
+      short_name: "Test Short Name",
+      direction_id: 0,
+      wheelchair_accessible: :accessible,
+      bikes_allowed: :bikes_allowed
+    }
+  end
+
+  def gtfs_direction_factory do
+    %Arrow.Gtfs.Direction{
+      direction_id: 0,
+      desc: "South",
+      destination: "Elsewhere",
+      route: build(:gtfs_route)
+    }
+  end
+
+  def gtfs_stop_time_factory do
+    %Arrow.Gtfs.StopTime{
+      trip: build(:gtfs_trip),
+      stop_sequence: sequence(:stop_sequence, & &1),
+      arrival_time: "12:00:00",
+      departure_time: "12:00:00",
+      stop: build(:gtfs_stop),
+      pickup_type: 0,
+      drop_off_type: 0
+    }
+  end
+
+  def gtfs_route_pattern_factory do
+    %Arrow.Gtfs.RoutePattern{
+      id: sequence(:source_label, &"gtfs-route-pattern-#{&1}"),
+      direction_id: 0,
+      name: "Test Route Pattern",
+      typicality: :typical,
+      sort_order: sequence(:sort_order, & &1),
+      canonical: 1
+    }
+  end
+
+  def gtfs_agency_factory do
     %Arrow.Gtfs.Agency{
       id: sequence(:source_label, &"gtfs-agency-#{&1}"),
       name: "MBTA",
       url: "https://www.mbta.com",
       timezone: "ETC"
     }
-    |> merge_attributes(attrs)
   end
 
   def shuttle_factory do
