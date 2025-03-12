@@ -4,6 +4,7 @@ defmodule ArrowWeb.HastusExportSection do
   """
 
   use ArrowWeb, :live_component
+  import Phoenix.HTML.Form
 
   alias Arrow.Hastus.{Export, ExportUpload}
   alias Phoenix.LiveView
@@ -11,8 +12,16 @@ defmodule ArrowWeb.HastusExportSection do
   attr :id, :string
   attr :form, :any, required: true
   attr :uploads, :any
+  attr :icon_paths, :map, required: true
   attr :error, :string
   attr :user_id, :string
+
+  @line_icon_names %{
+    "line-Blue" => :blue_line,
+    "line-Green" => :green_line,
+    "line-Orange" => :orange_line,
+    "line-Red" => :red_line
+  }
 
   def render(assigns) do
     ~H"""
@@ -67,6 +76,80 @@ defmodule ArrowWeb.HastusExportSection do
           </div>
         </div>
       </.simple_form>
+
+      <.simple_form
+        :if={@show_service_import_form}
+        for={@form}
+        id="service-import-form"
+        phx-submit={@action}
+        phx-change="validate"
+        phx-target={@myself}
+      >
+        <div class="container border-2 border-dashed border-primary p-3">
+          <h4 class="text-primary mb-0">
+            add a new service schedule
+          </h4>
+          <.input field={@form[:source_export_filename]} type="text" class="hidden" />
+          <div class="text-success mb-3">
+            <strong>
+              <i>Successfully imported export {input_value(@form, :source_export_filename)}!</i>
+            </strong>
+          </div>
+          <div class="row mb-3">
+            <.input field={@form[:line_id]} type="text" class="hidden" />
+            <div class="col-lg-2">
+              <strong>route</strong>
+            </div>
+            <div class="col-lg-10">
+              <span
+                class="m-icon m-icon-sm mr-1"
+                style={"background-image: url('#{line_icon_path(@icon_paths, input_value(@form, :line_id))}');"}
+              />
+              {format_line_id(input_value(@form, :line_id))} line
+            </div>
+          </div>
+          <.inputs_for :let={f_service} field={@form[:services]}>
+            <div class="row mb-3">
+              <div class="col-lg-2">
+                <strong>service ID</strong>
+              </div>
+              <div class="col-lg-10">
+                {input_value(f_service, :service_id)}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-lg-2"></div>
+              <div class="col-lg-2">
+                <strong>import?</strong>
+              </div>
+              <div class="col-lg-4">
+                <strong>start date</strong>
+              </div>
+              <div class="col-lg-4">
+                <strong>end date</strong>
+              </div>
+            </div>
+            <div class="row">
+              <.inputs_for :let={f_date} field={f_service[:service_dates]}>
+                <div class="col-lg-2"></div>
+                <%= if f_date.index == 0 do %>
+                  <div class="col-lg-2">
+                    <.input field={f_service[:import?]} type="checkbox" />
+                  </div>
+                <% else %>
+                  <div class="col-lg-2"></div>
+                <% end %>
+                <div class="col-lg-4">
+                  <.input field={f_date[:start_date]} type="date" />
+                </div>
+                <div class="col-lg-4">
+                  <.input field={f_date[:end_date]} type="date" />
+                </div>
+              </.inputs_for>
+            </div>
+          </.inputs_for>
+        </div>
+      </.simple_form>
     </section>
     """
   end
@@ -78,6 +161,7 @@ defmodule ArrowWeb.HastusExportSection do
      |> assign(form: nil)
      |> assign(action: "create")
      |> assign(show_upload_form: false)
+     |> assign(show_service_import_form: false)
      |> assign(error: nil)
      |> allow_upload(:hastus_export,
        accept: ~w(.zip),
@@ -97,6 +181,7 @@ defmodule ArrowWeb.HastusExportSection do
      |> assign(form: form)
      |> assign(action: action)
      |> assign(show_upload_form: true)
+     |> assign(show_service_import_form: false)
      |> assign(error: nil)
      |> allow_upload(:hastus_export,
        accept: ~w(.zip),
@@ -140,10 +225,17 @@ defmodule ArrowWeb.HastusExportSection do
             |> Ecto.Changeset.put_change(:source_export_filename, client_name)
             |> to_form()
 
-          {:noreply, assign(socket, form: form, show_upload_form: false)}
+          {:noreply,
+           assign(socket, form: form, show_upload_form: false, show_service_import_form: true)}
       end
     else
       {:noreply, socket}
     end
   end
+
+  defp line_icon_path(icon_paths, line_id) do
+    Map.get(icon_paths, @line_icon_names[line_id])
+  end
+
+  defp format_line_id(line_id), do: String.replace(line_id, "line-", "")
 end
