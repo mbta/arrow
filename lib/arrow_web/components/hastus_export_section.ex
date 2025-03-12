@@ -12,6 +12,7 @@ defmodule ArrowWeb.HastusExportSection do
   attr :form, :any, required: true
   attr :uploads, :any
   attr :error, :string
+  attr :user_id, :string
 
   def render(assigns) do
     ~H"""
@@ -126,7 +127,7 @@ defmodule ArrowWeb.HastusExportSection do
       case consume_uploaded_entry(
              socket,
              entry,
-             &ExportUpload.extract_data_from_upload/1
+             &ExportUpload.extract_data_from_upload(&1, socket.assigns.user_id)
            ) do
         {:error, error} ->
           {:noreply, assign(socket, error: error)}

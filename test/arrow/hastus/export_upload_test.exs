@@ -8,7 +8,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
 
   @export_dir "test/support/fixtures/hastus"
 
-  describe "extract_data_from_upload/1" do
+  describe "extract_data_from_upload/2" do
     @tag export: "example.zip"
     test "extracts data from export", %{export: export} do
       line = insert(:gtfs_line, id: "line-Blue")
@@ -35,7 +35,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
         stop: insert(:gtfs_stop, id: "70054")
       )
 
-      data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"})
+      data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
 
       assert {:ok,
               {:ok,
@@ -49,7 +49,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
 
     @tag export: "trips_no_shapes.zip"
     test "gives validation errors for invalid exports", %{export: export} do
-      data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"})
+      data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
 
       assert {:ok, {:error, "Trips found with invalid shapes"}} = data
     end

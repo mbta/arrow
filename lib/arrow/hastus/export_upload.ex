@@ -24,26 +24,26 @@ defmodule Arrow.Hastus.ExportUpload do
     ~c"all_trips.txt"
   ]
 
-  @tmp_dir ~c"tmp/hastus"
-
   @doc """
   Parses a HASTUS export and returns a list of data
   Includes a rescue clause to catch errors while parsing user-provided data
   """
-  @spec extract_data_from_upload(%{:path => binary()}) ::
+  @spec extract_data_from_upload(%{:path => binary()}, String.t()) ::
           {:ok, {:error, error_message} | {:ok, list(map())}} | rescued_exception_error()
-  def extract_data_from_upload(%{path: zip_path}) do
+  def extract_data_from_upload(%{path: zip_path}, user_id) do
+    tmp_dir = ~c"tmp/hastus/#{user_id}"
+
     with {:ok, zip_file_data} <- File.read(zip_path),
          {:ok, unzipped_file_list} <-
-           :zip.unzip(zip_file_data, [{:file_list, @filenames}, {:cwd, @tmp_dir}]),
-         {:ok, file_map} <- read_csvs(unzipped_file_list),
+           :zip.unzip(zip_file_data, [{:file_list, @filenames}, {:cwd, tmp_dir}]),
+         {:ok, file_map} <- read_csvs(unzipped_file_list, tmp_dir),
          revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
          :ok <- validate_trip_shapes(revenue_trips),
          {:ok, line} <- infer_line(revenue_trips, file_map["all_stop_times.txt"]) do
-      {:ok, {:ok, parse_export(file_map), line}}
+      {:ok, {:ok, parse_export(file_map, tmp_dir), line}}
     else
       {:error, error} ->
-        _ = File.rm_rf!(@tmp_dir)
+        _ = File.rm_rf!(tmp_dir)
         {:ok, {:error, error}}
     end
   rescue
@@ -56,8 +56,8 @@ defmodule Arrow.Hastus.ExportUpload do
       {:ok, {:error, "Could not parse zip."}}
   end
 
-  defp read_csvs(unzip) do
-    missing_files = Enum.filter(@filenames, &(get_unzipped_file_path(&1) not in unzip))
+  defp read_csvs(unzip, tmp_dir) do
+    missing_files = Enum.filter(@filenames, &(get_unzipped_file_path(&1, tmp_dir) not in unzip))
 
     if Enum.any?(missing_files) do
       {:error,
@@ -68,7 +68,7 @@ defmodule Arrow.Hastus.ExportUpload do
         |> Enum.map(fn filename ->
           data =
             filename
-            |> get_unzipped_file_path()
+            |> get_unzipped_file_path(tmp_dir)
             |> File.stream!()
             |> CSV.decode!(headers: true)
 
@@ -119,9 +119,12 @@ defmodule Arrow.Hastus.ExportUpload do
     end
   end
 
-  defp get_unzipped_file_path(filename), do: ~c"#{@tmp_dir}/#{filename}"
+  defp get_unzipped_file_path(filename, tmp_dir), do: ~c"#{tmp_dir}/#{filename}"
 
-  defp parse_export(%{"all_calendar.txt" => calendar, "all_calendar_dates.txt" => calendar_dates}) do
+  defp parse_export(
+         %{"all_calendar.txt" => calendar, "all_calendar_dates.txt" => calendar_dates},
+         tmp_dir
+       ) do
     imported_service =
       Enum.reduce(Stream.concat(calendar, calendar_dates), [], fn
         # calendar rows
@@ -153,7 +156,7 @@ defmodule Arrow.Hastus.ExportUpload do
           add_or_update_list(acc, service_id, date)
       end)
 
-    _ = File.rm_rf!(@tmp_dir)
+    _ = File.rm_rf!(tmp_dir)
 
     imported_service
   end
