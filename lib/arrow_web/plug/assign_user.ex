@@ -12,9 +12,13 @@ defmodule ArrowWeb.Plug.AssignUser do
   def call(conn, _opts) do
     %{"sub" => user_id, "roles" => roles} = Guardian.Plug.current_claims(conn)
 
-    assign(conn, :current_user, %User{
+    user = %User{
       id: user_id,
       roles: MapSet.new(roles)
-    })
+    }
+
+    conn
+    |> assign(:current_user, user)
+    |> put_session(:current_user, user)
   end
 end
