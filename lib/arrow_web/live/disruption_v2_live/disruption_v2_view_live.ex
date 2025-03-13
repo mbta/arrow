@@ -3,6 +3,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   alias Arrow.{Adjustment, Disruptions}
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
+  alias Arrow.Hastus.Export
 
   @spec disruption_status_labels :: map()
   def disruption_status_labels, do: %{Approved: true, Pending: false}
@@ -24,6 +25,8 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   attr :errors, :map, default: %{}
   attr :limit_in_form, :any
   attr :replacement_service_in_form, :any
+  attr :hastus_export_in_form, :any
+  attr :user_id, :string
 
   def disruption_form(assigns) do
     ~H"""
@@ -99,6 +102,13 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       />
 
       <.live_component
+        id="hastus_export_section"
+        module={ArrowWeb.HastusExportSection}
+        hastus_export={@hastus_export_in_form}
+        user_id={@user_id}
+      />
+
+      <.live_component
         id="replacement_service_section"
         module={ArrowWeb.ReplacementServiceSection}
         replacement_service={@replacement_service_in_form}
@@ -132,7 +142,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   end
 
   @impl true
-  def mount(%{"id" => disruption_id}, _session, socket) do
+  def mount(%{"id" => disruption_id}, session, socket) do
     disruption = Disruptions.get_disruption_v2!(disruption_id)
 
     socket =
@@ -145,12 +155,14 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:disruption_v2, disruption)
       |> assign(:limit_in_form, nil)
       |> assign(:replacement_service_in_form, nil)
+      |> assign(:hastus_export_in_form, nil)
+      |> assign(:user_id, session["current_user"].id)
 
     {:ok, socket}
   end
 
   @impl true
-  def mount(%{} = _params, _session, socket) do
+  def mount(%{} = _params, session, socket) do
     disruption = DisruptionV2.new()
     form = disruption |> Disruptions.change_disruption_v2() |> to_form()
 
@@ -165,6 +177,8 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:disruption_v2, disruption)
       |> assign(:limit_in_form, nil)
       |> assign(:replacement_service_in_form, nil)
+      |> assign(:hastus_export_in_form, nil)
+      |> assign(:user_id, session["current_user"].id)
 
     {:ok, socket}
   end
@@ -241,7 +255,8 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
          |> assign(:title, "edit disruption")
          |> push_patch(to: ~p"/disruptionsv2/#{disruption.id}/edit")
          |> assign(:limit_in_form, Limit.new())
-         |> assign(:replacement_service_in_form, %ReplacementService{})}
+         |> assign(:replacement_service_in_form, nil)
+         |> assign(:hastus_export_in_form, nil)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply,
@@ -279,8 +294,9 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
          |> assign(:form_action, :edit)
          |> assign(:title, "edit disruption")
          |> push_patch(to: ~p"/disruptionsv2/#{disruption.id}/edit")
-         |> assign(:limit_in_form, Limit.new())
-         |> assign(:replacement_service_in_form, %ReplacementService{})}
+         |> assign(:limit_in_form, nil)
+         |> assign(:replacement_service_in_form, %ReplacementService{})
+         |> assign(:hastus_export_in_form, nil)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply,
@@ -303,6 +319,15 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     {:noreply, socket}
   end
 
+  def handle_event("upload_hastus_export", _, socket) do
+    socket =
+      socket
+      |> clear_flash()
+      |> assign(:hastus_export_in_form, %Export{services: []})
+
+    {:noreply, socket}
+  end
+
   @impl true
   def handle_info(:update_disruption, socket) do
     disruption = Disruptions.get_disruption_v2!(socket.assigns.disruption_v2.id)
@@ -313,6 +338,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
      |> assign(
        limit_in_form: nil,
        replacement_service_in_form: nil,
+       hastus_export_in_form: nil,
        disruption_v2: disruption,
        form: form
      )}
@@ -328,6 +354,10 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   def handle_info(:cancel_replacement_service_form, socket) do
     {:noreply, assign(socket, replacement_service_in_form: nil)}
+  end
+
+  def handle_info(:cancel_hastus_export_form, socket) do
+    {:noreply, assign(socket, hastus_export_in_form: nil)}
   end
 
   @adjustment_kind_icon_names %{

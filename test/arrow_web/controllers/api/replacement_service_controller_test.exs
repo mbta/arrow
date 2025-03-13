@@ -68,15 +68,13 @@ defmodule ArrowWeb.API.ReplacementServiceControllerTest do
                        "sunday" => nil,
                        "weekday" => %{
                          "0" => [
-                           %{
-                             "stop_times" => [
-                               %{
-                                 "stop_id" => shuttle_route_stop_id,
-                                 "stop_time" => shuttle_stop_time
-                               }
-                               | _
-                             ]
-                           }
+                           [
+                             %{
+                               "stop_id" => shuttle_route_stop_id,
+                               "stop_time" => shuttle_stop_time
+                             }
+                             | _
+                           ]
                            | _
                          ],
                          "1" => _
