@@ -44,9 +44,21 @@ defmodule ArrowWeb.DisruptionV2Controller.FiltersTest do
     end
 
     test "table view: sort has a default and can be expressed as ascending or descending" do
-      assert_equivalent(%{}, %Filters{view: %Table{sort: {:asc, :start_date}}})
-      assert_equivalent(%{"sort" => "id"}, %Filters{view: %Table{sort: {:asc, :id}}})
-      assert_equivalent(%{"sort" => "-id"}, %Filters{view: %Table{sort: {:desc, :id}}})
+      assert_equivalent(
+        %{},
+        %Filters{
+          view: %Table{sort: %{start_date: :desc, end_date: :desc}, active_sort: :start_date}
+        }
+      )
+
+      assert_equivalent(%{"sort" => "start_date,end_date"}, %Filters{
+        view: %Table{sort: %{start_date: :asc, end_date: :asc}, active_sort: :start_date}
+      })
+
+      assert_equivalent(
+        %{"sort" => "-start_date,end_date", "active_sort" => "end_date"},
+        %Filters{view: %Table{sort: %{start_date: :desc, end_date: :asc}, active_sort: :end_date}}
+      )
     end
   end
 
@@ -61,7 +73,14 @@ defmodule ArrowWeb.DisruptionV2Controller.FiltersTest do
     test "flattens base and view-specific filters into a map" do
       kinds = set(~w(commuter_rail silver_line))
       calendar_filters = %Filters{kinds: kinds, search: "test", view: %Calendar{}}
-      table_filters = %{calendar_filters | view: %Table{include_past?: true, sort: {:asc, :id}}}
+
+      table_view = %Table{
+        include_past?: true,
+        sort: %{start_date: :asc, end_date: :desc},
+        active_sort: :start_date
+      }
+
+      table_filters = %{calendar_filters | view: table_view}
 
       assert Filters.flatten(calendar_filters) == %{
                kinds: kinds,
@@ -74,7 +93,8 @@ defmodule ArrowWeb.DisruptionV2Controller.FiltersTest do
         search: "test",
         include_past?: true,
         only_approved?: false,
-        sort: {:asc, :id}
+        sort: %{start_date: :asc, end_date: :desc},
+        active_sort: :start_date
       }
 
       assert Filters.flatten(table_filters) == table_expected
