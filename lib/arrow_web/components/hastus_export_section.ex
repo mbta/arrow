@@ -281,8 +281,18 @@ defmodule ArrowWeb.HastusExportSection do
      |> assign(show_service_import_form: false)}
   end
 
-  def handle_event("validate", _, socket) do
+  # validate upload in handle_progress/3
+  def handle_event("validate", %{"_target" => ["hastus_export"]}, socket) do
     {:noreply, socket}
+  end
+
+  def handle_event("validate", %{"export" => export_params}, socket) do
+    form =
+      socket.assigns.hastus_export
+      |> Hastus.change_export(export_params)
+      |> to_form(action: :validate)
+
+    {:noreply, assign(socket, form: form)}
   end
 
   def handle_event("add_timeframe", %{"value" => index}, socket) do
