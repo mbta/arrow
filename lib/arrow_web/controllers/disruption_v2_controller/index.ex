@@ -50,7 +50,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Index do
       disruptions,
       fn disruption ->
         {start_date, _} = Disruptions.start_end_dates(disruption)
-        start_date
+        start_date || ~D[0000-01-01]
       end,
       {direction, Date}
     )
@@ -61,7 +61,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Index do
       disruptions,
       fn disruption ->
         {_, end_date} = Disruptions.start_end_dates(disruption)
-        end_date
+        end_date || ~D[9999-12-31]
       end,
       {direction, Date}
     )
