@@ -127,38 +127,47 @@ defmodule ArrowWeb.HastusExportSection do
                 {input_value(f_service, :name)}
               </div>
             </div>
-            <div class="row">
-              <div class="col-lg-2"></div>
-              <div class="col-lg-2">
-                <strong>import?</strong>
-              </div>
-              <div class="col-lg-4">
-                <strong>start date</strong>
-              </div>
-              <div class="col-lg-4">
-                <strong>end date</strong>
-              </div>
-            </div>
-            <div class="row">
-              <.inputs_for :let={f_date} field={f_service[:service_dates]}>
-                <div class="col-lg-2"></div>
+            <.inputs_for :let={f_date} field={f_service[:service_dates]}>
+              <div class="row">
+                <div class="col-lg-1"></div>
                 <%= if f_date.index == 0 do %>
-                  <div class="col-lg-2">
-                    <.input field={f_service[:import?]} type="checkbox" />
+                  <div class="col-lg-1">
+                    <.label for={f_service[:import?].id}>import?</.label>
+                    <.input class="ml-4" field={f_service[:import?]} type="checkbox" />
                   </div>
                 <% else %>
-                  <div class="col-lg-2"></div>
+                  <div class="col-lg-1"></div>
                 <% end %>
-                <div class="col-lg-4">
-                  <.input field={f_date[:start_date]} type="date" />
+                <div class="col-lg-auto">
+                  <.input
+                    field={f_date[:start_date]}
+                    type="date"
+                    label={if f_date.index == 0, do: "start date", else: ""}
+                  />
                 </div>
-                <div class="col-lg-4">
-                  <.input field={f_date[:end_date]} type="date" />
+                <div class="col-lg-auto">
+                  <.input
+                    field={f_date[:end_date]}
+                    type="date"
+                    label={if f_date.index == 0, do: "end date", else: ""}
+                  />
                 </div>
-              </.inputs_for>
-            </div>
+                <div
+                  :if={
+                    date_range_outside_service_dates?(
+                      input_value(f_service, :name),
+                      input_value(f_date, :start_date),
+                      input_value(f_date, :end_date)
+                    )
+                  }
+                  class="col-lg-auto text-sm align-self-center mt-3 text-danger"
+                >
+                  *The selected dates are not {get_service_date_warning(input_value(f_service, :name))}. Are you sure?
+                </div>
+              </div>
+            </.inputs_for>
             <div class="row mb-4">
-              <div class="col-lg-4"></div>
+              <div class="col-lg-2"></div>
               <.button
                 type="button"
                 class="btn btn-primary ml-3 btn-sm"
@@ -339,4 +348,35 @@ defmodule ArrowWeb.HastusExportSection do
   end
 
   defp format_line_id(line_id), do: String.replace(line_id, "line-", "")
+
+  defp date_range_outside_service_dates?(_service_id, start_date, end_date)
+       when is_nil(start_date) or is_nil(end_date) do
+    false
+  end
+
+  defp date_range_outside_service_dates?(service_id, start_date, end_date) do
+    active_day_of_weeks =
+      start_date
+      |> Date.range(end_date)
+      |> Enum.map(&Date.day_of_week/1)
+      |> Enum.sort()
+      |> MapSet.new()
+
+    relevant_day_of_weeks =
+      cond do
+        String.contains?(service_id, "Saturday") -> MapSet.new([6])
+        String.contains?(service_id, "Sunday") -> MapSet.new([7])
+        String.contains?(service_id, "Weekday") -> MapSet.new([1, 2, 3, 4, 5])
+      end
+
+    not MapSet.subset?(active_day_of_weeks, relevant_day_of_weeks)
+  end
+
+  defp get_service_date_warning(service_id) do
+    cond do
+      String.contains?(service_id, "Saturday") -> "Saturdays"
+      String.contains?(service_id, "Sunday") -> "Sundays"
+      String.contains?(service_id, "Weekday") -> "weekdays"
+    end
+  end
 end

@@ -30,7 +30,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   def disruption_form(assigns) do
     ~H"""
-    <div class="w-75">
+    <div>
       <.simple_form for={@form} id="disruption_v2-form" phx-submit={@action} phx-change="validate">
         <div class="flex flex-row">
           <fieldset class="w-50">
