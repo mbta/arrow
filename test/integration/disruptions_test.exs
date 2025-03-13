@@ -49,7 +49,8 @@ defmodule Arrow.Integration.DisruptionsTest do
       |> click(css("label", text: day))
       |> assert_text("Start of service")
       |> click(button("save"))
-      |> assert_text("created successfully")
+      |> focus_default_frame()
+      |> assert_has(css("aside", text: "created successfully"))
       |> Browser.text(css("h5 span"))
       |> String.to_integer()
 
