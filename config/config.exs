@@ -37,7 +37,11 @@ config :arrow,
   gtfs_archive_storage_enabled?: false,
   gtfs_archive_storage_bucket: "mbta-arrow",
   gtfs_archive_storage_prefix: "gtfs-archive-uploads/",
-  gtfs_archive_storage_request_fn: {ExAws, :request}
+  gtfs_archive_storage_request_fn: {ExAws, :request},
+  hastus_export_storage_enabled?: false,
+  hastus_export_storage_bucket: "mbta-arrow",
+  hastus_export_storage_prefix: "hastus-export-uploads/",
+  hastus_export_storage_request_fn: {ExAws, :request}
 
 # Addresses an issue with Oban
 # https://github.com/oban-bg/oban/issues/493#issuecomment-1187001822

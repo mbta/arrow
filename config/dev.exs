@@ -79,7 +79,9 @@ config :arrow,
   shape_storage_enabled?: true,
   shape_storage_prefix_env: "dev/local/",
   gtfs_archive_storage_enabled?: true,
-  gtfs_archive_storage_prefix_env: "dev/local/"
+  gtfs_archive_storage_prefix_env: "dev/local/",
+  hastus_export_storage_enabled?: true,
+  hastus_export_storage_prefix_env: "dev/local/"
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

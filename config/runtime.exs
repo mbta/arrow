@@ -82,5 +82,6 @@ if config_env() == :prod do
 
   config :arrow,
     shape_storage_prefix_env: System.get_env("S3_PREFIX"),
-    gtfs_archive_storage_prefix_env: System.get_env("S3_PREFIX")
+    gtfs_archive_storage_prefix_env: System.get_env("S3_PREFIX"),
+    hastus_export_storage_prefix_env: System.get_env("S3_PREFIX")
 end

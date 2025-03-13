@@ -38,7 +38,7 @@ defmodule Arrow.Hastus.ExportUpload do
          revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
          :ok <- validate_trip_shapes(revenue_trips),
          {:ok, line} <- infer_line(revenue_trips, file_map["all_stop_times.txt"]) do
-      {:ok, {:ok, parse_export(file_map, tmp_dir), line}}
+      {:ok, {:ok, parse_export(file_map, tmp_dir), line, zip_file_data}}
     else
       {:error, error} ->
         _ = File.rm_rf!(tmp_dir)
@@ -52,6 +52,43 @@ defmodule Arrow.Hastus.ExportUpload do
 
       # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
       {:ok, {:error, "Could not parse zip."}}
+  end
+
+  @spec upload_to_s3(binary(), String.t()) ::
+          {:ok, :disabled} | {:ok, String.t()} | {:error, term()}
+  def upload_to_s3(file_data, filename) do
+    if Application.fetch_env!(:arrow, :hastus_export_storage_enabled?) do
+      do_upload(file_data, filename)
+    else
+      {:ok, :disabled}
+    end
+  end
+
+  defp do_upload(file_data, filename) do
+    s3_bucket = Application.fetch_env!(:arrow, :hastus_export_storage_bucket)
+    path = get_upload_path(filename)
+
+    upload_op =
+      file_data
+      |> List.wrap()
+      |> Stream.map(&IO.iodata_to_binary/1)
+      |> ExAws.S3.upload(s3_bucket, path, content_type: "application/zip")
+
+    {mod, fun} = Application.fetch_env!(:arrow, :hastus_export_storage_request_fn)
+
+    case apply(mod, fun, [upload_op]) do
+      {:ok, _} -> {:ok, Path.join(["s3://", s3_bucket, path])}
+      {:error, _} = error -> error
+    end
+  end
+
+  defp get_upload_path(filename) do
+    prefix_env = Application.get_env(:arrow, :hastus_export_storage_prefix_env)
+    s3_prefix = Application.fetch_env!(:arrow, :hastus_export_storage_prefix)
+
+    [prefix_env, s3_prefix, filename]
+    |> Enum.reject(&is_nil/1)
+    |> Path.join()
   end
 
   defp read_csvs(unzip, tmp_dir) do

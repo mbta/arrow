@@ -12,7 +12,8 @@ import Config
 
 config :arrow,
   shape_storage_enabled?: true,
-  gtfs_archive_storage_enabled?: true
+  gtfs_archive_storage_enabled?: true,
+  hastus_export_storage_enabled?: true
 
 config :arrow, :websocket_check_origin, [
   "https://*.mbta.com",

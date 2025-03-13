@@ -18,6 +18,7 @@ defmodule ArrowWeb.HastusExportSection do
   attr :error, :string
   attr :user_id, :string
   attr :uploaded_file_name, :string
+  attr :uploaded_file_data, :any
   attr :disruption, DisruptionV2, required: true
 
   @line_icon_names %{
@@ -223,6 +224,7 @@ defmodule ArrowWeb.HastusExportSection do
      |> assign(show_service_import_form: false)
      |> assign(error: nil)
      |> assign(uploaded_file_name: nil)
+     |> assign(uploaded_file_data: nil)
      |> allow_upload(:hastus_export,
        accept: ~w(.zip),
        progress: &handle_progress/3,
@@ -244,6 +246,7 @@ defmodule ArrowWeb.HastusExportSection do
      |> assign(show_service_import_form: false)
      |> assign(error: nil)
      |> assign(uploaded_file_name: nil)
+     |> assign(uploaded_file_data: nil)
      |> allow_upload(:hastus_export,
        accept: ~w(.zip),
        progress: &handle_progress/3,
@@ -261,20 +264,27 @@ defmodule ArrowWeb.HastusExportSection do
     if imported_services == %{} do
       {:noreply, assign(socket, error: "You must import at least one service")}
     else
-      case Hastus.create_export(%{export_params | "services" => imported_services}) do
-        {:ok, _} ->
-          send(self(), :update_disruption)
-          send(self(), {:put_flash, :info, "HASTUS export created successfully"})
+      with {:ok, _} <-
+             ExportUpload.upload_to_s3(
+               socket.assigns.uploaded_file_data,
+               socket.assigns.uploaded_file_name
+             ),
+           {:ok, _} <- Hastus.create_export(%{export_params | "services" => imported_services}) do
+        send(self(), :update_disruption)
+        send(self(), {:put_flash, :info, "HASTUS export created successfully"})
 
-          {:noreply,
-           socket
-           |> assign(hastus_export: nil)
-           |> assign(form: nil)
-           |> assign(show_upload_form: false)
-           |> assign(show_service_import_form: false)}
-
-        {:error, changeset} ->
+        {:noreply,
+         socket
+         |> assign(hastus_export: nil)
+         |> assign(form: nil)
+         |> assign(show_upload_form: false)
+         |> assign(show_service_import_form: false)}
+      else
+        {:error, %Ecto.Changeset{} = changeset} ->
           {:noreply, assign(socket, form: to_form(changeset))}
+
+        {:error, _} ->
+          {:noreply, assign(socket, error: "Failed to upload export to S3")}
       end
     end
   end
@@ -365,7 +375,7 @@ defmodule ArrowWeb.HastusExportSection do
         {:error, error} ->
           {:noreply, assign(socket, error: error)}
 
-        {:ok, data, line} ->
+        {:ok, data, line, zip_file_data} ->
           form =
             socket.assigns.hastus_export
             |> Hastus.change_export(%{
@@ -381,7 +391,8 @@ defmodule ArrowWeb.HastusExportSection do
              form: form,
              show_upload_form: false,
              show_service_import_form: true,
-             uploaded_file_name: client_name
+             uploaded_file_name: client_name,
+             uploaded_file_data: zip_file_data
            )}
       end
     else
