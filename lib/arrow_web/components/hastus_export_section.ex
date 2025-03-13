@@ -138,14 +138,14 @@ defmodule ArrowWeb.HastusExportSection do
                 <% else %>
                   <div class="col-lg-1"></div>
                 <% end %>
-                <div class="col-lg-auto">
+                <div class="col">
                   <.input
                     field={f_date[:start_date]}
                     type="date"
                     label={if f_date.index == 0, do: "start date", else: ""}
                   />
                 </div>
-                <div class="col-lg-auto">
+                <div class="col">
                   <.input
                     field={f_date[:end_date]}
                     type="date"
@@ -153,16 +153,25 @@ defmodule ArrowWeb.HastusExportSection do
                   />
                 </div>
                 <div
-                  :if={
-                    date_range_outside_service_dates?(
-                      input_value(f_service, :name),
-                      input_value(f_date, :start_date),
-                      input_value(f_date, :end_date)
-                    )
-                  }
-                  class="col-lg-auto text-sm align-self-center mt-3 text-danger"
+                  :if={Enum.count(f_service[:service_dates].value) > 1}
+                  class="col align-self-center mt-3"
                 >
-                  *The selected dates are not {get_service_date_warning(input_value(f_service, :name))}. Are you sure?
+                  <.button
+                    type="button"
+                    phx-click="delete_service_date"
+                    phx-value-service_index={f_service.index}
+                    phx-value-date_index={f_date.index}
+                    phx-target={@myself}
+                  >
+                    <.icon name="hero-trash-solid" class="bg-primary" />
+                  </.button>
+                </div>
+                <div class="col text-sm py-4 text-danger">
+                  {get_service_date_warning(
+                    input_value(f_service, :name),
+                    input_value(f_date, :start_date),
+                    input_value(f_date, :end_date)
+                  )}
                 </div>
               </div>
             </.inputs_for>
@@ -315,6 +324,33 @@ defmodule ArrowWeb.HastusExportSection do
     {:noreply, socket}
   end
 
+  def handle_event(
+        "delete_service_date",
+        %{"service_index" => service_index, "date_index" => date_index},
+        socket
+      ) do
+    {service_index, _} = Integer.parse(service_index)
+    {date_index, _} = Integer.parse(date_index)
+
+    socket =
+      update(socket, :form, fn %{source: changeset} ->
+        updated_services =
+          changeset
+          |> Ecto.Changeset.get_assoc(:services)
+          |> update_in([Access.at(service_index)], fn service ->
+            dates =
+              service |> Ecto.Changeset.get_assoc(:service_dates) |> List.delete_at(date_index)
+
+            Ecto.Changeset.put_change(service, :service_dates, dates)
+          end)
+
+        changeset = Ecto.Changeset.put_assoc(changeset, :services, updated_services)
+        to_form(changeset)
+      end)
+
+    {:noreply, socket}
+  end
+
   defp handle_progress(:hastus_export, entry, socket) do
     socket = socket |> clear_flash() |> assign(error: nil)
 
@@ -382,11 +418,16 @@ defmodule ArrowWeb.HastusExportSection do
     not MapSet.subset?(active_day_of_weeks, relevant_day_of_weeks)
   end
 
-  defp get_service_date_warning(service_id) do
-    cond do
-      String.contains?(service_id, "Saturday") -> "Saturdays"
-      String.contains?(service_id, "Sunday") -> "Sundays"
-      String.contains?(service_id, "Weekday") -> "weekdays"
+  defp get_service_date_warning(service_id, start_date, end_date) do
+    if date_range_outside_service_dates?(service_id, start_date, end_date) do
+      service_part =
+        cond do
+          String.contains?(service_id, "Saturday") -> "Saturdays"
+          String.contains?(service_id, "Sunday") -> "Sundays"
+          String.contains?(service_id, "Weekday") -> "weekdays"
+        end
+
+      "*The selected dates are not #{service_part}. Are you sure?"
     end
   end
 end
