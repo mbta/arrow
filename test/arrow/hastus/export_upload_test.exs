@@ -44,7 +44,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
                  %{name: "RTL12025-hmb15016-Saturday-01"},
                  %{name: "RTL12025-hmb15017-Sunday-01"},
                  %{name: "RTL12025-hmb15mo1-Weekday-01"}
-               ], "line-Blue"}} = data
+               ], "line-Blue", _}} = data
     end
 
     @tag export: "trips_no_shapes.zip"
