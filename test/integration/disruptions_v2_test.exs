@@ -1,5 +1,5 @@
 defmodule Arrow.Integration.DisruptionsV2Test do
-  use ExUnit.Case, async: true
+  use ExUnit.Case
   use Wallaby.Feature
   import Wallaby.Browser, except: [text: 1]
   import Wallaby.Query

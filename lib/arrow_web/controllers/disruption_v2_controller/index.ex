@@ -6,6 +6,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Index do
   alias Arrow.Disruptions
   alias Arrow.Disruptions.DisruptionV2
   alias ArrowWeb.DisruptionV2Controller.Filters
+  alias ArrowWeb.DisruptionV2Controller.Filters.Calendar
   alias ArrowWeb.DisruptionV2Controller.Filters.Table
 
   @disruption_kind_routes %{
@@ -28,10 +29,41 @@ defmodule ArrowWeb.DisruptionV2Controller.Index do
 
   @spec apply_to_disruptions([DisruptionV2.t()], Filters.t()) :: [DisruptionV2.t()]
   def apply_to_disruptions(disruptions, filters) do
-    Enum.filter(
+    disruptions
+    |> Enum.filter(&accept?(&1, filters))
+    |> sort(filters)
+  end
+
+  defp accept?(disruption, filters) do
+    apply_kinds_filter(disruption, filters) and apply_only_approved_filter(disruption, filters) and
+      apply_past_filter(disruption, filters) and apply_search_filter(disruption, filters)
+  end
+
+  defp sort(disruptions, %Filters{view: %Table{sort: sort_state, active_sort: sort_field}}) do
+    do_sort(disruptions, Map.fetch!(sort_state, sort_field), sort_field)
+  end
+
+  defp sort(disruptions, %Filters{view: %Calendar{}}), do: disruptions
+
+  defp do_sort(disruptions, direction, :start_date) do
+    Enum.sort_by(
       disruptions,
-      &(apply_kinds_filter(&1, filters) and apply_only_approved_filter(&1, filters) and
-          apply_past_filter(&1, filters) and apply_search_filter(&1, filters))
+      fn disruption ->
+        {start_date, _} = Disruptions.start_end_dates(disruption)
+        start_date || ~D[0000-01-01]
+      end,
+      {direction, Date}
+    )
+  end
+
+  defp do_sort(disruptions, direction, :end_date) do
+    Enum.sort_by(
+      disruptions,
+      fn disruption ->
+        {_, end_date} = Disruptions.start_end_dates(disruption)
+        end_date || ~D[9999-12-31]
+      end,
+      {direction, Date}
     )
   end
 
