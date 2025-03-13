@@ -25,7 +25,8 @@ defmodule ArrowWeb.HastusExportSection do
     "line-Blue" => :blue_line,
     "line-Green" => :green_line,
     "line-Orange" => :orange_line,
-    "line-Red" => :red_line
+    "line-Red" => :red_line,
+    "line-Mattapan" => :mattapan_line
   }
 
   def render(assigns) do
@@ -264,12 +265,17 @@ defmodule ArrowWeb.HastusExportSection do
     if imported_services == %{} do
       {:noreply, assign(socket, error: "You must import at least one service")}
     else
-      with {:ok, _} <-
+      with {:ok, s3_path} <-
              ExportUpload.upload_to_s3(
                socket.assigns.uploaded_file_data,
                socket.assigns.uploaded_file_name
              ),
-           {:ok, _} <- Hastus.create_export(%{export_params | "services" => imported_services}) do
+           {:ok, _} <-
+             Hastus.create_export(%{
+               export_params
+               | "services" => imported_services,
+                 "s3_path" => s3_path
+             }) do
         send(self(), :update_disruption)
         send(self(), {:put_flash, :info, "HASTUS export created successfully"})
 

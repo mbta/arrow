@@ -68,11 +68,7 @@ defmodule Arrow.Hastus.ExportUpload do
     s3_bucket = Application.fetch_env!(:arrow, :hastus_export_storage_bucket)
     path = get_upload_path(filename)
 
-    upload_op =
-      file_data
-      |> List.wrap()
-      |> Stream.map(&IO.iodata_to_binary/1)
-      |> ExAws.S3.upload(s3_bucket, path, content_type: "application/zip")
+    upload_op = ExAws.S3.put_object(s3_bucket, path, file_data, content_type: "application/zip")
 
     {mod, fun} = Application.fetch_env!(:arrow, :hastus_export_storage_request_fn)
 
@@ -86,7 +82,13 @@ defmodule Arrow.Hastus.ExportUpload do
     prefix_env = Application.get_env(:arrow, :hastus_export_storage_prefix_env)
     s3_prefix = Application.fetch_env!(:arrow, :hastus_export_storage_prefix)
 
-    [prefix_env, s3_prefix, filename]
+    usename_prefix =
+      if Application.fetch_env!(:arrow, :use_username_prefix?) do
+        {username, _} = System.cmd("whoami", [])
+        String.trim(username)
+      end
+
+    [prefix_env, usename_prefix, s3_prefix, filename]
     |> Enum.reject(&is_nil/1)
     |> Path.join()
   end
