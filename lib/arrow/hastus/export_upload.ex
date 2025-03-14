@@ -163,7 +163,9 @@ defmodule Arrow.Hastus.ExportUpload do
          tmp_dir
        ) do
     imported_service =
-      Enum.reduce(Stream.concat(calendar, calendar_dates), [], fn
+      calendar
+      |> Stream.concat(calendar_dates)
+      |> Enum.reduce([], fn
         # calendar rows
         %{
           "service_id" => service_id,
@@ -182,7 +184,7 @@ defmodule Arrow.Hastus.ExportUpload do
           add_or_update_list(acc, service_id, date)
 
         # calendar_dates rows
-        %{"service_id" => service_id, "date" => date_string}, acc ->
+        %{"service_id" => service_id, "date" => date_string, "exception_type" => "1"}, acc ->
           [year, month, day] = extract_date_parts(date_string)
 
           date = %{
@@ -191,6 +193,9 @@ defmodule Arrow.Hastus.ExportUpload do
           }
 
           add_or_update_list(acc, service_id, date)
+
+        _, acc ->
+          acc
       end)
 
     _ = File.rm_rf!(tmp_dir)
@@ -205,11 +210,12 @@ defmodule Arrow.Hastus.ExportUpload do
     do: [%{name: new_service_id, service_dates: [new_date], import?: true}]
 
   defp add_or_update_list(
-         [h = %{service_id: service_id, service_dates: existing_dates} | t],
+         [h = %{name: service_id, service_dates: existing_dates} | t],
          service_id,
          new_date
-       ),
-       do: [%{h | service_dates: existing_dates ++ [new_date], import?: true} | t]
+       ) do
+    [%{h | service_dates: Enum.uniq(existing_dates ++ [new_date]), import?: true} | t]
+  end
 
   defp add_or_update_list([h | t], new_service_id, new_date),
     do: [h | add_or_update_list(t, new_service_id, new_date)]
