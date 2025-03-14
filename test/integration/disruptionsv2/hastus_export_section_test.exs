@@ -56,7 +56,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
     |> attach_file(file_field("hastus_export", visible: false),
       path: "test/support/fixtures/hastus/trips_no_shapes.zip"
     )
-    |> assert_text("Trips found with invalid shapes")
+    |> assert_text("Export does not contain any valid routes")
   end
 
   defp scroll_down(parent) do

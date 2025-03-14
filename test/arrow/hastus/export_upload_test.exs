@@ -51,7 +51,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
     test "gives validation errors for invalid exports", %{export: export} do
       data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
 
-      assert {:ok, {:error, "Trips found with invalid shapes"}} = data
+      assert {:ok, {:error, "Export does not contain any valid routes"}} = data
     end
   end
 end
