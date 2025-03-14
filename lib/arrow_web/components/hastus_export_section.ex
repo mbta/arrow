@@ -55,18 +55,26 @@ defmodule ArrowWeb.HastusExportSection do
             add a new service schedule
           </h4>
           <h5>Upload a new HASTUS export</h5>
+          <div :for={entry <- @uploads.hastus_export.entries}>
+            <progress value={entry.progress} max="100">
+              {entry.progress}%
+            </progress>
+          </div>
           <div class="row">
             <div class="col-lg-3">
-              <.link_button
+              <.button
+                disabled={Enum.any?(@uploads.hastus_export.entries)}
+                type="button"
                 class="btn-primary btn-sm w-100"
                 phx-click={JS.dispatch("click", to: "##{@uploads.hastus_export.ref}")}
                 target="_blank"
               >
                 <.live_file_input upload={@uploads.hastus_export} class="hidden" /> Upload HASTUS .zip
-              </.link_button>
+              </.button>
             </div>
             <div class="col-lg-3">
               <.button
+                disabled={Enum.any?(@uploads.hastus_export.entries)}
                 type="button"
                 id="cancel_add_hastus_export_button"
                 class="btn-outline-primary btn-sm w-100"
@@ -77,8 +85,10 @@ defmodule ArrowWeb.HastusExportSection do
               </.button>
             </div>
           </div>
-          <div :if={not is_nil(@error)} class="text-danger">
-            {@error}
+          <div :if={not is_nil(@error)} class="mt-3">
+            <p class="alert alert-danger m-0">
+              {@error}
+            </p>
           </div>
         </div>
       </.simple_form>
@@ -308,7 +318,19 @@ defmodule ArrowWeb.HastusExportSection do
 
   # validate upload in handle_progress/3
   def handle_event("validate", %{"_target" => ["hastus_export"]}, socket) do
-    {:noreply, socket}
+    socket = socket |> clear_flash() |> assign(error: nil)
+
+    with [entry] <- socket.assigns.uploads.hastus_export.entries,
+         [error] <- upload_errors(socket.assigns.uploads.hastus_export, entry) do
+      socket =
+        socket
+        |> cancel_upload(:hastus_export, entry.ref)
+        |> assign(error: error_to_string(error))
+
+      {:noreply, socket}
+    else
+      _ -> {:noreply, socket}
+    end
   end
 
   def handle_event("validate", %{"export" => export_params}, socket) do
@@ -367,42 +389,44 @@ defmodule ArrowWeb.HastusExportSection do
     {:noreply, socket}
   end
 
-  defp handle_progress(:hastus_export, entry, socket) do
+  defp handle_progress(:hastus_export, %LiveView.UploadEntry{done?: false}, socket) do
+    {:noreply, socket}
+  end
+
+  defp handle_progress(
+         :hastus_export,
+         %LiveView.UploadEntry{client_name: client_name} = entry,
+         socket
+       ) do
     socket = socket |> clear_flash() |> assign(error: nil)
 
-    if entry.done? do
-      %LiveView.UploadEntry{client_name: client_name} = entry
+    case consume_uploaded_entry(
+           socket,
+           entry,
+           &ExportUpload.extract_data_from_upload(&1, socket.assigns.user_id)
+         ) do
+      {:error, error} ->
+        {:noreply, assign(socket, error: error)}
 
-      case consume_uploaded_entry(
-             socket,
-             entry,
-             &ExportUpload.extract_data_from_upload(&1, socket.assigns.user_id)
-           ) do
-        {:error, error} ->
-          {:noreply, assign(socket, error: error)}
+      {:ok, data, line, zip_file_data} ->
+        form =
+          socket.assigns.hastus_export
+          |> Hastus.change_export(%{
+            "services" => data,
+            "line_id" => line,
+            "s3_path" => client_name,
+            "disruption_id" => socket.assigns.disruption.id
+          })
+          |> to_form(action: :validate)
 
-        {:ok, data, line, zip_file_data} ->
-          form =
-            socket.assigns.hastus_export
-            |> Hastus.change_export(%{
-              "services" => data,
-              "line_id" => line,
-              "s3_path" => client_name,
-              "disruption_id" => socket.assigns.disruption.id
-            })
-            |> to_form(action: :validate)
-
-          {:noreply,
-           assign(socket,
-             form: form,
-             show_upload_form: false,
-             show_service_import_form: true,
-             uploaded_file_name: client_name,
-             uploaded_file_data: zip_file_data
-           )}
-      end
-    else
-      {:noreply, socket}
+        {:noreply,
+         assign(socket,
+           form: form,
+           show_upload_form: false,
+           show_service_import_form: true,
+           uploaded_file_name: client_name,
+           uploaded_file_data: zip_file_data
+         )}
     end
   end
 
@@ -447,4 +471,7 @@ defmodule ArrowWeb.HastusExportSection do
       "*The selected dates are not #{service_part}. Are you sure?"
     end
   end
+
+  defp error_to_string(:too_large), do: "File is too large. Maximum size is 8MB"
+  defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
 end
