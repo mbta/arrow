@@ -220,5 +220,8 @@ defmodule Arrow.Hastus.ExportUpload do
   defp add_or_update_list([h | t], new_service_id, new_date),
     do: [h | add_or_update_list(t, new_service_id, new_date)]
 
-  defp revenue_trip?(%{"route_id" => route_id}), do: Regex.match?(~r/^\d+_*-.+$/, route_id)
+  defp revenue_trip?(%{"route_id" => route_id, "trp_is_in_service" => "X"}),
+    do: Regex.match?(~r/^\d+_*-.+$/, route_id)
+
+  defp revenue_trip?(_), do: false
 end
