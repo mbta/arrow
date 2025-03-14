@@ -15,17 +15,6 @@ config :arrow,
   gtfs_archive_storage_enabled?: true,
   hastus_export_storage_enabled?: true
 
-config :arrow, :websocket_check_origin, [
-  "https://*.mbta.com",
-  "https://*.mbtace.com"
-]
-
-config :arrow, ArrowWeb.Endpoint,
-  http: [:inet6, port: 4000],
-  url: [host: "example.com", port: 80],
-  cache_static_manifest: "priv/static/cache_manifest.json",
-  server: true
-
 config :arrow, ArrowWeb.AuthManager, secret_key: {System, :get_env, ["ARROW_AUTH_SECRET"]}
 
 # Do not print debug messages in production
