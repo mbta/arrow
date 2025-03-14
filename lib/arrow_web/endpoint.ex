@@ -9,18 +9,16 @@ defmodule ArrowWeb.Endpoint do
   @session_options [
     store: :cookie,
     key: "_arrow_key",
-    signing_salt: "35DDvOCJ"
+    signing_salt: "35DDvOCJ",
+    same_site: "Lax"
   ]
 
   socket "/socket", ArrowWeb.UserSocket,
-    websocket: [check_origin: Application.compile_env(:arrow, :websocket_check_origin, false)],
+    websocket: true,
     longpoll: false
 
   socket "/live", Phoenix.LiveView.Socket,
-    websocket: [
-      connect_info: [session: @session_options],
-      check_origin: Application.compile_env(:arrow, :websocket_check_origin, false)
-    ],
+    websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]
 
   # Serve at "/" the static files from "priv/static" directory.
