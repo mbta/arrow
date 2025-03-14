@@ -12,7 +12,8 @@ import Config
 
 config :arrow,
   shape_storage_enabled?: true,
-  gtfs_archive_storage_enabled?: true
+  gtfs_archive_storage_enabled?: true,
+  hastus_export_storage_enabled?: true
 
 config :arrow, ArrowWeb.AuthManager, secret_key: {System, :get_env, ["ARROW_AUTH_SECRET"]}
 

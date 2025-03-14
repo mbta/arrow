@@ -5,25 +5,33 @@ defmodule Arrow.Hastus.Export do
 
   import Ecto.Changeset
 
+  alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Gtfs.Line
   alias Arrow.Hastus.Service
 
   @type t :: %__MODULE__{
-          source_export_filename: String.t(),
+          s3_path: String.t(),
           services: list(Service) | Ecto.Association.NotLoaded.t(),
-          line: Line.t() | Ecto.Association.NotLoaded.t()
+          line: Line.t() | Ecto.Association.NotLoaded.t(),
+          disruption: DisruptionV2.t() | Ecto.Association.NotLoaded.t()
         }
 
-  schema "hastus_export" do
-    field :source_export_filename, :string
-    has_many :services, Arrow.Hastus.Service
-    belongs_to :line, Arrow.Gtfs.Line
+  schema "hastus_exports" do
+    field :s3_path, :string
+    has_many :services, Arrow.Hastus.Service, on_delete: :delete_all
+    belongs_to :line, Arrow.Gtfs.Line, type: :string
+    belongs_to :disruption, Arrow.Disruptions.DisruptionV2
+
+    timestamps(type: :utc_datetime)
   end
 
   @doc false
-  def changeset(hastus_export, attrs) do
-    hastus_export
-    |> cast(attrs, [:source_export_filename])
-    |> cast_assoc(:services, with: &Service.changeset/2)
+  def changeset(export, attrs) do
+    export
+    |> cast(attrs, [:s3_path, :line_id, :disruption_id])
+    |> validate_required([:s3_path])
+    |> cast_assoc(:services, with: &Service.changeset/2, required: true)
+    |> assoc_constraint(:line)
+    |> assoc_constraint(:disruption)
   end
 end

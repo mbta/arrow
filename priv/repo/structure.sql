@@ -714,6 +714,104 @@ CREATE TABLE public.gtfs_trips (
 
 
 --
+-- Name: hastus_exports; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.hastus_exports (
+    id bigint NOT NULL,
+    s3_path character varying(255),
+    line_id character varying,
+    disruption_id bigint,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: hastus_exports_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.hastus_exports_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: hastus_exports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.hastus_exports_id_seq OWNED BY public.hastus_exports.id;
+
+
+--
+-- Name: hastus_service_dates; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.hastus_service_dates (
+    id bigint NOT NULL,
+    start_date date,
+    end_date date,
+    service_id bigint,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: hastus_service_dates_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.hastus_service_dates_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: hastus_service_dates_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.hastus_service_dates_id_seq OWNED BY public.hastus_service_dates.id;
+
+
+--
+-- Name: hastus_services; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.hastus_services (
+    id bigint NOT NULL,
+    name character varying(255),
+    export_id bigint,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: hastus_services_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.hastus_services_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: hastus_services_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.hastus_services_id_seq OWNED BY public.hastus_services.id;
+
+
+--
 -- Name: limit_day_of_weeks; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1155,6 +1253,27 @@ ALTER TABLE ONLY public.disruptionsv2 ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
+-- Name: hastus_exports id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_exports ALTER COLUMN id SET DEFAULT nextval('public.hastus_exports_id_seq'::regclass);
+
+
+--
+-- Name: hastus_service_dates id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_service_dates ALTER COLUMN id SET DEFAULT nextval('public.hastus_service_dates_id_seq'::regclass);
+
+
+--
+-- Name: hastus_services id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_services ALTER COLUMN id SET DEFAULT nextval('public.hastus_services_id_seq'::regclass);
+
+
+--
 -- Name: limit_day_of_weeks id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1426,6 +1545,30 @@ ALTER TABLE ONLY public.gtfs_trips
 
 
 --
+-- Name: hastus_exports hastus_exports_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_exports
+    ADD CONSTRAINT hastus_exports_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: hastus_service_dates hastus_service_dates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_service_dates
+    ADD CONSTRAINT hastus_service_dates_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: hastus_services hastus_services_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_services
+    ADD CONSTRAINT hastus_services_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: limit_day_of_weeks limit_day_of_weeks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1596,6 +1739,34 @@ CREATE INDEX gtfs_stop_times_stop_id_index ON public.gtfs_stop_times USING btree
 --
 
 CREATE INDEX gtfs_stops_lat_lon_vehicle_type_id_index ON public.gtfs_stops USING btree (lat, lon, vehicle_type, id);
+
+
+--
+-- Name: hastus_exports_disruption_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX hastus_exports_disruption_id_index ON public.hastus_exports USING btree (disruption_id);
+
+
+--
+-- Name: hastus_exports_line_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX hastus_exports_line_id_index ON public.hastus_exports USING btree (line_id);
+
+
+--
+-- Name: hastus_service_dates_service_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX hastus_service_dates_service_id_index ON public.hastus_service_dates USING btree (service_id);
+
+
+--
+-- Name: hastus_services_export_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX hastus_services_export_id_index ON public.hastus_services USING btree (export_id);
 
 
 --
@@ -1955,6 +2126,38 @@ ALTER TABLE ONLY public.gtfs_trips
 
 
 --
+-- Name: hastus_exports hastus_exports_disruption_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_exports
+    ADD CONSTRAINT hastus_exports_disruption_id_fkey FOREIGN KEY (disruption_id) REFERENCES public.disruptionsv2(id);
+
+
+--
+-- Name: hastus_exports hastus_exports_line_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_exports
+    ADD CONSTRAINT hastus_exports_line_id_fkey FOREIGN KEY (line_id) REFERENCES public.gtfs_lines(id);
+
+
+--
+-- Name: hastus_service_dates hastus_service_dates_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_service_dates
+    ADD CONSTRAINT hastus_service_dates_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.hastus_services(id);
+
+
+--
+-- Name: hastus_services hastus_services_export_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_services
+    ADD CONSTRAINT hastus_services_export_id_fkey FOREIGN KEY (export_id) REFERENCES public.hastus_exports(id);
+
+
+--
 -- Name: limit_day_of_weeks limit_day_of_weeks_limit_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2112,3 +2315,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250121165457);
 INSERT INTO public."schema_migrations" (version) VALUES (20250122200835);
 INSERT INTO public."schema_migrations" (version) VALUES (20250122204118);
 INSERT INTO public."schema_migrations" (version) VALUES (20250312131506);
+INSERT INTO public."schema_migrations" (version) VALUES (20250312170355);

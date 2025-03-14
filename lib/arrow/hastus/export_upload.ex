@@ -5,8 +5,6 @@ defmodule Arrow.Hastus.ExportUpload do
 
   import Ecto.Query, only: [from: 2]
 
-  alias Arrow.Hastus.{Service, ServiceDate}
-
   require Logger
 
   @type error_message :: String.t()
@@ -40,7 +38,7 @@ defmodule Arrow.Hastus.ExportUpload do
          revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
          :ok <- validate_trip_shapes(revenue_trips),
          {:ok, line} <- infer_line(revenue_trips, file_map["all_stop_times.txt"]) do
-      {:ok, {:ok, parse_export(file_map, tmp_dir), line}}
+      {:ok, {:ok, parse_export(file_map, tmp_dir), line, zip_file_data}}
     else
       {:error, error} ->
         _ = File.rm_rf!(tmp_dir)
@@ -54,6 +52,45 @@ defmodule Arrow.Hastus.ExportUpload do
 
       # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
       {:ok, {:error, "Could not parse zip."}}
+  end
+
+  @spec upload_to_s3(binary(), String.t()) ::
+          {:ok, :disabled} | {:ok, String.t()} | {:error, term()}
+  def upload_to_s3(file_data, filename) do
+    if Application.fetch_env!(:arrow, :hastus_export_storage_enabled?) do
+      do_upload(file_data, filename)
+    else
+      {:ok, :disabled}
+    end
+  end
+
+  defp do_upload(file_data, filename) do
+    s3_bucket = Application.fetch_env!(:arrow, :hastus_export_storage_bucket)
+    path = get_upload_path(filename)
+
+    upload_op = ExAws.S3.put_object(s3_bucket, path, file_data, content_type: "application/zip")
+
+    {mod, fun} = Application.fetch_env!(:arrow, :hastus_export_storage_request_fn)
+
+    case apply(mod, fun, [upload_op]) do
+      {:ok, _} -> {:ok, Path.join(["s3://", s3_bucket, path])}
+      {:error, _} = error -> error
+    end
+  end
+
+  defp get_upload_path(filename) do
+    prefix_env = Application.get_env(:arrow, :hastus_export_storage_prefix_env)
+    s3_prefix = Application.fetch_env!(:arrow, :hastus_export_storage_prefix)
+
+    usename_prefix =
+      if Application.fetch_env!(:arrow, :use_username_prefix?) do
+        {username, _} = System.cmd("whoami", [])
+        String.trim(username)
+      end
+
+    [prefix_env, usename_prefix, s3_prefix, filename]
+    |> Enum.reject(&is_nil/1)
+    |> Path.join()
   end
 
   defp read_csvs(unzip, tmp_dir) do
@@ -126,7 +163,9 @@ defmodule Arrow.Hastus.ExportUpload do
          tmp_dir
        ) do
     imported_service =
-      Enum.reduce(Stream.concat(calendar, calendar_dates), [], fn
+      calendar
+      |> Stream.concat(calendar_dates)
+      |> Enum.reduce([], fn
         # calendar rows
         %{
           "service_id" => service_id,
@@ -137,7 +176,7 @@ defmodule Arrow.Hastus.ExportUpload do
           [start_year, start_month, start_day] = extract_date_parts(start_date_string)
           [end_year, end_month, end_day] = extract_date_parts(end_date_string)
 
-          date = %ServiceDate{
+          date = %{
             start_date: Date.from_iso8601!("#{start_year}-#{start_month}-#{start_day}"),
             end_date: Date.from_iso8601!("#{end_year}-#{end_month}-#{end_day}")
           }
@@ -145,15 +184,18 @@ defmodule Arrow.Hastus.ExportUpload do
           add_or_update_list(acc, service_id, date)
 
         # calendar_dates rows
-        %{"service_id" => service_id, "date" => date_string}, acc ->
+        %{"service_id" => service_id, "date" => date_string, "exception_type" => "1"}, acc ->
           [year, month, day] = extract_date_parts(date_string)
 
-          date = %ServiceDate{
+          date = %{
             start_date: Date.from_iso8601!("#{year}-#{month}-#{day}"),
             end_date: Date.from_iso8601!("#{year}-#{month}-#{day}")
           }
 
           add_or_update_list(acc, service_id, date)
+
+        _, acc ->
+          acc
       end)
 
     _ = File.rm_rf!(tmp_dir)
@@ -165,17 +207,21 @@ defmodule Arrow.Hastus.ExportUpload do
     do: Regex.run(~r/^(\d{4})(\d{2})(\d{2})/, date_string, capture: :all_but_first)
 
   defp add_or_update_list([], new_service_id, new_date),
-    do: [%Service{service_id: new_service_id, service_dates: [new_date]}]
+    do: [%{name: new_service_id, service_dates: [new_date], import?: true}]
 
   defp add_or_update_list(
-         [h = %{service_id: service_id, service_dates: existing_dates} | t],
+         [h = %{name: service_id, service_dates: existing_dates} | t],
          service_id,
          new_date
-       ),
-       do: [%{h | service_dates: existing_dates ++ [new_date]} | t]
+       ) do
+    [%{h | service_dates: Enum.uniq(existing_dates ++ [new_date]), import?: true} | t]
+  end
 
   defp add_or_update_list([h | t], new_service_id, new_date),
     do: [h | add_or_update_list(t, new_service_id, new_date)]
 
-  defp revenue_trip?(%{"route_id" => route_id}), do: Regex.match?(~r/^\d+_*-.+$/, route_id)
+  defp revenue_trip?(%{"route_id" => route_id, "trp_is_in_service" => "X"}),
+    do: Regex.match?(~r/^\d+_*-.+$/, route_id)
+
+  defp revenue_trip?(_), do: false
 end
