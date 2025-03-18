@@ -21,6 +21,7 @@ defmodule ArrowWeb.TimetableController do
 
     initial_stop_times_by_stop =
       Enum.map(sample_trip.stop_times, fn stop_time ->
+        IO.inspect(stop_time)
         Logger.info("stop_id: #{stop_time.stop_id}")
 
         {stop_time.stop_id
