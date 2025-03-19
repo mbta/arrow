@@ -144,6 +144,20 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
              } = parse_tab({name, tab})
     end
 
+    @tag sheet: "duplicate_first_trip.xlsx"
+    test "errors if there is more than one first trip or last trip row", context do
+      %{tid: tid, name: name} = extract_single_sheet(context)
+      tab = get_tab_rows(tid)
+
+      assert {
+               :error,
+               {
+                 "WKDY headways and runtimes",
+                 ["Duplicate row(s) for first trip times"]
+               }
+             } = parse_tab({name, tab})
+    end
+
     @tag sheet: "headways_missing_final_row.xlsx"
     test "errors if last runtime row is before last trip", context do
       %{tid: tid, name: name} = extract_single_sheet(context)
