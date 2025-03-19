@@ -283,8 +283,7 @@ defmodule ArrowWeb.HastusExportSection do
            {:ok, _} <-
              Hastus.create_export(%{
                export_params
-               | "services" => imported_services,
-                 "s3_path" => s3_path
+               | "s3_path" => s3_path
              }) do
         send(self(), :update_disruption)
         send(self(), {:put_flash, :info, "HASTUS export created successfully"})
