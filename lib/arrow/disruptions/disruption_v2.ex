@@ -35,6 +35,10 @@ defmodule Arrow.Disruptions.DisruptionV2 do
       foreign_key: :disruption_id,
       on_replace: :delete
 
+    has_many :hastus_exports, Arrow.Hastus.Export,
+      foreign_key: :disruption_id,
+      on_replace: :delete
+
     timestamps(type: :utc_datetime)
   end
 
