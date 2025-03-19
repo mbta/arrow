@@ -59,7 +59,12 @@ if config_env() == :prod do
       capture_log_messages: true
   end
 
-  config :arrow, ArrowWeb.Endpoint, secret_key_base: System.fetch_env!("SECRET_KEY_BASE")
+  config :arrow, ArrowWeb.Endpoint,
+    http: [:inet6, port: System.get_env("PORT", "4000")],
+    url: [host: System.get_env("HOST"), port: 443, scheme: "https"],
+    cache_static_manifest: "priv/static/cache_manifest.json",
+    server: true,
+    secret_key_base: System.fetch_env!("SECRET_KEY_BASE")
 
   pool_size =
     case System.get_env("DATABASE_POOL_SIZE") do
@@ -82,5 +87,6 @@ if config_env() == :prod do
 
   config :arrow,
     shape_storage_prefix_env: System.get_env("S3_PREFIX"),
-    gtfs_archive_storage_prefix_env: System.get_env("S3_PREFIX")
+    gtfs_archive_storage_prefix_env: System.get_env("S3_PREFIX"),
+    hastus_export_storage_prefix_env: System.get_env("S3_PREFIX")
 end
