@@ -474,4 +474,5 @@ defmodule ArrowWeb.HastusExportSection do
 
   defp error_to_string(:too_large), do: "File is too large. Maximum size is 8MB"
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
+  defp error_to_string(_), do: "Upload failed. Please try again or contact an engineer"
 end
