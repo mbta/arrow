@@ -143,6 +143,106 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
                }
              } = parse_tab({name, tab})
     end
+
+    @tag sheet: "duplicate_first_trip.xlsx"
+    test "errors if there is more than one first trip or last trip row", context do
+      %{tid: tid, name: name} = extract_single_sheet(context)
+      tab = get_tab_rows(tid)
+
+      assert {
+               :error,
+               {
+                 "WKDY headways and runtimes",
+                 ["Duplicate row(s) for first trip times"]
+               }
+             } = parse_tab({name, tab})
+    end
+
+    @tag sheet: "headways_missing_final_row.xlsx"
+    test "errors if last runtime row is before last trip", context do
+      %{tid: tid, name: name} = extract_single_sheet(context)
+      tab = get_tab_rows(tid)
+
+      assert {
+               :error,
+               {
+                 "WKDY headways and runtimes",
+                 ["Missing rows for hour(s) 25:00"]
+               }
+             } = parse_tab({name, tab})
+    end
+
+    @tag sheet: "headways_missing_first_row.xlsx"
+    test "errors if first runtime row is after first trip", context do
+      %{tid: tid, name: name} = extract_single_sheet(context)
+      tab = get_tab_rows(tid)
+
+      assert {
+               :error,
+               {
+                 "WKDY headways and runtimes",
+                 ["Missing rows for hour(s) 05:00"]
+               }
+             } = parse_tab({name, tab})
+    end
+
+    @tag sheet: "headways_missing_middle_row.xlsx"
+    test "errors if a midday runtime row is missing", context do
+      %{tid: tid, name: name} = extract_single_sheet(context)
+      tab = get_tab_rows(tid)
+
+      assert {
+               :error,
+               {
+                 "WKDY headways and runtimes",
+                 ["Missing rows for hour(s) 12:00"]
+               }
+             } = parse_tab({name, tab})
+    end
+
+    @tag sheet: "headways_missing_first_and_final_row.xlsx"
+    test "lists all missing runtime rows", context do
+      %{tid: tid, name: name} = extract_single_sheet(context)
+      tab = get_tab_rows(tid)
+
+      assert {
+               :error,
+               {
+                 "WKDY headways and runtimes",
+                 ["Missing rows for hour(s) 05:00, 25:00"]
+               }
+             } = parse_tab({name, tab})
+    end
+
+    @tag sheet: "headways_multi_hour_rows.xlsx"
+    test "accepts multi-hour runtime rows", context do
+      %{tid: tid, name: name} = extract_single_sheet(context)
+      tab = get_tab_rows(tid)
+
+      assert {
+               :ok,
+               {
+                 "WKDY headways and runtimes",
+                 [
+                   %{
+                     start_time: "05:00",
+                     end_time: "12:00",
+                     headway: 5,
+                     running_time_0: 30,
+                     running_time_1: 27
+                   },
+                   %{
+                     start_time: "12:00",
+                     end_time: "26:00",
+                     headway: 4,
+                     running_time_0: 33,
+                     running_time_1: 28
+                   }
+                   | _rest
+                 ]
+               }
+             } = parse_tab({name, tab})
+    end
   end
 
   describe "parse_row/1" do
