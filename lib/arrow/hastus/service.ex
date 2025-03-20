@@ -15,7 +15,7 @@ defmodule Arrow.Hastus.Service do
 
   schema "hastus_services" do
     field :name, :string
-    field :import?, :boolean, virtual: true
+    field :import?, :boolean, source: :should_import, default: false
     has_many :service_dates, Arrow.Hastus.ServiceDate, on_delete: :delete_all
     belongs_to :export, Arrow.Hastus.Service
 
@@ -25,7 +25,7 @@ defmodule Arrow.Hastus.Service do
   @doc false
   def changeset(service, attrs) do
     service
-    |> cast(attrs, [:name, :export_id])
+    |> cast(attrs, [:name, :export_id, :import?])
     |> validate_required([:name])
     |> cast_assoc(:service_dates, with: &ServiceDate.changeset/2)
     |> assoc_constraint(:export)

@@ -788,7 +788,8 @@ CREATE TABLE public.hastus_services (
     name character varying(255),
     export_id bigint,
     inserted_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    should_import boolean DEFAULT true NOT NULL
 );
 
 
@@ -2316,3 +2317,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250122200835);
 INSERT INTO public."schema_migrations" (version) VALUES (20250122204118);
 INSERT INTO public."schema_migrations" (version) VALUES (20250312131506);
 INSERT INTO public."schema_migrations" (version) VALUES (20250312170355);
+INSERT INTO public."schema_migrations" (version) VALUES (20250319170602);
