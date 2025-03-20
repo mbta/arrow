@@ -2131,7 +2131,7 @@ ALTER TABLE ONLY public.gtfs_trips
 --
 
 ALTER TABLE ONLY public.hastus_exports
-    ADD CONSTRAINT hastus_exports_disruption_id_fkey FOREIGN KEY (disruption_id) REFERENCES public.disruptionsv2(id);
+    ADD CONSTRAINT hastus_exports_disruption_id_fkey FOREIGN KEY (disruption_id) REFERENCES public.disruptionsv2(id) ON DELETE CASCADE;
 
 
 --
@@ -2147,7 +2147,7 @@ ALTER TABLE ONLY public.hastus_exports
 --
 
 ALTER TABLE ONLY public.hastus_service_dates
-    ADD CONSTRAINT hastus_service_dates_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.hastus_services(id);
+    ADD CONSTRAINT hastus_service_dates_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.hastus_services(id) ON DELETE CASCADE;
 
 
 --
@@ -2155,7 +2155,7 @@ ALTER TABLE ONLY public.hastus_service_dates
 --
 
 ALTER TABLE ONLY public.hastus_services
-    ADD CONSTRAINT hastus_services_export_id_fkey FOREIGN KEY (export_id) REFERENCES public.hastus_exports(id);
+    ADD CONSTRAINT hastus_services_export_id_fkey FOREIGN KEY (export_id) REFERENCES public.hastus_exports(id) ON DELETE CASCADE;
 
 
 --
@@ -2318,3 +2318,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250122204118);
 INSERT INTO public."schema_migrations" (version) VALUES (20250312131506);
 INSERT INTO public."schema_migrations" (version) VALUES (20250312170355);
 INSERT INTO public."schema_migrations" (version) VALUES (20250319170602);
+INSERT INTO public."schema_migrations" (version) VALUES (20250320151207);
