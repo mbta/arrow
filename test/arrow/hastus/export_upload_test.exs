@@ -4,7 +4,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
 
   import Arrow.Factory
 
-  alias Arrow.Hastus.{ExportUpload, Service}
+  alias Arrow.Hastus.ExportUpload
 
   @export_dir "test/support/fixtures/hastus"
 
@@ -40,18 +40,18 @@ defmodule Arrow.Hastus.ExportUploadTest do
       assert {:ok,
               {:ok,
                [
-                 %Service{service_id: "RTL12025-hmb15wg1-Weekday-01"},
-                 %Service{service_id: "RTL12025-hmb15016-Saturday-01"},
-                 %Service{service_id: "RTL12025-hmb15017-Sunday-01"},
-                 %Service{service_id: "RTL12025-hmb15mo1-Weekday-01"}
-               ], "line-Blue"}} = data
+                 %{name: "RTL12025-hmb15wg1-Weekday-01"},
+                 %{name: "RTL12025-hmb15016-Saturday-01"},
+                 %{name: "RTL12025-hmb15017-Sunday-01"},
+                 %{name: "RTL12025-hmb15mo1-Weekday-01"}
+               ], "line-Blue", _}} = data
     end
 
     @tag export: "trips_no_shapes.zip"
     test "gives validation errors for invalid exports", %{export: export} do
       data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
 
-      assert {:ok, {:error, "Trips found with invalid shapes"}} = data
+      assert {:ok, {:error, "Export does not contain any valid routes"}} = data
     end
   end
 end
