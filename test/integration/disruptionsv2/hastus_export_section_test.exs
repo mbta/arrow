@@ -3,7 +3,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
   use Wallaby.Feature
   import Wallaby.Browser, except: [text: 1]
   import Wallaby.Query
-  import Arrow.DisruptionsFixtures
+  import Arrow.{DisruptionsFixtures, HastusFixtures}
   import Arrow.Factory
 
   @moduletag :integration
@@ -59,7 +59,24 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
     |> assert_text("Export does not contain any valid routes")
   end
 
+  feature "shows form errors for invalid HASTUS export", %{session: session} do
+    disruption = disruption_v2_fixture()
+    line = insert(:gtfs_line, id: "line-Blue")
+    export = export_fixture(line_id: line.id, disruption_id: disruption.id)
+
+    session
+    |> visit("/disruptionsv2/#{disruption.id}/edit")
+    |> scroll_down()
+    |> assert_text("some-Weekday-service")
+    |> click(Query.css("#edit-export-button-#{export.id}"))
+    |> assert_text("edit service schedule")
+    |> scroll_down()
+    |> click(text("import?"))
+    |> click(Query.css("#save-export-button"))
+    |> assert_text("You must import at least one service")
+  end
+
   defp scroll_down(parent) do
-    execute_script(parent, "window.scrollBy(0, 400)")
+    execute_script(parent, "window.scrollBy(0, window.innerHeight)")
   end
 end

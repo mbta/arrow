@@ -75,6 +75,7 @@ defmodule ArrowWeb.HastusExportSection do
                 <td :if={i == length(export.services) - 1}>
                   <div class="text-right">
                     <.button
+                      id={"edit-export-button-#{export.id}"}
                       class="btn-sm p-0"
                       disabled={@show_service_import_form}
                       type="button"
@@ -270,7 +271,12 @@ defmodule ArrowWeb.HastusExportSection do
           </.inputs_for>
           <div class="row">
             <div class="col-lg-4">
-              <.button type="submit" class="btn btn-primary btn-sm w-100" phx-target={@myself}>
+              <.button
+                id="save-export-button"
+                type="submit"
+                class="btn btn-primary btn-sm w-100"
+                phx-target={@myself}
+              >
                 save
               </.button>
             </div>
