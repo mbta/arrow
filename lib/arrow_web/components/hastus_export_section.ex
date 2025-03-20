@@ -45,6 +45,7 @@ defmodule ArrowWeb.HastusExportSection do
                 <th>service ID</th>
                 <th>start date</th>
                 <th>end date</th>
+                <th></th>
               </tr>
             </thead>
             <tbody class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700">
@@ -70,6 +71,31 @@ defmodule ArrowWeb.HastusExportSection do
                     max_end_date,
                     "%m/%d/%Y"
                   )}
+                </td>
+                <td :if={i == length(export.services) - 1}>
+                  <div class="text-right">
+                    <.button
+                      class="btn-sm p-0"
+                      disabled={@show_service_import_form}
+                      type="button"
+                      phx-click="edit_export"
+                      phx-value-export={export.id}
+                      phx-target={@myself}
+                    >
+                      <.icon name="hero-pencil-solid" class="bg-primary" />
+                    </.button>
+                    <.button
+                      class="btn-sm p-0"
+                      disabled={@show_service_import_form}
+                      type="button"
+                      phx-click="delete_export"
+                      phx-value-export={export.id}
+                      phx-target={@myself}
+                      data-confirm="Are you sure you want to delete this export?"
+                    >
+                      <.icon name="hero-trash-solid" class="bg-primary" />
+                    </.button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -146,7 +172,7 @@ defmodule ArrowWeb.HastusExportSection do
       >
         <div class="container border-2 border-dashed border-primary p-3">
           <h4 class="text-primary mb-0">
-            add a new service schedule
+            {if @action == "create", do: "add a new service schedule", else: "edit service schedule"}
           </h4>
           <div :if={not is_nil(@error)} class="text-danger">
             {@error}
@@ -160,7 +186,6 @@ defmodule ArrowWeb.HastusExportSection do
             </strong>
           </div>
           <div class="row mb-3">
-            <.input field={@form[:line_id]} type="text" class="hidden" />
             <div class="col-lg-2">
               <strong>route</strong>
             </div>
@@ -279,6 +304,7 @@ defmodule ArrowWeb.HastusExportSection do
      |> assign(error: nil)
      |> assign(uploaded_file_name: nil)
      |> assign(uploaded_file_data: nil)
+     |> assign(export: %Export{})
      |> allow_upload(:hastus_export,
        accept: ~w(.zip),
        progress: &handle_progress/3,
@@ -301,6 +327,7 @@ defmodule ArrowWeb.HastusExportSection do
      |> assign(error: nil)
      |> assign(uploaded_file_name: nil)
      |> assign(uploaded_file_data: nil)
+     |> assign(export: hastus_export)
      |> allow_upload(:hastus_export,
        accept: ~w(.zip),
        progress: &handle_progress/3,
@@ -333,7 +360,7 @@ defmodule ArrowWeb.HastusExportSection do
 
         {:noreply,
          socket
-         |> assign(hastus_export: nil)
+         |> assign(export: nil)
          |> assign(form: nil)
          |> assign(show_upload_form: false)
          |> assign(show_service_import_form: false)}
@@ -347,18 +374,47 @@ defmodule ArrowWeb.HastusExportSection do
     end
   end
 
+  def handle_event("update", %{"export" => export_params}, socket) do
+    imported_services =
+      for {key, value} <- export_params["services"],
+          value["import?"] == "true",
+          into: %{},
+          do: {key, value}
+
+    if imported_services == %{} do
+      {:noreply, assign(socket, error: "You must import at least one service")}
+    else
+      export = Hastus.get_export!(socket.assigns.export.id)
+
+      case Hastus.update_export(export, export_params) do
+        {:ok, _} ->
+          send(self(), :update_disruption)
+          send(self(), {:put_flash, :info, "HASTUS export updated successfully"})
+
+          {:noreply,
+           socket
+           |> assign(export: nil)
+           |> assign(form: nil)
+           |> assign(show_upload_form: false)
+           |> assign(show_service_import_form: false)}
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          {:noreply, assign(socket, form: to_form(changeset))}
+      end
+    end
+  end
+
   def handle_event("cancel_add_hastus_export", _params, socket) do
     send(self(), :cancel_hastus_export_form)
 
     {:noreply,
      socket
-     |> assign(hastus_export: nil)
+     |> assign(export: nil)
      |> assign(form: nil)
      |> assign(show_upload_form: false)
      |> assign(show_service_import_form: false)}
   end
 
-  # validate upload in handle_progress/3
   def handle_event("validate", %{"_target" => ["hastus_export"]}, socket) do
     socket = socket |> clear_flash() |> assign(error: nil)
 
@@ -377,7 +433,7 @@ defmodule ArrowWeb.HastusExportSection do
 
   def handle_event("validate", %{"export" => export_params}, socket) do
     form =
-      socket.assigns.hastus_export
+      socket.assigns.export
       |> Hastus.change_export(export_params)
       |> to_form(action: :validate)
 
@@ -431,6 +487,37 @@ defmodule ArrowWeb.HastusExportSection do
     {:noreply, socket}
   end
 
+  def handle_event("edit_export", %{"export" => export_id}, socket) do
+    {parsed_id, _} = Integer.parse(export_id)
+    export = Hastus.get_export!(parsed_id)
+    filename = export.s3_path |> String.split("/") |> List.last()
+
+    {:noreply,
+     socket
+     |> assign(form: export |> Hastus.change_export() |> to_form())
+     |> assign(export: export)
+     |> assign(show_service_import_form: true)
+     |> assign(show_upload_form: false)
+     |> assign(uploaded_file_name: filename)
+     |> assign(action: "update")}
+  end
+
+  def handle_event("delete_export", %{"export" => export_id}, socket) do
+    {parsed_id, _} = Integer.parse(export_id)
+    export = Hastus.get_export!(parsed_id)
+
+    case Hastus.delete_export(export) do
+      {:ok, _} ->
+        send(self(), :update_disruption)
+        send(self(), {:put_flash, :info, "Export deleted successfully"})
+        {:noreply, socket}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        send(self(), {:put_flash, :error, "Error when deleting export!"})
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
+  end
+
   defp handle_progress(:hastus_export, %LiveView.UploadEntry{done?: false}, socket) do
     {:noreply, socket}
   end
@@ -452,7 +539,7 @@ defmodule ArrowWeb.HastusExportSection do
 
       {:ok, data, line, zip_file_data} ->
         form =
-          socket.assigns.hastus_export
+          socket.assigns.export
           |> Hastus.change_export(%{
             "services" => data,
             "line_id" => line,
@@ -499,6 +586,14 @@ defmodule ArrowWeb.HastusExportSection do
       end
 
     not MapSet.subset?(active_day_of_weeks, relevant_day_of_weeks)
+  end
+
+  defp get_service_date_warning(service_id, start_date, end_date) when is_binary(start_date) do
+    get_service_date_warning(service_id, Date.from_iso8601!(start_date), end_date)
+  end
+
+  defp get_service_date_warning(service_id, start_date, end_date) when is_binary(end_date) do
+    get_service_date_warning(service_id, start_date, Date.from_iso8601!(end_date))
   end
 
   defp get_service_date_warning(service_id, start_date, end_date) do
