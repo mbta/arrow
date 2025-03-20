@@ -13,6 +13,7 @@ defmodule ArrowWeb.Router do
   end
 
   pipeline :json_api do
+    plug(:fetch_session)
     plug(:accepts, ["json-api"])
     plug(JaSerializer.ContentTypeNegotiation)
   end
