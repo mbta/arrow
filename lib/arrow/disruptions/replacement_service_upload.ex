@@ -158,20 +158,77 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
     end
   end
 
-  @type parsed_tab ::
-          {:ok, valid_tab()} | {:error, error_tab()}
+  @type parsed_tab :: {:ok, valid_tab()} | {:error, error_tab()}
 
-  @spec parse_tab(tab) ::
-          parsed_tab()
+  @spec parse_tab(tab) :: parsed_tab()
   def parse_tab({tab_name, rows}) do
     with {:ok, _headers} <- validate_headers(rows),
          {:ok, parsed_data} <- parse_sheet(rows),
-         {:ok, _parsed_data_with_first_last} <- ensure_first_last(parsed_data) do
+         {:ok, first_and_last} <- ensure_first_last(parsed_data),
+         :ok <- ensure_headways_from_first_to_last(parsed_data, first_and_last) do
       {:ok, {tab_name, parsed_data}}
     else
       {:error, error} ->
         {:error, {tab_name, error}}
     end
+  end
+
+  defp ensure_headways_from_first_to_last(parsed_data, first_last) do
+    %{first_trip_0: first0, first_trip_1: first1} = first_last.first
+    %{last_trip_0: last0, last_trip_1: last1} = first_last.last
+
+    first_hour =
+      [first0, first1]
+      |> Enum.map(&time_str_to_hour/1)
+      |> Enum.min()
+
+    last_hour =
+      [last0, last1]
+      |> Enum.map(&time_str_to_hour/1)
+      |> Enum.max()
+
+    required_hours = MapSet.new(first_hour..last_hour//1)
+
+    runtime_hours =
+      parsed_data
+      |> Enum.filter(&match?(%{start_time: _, end_time: _}, &1))
+      |> Enum.flat_map(fn %{start_time: start_time, end_time: end_time} ->
+        start_hour = time_str_to_hour(start_time)
+
+        end_hour =
+          if String.slice(end_time, 2..-1//1) == ":00" do
+            time_str_to_hour(end_time) - 1
+          else
+            time_str_to_hour(end_time)
+          end
+
+        start_hour..end_hour//1
+      end)
+      |> MapSet.new()
+
+    all_required_hours_have_runtimes? = MapSet.subset?(required_hours, runtime_hours)
+
+    if all_required_hours_have_runtimes? do
+      :ok
+    else
+      missing = Enum.sort(MapSet.difference(required_hours, runtime_hours))
+      {:error, ["Missing rows for hour(s) #{Enum.map_join(missing, ", ", &hour_to_time_str/1)}"]}
+    end
+  end
+
+  # E.g. "03:15" -> 3, "25:08" -> 25
+  defp time_str_to_hour(time_str) do
+    time_str
+    |> String.slice(0..1//1)
+    |> String.to_integer()
+  end
+
+  # E.g. 3 -> "03:00", 25 -> "25:00"
+  defp hour_to_time_str(hour) do
+    hour
+    |> Integer.to_string()
+    |> String.pad_leading(2, "0")
+    |> Kernel.<>(":00")
   end
 
   defp header_to_string(header_regex) do
@@ -221,23 +278,42 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
     end
   end
 
-  @spec ensure_first_last(list()) :: {:error, list(String.t())} | {:ok, list()}
+  @spec ensure_first_last(list()) ::
+          {:ok, %{first: FirstTrip.t(), last: LastTrip.t()}}
+          | {:error, list(String.t())}
   def ensure_first_last(runtimes) do
-    trips =
+    first_last =
       runtimes
-      |> Enum.map(&has_first_last_trip_times?/1)
-      |> Enum.filter(&elem(&1, 0))
-      |> Enum.map(&elem(&1, 1))
+      |> Enum.map(fn runtime ->
+        case has_first_last_trip_times?(runtime) do
+          {true, :first} -> {:first, runtime}
+          {true, :last} -> {:last, runtime}
+          {false, _} -> nil
+        end
+      end)
+      |> Enum.reject(&is_nil/1)
 
-    first? = Enum.member?(trips, :first)
-    last? = Enum.member?(trips, :last)
+    first_last_map = Map.new(first_last)
+    first? = Map.has_key?(first_last_map, :first)
+    last? = Map.has_key?(first_last_map, :last)
 
-    if first? && last? do
-      {:ok, runtimes}
-    else
-      values = [{first?, "First"}, {last?, "Last"}] |> Enum.reject(&elem(&1, 0))
+    cond do
+      length(first_last) > 2 ->
+        dups =
+          first_last
+          |> Enum.frequencies_by(fn {k, _v} -> k end)
+          |> Map.filter(fn {_k, count} -> count > 1 end)
+          |> Map.keys()
 
-      {:error, ["Missing row for #{values |> Enum.map_join(" and ", &elem(&1, 1))} trip times"]}
+        {:error, ["Duplicate row(s) for #{Enum.join(dups, " and ")} trip times"]}
+
+      not (first? and last?) ->
+        values = [{first?, "First"}, {last?, "Last"}] |> Enum.reject(&elem(&1, 0))
+
+        {:error, ["Missing row for #{values |> Enum.map_join(" and ", &elem(&1, 1))} trip times"]}
+
+      :else ->
+        {:ok, first_last_map}
     end
   end
 
@@ -431,7 +507,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
   end
 end
 
-defmodule(Arrow.Disruptions.ReplacementServiceUpload.FirstTrip) do
+defmodule Arrow.Disruptions.ReplacementServiceUpload.FirstTrip do
   @moduledoc "struct to represent parsed first trip row"
   defstruct first_trip_0: nil, first_trip_1: nil
 
@@ -441,7 +517,7 @@ defmodule(Arrow.Disruptions.ReplacementServiceUpload.FirstTrip) do
         }
 end
 
-defmodule(Arrow.Disruptions.ReplacementServiceUpload.LastTrip) do
+defmodule Arrow.Disruptions.ReplacementServiceUpload.LastTrip do
   @moduledoc "struct to represent parsed last trip row"
   defstruct last_trip_0: nil, last_trip_1: nil
 
@@ -451,7 +527,7 @@ defmodule(Arrow.Disruptions.ReplacementServiceUpload.LastTrip) do
         }
 end
 
-defmodule(Arrow.Disruptions.ReplacementServiceUpload.Runtimes) do
+defmodule Arrow.Disruptions.ReplacementServiceUpload.Runtimes do
   @moduledoc "struct to represent parsed runtimes row"
   defstruct start_time: nil,
             end_time: nil,
