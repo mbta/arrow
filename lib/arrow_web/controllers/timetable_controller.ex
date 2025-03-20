@@ -11,7 +11,9 @@ defmodule ArrowWeb.TimetableController do
       |> Disruptions.get_replacement_service!()
       |> ReplacementService.add_timetable()
 
-    available_days_of_week = Map.keys(replacement_service.timetable)
+    available_days_of_week =
+      ReplacementService.schedule_service_types()
+      |> Enum.filter(&(&1 in Map.keys(replacement_service.timetable)))
 
     day_of_week =
       if day_of_week = Map.get(params, "day_of_week") do
