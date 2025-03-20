@@ -21,7 +21,8 @@ defmodule Arrow.Disruptions.ReplacementService do
           source_workbook_data: map(),
           source_workbook_filename: String.t(),
           disruption: DisruptionV2.t() | Ecto.Association.NotLoaded.t(),
-          shuttle: Shuttle.t() | Ecto.Association.NotLoaded.t()
+          shuttle: Shuttle.t() | Ecto.Association.NotLoaded.t(),
+          timetable: map() | nil
         }
 
   @service_type_to_workbook_abbreviation %{
@@ -36,6 +37,7 @@ defmodule Arrow.Disruptions.ReplacementService do
     field :end_date, :date
     field :source_workbook_data, MapForForm
     field :source_workbook_filename, :string
+    field :timetable, :map, virtual: true
     belongs_to :disruption, DisruptionV2
     belongs_to :shuttle, Shuttle
 
@@ -84,16 +86,15 @@ defmodule Arrow.Disruptions.ReplacementService do
     end
   end
 
-  defp add_timetable(%__MODULE__{} = replacement_service) do
-    Map.from_struct(replacement_service)
-    |> Map.put(
-      :timetable,
+  def add_timetable(%__MODULE__{} = replacement_service) do
+    timetable =
       schedule_service_types()
       |> Enum.map(fn service_type ->
         {service_type, trips_with_times(replacement_service, service_type)}
       end)
       |> Enum.into(%{})
-    )
+
+    struct(replacement_service, timetable: timetable)
   end
 
   @spec get_replacement_services_with_timetables(Date.t(), Date.t()) ::
