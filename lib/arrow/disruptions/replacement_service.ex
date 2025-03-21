@@ -15,11 +15,9 @@ defmodule Arrow.Disruptions.ReplacementService do
   alias Arrow.Shuttles.Shuttle
 
   @type stop_time :: %{stop_id: String.t(), stop_time: String.t()}
-  @type timetable :: %{
-          optional(:weekday) => stop_time(),
-          optional(:saturday) => stop_time(),
-          optional(:sunday) => stop_time()
-        }
+  @type direction_id :: String.t()
+  @type timetable ::
+          %{direction_id() => list(stop_time()), direction_id() => list(stop_time())} | nil
 
   @type t :: %__MODULE__{
           reason: String.t() | nil,
@@ -29,7 +27,7 @@ defmodule Arrow.Disruptions.ReplacementService do
           source_workbook_filename: String.t(),
           disruption: DisruptionV2.t() | Ecto.Association.NotLoaded.t(),
           shuttle: Shuttle.t() | Ecto.Association.NotLoaded.t(),
-          timetable: timetable() | nil
+          timetable: %{weekday: timetable(), saturday: timetable(), sunday: timetable()} | nil
         }
 
   @service_type_to_workbook_abbreviation %{
