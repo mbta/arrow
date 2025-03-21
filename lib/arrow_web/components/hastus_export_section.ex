@@ -594,7 +594,7 @@ defmodule ArrowWeb.HastusExportSection do
     not MapSet.subset?(active_day_of_weeks, relevant_day_of_weeks)
   end
 
-  defp get_service_date_warning(service_id, start_date, end_date)
+  defp get_service_date_warning(_service_id, start_date, end_date)
        when start_date == "" or end_date == "" do
     ""
   end
