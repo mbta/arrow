@@ -2,24 +2,32 @@ defmodule ArrowWeb.TimetableController do
   use ArrowWeb, :controller
 
   alias Arrow.Disruptions
+  alias Arrow.Disruptions.ReplacementService
   alias Arrow.Shuttles
 
   def show(conn, %{"replacement_service_id" => replacement_service_id} = params) do
-    replacement_service = Disruptions.get_replacement_service!(replacement_service_id)
+    replacement_service =
+      replacement_service_id
+      |> Disruptions.get_replacement_service!()
+      |> ReplacementService.add_timetable()
 
-    available_days_of_week = Disruptions.days_of_week_for_replacement_service(replacement_service)
+    available_days_of_week =
+      ReplacementService.schedule_service_types()
+      |> Enum.reject(&is_nil(replacement_service.timetable[&1]))
 
-    day_of_week = Map.get(params, "day_of_week", Enum.at(available_days_of_week, 0))
+    day_of_week =
+      if day_of_week = Map.get(params, "day_of_week") do
+        String.to_existing_atom(day_of_week)
+      else
+        Enum.at(available_days_of_week, 0)
+      end
 
-    trips_with_times =
-      Disruptions.replacement_service_trips_with_times(replacement_service, day_of_week)
-
+    trips_with_times = Map.get(replacement_service.timetable, day_of_week)
     direction_id = Map.get(params, "direction_id", "0")
-
     sample_trip = trips_with_times |> Map.get(direction_id) |> Enum.at(0)
 
     initial_stop_times_by_stop =
-      Enum.map(sample_trip.stop_times, fn stop_time ->
+      Enum.map(sample_trip, fn stop_time ->
         {stop_time.stop_id
          |> Shuttles.stop_or_gtfs_stop_for_stop_id()
          |> Shuttles.stop_display_name(), stop_time.stop_id, []}
@@ -29,7 +37,7 @@ defmodule ArrowWeb.TimetableController do
       trips_with_times
       |> Map.get(direction_id)
       |> Enum.reduce(initial_stop_times_by_stop, fn trip, times_by_stop ->
-        trip_stop_times_by_stop = Enum.group_by(trip.stop_times, & &1.stop_id)
+        trip_stop_times_by_stop = Enum.group_by(trip, & &1.stop_id)
 
         Enum.map(times_by_stop, fn {stop_display_name, stop_id, times} ->
           [trip_stop_time] = Map.get(trip_stop_times_by_stop, stop_id)
@@ -43,14 +51,14 @@ defmodule ArrowWeb.TimetableController do
     day_of_week_options =
       Enum.map(available_days_of_week, fn day_of_week ->
         case day_of_week do
-          "WKDY" -> {"WKDY", "Weekday"}
-          "SAT" -> {"SAT", "Saturday"}
-          "SUN" -> {"SUN", "Sunday"}
+          :weekday -> {:weekday, "Weekday"}
+          :saturday -> {:saturday, "Saturday"}
+          :sunday -> {:sunday, "Sunday"}
         end
       end)
 
     [first_stop, last_stop] =
-      [List.first(sample_trip.stop_times), List.last(sample_trip.stop_times)]
+      [List.first(sample_trip), List.last(sample_trip)]
       |> Enum.map(fn stop ->
         stop
         |> Map.get(:stop_id)

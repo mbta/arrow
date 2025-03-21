@@ -20,11 +20,11 @@ defmodule ArrowWeb.TimetableControllerTest do
       assert response =~ "05:10"
 
       # can switch direction
-      assert response =~ "/timetable?day_of_week=WKDY&amp;direction_id=1"
+      assert response =~ "/timetable?day_of_week=weekday&amp;direction_id=1"
 
       # can switch day
-      assert response =~ "/timetable?day_of_week=WKDY&amp;direction_id=0"
-      assert response =~ "/timetable?day_of_week=SAT&amp;direction_id=0"
+      assert response =~ "/timetable?day_of_week=weekday&amp;direction_id=0"
+      assert response =~ "/timetable?day_of_week=saturday&amp;direction_id=0"
     end
 
     @tag :authenticated_admin
@@ -40,11 +40,11 @@ defmodule ArrowWeb.TimetableControllerTest do
       response = html_response(conn, 200)
 
       # can switch direction
-      assert response =~ "/timetable?day_of_week=WKDY&amp;direction_id=0"
+      assert response =~ "/timetable?day_of_week=weekday&amp;direction_id=0"
 
       # can switch day
-      assert response =~ "/timetable?day_of_week=WKDY&amp;direction_id=1"
-      assert response =~ "/timetable?day_of_week=SAT&amp;direction_id=1"
+      assert response =~ "/timetable?day_of_week=weekday&amp;direction_id=1"
+      assert response =~ "/timetable?day_of_week=saturday&amp;direction_id=1"
     end
   end
 end
