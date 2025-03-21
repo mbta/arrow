@@ -355,16 +355,17 @@ defmodule ArrowWeb.LimitSection do
 
   defp get_stops_for_route(route_id) do
     Arrow.Repo.all(
-      from s in Arrow.Gtfs.Stop,
-        where: s.location_type == :stop_platform,
+      from t in Arrow.Gtfs.Trip,
+        where: t.route_id == ^route_id and t.direction_id == 0 and t.service_id == "canonical",
         join: st in Arrow.Gtfs.StopTime,
+        on: t.id == st.trip_id,
+        join: s in Arrow.Gtfs.Stop,
         on: s.id == st.stop_id,
-        join: t in Arrow.Gtfs.Trip,
-        on: st.trip_id == t.id,
-        where: t.route_id == ^route_id,
+        where: s.location_type == :stop_platform,
         select: s,
-        distinct: s.parent_station_id
+        order_by: st.stop_sequence
     )
+    |> Enum.uniq_by(& &1.parent_station_id)
     |> Enum.map(&{&1.name, &1.parent_station_id})
   end
 
