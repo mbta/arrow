@@ -6,9 +6,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
   alias Arrow.Hastus.Export
 
-  @spec disruption_status_labels :: map()
-  def disruption_status_labels, do: %{Approved: true, Pending: false}
-
   @spec mode_labels :: list(tuple())
   def mode_labels,
     do: [
@@ -40,20 +37,30 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
           </fieldset>
           <fieldset class="w-50 ml-20">
             <legend>Approval Status</legend>
-            <div
-              :for={{{status, value}, idx} <- Enum.with_index(disruption_status_labels())}
-              class="form-check"
-            >
+            <div class="form-check">
               <input
                 name={@form[:is_active].name}
-                id={"#{@form[:is_active].id}-#{idx}"}
+                id="status-approved"
                 class="form-check-input"
                 type="radio"
-                checked={to_string(@form[:is_active].value) == to_string(value)}
-                value={to_string(value)}
+                checked={normalize_value("checkbox", input_value(@form, :is_active))}
+                value="true"
               />
-              <label for={"#{@form[:is_active].id}-#{idx}"} class="form-check-label">
-                {status}
+              <label for="status-approved" class="form-check-label">
+                Approved
+              </label>
+            </div>
+            <div class="form-check">
+              <input
+                name={@form[:is_active].name}
+                id="status-pending"
+                class="form-check-input"
+                type="radio"
+                checked={!normalize_value("checkbox", input_value(@form, :is_active))}
+                value="false"
+              />
+              <label for="status-pending" class="form-check-label">
+                Pending
               </label>
             </div>
           </fieldset>
