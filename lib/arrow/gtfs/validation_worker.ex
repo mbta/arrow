@@ -22,7 +22,7 @@ defmodule Arrow.Gtfs.ValidationWorker do
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"s3_uri" => s3_uri, "archive_version" => new_version}} = job) do
     with {:ok, unzip} <- Arrow.Gtfs.Archive.to_unzip_struct(s3_uri) do
-      Arrow.Gtfs.import(unzip, new_version, job, rollback?: true)
+      Arrow.Gtfs.import(unzip, new_version, job, validate_only?: true)
     end
   end
 
