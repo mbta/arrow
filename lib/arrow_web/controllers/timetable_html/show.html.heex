@@ -19,14 +19,15 @@
 
   <div>
     <h3>{@first_stop} to {@last_stop}</h3>
-    <a
-      :if={@bidirectional?}
-      href={
+    <%= if @bidirectional? do %>
+      <a href={
         ~p"/replacement_services/#{@replacement_service_id}/timetable?day_of_week=#{@day_of_week}&direction_id=#{if @direction_id == "0", do: "1", else: "0"}"
-      }
-    >
-      Switch directions
-    </a>
+      }>
+        Switch directions
+      </a>
+    <% else %>
+      <i>This is a one-way shuttle.</i>
+    <% end %>
   </div>
 
   <table class="overflow-scroll w-full table-fixed block p-4">
