@@ -17,6 +17,7 @@ defmodule ArrowWeb.LimitSection do
   attr :icon_paths, :map, required: true
   attr :disruption, DisruptionV2, required: true
   attr :limit, Limit
+  attr :disabled?, :boolean
 
   def render(assigns) do
     ~H"""
@@ -38,7 +39,7 @@ defmodule ArrowWeb.LimitSection do
             <:col :let={limit_row} label="end date">{limit_row.end_date}</:col>
             <:action :let={limit_row}>
               <.button
-                disabled={!is_nil(@limit_form)}
+                disabled={!is_nil(@limit_form) or @disabled?}
                 type="button"
                 phx-click="edit_limit"
                 phx-value-limit={limit_row.id}
@@ -47,7 +48,7 @@ defmodule ArrowWeb.LimitSection do
               </.button>
               <.button
                 id={"duplicate-limit-#{limit_row.id}"}
-                disabled={!is_nil(@limit_form)}
+                disabled={!is_nil(@limit_form) or @disabled?}
                 type="button"
                 phx-click="duplicate_limit"
                 phx-value-limit={limit_row.id}
@@ -56,7 +57,7 @@ defmodule ArrowWeb.LimitSection do
                 <.icon name="hero-document-duplicate-solid" class="bg-primary" />
               </.button>
               <.button
-                disabled={!is_nil(@limit_form)}
+                disabled={!is_nil(@limit_form) or @disabled?}
                 type="button"
                 phx-click="delete_limit"
                 phx-value-limit={limit_row.id}
@@ -70,14 +71,16 @@ defmodule ArrowWeb.LimitSection do
         </div>
       <% end %>
 
-      <.link_button
+      <.button
         :if={is_nil(@limit_form)}
+        type="button"
         class="btn-link"
         phx-click="add_limit"
         id="add-limit-component"
+        disabled={@disabled?}
       >
         <.icon name="hero-plus" /> <span>add limit component</span>
-      </.link_button>
+      </.button>
 
       <.simple_form
         :if={!is_nil(@limit_form)}

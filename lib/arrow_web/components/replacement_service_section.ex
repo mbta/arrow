@@ -20,6 +20,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
   attr :source_workbook_data, :any
   attr :source_workbook_filename, :string
   attr :icon_paths, :map, required: true
+  attr :disabled?, :boolean
 
   def render(assigns) do
     ~H"""
@@ -58,7 +59,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
             <div class="col-lg-11">
               <.button
                 class="btn-link btn-sm pl-0"
-                disabled={!is_nil(@form)}
+                disabled={!is_nil(@form) or @disabled?}
                 id={"edit_replacement_service-#{replacement_service.id}"}
                 type="button"
                 phx-click="edit_replacement_service"
@@ -77,7 +78,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
             <div class="col-lg-1">
               <.button
                 class="btn-sm"
-                disabled={!is_nil(@form)}
+                disabled={!is_nil(@form) or @disabled?}
                 type="button"
                 phx-click="delete_replacement_service"
                 phx-value-replacement_service={replacement_service.id}
@@ -91,14 +92,16 @@ defmodule ArrowWeb.ReplacementServiceSection do
         </div>
       <% end %>
 
-      <.link_button
+      <.button
         :if={is_nil(@form)}
+        type="button"
         id="add_replacement_service"
         class="btn-link"
         phx-click="add_replacement_service"
+        disabled={@disabled?}
       >
         <.icon name="hero-plus" /> <span>add replacement service component</span>
-      </.link_button>
+      </.button>
 
       <.simple_form
         :if={!is_nil(@form)}

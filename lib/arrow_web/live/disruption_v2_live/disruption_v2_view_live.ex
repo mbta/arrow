@@ -100,6 +100,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         limit={@limit_in_form}
         icon_paths={@icon_paths}
         disruption={@disruption_v2}
+        disabled?={not is_nil(@hastus_export_in_form) or not is_nil(@replacement_service_in_form)}
       />
 
       <.live_component
@@ -109,6 +110,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         hastus_export={@hastus_export_in_form}
         disruption={@disruption_v2}
         user_id={@user_id}
+        disabled?={not is_nil(@limit_in_form) or not is_nil(@replacement_service_in_form)}
       />
 
       <.live_component
@@ -117,6 +119,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         replacement_service={@replacement_service_in_form}
         disruption={@disruption_v2}
         icon_paths={@icon_paths}
+        disabled?={not is_nil(@hastus_export_in_form) or not is_nil(@limit_in_form)}
       />
 
       <div class="d-flex justify-content-center">
