@@ -23,7 +23,8 @@ defmodule ArrowWeb.TimetableController do
       end
 
     trips_with_times = Map.get(replacement_service.timetable, day_of_week)
-    direction_id = Map.get(params, "direction_id", "0")
+    default_direction_id = if(Enum.any?(trips_with_times["0"]), do: "0", else: "1")
+    direction_id = Map.get(params, "direction_id", default_direction_id)
     sample_trip = trips_with_times |> Map.get(direction_id) |> Enum.at(0)
 
     initial_stop_times_by_stop =
@@ -70,6 +71,7 @@ defmodule ArrowWeb.TimetableController do
       replacement_service_id: replacement_service,
       shuttle_name: shuttle_name,
       direction_id: direction_id,
+      bidirectional?: Enum.any?(trips_with_times["0"]) and Enum.any?(trips_with_times["1"]),
       day_of_week: day_of_week,
       day_of_week_options: day_of_week_options,
       stop_times_by_stop: stop_times_by_stop,
