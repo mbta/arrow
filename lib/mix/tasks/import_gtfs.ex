@@ -22,6 +22,7 @@ defmodule Mix.Tasks.ImportGtfs do
     end
   end
 
+  @spec get_gtfs_path([String.t()]) :: {:ok | :error | :info, String.t()}
   defp get_gtfs_path([path]) do
     exp = Path.expand(path, File.cwd!())
 
@@ -63,6 +64,7 @@ defmodule Mix.Tasks.ImportGtfs do
     {:info, message}
   end
 
+  @spec get_unzip(String.t()) :: {:ok, Unzip.t()} | {:error, String.t()}
   defp get_unzip(gtfs_path) do
     file_access = Unzip.LocalFile.open(gtfs_path)
 
@@ -72,6 +74,7 @@ defmodule Mix.Tasks.ImportGtfs do
     end
   end
 
+  @spec get_version(Unzip.t()) :: {:ok, String.t()} | {:error, String.t()}
   defp get_version(unzip) do
     unzip
     |> Arrow.Gtfs.ImportHelper.stream_csv_rows("feed_info.txt")
@@ -83,6 +86,7 @@ defmodule Mix.Tasks.ImportGtfs do
     end
   end
 
+  @spec download_feed() :: {:ok, String.t()} | {:error, String.t()}
   defp download_feed do
     with {:ok, body} <- do_download(),
          {:ok, path} <- get_tmp_file_path(),
@@ -91,6 +95,7 @@ defmodule Mix.Tasks.ImportGtfs do
     end
   end
 
+  @spec write_tmp_file(String.t(), binary()) :: :ok | {:error, String.t()}
   defp write_tmp_file(path, contents) do
     case File.write(path, contents) do
       :ok -> :ok
@@ -98,6 +103,7 @@ defmodule Mix.Tasks.ImportGtfs do
     end
   end
 
+  @spec tmp_file_exists?() :: boolean()
   defp tmp_file_exists? do
     case get_tmp_file_path() do
       {:ok, path} -> File.exists?(path)
@@ -105,12 +111,14 @@ defmodule Mix.Tasks.ImportGtfs do
     end
   end
 
+  @spec tmp_file_timestamp!() :: DateTime.t()
   defp tmp_file_timestamp! do
     {:ok, path} = get_tmp_file_path()
     stat = File.stat!(path, time: :posix)
     DateTime.from_unix!(stat.mtime)
   end
 
+  @spec get_tmp_file_path() :: {:ok, String.t()} | {:error, String.t()}
   defp get_tmp_file_path do
     case System.tmp_dir() do
       nil ->
@@ -123,6 +131,7 @@ defmodule Mix.Tasks.ImportGtfs do
     end
   end
 
+  @spec do_download() :: {:ok, binary()} | {:error, String.t()}
   defp do_download do
     fetch_module = Application.get_env(:arrow, :http_client)
     {:ok, _} = fetch_module.start()
