@@ -10,6 +10,7 @@ defmodule ArrowWeb.LimitSection do
 
   alias Arrow.{Adjustment, Limits}
   alias Arrow.Disruptions.{DisruptionV2, Limit}
+  alias Arrow.Limits.LimitDayOfWeek
 
   attr :id, :string
   attr :limit_form, :any, required: true
@@ -41,7 +42,6 @@ defmodule ArrowWeb.LimitSection do
                 type="button"
                 phx-click="edit_limit"
                 phx-value-limit={limit_row.id}
-                phx-target={@myself}
               >
                 <.icon name="hero-pencil-solid" class="bg-primary" />
               </.button>
@@ -282,21 +282,6 @@ defmodule ArrowWeb.LimitSection do
      |> assign(limit_form: nil)}
   end
 
-  def handle_event("edit_limit", %{"limit" => limit_id}, socket) do
-    {parsed_id, _} = Integer.parse(limit_id)
-    limit = Limits.get_limit!(parsed_id)
-    day_of_weeks = Enum.map(limit.limit_day_of_weeks, &set_all_day_default/1)
-
-    {:noreply,
-     socket
-     |> assign(
-       :limit_form,
-       %{limit | limit_day_of_weeks: day_of_weeks} |> Limits.change_limit() |> to_form()
-     )
-     |> assign(limit: limit)
-     |> assign(action: "update")}
-  end
-
   def handle_event("delete_limit", %{"limit" => limit_id}, socket) do
     {parsed_id, _} = Integer.parse(limit_id)
     limit = Limits.get_limit!(parsed_id)
@@ -329,7 +314,7 @@ defmodule ArrowWeb.LimitSection do
         day_of_week
         |> Map.from_struct()
         |> Map.drop([:id, :inserted_at, :updated_at])
-        |> set_all_day_default()
+        |> LimitDayOfWeek.set_all_day_default()
       end)
 
     form =
@@ -382,14 +367,5 @@ defmodule ArrowWeb.LimitSection do
   defp get_limit_route_icon_url(limit, icon_paths) do
     kind = Adjustment.kind(%Adjustment{route_id: limit.route.id})
     Map.get(icon_paths, kind)
-  end
-
-  defp set_all_day_default(day_of_week) do
-    %{
-      day_of_week
-      | all_day?:
-          day_of_week.active? and is_nil(day_of_week.start_time) and
-            is_nil(day_of_week.end_time)
-    }
   end
 end

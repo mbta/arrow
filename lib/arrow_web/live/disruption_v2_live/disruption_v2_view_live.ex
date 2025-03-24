@@ -4,6 +4,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   alias Arrow.{Adjustment, Disruptions}
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
   alias Arrow.Hastus.Export
+  alias Arrow.Limits.LimitDayOfWeek
 
   @spec disruption_status_labels :: map()
   def disruption_status_labels, do: %{Approved: true, Pending: false}
@@ -281,6 +282,14 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     {:noreply, socket}
   end
 
+  def handle_event("edit_limit", %{"limit" => limit_id}, socket) do
+    {parsed_id, _} = Integer.parse(limit_id)
+    limit = Arrow.Limits.get_limit!(parsed_id)
+    day_of_weeks = Enum.map(limit.limit_day_of_weeks, &LimitDayOfWeek.set_all_day_default/1)
+
+    {:noreply, assign(socket, :limit_in_form, %{limit | limit_day_of_weeks: day_of_weeks})}
+  end
+
   def handle_event(
         "add_replacement_service",
         _,
@@ -319,6 +328,17 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:replacement_service_in_form, %ReplacementService{})
 
     {:noreply, socket}
+  end
+
+  def handle_event(
+        "edit_replacement_service",
+        %{"replacement_service" => replacement_service_id},
+        socket
+      ) do
+    {parsed_id, _} = Integer.parse(replacement_service_id)
+    replacement_service = Disruptions.get_replacement_service!(parsed_id)
+
+    {:noreply, assign(socket, :replacement_service_in_form, replacement_service)}
   end
 
   def handle_event("upload_hastus_export", _, socket) do

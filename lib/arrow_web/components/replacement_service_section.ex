@@ -63,7 +63,6 @@ defmodule ArrowWeb.ReplacementServiceSection do
                 type="button"
                 phx-click="edit_replacement_service"
                 phx-value-replacement_service={replacement_service.id}
-                phx-target={@myself}
               >
                 <.icon name="hero-pencil-solid" class="bg-primary" /> Edit/Manage Activation
               </.button>
@@ -331,24 +330,6 @@ defmodule ArrowWeb.ReplacementServiceSection do
 
   def handle_event("selection_recovery", _params, socket) do
     {:noreply, socket}
-  end
-
-  def handle_event(
-        "edit_replacement_service",
-        %{"replacement_service" => replacement_service_id},
-        socket
-      ) do
-    {parsed_id, _} = Integer.parse(replacement_service_id)
-    replacement_service = Disruptions.get_replacement_service!(parsed_id)
-
-    {:noreply,
-     socket
-     |> assign(
-       :form,
-       replacement_service |> Disruptions.change_replacement_service() |> to_form()
-     )
-     |> assign(replacement_service: replacement_service)
-     |> assign(action: "update")}
   end
 
   def handle_event(
