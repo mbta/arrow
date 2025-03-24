@@ -45,6 +45,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
                 type="radio"
                 checked={normalize_value("checkbox", input_value(@form, :is_active))}
                 value="true"
+                disabled={@action == :create}
               />
               <label for="status-approved" class="form-check-label">
                 Approved
@@ -177,7 +178,11 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   @impl true
   def mount(%{} = _params, session, socket) do
     disruption = DisruptionV2.new()
-    form = disruption |> Disruptions.change_disruption_v2() |> to_form()
+
+    form =
+      disruption
+      |> Disruptions.change_disruption_v2(%{is_active: false, mode: :subway})
+      |> to_form()
 
     socket =
       socket
