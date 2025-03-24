@@ -2,12 +2,13 @@ defmodule Arrow.Gtfs do
   @moduledoc """
   GTFS import logic.
   """
-
-  require Logger
   alias Arrow.Gtfs.Importable
   alias Arrow.Gtfs.JobHelper
   alias Arrow.Repo
   alias Arrow.Repo.ForeignKeyConstraint
+
+  require Logger
+  import Ecto.Query
 
   @import_timeout_ms :timer.minutes(10)
 
@@ -15,29 +16,44 @@ defmodule Arrow.Gtfs do
   Loads a GTFS archive into Arrow's gtfs_* DB tables,
   replacing the previous archive's data.
 
-  Setting `dry_run?` true causes the transaction to be rolled back
-  instead of committed, even if all queries succeed.
+  `job` is the Oban job running this import, or `nil` if the import is being
+  run directly, e.g. by `mix import_gtfs`.
+
+  Options:
+  - `:rollback?` - Set true to have the transaction roll back
+    instead of committing, even if all queries succeed. Use this when
+    running the import solely for validation purposes.
 
   Returns:
 
-  - `:ok` on successful import or dry-run, or skipped import due to unchanged version.
-  - `{:error, reason}` if the import or dry-run failed.
+  - `:ok` on successful import or validation, or skipped import due to unchanged version.
+  - `{:error, reason}` if the import or validation failed.
   """
-  @spec import(Unzip.t(), String.t(), String.t() | nil, Oban.Job.t(), boolean) ::
+  @spec import(Unzip.t(), String.t(), Oban.Job.t() | nil, Keyword.t()) ::
           :ok | {:error, term}
-  def import(unzip, new_version, current_version, job, dry_run? \\ false) do
-    job_info = JobHelper.logging_params(job)
+  def import(unzip, new_version, job \\ nil, opts \\ []) do
+    rollback? = Keyword.get(opts, :rollback?, false)
+    job_info = job && JobHelper.logging_params(job)
 
     Logger.info("GTFS import or validation job starting #{job_info}")
 
+    current_version =
+      if rollback? do
+        "doesn't matter for validation"
+      else
+        Arrow.Repo.one(
+          from info in Arrow.Gtfs.FeedInfo, where: info.id == "mbta-ma-us", select: info.version
+        )
+      end
+
     with :ok <- validate_required_files(unzip),
          :ok <- validate_version_change(new_version, current_version) do
-      case import_transaction(unzip, dry_run?) do
+      case import_transaction(unzip, rollback?) do
         {:ok, _} ->
           Logger.info("GTFS import success #{job_info}")
           :ok
 
-        {:error, :dry_run_success} ->
+        {:error, :validation_success} ->
           Logger.info("GTFS validation success #{job_info}")
           :ok
 
@@ -59,7 +75,7 @@ defmodule Arrow.Gtfs do
     end
   end
 
-  defp import_transaction(unzip, dry_run?) do
+  defp import_transaction(unzip, rollback?) do
     transaction = fn ->
       external_fkeys = get_external_fkeys()
       drop_external_fkeys(external_fkeys)
@@ -69,11 +85,11 @@ defmodule Arrow.Gtfs do
 
       add_external_fkeys(external_fkeys)
 
-      if dry_run? do
+      if rollback? do
         # Set any deferred constraints to run now, instead of on transaction commit,
         # since we don't actually commit the transaction in this case.
         _ = Repo.query!("SET CONSTRAINTS ALL IMMEDIATE")
-        Repo.rollback(:dry_run_success)
+        Repo.rollback(:validation_success)
       end
     end
 
@@ -81,7 +97,7 @@ defmodule Arrow.Gtfs do
       fn -> Repo.transaction(transaction, timeout: @import_timeout_ms) end
       |> :timer.tc(:millisecond)
 
-    action = if dry_run?, do: "validation", else: "import"
+    action = if rollback?, do: "validation", else: "import"
     Logger.info("GTFS archive #{action} transaction completed elapsed_ms=#{elapsed_ms}")
 
     result
