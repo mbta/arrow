@@ -2,19 +2,73 @@ defmodule Mix.Tasks.ImportGtfs do
   @moduledoc """
   Mix task to import a GTFS-static feed into the local Arrow database.
   """
-
   use Mix.Task
+
   require Logger
 
   @shortdoc "Imports MBTA_GTFS.zip"
+
   @impl Mix.Task
   def run(args) do
-    with {:ok, gtfs_path} <- fetch_gtfs_path(args),
+    with {:ok, gtfs_path} <- get_gtfs_path(args),
          {:ok, unzip} <- get_unzip(gtfs_path),
          {:ok, version} <- get_version(unzip) do
       Ecto.Migrator.with_repo(Arrow.Repo, fn _repo ->
         Arrow.Gtfs.import(unzip, version)
       end)
+    else
+      {:info, message} -> Mix.shell().info(message)
+      {:error, message} -> Mix.shell().error(message)
+    end
+  end
+
+  defp get_gtfs_path([path]) do
+    exp = Path.expand(path, File.cwd!())
+
+    cond do
+      not File.exists?(exp) -> {:error, "No file exists at path: #{exp} (expanded from #{path})"}
+      not File.regular?(exp) -> {:error, "Path is a directory: #{exp} (expanded from #{path})"}
+      :else -> {:ok, exp}
+    end
+  end
+
+  defp get_gtfs_path([]) do
+    Mix.shell().info("No path to MBTA_GTFS.zip provided.")
+
+    use_tmp_dir_feed? = fn ->
+      "Would you like to use the feed previously downloaded by this mix task? (timestamp: #{tmp_file_timestamp!()})"
+      |> Mix.shell().yes?()
+    end
+
+    use_downloaded_feed? = fn ->
+      "Would you like to download and use the latest feed from #{feed_url()}?"
+      |> Mix.shell().yes?()
+    end
+
+    cond do
+      tmp_file_exists?() and use_tmp_dir_feed?.() -> get_tmp_file_path()
+      use_downloaded_feed?.() -> download_feed()
+      :else -> {:info, "Exiting."}
+    end
+  end
+
+  defp get_gtfs_path(_) do
+    task_name = Mix.Task.task_name(__MODULE__)
+
+    message = """
+    Usage: #{task_name} [path/to/MBTA_GTFS.zip]
+    If path is not provided, task will attempt to download the feed from #{feed_url()}.
+    """
+
+    {:info, message}
+  end
+
+  defp get_unzip(gtfs_path) do
+    file_access = Unzip.LocalFile.open(gtfs_path)
+
+    case Unzip.new(file_access) do
+      {:ok, _unzip} = success -> success
+      {:error, reason} -> {:error, "Couldn't open feed archive: #{reason}"}
     end
   end
 
@@ -24,73 +78,9 @@ defmodule Mix.Tasks.ImportGtfs do
     |> Enum.at(0, %{})
     |> Map.fetch("feed_version")
     |> case do
-      {:ok, _version} = success ->
-        success
-
-      :error ->
-        Mix.shell().error("feed_info.txt is missing or empty")
-        :error
+      {:ok, _version} = success -> success
+      :error -> {:error, "feed_info.txt is missing or empty"}
     end
-  end
-
-  defp get_unzip(gtfs_path) do
-    file_access = Unzip.LocalFile.open(gtfs_path)
-
-    case Unzip.new(file_access) do
-      {:ok, _unzip} = success ->
-        success
-
-      {:error, reason} ->
-        Mix.shell().error("Couldn't open feed archive: #{reason}")
-        :error
-    end
-  end
-
-  defp fetch_gtfs_path([path]) do
-    expanded = Path.expand(path, File.cwd!())
-
-    cond do
-      not File.exists?(expanded) ->
-        Mix.shell().error("No such file exists at path: #{expanded} (expanded from #{path})")
-        :error
-
-      not File.regular?(expanded) ->
-        Mix.shell().error("Path is a directory: #{expanded} (expanded from #{path})")
-        :error
-
-      :else ->
-        {:ok, expanded}
-    end
-  end
-
-  defp fetch_gtfs_path([]) do
-    Mix.shell().info("No path to MBTA_GTFS.zip provided.")
-
-    cond do
-      tmp_file_exists?() and
-          Mix.shell().yes?(
-            "Would you like to use the feed previously downloaded by this mix task? (timestamp: #{tmp_file_timestamp!()})"
-          ) ->
-        get_tmp_file_path()
-
-      Mix.shell().yes?("Would you like to download and use the latest feed from #{feed_url()}?") ->
-        download_feed()
-
-      :else ->
-        Mix.shell().info("Exiting.")
-        :error
-    end
-  end
-
-  defp fetch_gtfs_path(_) do
-    task_name = Mix.Task.task_name(__MODULE__)
-
-    Mix.shell().info("""
-    Usage: #{task_name} [path/to/MBTA_GTFS.zip]
-    If path is not provided, task will attempt to download the feed from #{feed_url()}.
-    """)
-
-    :error
   end
 
   defp download_feed do
@@ -103,19 +93,15 @@ defmodule Mix.Tasks.ImportGtfs do
 
   defp write_tmp_file(path, contents) do
     case File.write(path, contents) do
-      :ok ->
-        :ok
-
-      {:error, err} ->
-        Mix.shell().error("Failed to write downloaded file to disk. POSIX error code: #{err}")
-        :error
+      :ok -> :ok
+      {:error, e} -> {:error, "Failed to write downloaded file to disk. POSIX error code: #{e}"}
     end
   end
 
   defp tmp_file_exists? do
     case get_tmp_file_path() do
       {:ok, path} -> File.exists?(path)
-      :error -> false
+      {:error, _} -> false
     end
   end
 
@@ -128,8 +114,7 @@ defmodule Mix.Tasks.ImportGtfs do
   defp get_tmp_file_path do
     case System.tmp_dir() do
       nil ->
-        Mix.shell().error("Could not locate your system's tmp directory to save feed in")
-        :error
+        {:error, "Could not locate your system's tmp directory to save feed in"}
 
       dir ->
         subdir = Path.join(dir, Mix.Task.task_name(__MODULE__))
@@ -143,16 +128,9 @@ defmodule Mix.Tasks.ImportGtfs do
     {:ok, _} = fetch_module.start()
 
     case fetch_module.get(feed_url()) do
-      {:ok, %{status_code: 200, body: body}} ->
-        {:ok, body}
-
-      {:ok, %{status_code: code}} ->
-        Mix.shell().error("Download failed with status code #{code}")
-        :error
-
-      {:error, exception} ->
-        Mix.shell().error("Download failed: #{Exception.message(exception)}")
-        :error
+      {:ok, %{status_code: 200, body: body}} -> {:ok, body}
+      {:ok, %{status_code: code}} -> {:error, "Download failed with status code #{code}"}
+      {:error, exception} -> {:error, "Download failed: #{Exception.message(exception)}"}
     end
   end
 
