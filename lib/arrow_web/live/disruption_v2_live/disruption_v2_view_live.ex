@@ -1,5 +1,6 @@
 defmodule ArrowWeb.DisruptionV2ViewLive do
   use ArrowWeb, :live_view
+  import Phoenix.HTML.Form
 
   alias Arrow.{Adjustment, Disruptions}
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
@@ -8,14 +9,14 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   @spec disruption_status_labels :: map()
   def disruption_status_labels, do: %{Approved: true, Pending: false}
 
-  @spec mode_labels :: map()
+  @spec mode_labels :: list(tuple())
   def mode_labels,
-    do: %{
-      Subway: :subway,
-      "Commuter Rail": :commuter_rail,
-      Bus: :bus,
-      "Silver Line": :silver_line
-    }
+    do: [
+      {"Subway/Light Rail", :subway},
+      {"Commuter Rail", :commuter_rail},
+      {"Bus", :bus},
+      {"Silver Line", :silver_line}
+    ]
 
   attr :id, :string
   attr :form, :any, required: true
@@ -39,16 +40,19 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
           </fieldset>
           <fieldset class="w-50 ml-20">
             <legend>Approval Status</legend>
-            <div :for={{{status, value}, idx} <- Enum.with_index(disruption_status_labels())} %>
-              <label class="form-check form-check-label">
-                <input
-                  name={@form[:is_active].name}
-                  id={"#{@form[:is_active].id}-#{idx}"}
-                  class="form-check-input"
-                  type="radio"
-                  checked={to_string(@form[:is_active].value) == to_string(value)}
-                  value={to_string(value)}
-                />
+            <div
+              :for={{{status, value}, idx} <- Enum.with_index(disruption_status_labels())}
+              class="form-check"
+            >
+              <input
+                name={@form[:is_active].name}
+                id={"#{@form[:is_active].id}-#{idx}"}
+                class="form-check-input"
+                type="radio"
+                checked={to_string(@form[:is_active].value) == to_string(value)}
+                value={to_string(value)}
+              />
+              <label for={"#{@form[:is_active].id}-#{idx}"} class="form-check-label">
                 {status}
               </label>
             </div>
@@ -56,17 +60,17 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         </div>
         <fieldset>
           <legend>Mode</legend>
-          <div :for={{{mode, value}, idx} <- Enum.with_index(mode_labels())}>
-            <label class="form-check form-check-label">
-              <input
-                name={@form[:mode].name}
-                id={"#{@form[:mode].id}-#{idx}"}
-                class="form-check-input"
-                type="radio"
-                checked={to_string(@form[:mode].value) == to_string(value)}
-                value={to_string(value)}
-              />
-
+          <div :for={{{mode, value}, idx} <- Enum.with_index(mode_labels())} class="form-check">
+            <input
+              name={@form[:mode].name}
+              id={"#{@form[:mode].id}-#{idx}"}
+              class="form-check-input"
+              type="radio"
+              checked={input_value(@form, :mode) == value}
+              disabled={value != :subway}
+              value={value}
+            />
+            <label for={"#{@form[:mode].id}-#{idx}"} class="form-check-label">
               <span
                 class="m-icon m-icon-sm mr-1"
                 style={"background-image: url('#{Map.get(@icon_paths, value)}');"}
