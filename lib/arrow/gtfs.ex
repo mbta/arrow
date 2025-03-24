@@ -6,9 +6,9 @@ defmodule Arrow.Gtfs do
   alias Arrow.Gtfs.JobHelper
   alias Arrow.Repo
   alias Arrow.Repo.ForeignKeyConstraint
+  import Ecto.Query
 
   require Logger
-  import Ecto.Query
 
   @import_timeout_ms :timer.minutes(10)
 
@@ -20,9 +20,8 @@ defmodule Arrow.Gtfs do
   run directly, e.g. by `mix import_gtfs`.
 
   Options:
-  - `:rollback?` - Set true to have the transaction roll back
-    instead of committing, even if all queries succeed. Use this when
-    running the import solely for validation purposes.
+  - `:validate_only?` - Set true to have the transaction roll back
+    instead of committing, even if all queries succeed.
 
   Returns:
 
@@ -32,13 +31,13 @@ defmodule Arrow.Gtfs do
   @spec import(Unzip.t(), String.t(), Oban.Job.t() | nil, Keyword.t()) ::
           :ok | {:error, term}
   def import(unzip, new_version, job \\ nil, opts \\ []) do
-    rollback? = Keyword.get(opts, :rollback?, false)
+    validate_only? = Keyword.get(opts, :validate_only?, false)
     job_info = job && JobHelper.logging_params(job)
 
     Logger.info("GTFS import or validation job starting #{job_info}")
 
     current_version =
-      if rollback? do
+      if validate_only? do
         "doesn't matter for validation"
       else
         Arrow.Repo.one(
@@ -48,7 +47,7 @@ defmodule Arrow.Gtfs do
 
     with :ok <- validate_required_files(unzip),
          :ok <- validate_version_change(new_version, current_version) do
-      case import_transaction(unzip, rollback?) do
+      case import_transaction(unzip, validate_only?) do
         {:ok, _} ->
           Logger.info("GTFS import success #{job_info}")
           :ok
@@ -75,7 +74,7 @@ defmodule Arrow.Gtfs do
     end
   end
 
-  defp import_transaction(unzip, rollback?) do
+  defp import_transaction(unzip, validate_only?) do
     transaction = fn ->
       external_fkeys = get_external_fkeys()
       drop_external_fkeys(external_fkeys)
@@ -85,7 +84,7 @@ defmodule Arrow.Gtfs do
 
       add_external_fkeys(external_fkeys)
 
-      if rollback? do
+      if validate_only? do
         # Set any deferred constraints to run now, instead of on transaction commit,
         # since we don't actually commit the transaction in this case.
         _ = Repo.query!("SET CONSTRAINTS ALL IMMEDIATE")
@@ -97,7 +96,7 @@ defmodule Arrow.Gtfs do
       fn -> Repo.transaction(transaction, timeout: @import_timeout_ms) end
       |> :timer.tc(:millisecond)
 
-    action = if rollback?, do: "validation", else: "import"
+    action = if validate_only?, do: "validation", else: "import"
     Logger.info("GTFS archive #{action} transaction completed elapsed_ms=#{elapsed_ms}")
 
     result
