@@ -35,6 +35,7 @@
 - `brew install chromedriver`
 - Add your Arrow API key from https://arrow.mbta.com/mytoken to `.envrc`
 - `mix copy_db` to seed your database
+- `mix import_gtfs [optional/path/to/local/MBTA_GTFS.zip]` to populate your database's `gtfs_*` tables from a GTFS-static feed
 
 ### Useful commands
 
