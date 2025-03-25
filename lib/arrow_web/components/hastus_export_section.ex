@@ -36,6 +36,7 @@ defmodule ArrowWeb.HastusExportSection do
       <%= if Ecto.assoc_loaded?(@disruption.hastus_exports) and Enum.any?(@disruption.hastus_exports) do %>
         <div
           :for={export <- @disruption.hastus_exports}
+          id={"export-table-#{export.id}"}
           class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3"
         >
           <table class="w-[40rem] sm:w-full">
@@ -86,6 +87,7 @@ defmodule ArrowWeb.HastusExportSection do
                       <.icon name="hero-pencil-solid" class="bg-primary" />
                     </.button>
                     <.button
+                      id={"delete-export-button-#{export.id}"}
                       class="btn-sm p-0"
                       disabled={@show_service_import_form}
                       type="button"
@@ -214,7 +216,12 @@ defmodule ArrowWeb.HastusExportSection do
                 <%= if f_date.index == 0 do %>
                   <div class="col-lg-1">
                     <.label for={f_service[:import?].id}>import?</.label>
-                    <.input class="ml-4" field={f_service[:import?]} type="checkbox" />
+                    <.input
+                      class="ml-4"
+                      field={f_service[:import?]}
+                      id={"import-checkbox-#{f_service.index}"}
+                      type="checkbox"
+                    />
                   </div>
                 <% else %>
                   <div class="col-lg-1"></div>
