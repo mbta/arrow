@@ -76,7 +76,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
     |> click(Query.css("#edit-export-button-#{export.id}"))
     |> assert_text("edit service schedule")
     |> scroll_down()
-    |> click(text("import?"))
+    |> click(Query.css("#import-checkbox-0"))
     |> click(Query.css("#save-export-button"))
     |> assert_text("You must import at least one service")
   end
