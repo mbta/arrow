@@ -49,7 +49,9 @@ defmodule ArrowWeb.HastusExportSection do
               </tr>
             </thead>
             <tbody class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700">
-              <tr :for={{service, i} <- Enum.with_index(export.services)}>
+              <tr :for={
+                {service, i} <- export.services |> Enum.filter(& &1.import?) |> Enum.with_index()
+              }>
                 <td class="align-top">
                   <span
                     :if={i == 0}
