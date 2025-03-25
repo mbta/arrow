@@ -9,8 +9,8 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
 
   @create_attrs %{
     title: "the great molasses disruption of 2025",
-    mode: "commuter_rail",
-    is_active: true,
+    mode: "subway",
+    is_active: false,
     description: nil
   }
   @update_attrs %{
@@ -21,8 +21,8 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
   }
   @invalid_attrs %{
     title: nil,
-    mode: "silver_line",
-    is_active: true,
+    mode: "subway",
+    is_active: false,
     description: "foobar"
   }
 
