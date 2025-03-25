@@ -50,27 +50,25 @@ defmodule ArrowWeb.HastusExportSection do
             </thead>
             <tbody class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700">
               <tr :for={{service, i} <- Enum.with_index(export.services)}>
-                <% min_start_date = find_min_start_date(service.service_dates) %>
-                <% max_end_date = find_max_end_date(service.service_dates) %>
-                <td>
+                <td class="align-top">
                   <span
                     :if={i == 0}
                     class="m-icon m-icon-sm mr-1"
                     style={"background-image: url('#{line_icon_path(@icon_paths, export.line.id)}');"}
                   />
                 </td>
-                <td>{service.name}</td>
+                <td class="align-top">{service.name}</td>
                 <td>
-                  <span class="text-danger">{Calendar.strftime(min_start_date, "%a")}.</span> {Calendar.strftime(
-                    min_start_date,
-                    "%m/%d/%Y"
-                  )}
+                  <div :for={date <- Enum.map(service.service_dates, & &1.start_date)}>
+                    <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
+                    {Calendar.strftime(date, "%m/%d/%Y")}
+                  </div>
                 </td>
                 <td>
-                  <span class="text-danger">{Calendar.strftime(max_end_date, "%a")}.</span> {Calendar.strftime(
-                    max_end_date,
-                    "%m/%d/%Y"
-                  )}
+                  <div :for={date <- Enum.map(service.service_dates, & &1.end_date)}>
+                    <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
+                    {Calendar.strftime(date, "%m/%d/%Y")}
+                  </div>
                 </td>
                 <td :if={i == length(export.services) - 1}>
                   <div class="text-right">
@@ -623,12 +621,4 @@ defmodule ArrowWeb.HastusExportSection do
   defp error_to_string(:too_large), do: "File is too large. Maximum size is 8MB"
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
   defp error_to_string(_), do: "Upload failed. Please try again or contact an engineer"
-
-  defp find_min_start_date(dates) do
-    dates |> Enum.map(& &1.start_date) |> Enum.min(Date)
-  end
-
-  defp find_max_end_date(dates) do
-    dates |> Enum.map(& &1.end_date) |> Enum.max(Date)
-  end
 end
