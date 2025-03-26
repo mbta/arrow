@@ -8,7 +8,8 @@ defmodule Arrow.Hastus.TripRouteDirection do
   @type t :: %__MODULE__{
           hastus_route_id: String.t(),
           via_variant: String.t(),
-          avi_code: String.t()
+          avi_code: String.t(),
+          route_id: String.t()
         }
 
   schema "hastus_trip_route_directions" do
