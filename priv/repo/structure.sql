@@ -822,7 +822,9 @@ CREATE TABLE public.hastus_trip_route_directions (
     hastus_route_id character varying(255),
     via_variant character varying(255),
     avi_code character varying(255),
-    route_id character varying(255)
+    route_id character varying(255),
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
 );
 
 
