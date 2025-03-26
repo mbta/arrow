@@ -579,7 +579,7 @@ defmodule ArrowWeb.HastusExportSection do
   defp format_line_id(line_id), do: String.replace(line_id, "line-", "")
 
   defp date_range_outside_service_dates?(_service_id, start_date, end_date)
-       when is_nil(start_date) or is_nil(end_date) do
+       when start_date in [nil, ""] or end_date in [nil, ""] do
     false
   end
 
