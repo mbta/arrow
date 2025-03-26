@@ -27,7 +27,8 @@ defmodule Arrow.Hastus.ExportUpload do
   Includes a rescue clause to catch errors while parsing user-provided data
   """
   @spec extract_data_from_upload(%{:path => binary()}, String.t()) ::
-          {:ok, {:error, error_message} | {:ok, list(map())}} | rescued_exception_error()
+          {:ok, {:error, error_message} | {:ok, list(map()), String.t(), binary()}}
+          | rescued_exception_error()
   def extract_data_from_upload(%{path: zip_path}, user_id) do
     tmp_dir = ~c"tmp/hastus/#{user_id}"
 
