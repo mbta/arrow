@@ -243,6 +243,20 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
                }
              } = parse_tab({name, tab})
     end
+
+    @tag sheet: "first_after_last.xlsx"
+    test "errors if first trip is after last trip", context do
+      %{tid: tid, name: name} = extract_single_sheet(context)
+      tab = get_tab_rows(tid)
+
+      assert {
+               :error,
+               {
+                 "SAT headways and runtimes",
+                 ["First trip times must be after Last trip times"]
+               }
+             } = parse_tab({name, tab})
+    end
   end
 
   describe "parse_row/1" do
