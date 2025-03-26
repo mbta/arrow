@@ -7,6 +7,8 @@ defmodule Arrow.Hastus.ExportUpload do
 
   require Logger
 
+  alias Arrow.Hastus.TripRouteDirection
+
   @type error_message :: String.t()
   @type error_details :: list(String.t())
   @type rescued_exception_error :: {:ok, {:error, list({error_message(), []})}}
@@ -27,7 +29,9 @@ defmodule Arrow.Hastus.ExportUpload do
   Includes a rescue clause to catch errors while parsing user-provided data
   """
   @spec extract_data_from_upload(%{:path => binary()}, String.t()) ::
-          {:ok, {:error, error_message} | {:ok, list(map()), String.t(), binary()}}
+          {:ok,
+           {:error, error_message}
+           | {:ok, list(map()), String.t(), list(TripRouteDirection.t()), binary()}}
           | rescued_exception_error()
   def extract_data_from_upload(%{path: zip_path}, user_id) do
     tmp_dir = ~c"tmp/hastus/#{user_id}"
@@ -39,9 +43,9 @@ defmodule Arrow.Hastus.ExportUpload do
          revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
          :ok <- validate_trip_shapes(revenue_trips),
          {:ok, line} <- infer_line(revenue_trips, file_map["all_stop_times.txt"]),
-         {:ok, _branches} <-
+         {:ok, trip_route_directions} <-
            infer_green_line_branches(line, revenue_trips, file_map["all_stop_times.txt"]) do
-      {:ok, {:ok, parse_export(file_map, tmp_dir), line, zip_file_data}}
+      {:ok, {:ok, parse_export(file_map, tmp_dir), line, trip_route_directions, zip_file_data}}
     else
       {:error, error} ->
         _ = File.rm_rf!(tmp_dir)
@@ -160,7 +164,7 @@ defmodule Arrow.Hastus.ExportUpload do
   end
 
   @spec infer_green_line_branches(String.t(), Enumerable.t(), Enumerable.t()) ::
-          {:ok, [String.t()]} | {:error, String.t()}
+          {:ok, [TripRouteDirection.t()]} | {:error, String.t()}
   defp infer_green_line_branches("line-Green", revenue_trips, all_stop_times) do
     {branches, unknown_trips} =
       Enum.reduce(revenue_trips, {MapSet.new([]), []}, fn revenue_trip,
@@ -188,17 +192,30 @@ defmodule Arrow.Hastus.ExportUpload do
         & &1.route_id
       )
 
-    {branches, unknown_trips} =
+    {_branches, unknown_trips, trip_route_directions} =
       unknown_trips
       |> Enum.group_by(& &1["via_variant"])
       |> Map.values()
-      |> Enum.reduce({branches, []}, fn [revenue_trip | _], {branches, unknown_trips} ->
+      |> Enum.reduce({branches, [], []}, fn [revenue_trip | _],
+                                            {branches, unknown_trips, trip_route_directions} ->
         stop_ids_for_trip =
           Enum.map(stop_times_by_trip_id[revenue_trip["trip_id"]], & &1["stop_id"])
 
         case find_branch_based_on_stop_times(canonical_stops_by_branch, stop_ids_for_trip) do
-          nil -> {branches, [revenue_trip | unknown_trips]}
-          route_id -> {MapSet.put(branches, route_id), unknown_trips}
+          nil ->
+            {branches, [revenue_trip | unknown_trips], trip_route_directions}
+
+          route_id ->
+            {MapSet.put(branches, route_id), unknown_trips,
+             [
+               %{
+                 hastus_route_id: revenue_trip["route_id"],
+                 via_variant: revenue_trip["via_variant"],
+                 avi_code: revenue_trip["avi_code"],
+                 route_id: route_id
+               }
+               | trip_route_directions
+             ]}
         end
       end)
 
@@ -208,7 +225,7 @@ defmodule Arrow.Hastus.ExportUpload do
          "Unable to infer the Green Line branch for #{example_trip["route_id"]}, #{example_trip["trp_direction"]}, #{example_trip["via_variant"]}, #{example_trip["route"]}. Please request the via_variant be updated to the branch name and provide an updated export"}
 
       [] ->
-        {:ok, branches}
+        {:ok, trip_route_directions}
     end
   end
 

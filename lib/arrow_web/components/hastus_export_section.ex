@@ -186,6 +186,12 @@ defmodule ArrowWeb.HastusExportSection do
           <.input field={@form[:s3_path]} type="text" class="hidden" />
           <.input field={@form[:disruption_id]} type="text" class="hidden" />
           <.input field={@form[:line_id]} type="text" class="hidden" />
+          <.inputs_for :let={f_trip_route_directions} field={@form[:trip_route_directions]}>
+            <.input field={f_trip_route_directions[:hastus_route_id]} type="text" class="hidden" />
+            <.input field={f_trip_route_directions[:via_variant]} type="text" class="hidden" />
+            <.input field={f_trip_route_directions[:avi_code]} type="text" class="hidden" />
+            <.input field={f_trip_route_directions[:route_id]} type="text" class="hidden" />
+          </.inputs_for>
           <div class="text-success mb-3">
             <strong>
               <i>Successfully imported export {@uploaded_file_name}!</i>
@@ -553,11 +559,12 @@ defmodule ArrowWeb.HastusExportSection do
       {:error, error} ->
         {:noreply, assign(socket, error: error)}
 
-      {:ok, data, line, zip_file_data} ->
+      {:ok, data, line, trip_route_directions, zip_file_data} ->
         form =
           socket.assigns.export
           |> Hastus.change_export(%{
             "services" => data,
+            "trip_route_directions" => trip_route_directions,
             "line_id" => line,
             "s3_path" => client_name,
             "disruption_id" => socket.assigns.disruption.id

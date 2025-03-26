@@ -44,7 +44,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
                  %{name: "RTL12025-hmb15016-Saturday-01"},
                  %{name: "RTL12025-hmb15017-Sunday-01"},
                  %{name: "RTL12025-hmb15mo1-Weekday-01"}
-               ], "line-Blue", _}} = data
+               ], "line-Blue", [], _}} = data
     end
 
     @tag export: "trips_no_shapes.zip"
@@ -87,7 +87,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
               {:ok,
                [
                  %{name: "LRV12025-hlb15016-Saturday-01"}
-               ], "line-Green", _}} = data
+               ], "line-Green", [], _}} = data
     end
 
     @tag export: "gl_unambiguous_branch.zip"
@@ -114,7 +114,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
             route_pattern_id: route_pattern.id,
             directions: [direction]
           ),
-        stop: insert(:gtfs_stop, id: "70202")
+        stop: insert(:gtfs_stop, id: "70145")
       )
 
       data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
@@ -123,7 +123,15 @@ defmodule Arrow.Hastus.ExportUploadTest do
               {:ok,
                [
                  %{name: "LRV12025-hlb15016-Saturday-01"}
-               ], "line-Green", _}} = data
+               ], "line-Green",
+               [
+                 %{
+                   route_id: "Green-E",
+                   avi_code: "812",
+                   hastus_route_id: "800-1428",
+                   via_variant: "F"
+                 }
+               ], _}} = data
     end
 
     @tag export: "gl_trips_ambiguous_branch.zip"
