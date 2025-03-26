@@ -294,8 +294,8 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
       |> Enum.reject(&is_nil/1)
 
     first_last_map = Map.new(first_last)
-    first? = Map.has_key?(first_last_map, :first)
-    last? = Map.has_key?(first_last_map, :last)
+    first = first_last_map[:first]
+    last = first_last_map[:last]
 
     cond do
       length(first_last) > 2 ->
@@ -307,14 +307,24 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
 
         {:error, ["Duplicate row(s) for #{Enum.join(dups, " and ")} trip times"]}
 
-      not (first? and last?) ->
-        values = [{first?, "First"}, {last?, "Last"}] |> Enum.reject(&elem(&1, 0))
+      is_nil(first) or is_nil(last) ->
+        values = [{first, "First"}, {last, "Last"}] |> Enum.reject(&elem(&1, 0))
 
         {:error, ["Missing row for #{values |> Enum.map_join(" and ", &elem(&1, 1))} trip times"]}
+
+      first_trips_after_last?(first, last) ->
+        {:error, ["First trip times must be after Last trip times"]}
 
       :else ->
         {:ok, first_last_map}
     end
+  end
+
+  defp first_trips_after_last?(
+         %{first_trip_0: first_trip_0, first_trip_1: first_trip_1},
+         %{last_trip_0: last_trip_0, last_trip_1: last_trip_1}
+       ) do
+    first_trip_0 > last_trip_0 or first_trip_1 > last_trip_1
   end
 
   @spec has_first_last_trip_times?(map) :: {false, :none} | {true, :first | :last}
