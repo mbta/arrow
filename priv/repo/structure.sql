@@ -1807,6 +1807,13 @@ CREATE INDEX hastus_exports_line_id_index ON public.hastus_exports USING btree (
 
 
 --
+-- Name: hastus_service_dates__daterange_start_date__end_date_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX hastus_service_dates__daterange_start_date__end_date_index ON public.hastus_service_dates USING gist (daterange(start_date, end_date));
+
+
+--
 -- Name: hastus_service_dates_service_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2386,3 +2393,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250312170355);
 INSERT INTO public."schema_migrations" (version) VALUES (20250319170602);
 INSERT INTO public."schema_migrations" (version) VALUES (20250320151207);
 INSERT INTO public."schema_migrations" (version) VALUES (20250326151019);
+INSERT INTO public."schema_migrations" (version) VALUES (20250328193906);
