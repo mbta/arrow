@@ -14,7 +14,13 @@ defmodule Arrow.HastusFixtures do
       attrs
       |> Enum.into(%{
         s3_path: "some s3_path",
-        services: [%{name: "some service"}]
+        services: [
+          %{
+            name: "some-Weekday-service",
+            service_dates: [%{start_date: ~D[2025-01-01], end_date: ~D[2025-01-10]}],
+            import?: true
+          }
+        ]
       })
       |> Arrow.Hastus.create_export()
 

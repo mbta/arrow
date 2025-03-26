@@ -16,7 +16,11 @@ defmodule Arrow.Hastus.Service do
   schema "hastus_services" do
     field :name, :string
     field :import?, :boolean, source: :should_import, default: false
-    has_many :service_dates, Arrow.Hastus.ServiceDate, on_delete: :delete_all
+
+    has_many :service_dates, Arrow.Hastus.ServiceDate,
+      on_replace: :delete,
+      foreign_key: :service_id
+
     belongs_to :export, Arrow.Hastus.Service
 
     timestamps(type: :utc_datetime)
