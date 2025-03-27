@@ -5,6 +5,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   alias Arrow.{Adjustment, Disruptions}
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
   alias Arrow.Hastus.Export
+  alias Arrow.Limits.LimitDayOfWeek
 
   @spec mode_labels :: list(tuple())
   def mode_labels,
@@ -111,6 +112,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         limit={@limit_in_form}
         icon_paths={@icon_paths}
         disruption={@disruption_v2}
+        disabled?={not is_nil(@hastus_export_in_form) or not is_nil(@replacement_service_in_form)}
       />
 
       <.live_component
@@ -120,6 +122,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         hastus_export={@hastus_export_in_form}
         disruption={@disruption_v2}
         user_id={@user_id}
+        disabled?={not is_nil(@limit_in_form) or not is_nil(@replacement_service_in_form)}
       />
 
       <.live_component
@@ -128,6 +131,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         replacement_service={@replacement_service_in_form}
         disruption={@disruption_v2}
         icon_paths={@icon_paths}
+        disabled?={not is_nil(@hastus_export_in_form) or not is_nil(@limit_in_form)}
       />
 
       <div class="d-flex justify-content-center">
@@ -297,6 +301,14 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     {:noreply, socket}
   end
 
+  def handle_event("edit_limit", %{"limit" => limit_id}, socket) do
+    {parsed_id, _} = Integer.parse(limit_id)
+    limit = Arrow.Limits.get_limit!(parsed_id)
+    day_of_weeks = Enum.map(limit.limit_day_of_weeks, &LimitDayOfWeek.set_all_day_default/1)
+
+    {:noreply, assign(socket, :limit_in_form, %{limit | limit_day_of_weeks: day_of_weeks})}
+  end
+
   def handle_event(
         "add_replacement_service",
         _,
@@ -335,6 +347,17 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       |> assign(:replacement_service_in_form, %ReplacementService{})
 
     {:noreply, socket}
+  end
+
+  def handle_event(
+        "edit_replacement_service",
+        %{"replacement_service" => replacement_service_id},
+        socket
+      ) do
+    {parsed_id, _} = Integer.parse(replacement_service_id)
+    replacement_service = Disruptions.get_replacement_service!(parsed_id)
+
+    {:noreply, assign(socket, :replacement_service_in_form, replacement_service)}
   end
 
   def handle_event("upload_hastus_export", _, socket) do

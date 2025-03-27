@@ -106,4 +106,14 @@ defmodule Arrow.Limits.LimitDayOfWeek do
   def day_number(%{day_name: :friday}), do: 5
   def day_number(%{day_name: :saturday}), do: 6
   def day_number(%{day_name: :sunday}), do: 7
+
+  @spec set_all_day_default(t()) :: t()
+  def set_all_day_default(day_of_week) do
+    %{
+      day_of_week
+      | all_day?:
+          day_of_week.active? and is_nil(day_of_week.start_time) and
+            is_nil(day_of_week.end_time)
+    }
+  end
 end

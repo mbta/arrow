@@ -20,6 +20,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
   attr :source_workbook_data, :any
   attr :source_workbook_filename, :string
   attr :icon_paths, :map, required: true
+  attr :disabled?, :boolean
 
   def render(assigns) do
     ~H"""
@@ -58,12 +59,11 @@ defmodule ArrowWeb.ReplacementServiceSection do
             <div class="col-lg-11">
               <.button
                 class="btn-link btn-sm pl-0"
-                disabled={!is_nil(@form)}
+                disabled={!is_nil(@form) or @disabled?}
                 id={"edit_replacement_service-#{replacement_service.id}"}
                 type="button"
                 phx-click="edit_replacement_service"
                 phx-value-replacement_service={replacement_service.id}
-                phx-target={@myself}
               >
                 <.icon name="hero-pencil-solid" class="bg-primary" /> Edit/Manage Activation
               </.button>
@@ -78,7 +78,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
             <div class="col-lg-1">
               <.button
                 class="btn-sm"
-                disabled={!is_nil(@form)}
+                disabled={!is_nil(@form) or @disabled?}
                 type="button"
                 phx-click="delete_replacement_service"
                 phx-value-replacement_service={replacement_service.id}
@@ -92,14 +92,16 @@ defmodule ArrowWeb.ReplacementServiceSection do
         </div>
       <% end %>
 
-      <.link_button
+      <.button
         :if={is_nil(@form)}
+        type="button"
         id="add_replacement_service"
         class="btn-link"
         phx-click="add_replacement_service"
+        disabled={@disabled?}
       >
         <.icon name="hero-plus" /> <span>add replacement service component</span>
-      </.link_button>
+      </.button>
 
       <.simple_form
         :if={!is_nil(@form)}
@@ -331,24 +333,6 @@ defmodule ArrowWeb.ReplacementServiceSection do
 
   def handle_event("selection_recovery", _params, socket) do
     {:noreply, socket}
-  end
-
-  def handle_event(
-        "edit_replacement_service",
-        %{"replacement_service" => replacement_service_id},
-        socket
-      ) do
-    {parsed_id, _} = Integer.parse(replacement_service_id)
-    replacement_service = Disruptions.get_replacement_service!(parsed_id)
-
-    {:noreply,
-     socket
-     |> assign(
-       :form,
-       replacement_service |> Disruptions.change_replacement_service() |> to_form()
-     )
-     |> assign(replacement_service: replacement_service)
-     |> assign(action: "update")}
   end
 
   def handle_event(
