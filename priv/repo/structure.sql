@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.10 (Homebrew)
--- Dumped by pg_dump version 15.10 (Homebrew)
+-- Dumped from database version 15.12 (Postgres.app)
+-- Dumped by pg_dump version 15.12 (Postgres.app)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -813,6 +813,41 @@ ALTER SEQUENCE public.hastus_services_id_seq OWNED BY public.hastus_services.id;
 
 
 --
+-- Name: hastus_trip_route_directions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.hastus_trip_route_directions (
+    id bigint NOT NULL,
+    hastus_export_id bigint NOT NULL,
+    hastus_route_id character varying(255) NOT NULL,
+    via_variant character varying(255) NOT NULL,
+    avi_code character varying(255) NOT NULL,
+    route_id character varying(255) NOT NULL,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: hastus_trip_route_directions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.hastus_trip_route_directions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: hastus_trip_route_directions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.hastus_trip_route_directions_id_seq OWNED BY public.hastus_trip_route_directions.id;
+
+
+--
 -- Name: limit_day_of_weeks; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1275,6 +1310,13 @@ ALTER TABLE ONLY public.hastus_services ALTER COLUMN id SET DEFAULT nextval('pub
 
 
 --
+-- Name: hastus_trip_route_directions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_trip_route_directions ALTER COLUMN id SET DEFAULT nextval('public.hastus_trip_route_directions_id_seq'::regclass);
+
+
+--
 -- Name: limit_day_of_weeks id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1567,6 +1609,14 @@ ALTER TABLE ONLY public.hastus_service_dates
 
 ALTER TABLE ONLY public.hastus_services
     ADD CONSTRAINT hastus_services_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: hastus_trip_route_directions hastus_trip_route_directions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_trip_route_directions
+    ADD CONSTRAINT hastus_trip_route_directions_pkey PRIMARY KEY (id);
 
 
 --
@@ -2159,6 +2209,22 @@ ALTER TABLE ONLY public.hastus_services
 
 
 --
+-- Name: hastus_trip_route_directions hastus_trip_route_directions_hastus_export_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_trip_route_directions
+    ADD CONSTRAINT hastus_trip_route_directions_hastus_export_id_fkey FOREIGN KEY (hastus_export_id) REFERENCES public.hastus_exports(id) ON DELETE CASCADE;
+
+
+--
+-- Name: hastus_trip_route_directions hastus_trip_route_directions_route_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_trip_route_directions
+    ADD CONSTRAINT hastus_trip_route_directions_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.gtfs_routes(id) ON DELETE CASCADE;
+
+
+--
 -- Name: limit_day_of_weeks limit_day_of_weeks_limit_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2319,3 +2385,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250312131506);
 INSERT INTO public."schema_migrations" (version) VALUES (20250312170355);
 INSERT INTO public."schema_migrations" (version) VALUES (20250319170602);
 INSERT INTO public."schema_migrations" (version) VALUES (20250320151207);
+INSERT INTO public."schema_migrations" (version) VALUES (20250326151019);

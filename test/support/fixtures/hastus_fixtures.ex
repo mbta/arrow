@@ -4,7 +4,7 @@ defmodule Arrow.HastusFixtures do
   entities via the `Arrow.Hastus` context.
   """
 
-  @preloads [:line, :disruption, services: [:service_dates]]
+  @preloads [:line, :disruption, :trip_route_directions, services: [:service_dates]]
 
   @doc """
   Generate a export.
