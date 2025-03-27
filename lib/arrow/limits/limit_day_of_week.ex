@@ -107,7 +107,7 @@ defmodule Arrow.Limits.LimitDayOfWeek do
   def day_number(%{day_name: :saturday}), do: 6
   def day_number(%{day_name: :sunday}), do: 7
 
-  @spec set_all_day_default(__MODULE__.t()) :: __MODULE__.t()
+  @spec set_all_day_default(t()) :: t()
   def set_all_day_default(day_of_week) do
     %{
       day_of_week
