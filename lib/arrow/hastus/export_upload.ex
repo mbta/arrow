@@ -341,7 +341,7 @@ defmodule Arrow.Hastus.ExportUpload do
       i = Enum.find_index(acc, &(Date.add(&1.end_date, 1) == date)) ->
         update_in(acc, [Access.at(i), :end_date], fn _ -> date end)
 
-      i = Enum.find_index(acc, &(Date.add(&1.start_date, -11) == date)) ->
+      i = Enum.find_index(acc, &(Date.add(&1.start_date, -1) == date)) ->
         update_in(acc, [Access.at(i), :start_date], fn _ -> date end)
 
       true ->
