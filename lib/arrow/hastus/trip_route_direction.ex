@@ -18,7 +18,7 @@ defmodule Arrow.Hastus.TripRouteDirection do
     field :avi_code, :string
 
     belongs_to :hastus_export, Arrow.Hastus.Export
-    belongs_to :route, Arrow.Gtfs.Route
+    belongs_to :route, Arrow.Gtfs.Route, type: :string
 
     timestamps(type: :utc_datetime)
   end
@@ -26,7 +26,7 @@ defmodule Arrow.Hastus.TripRouteDirection do
   @doc false
   def changeset(trip_route_direction, attrs) do
     trip_route_direction
-    |> cast(attrs, [:hastus_route_id, :via_variant, :avi_code])
+    |> cast(attrs, [:hastus_route_id, :via_variant, :avi_code, :route_id])
     |> assoc_constraint(:hastus_export)
     |> assoc_constraint(:route)
   end

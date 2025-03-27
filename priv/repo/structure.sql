@@ -818,11 +818,11 @@ ALTER SEQUENCE public.hastus_services_id_seq OWNED BY public.hastus_services.id;
 
 CREATE TABLE public.hastus_trip_route_directions (
     id bigint NOT NULL,
-    hastus_export_id bigint,
-    hastus_route_id character varying(255),
-    via_variant character varying(255),
-    avi_code character varying(255),
-    route_id character varying(255),
+    hastus_export_id bigint NOT NULL,
+    hastus_route_id character varying(255) NOT NULL,
+    via_variant character varying(255) NOT NULL,
+    avi_code character varying(255) NOT NULL,
+    route_id character varying(255) NOT NULL,
     inserted_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL
 );
