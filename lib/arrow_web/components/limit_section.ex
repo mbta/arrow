@@ -24,50 +24,64 @@ defmodule ArrowWeb.LimitSection do
     <section id={@id}>
       <h3>Limits</h3>
       <%= if Ecto.assoc_loaded?(@disruption.limits) and Enum.any?(@disruption.limits) do %>
-        <div class="mb-3">
-          <.table id="limits_table" rows={@disruption.limits}>
-            <:col :let={limit_row} label="route">
-              <span
-                class="m-icon m-icon-sm mr-1"
-                style={"background-image: url('#{get_limit_route_icon_url(limit_row, @icon_paths)}');"}
-              />
-            </:col>
-            <:col :let={limit_row} label="start stop">{limit_row.start_stop.name}</:col>
-            <:col label=""><b>to</b></:col>
-            <:col :let={limit_row} label="end stop">{limit_row.end_stop.name}</:col>
-            <:col :let={limit_row} label="start date">{limit_row.start_date}</:col>
-            <:col :let={limit_row} label="end date">{limit_row.end_date}</:col>
-            <:action :let={limit_row}>
-              <.button
-                disabled={!is_nil(@limit_form) or @disabled?}
-                type="button"
-                phx-click="edit_limit"
-                phx-value-limit={limit_row.id}
-              >
-                <.icon name="hero-pencil-solid" class="bg-primary" />
-              </.button>
-              <.button
-                id={"duplicate-limit-#{limit_row.id}"}
-                disabled={!is_nil(@limit_form) or @disabled?}
-                type="button"
-                phx-click="duplicate_limit"
-                phx-value-limit={limit_row.id}
-                phx-target={@myself}
-              >
-                <.icon name="hero-document-duplicate-solid" class="bg-primary" />
-              </.button>
-              <.button
-                disabled={!is_nil(@limit_form) or @disabled?}
-                type="button"
-                phx-click="delete_limit"
-                phx-value-limit={limit_row.id}
-                phx-target={@myself}
-                data-confirm="Are you sure you want to delete this limit?"
-              >
-                <.icon name="hero-trash-solid" class="bg-primary" />
-              </.button>
-            </:action>
-          </.table>
+        <div class="mb-3 border-2 border-dashed border-secondary border-mb-3 p-3">
+          <table class="w-[40rem] sm:w-full">
+            <thead>
+              <tr>
+                <th>route</th>
+                <th>start stop</th>
+                <th>end stop</th>
+                <th>start date</th>
+                <th>end date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700">
+              <tr :for={limit <- @disruption.limits}>
+                <td>
+                  <span
+                    class="m-icon m-icon-sm mr-1 align-middle"
+                    style={"background-image: url('#{get_limit_route_icon_url(limit, @icon_paths)}');"}
+                  />
+                </td>
+                <td>{limit.start_stop.name}</td>
+                <td>{limit.end_stop.name}</td>
+                <td>{limit.start_date}</td>
+                <td>{limit.end_date}</td>
+                <td class="text-center">
+                  <.button
+                    disabled={!is_nil(@limit_form)}
+                    type="button"
+                    phx-click="edit_limit"
+                    phx-value-limit={limit.id}
+                    phx-target={@myself}
+                  >
+                    <.icon name="hero-pencil-solid" class="bg-primary" />
+                  </.button>
+                  <.button
+                    id={"duplicate-limit-#{limit.id}"}
+                    disabled={!is_nil(@limit_form)}
+                    type="button"
+                    phx-click="duplicate_limit"
+                    phx-value-limit={limit.id}
+                    phx-target={@myself}
+                  >
+                    <.icon name="hero-document-duplicate-solid" class="bg-primary" />
+                  </.button>
+                  <.button
+                    disabled={!is_nil(@limit_form)}
+                    type="button"
+                    phx-click="delete_limit"
+                    phx-value-limit={limit.id}
+                    phx-target={@myself}
+                    data-confirm="Are you sure you want to delete this limit?"
+                  >
+                    <.icon name="hero-trash-solid" class="bg-primary" />
+                  </.button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       <% end %>
 

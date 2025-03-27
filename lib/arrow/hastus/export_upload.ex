@@ -60,7 +60,7 @@ defmodule Arrow.Hastus.ExportUpload do
     if Application.fetch_env!(:arrow, :hastus_export_storage_enabled?) do
       do_upload(file_data, filename)
     else
-      {:ok, :disabled}
+      {:ok, "disabled"}
     end
   end
 

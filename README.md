@@ -25,16 +25,17 @@
 - `mix deps.get`
 - `mix esbuild.install`
 - `npm install --prefix assets`
-- `direnv allow`
 - `cp .envrc.example .envrc`
 - Update `.envrc` with your local Postgres username and password
 - Update `.envrc` with your AWS credentials or ensure they are available in your shell
 - Update `.envrc` with OpenRouteService setup
 - Update `.envrc` with the Arrow Dev Keycloak client secret (found in 1Password)
+- `direnv allow`
 - `mix ecto.setup`
 - `brew install chromedriver`
 - Add your Arrow API key from https://arrow.mbta.com/mytoken to `.envrc`
 - `mix copy_db` to seed your database
+- `mix import_gtfs [optional/path/to/local/MBTA_GTFS.zip]` to populate your database's `gtfs_*` tables from a GTFS-static feed
 
 ### Useful commands
 
