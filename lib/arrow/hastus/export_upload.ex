@@ -252,38 +252,45 @@ defmodule Arrow.Hastus.ExportUpload do
        ) do
     imported_service =
       calendar
-      |> Stream.concat(calendar_dates)
-      |> Enum.reduce([], fn
-        # calendar rows
+      |> Enum.map(fn
         %{
           "service_id" => service_id,
           "start_date" => start_date_string,
           "end_date" => end_date_string
-        },
-        acc ->
+        } = service ->
           [start_year, start_month, start_day] = extract_date_parts(start_date_string)
           [end_year, end_month, end_day] = extract_date_parts(end_date_string)
+          start_date = Date.from_iso8601!("#{start_year}-#{start_month}-#{start_day}")
+          end_date = Date.from_iso8601!("#{end_year}-#{end_month}-#{end_day}")
+          range = Date.range(start_date, end_date)
 
-          date = %{
-            start_date: Date.from_iso8601!("#{start_year}-#{start_month}-#{start_day}"),
-            end_date: Date.from_iso8601!("#{end_year}-#{end_month}-#{end_day}")
-          }
+          exceptions =
+            calendar_dates
+            |> Enum.filter(&(&1["service_id"] == service_id and &1["exception_type"] == "2"))
+            |> Enum.map(fn %{"date" => date_string} ->
+              [year, month, day] = extract_date_parts(date_string)
+              Date.from_iso8601!("#{year}-#{month}-#{day}")
+            end)
 
-          add_or_update_list(acc, service_id, date)
+          additions =
+            calendar_dates
+            |> Enum.filter(&(&1["service_id"] == service_id and &1["exception_type"] == "1"))
+            |> Enum.map(fn %{"date" => date_string} ->
+              [year, month, day] = extract_date_parts(date_string)
+              Date.from_iso8601!("#{year}-#{month}-#{day}")
+            end)
 
-        # calendar_dates rows
-        %{"service_id" => service_id, "date" => date_string, "exception_type" => "1"}, acc ->
-          [year, month, day] = extract_date_parts(date_string)
+          dates =
+            range
+            |> Enum.chunk_while(
+              {nil, nil},
+              &chunk_dates(&1, &2, service, exceptions),
+              &chunk_dates/1
+            )
+            |> apply_additions(additions)
+            |> merge_adjacent_service_dates([])
 
-          date = %{
-            start_date: Date.from_iso8601!("#{year}-#{month}-#{day}"),
-            end_date: Date.from_iso8601!("#{year}-#{month}-#{day}")
-          }
-
-          add_or_update_list(acc, service_id, date)
-
-        _, acc ->
-          acc
+          %{name: service_id, service_dates: dates}
       end)
 
     _ = File.rm_rf!(tmp_dir)
@@ -291,22 +298,88 @@ defmodule Arrow.Hastus.ExportUpload do
     imported_service
   end
 
-  defp extract_date_parts(date_string),
-    do: Regex.run(~r/^(\d{4})(\d{2})(\d{2})/, date_string, capture: :all_but_first)
+  defp chunk_dates(date, {start_date, last_date}, service, exceptions) do
+    day_name = date |> Calendar.strftime("%A") |> String.downcase()
 
-  defp add_or_update_list([], new_service_id, new_date),
-    do: [%{name: new_service_id, service_dates: [new_date], import?: true}]
+    cond do
+      # date is active
+      service[day_name] == "1" and date not in exceptions ->
+        if is_nil(start_date) do
+          # first date of a new timeframe
+          {:cont, {date, date}}
+        else
+          # extend the current timeframe
+          {:cont, {start_date, date}}
+        end
 
-  defp add_or_update_list(
-         [h = %{name: service_id, service_dates: existing_dates} | t],
-         service_id,
-         new_date
-       ) do
-    [%{h | service_dates: Enum.uniq(existing_dates ++ [new_date]), import?: true} | t]
+      # date is inactive and we're still looking for next timeframe
+      is_nil(last_date) ->
+        {:cont, {nil, nil}}
+
+      # date is inactive and we have a timeframe to return
+      true ->
+        {:cont, %{start_date: start_date, end_date: last_date}, {nil, nil}}
+    end
   end
 
-  defp add_or_update_list([h | t], new_service_id, new_date),
-    do: [h | add_or_update_list(t, new_service_id, new_date)]
+  # output remaining dates as a timeframe
+  defp chunk_dates({start_date, end_date}) when not is_nil(start_date) do
+    {:cont, %{start_date: start_date, end_date: end_date}, []}
+  end
+
+  # all remaining dates are inactive, throw them out
+  defp chunk_dates(_), do: {:cont, []}
+
+  defp apply_additions(dates, additions) do
+    additions
+    |> Enum.reduce(dates, &add_addition/2)
+    |> Enum.sort_by(& &1.start_date, Date)
+  end
+
+  defp add_addition(date, acc) do
+    cond do
+      i = Enum.find_index(acc, &(Date.add(&1.end_date, 1) == date)) ->
+        update_in(acc, [Access.at(i), :end_date], fn _ -> date end)
+
+      i = Enum.find_index(acc, &(Date.add(&1.start_date, -1) == date)) ->
+        update_in(acc, [Access.at(i), :start_date], fn _ -> date end)
+
+      true ->
+        acc ++ [%{start_date: date, end_date: date}]
+    end
+  end
+
+  # Make sure dates are sorted before we start
+  defp merge_adjacent_service_dates([], merged_dates),
+    do: Enum.sort_by(merged_dates, & &1.start_date, Date)
+
+  # Only one date for the current service, just add it as-is
+  defp merge_adjacent_service_dates([date], []),
+    do: merge_adjacent_service_dates([], [date])
+
+  # Last date in the list, prepend it to list
+  defp merge_adjacent_service_dates([date], merged_dates),
+    do: merge_adjacent_service_dates([], [date | merged_dates])
+
+  defp merge_adjacent_service_dates(
+         [
+           %{start_date: current_start, end_date: current_end} = current,
+           %{start_date: next_start, end_date: next_end} = next | t
+         ],
+         merged_dates
+       ) do
+    if Date.add(current_end, 1) == next_start do
+      new_date = %{start_date: current_start, end_date: next_end}
+
+      merge_adjacent_service_dates(t, [new_date | merged_dates])
+    else
+      # Dates aren't adjacent, add current as-is and continue merging
+      merge_adjacent_service_dates([next | t], [current | merged_dates])
+    end
+  end
+
+  defp extract_date_parts(date_string),
+    do: Regex.run(~r/^(\d{4})(\d{2})(\d{2})/, date_string, capture: :all_but_first)
 
   defp revenue_trip?(%{"route_id" => route_id, "trp_is_in_service" => "X"}),
     do: Regex.match?(~r/^\d+_*-.+$/, route_id)

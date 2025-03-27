@@ -9,7 +9,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
   @export_dir "test/support/fixtures/hastus"
 
   describe "extract_data_from_upload/2" do
-    @tag export: "example.zip"
+    @tag export: "valid_export.zip"
     test "extracts data from export", %{export: export} do
       line = insert(:gtfs_line, id: "line-Blue")
       route = insert(:gtfs_route, id: "Blue", line_id: line.id)
@@ -40,10 +40,23 @@ defmodule Arrow.Hastus.ExportUploadTest do
       assert {:ok,
               {:ok,
                [
-                 %{name: "RTL12025-hmb15wg1-Weekday-01"},
-                 %{name: "RTL12025-hmb15016-Saturday-01"},
-                 %{name: "RTL12025-hmb15017-Sunday-01"},
-                 %{name: "RTL12025-hmb15mo1-Weekday-01"}
+                 %{
+                   name: "RTL12025-hmb15wg1-Weekday-01",
+                   service_dates: [
+                     %{start_date: ~D[2025-03-21], end_date: ~D[2025-03-21]},
+                     %{start_date: ~D[2025-03-24], end_date: ~D[2025-03-25]},
+                     %{start_date: ~D[2025-03-27], end_date: ~D[2025-04-01]},
+                     %{start_date: ~D[2025-04-04], end_date: ~D[2025-04-04]}
+                   ]
+                 },
+                 %{
+                   name: "RTL12025-hmb15016-Saturday-01",
+                   service_dates: [%{start_date: ~D[2025-03-22], end_date: ~D[2025-03-22]}]
+                 },
+                 %{
+                   name: "RTL12025-hmb15017-Sunday-01",
+                   service_dates: [%{start_date: ~D[2025-03-23], end_date: ~D[2025-03-23]}]
+                 }
                ], "line-Blue", [], _}} = data
     end
 
