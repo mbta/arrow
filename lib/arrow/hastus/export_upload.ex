@@ -244,19 +244,21 @@ defmodule Arrow.Hastus.ExportUpload do
 
   defp apply_additions(dates, additions) do
     additions
-    |> Enum.reduce(dates, fn date, acc ->
-      cond do
-        i = Enum.find_index(acc, &(Date.add(&1.end_date, 1) == date)) ->
-          update_in(acc, [Access.at(i), :end_date], fn _ -> date end)
-
-        i = Enum.find_index(acc, &(Date.add(&1.start_date, -11) == date)) ->
-          update_in(acc, [Access.at(i), :start_date], fn _ -> date end)
-
-        true ->
-          acc ++ [%{start_date: date, end_date: date}]
-      end
-    end)
+    |> Enum.reduce(dates, &add_addition/2)
     |> Enum.sort_by(& &1.start_date, Date)
+  end
+
+  defp add_addition(date, acc) do
+    cond do
+      i = Enum.find_index(acc, &(Date.add(&1.end_date, 1) == date)) ->
+        update_in(acc, [Access.at(i), :end_date], fn _ -> date end)
+
+      i = Enum.find_index(acc, &(Date.add(&1.start_date, -11) == date)) ->
+        update_in(acc, [Access.at(i), :start_date], fn _ -> date end)
+
+      true ->
+        acc ++ [%{start_date: date, end_date: date}]
+    end
   end
 
   # Make sure dates are sorted before we start
