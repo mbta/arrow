@@ -20,6 +20,7 @@ defmodule ArrowWeb.HastusExportSection do
   attr :uploaded_file_name, :string
   attr :uploaded_file_data, :any
   attr :disruption, DisruptionV2, required: true
+  attr :disabled?, :boolean
 
   @line_icon_names %{
     "line-Blue" => :blue_line,
@@ -105,14 +106,16 @@ defmodule ArrowWeb.HastusExportSection do
           </table>
         </div>
       <% end %>
-      <.link_button
+      <.button
         :if={is_nil(@form)}
+        type="button"
         class="btn-link"
         phx-click="upload_hastus_export"
         id="upload-hastus-export-component"
+        disabled={@disabled?}
       >
         <.icon name="hero-plus" /> <span>upload HASTUS export</span>
-      </.link_button>
+      </.button>
 
       <.simple_form
         :if={@show_upload_form}
