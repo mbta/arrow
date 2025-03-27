@@ -189,19 +189,20 @@ defmodule Arrow.Hastus.ExportUpload do
             |> Enum.filter(&(&1["service_id"] == service_id and &1["exception_type"] == "1"))
             |> Enum.map(fn %{"date" => date_string} ->
               [year, month, day] = extract_date_parts(date_string)
-              date = Date.from_iso8601!("#{year}-#{month}-#{day}")
-              %{start_date: date, end_date: date}
+              Date.from_iso8601!("#{year}-#{month}-#{day}")
             end)
 
           dates =
-            Enum.chunk_while(
-              range,
+            range
+            |> Enum.chunk_while(
               {nil, nil},
               &chunk_dates(&1, &2, service, exceptions),
               &chunk_dates/1
             )
+            |> apply_additions(additions)
+            |> merge_adjacent_service_dates([])
 
-          %{name: service_id, service_dates: dates ++ additions}
+          %{name: service_id, service_dates: dates}
       end)
 
     _ = File.rm_rf!(tmp_dir)
@@ -240,6 +241,52 @@ defmodule Arrow.Hastus.ExportUpload do
 
   # all remaining dates are inactive, throw them out
   defp chunk_dates(_), do: {:cont, []}
+
+  defp apply_additions(dates, additions) do
+    additions
+    |> Enum.reduce(dates, fn date, acc ->
+      cond do
+        i = Enum.find_index(acc, &(Date.add(&1.end_date, 1) == date)) ->
+          update_in(acc, [Access.at(i), :end_date], fn _ -> date end)
+
+        i = Enum.find_index(acc, &(Date.add(&1.start_date, -11) == date)) ->
+          update_in(acc, [Access.at(i), :start_date], fn _ -> date end)
+
+        true ->
+          acc ++ [%{start_date: date, end_date: date}]
+      end
+    end)
+    |> Enum.sort_by(& &1.start_date, Date)
+  end
+
+  # Make sure dates are sorted before we start
+  defp merge_adjacent_service_dates([], merged_dates),
+    do: Enum.sort_by(merged_dates, & &1.start_date, Date)
+
+  # Only one date for the current service, just add it as-is
+  defp merge_adjacent_service_dates([date], []),
+    do: merge_adjacent_service_dates([], [date])
+
+  # Last date in the list, prepend it to list
+  defp merge_adjacent_service_dates([date], merged_dates),
+    do: merge_adjacent_service_dates([], [date | merged_dates])
+
+  defp merge_adjacent_service_dates(
+         [
+           %{start_date: current_start, end_date: current_end} = current,
+           %{start_date: next_start, end_date: next_end} = next | t
+         ],
+         merged_dates
+       ) do
+    if Date.add(current_end, 1) == next_start do
+      new_date = %{start_date: current_start, end_date: next_end}
+
+      merge_adjacent_service_dates(t, [new_date | merged_dates])
+    else
+      # Dates aren't adjacent, add current as-is and continue merging
+      merge_adjacent_service_dates([next | t], [current | merged_dates])
+    end
+  end
 
   defp extract_date_parts(date_string),
     do: Regex.run(~r/^(\d{4})(\d{2})(\d{2})/, date_string, capture: :all_but_first)

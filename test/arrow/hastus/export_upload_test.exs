@@ -9,7 +9,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
   @export_dir "test/support/fixtures/hastus"
 
   describe "extract_data_from_upload/2" do
-    @tag export: "example.zip"
+    @tag export: "valid_export.zip"
     test "extracts data from export", %{export: export} do
       line = insert(:gtfs_line, id: "line-Blue")
       route = insert(:gtfs_route, id: "Blue", line_id: line.id)
@@ -45,7 +45,8 @@ defmodule Arrow.Hastus.ExportUploadTest do
                    service_dates: [
                      %{start_date: ~D[2025-03-21], end_date: ~D[2025-03-21]},
                      %{start_date: ~D[2025-03-24], end_date: ~D[2025-03-25]},
-                     %{start_date: ~D[2025-03-27], end_date: ~D[2025-03-28]}
+                     %{start_date: ~D[2025-03-27], end_date: ~D[2025-04-01]},
+                     %{start_date: ~D[2025-04-04], end_date: ~D[2025-04-04]}
                    ]
                  },
                  %{
