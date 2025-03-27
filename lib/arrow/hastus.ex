@@ -6,7 +6,7 @@ defmodule Arrow.Hastus do
   import Ecto.Query, warn: false
   alias Arrow.Repo
 
-  @preloads [:line, :disruption, services: [:service_dates]]
+  @preloads [:line, :disruption, :trip_route_directions, services: [:service_dates]]
 
   alias Arrow.Hastus.Export
 
