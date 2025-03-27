@@ -7,6 +7,8 @@ defmodule Arrow.Hastus.ExportUpload do
 
   require Logger
 
+  alias Arrow.Hastus.TripRouteDirection
+
   @type error_message :: String.t()
   @type error_details :: list(String.t())
   @type rescued_exception_error :: {:ok, {:error, list({error_message(), []})}}
@@ -27,7 +29,10 @@ defmodule Arrow.Hastus.ExportUpload do
   Includes a rescue clause to catch errors while parsing user-provided data
   """
   @spec extract_data_from_upload(%{:path => binary()}, String.t()) ::
-          {:ok, {:error, error_message} | {:ok, list(map())}} | rescued_exception_error()
+          {:ok,
+           {:error, error_message}
+           | {:ok, list(map()), String.t(), list(TripRouteDirection.t()), binary()}}
+          | rescued_exception_error()
   def extract_data_from_upload(%{path: zip_path}, user_id) do
     tmp_dir = ~c"tmp/hastus/#{user_id}"
 
@@ -37,8 +42,10 @@ defmodule Arrow.Hastus.ExportUpload do
          {:ok, file_map} <- read_csvs(unzipped_file_list, tmp_dir),
          revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
          :ok <- validate_trip_shapes(revenue_trips),
-         {:ok, line} <- infer_line(revenue_trips, file_map["all_stop_times.txt"]) do
-      {:ok, {:ok, parse_export(file_map, tmp_dir), line, zip_file_data}}
+         {:ok, line} <- infer_line(revenue_trips, file_map["all_stop_times.txt"]),
+         {:ok, trip_route_directions} <-
+           infer_green_line_branches(line, revenue_trips, file_map["all_stop_times.txt"]) do
+      {:ok, {:ok, parse_export(file_map, tmp_dir), line, trip_route_directions, zip_file_data}}
     else
       {:error, error} ->
         _ = File.rm_rf!(tmp_dir)
@@ -153,6 +160,87 @@ defmodule Arrow.Hastus.ExportUpload do
       [line] -> {:ok, line}
       [] -> {:error, "Export does not contain any valid routes"}
       _ -> {:error, "Export contains more than one route"}
+    end
+  end
+
+  @spec infer_green_line_branches(String.t(), Enumerable.t(), Enumerable.t()) ::
+          {:ok, [TripRouteDirection.t()]} | {:error, String.t()}
+  defp infer_green_line_branches("line-Green", revenue_trips, all_stop_times) do
+    {branches, unknown_trips} =
+      Enum.reduce(revenue_trips, {MapSet.new([]), []}, fn revenue_trip,
+                                                          {branches, unknown_trips} ->
+        if revenue_trip["via_variant"] in ["B", "C", "D", "E"] do
+          {MapSet.put(branches, "Green-" <> revenue_trip["via_variant"]), unknown_trips}
+        else
+          {branches, [revenue_trip | unknown_trips]}
+        end
+      end)
+
+    stop_times_by_trip_id = Enum.group_by(all_stop_times, & &1["trip_id"])
+
+    canonical_stops_by_branch =
+      Enum.group_by(
+        Arrow.Repo.all(
+          from t in Arrow.Gtfs.Trip,
+            where:
+              t.route_id in ["Green-B", "Green-C", "Green-D", "Green-E"] and
+                t.service_id == "canonical",
+            join: st in Arrow.Gtfs.StopTime,
+            on: t.id == st.trip_id,
+            select: %{route_id: t.route_id, stop_id: st.stop_id}
+        ),
+        & &1.route_id
+      )
+
+    {_branches, unknown_trips, trip_route_directions} =
+      unknown_trips
+      |> Enum.group_by(& &1["via_variant"])
+      |> Map.values()
+      |> Enum.reduce({branches, [], []}, fn [revenue_trip | _],
+                                            {branches, unknown_trips, trip_route_directions} ->
+        stop_ids_for_trip =
+          Enum.map(stop_times_by_trip_id[revenue_trip["trip_id"]], & &1["stop_id"])
+
+        case find_branch_based_on_stop_times(canonical_stops_by_branch, stop_ids_for_trip) do
+          nil ->
+            {branches, [revenue_trip | unknown_trips], trip_route_directions}
+
+          route_id ->
+            {MapSet.put(branches, route_id), unknown_trips,
+             [
+               %{
+                 hastus_route_id: revenue_trip["route_id"],
+                 via_variant: revenue_trip["via_variant"],
+                 avi_code: revenue_trip["avi_code"],
+                 route_id: route_id
+               }
+               | trip_route_directions
+             ]}
+        end
+      end)
+
+    case unknown_trips do
+      [example_trip | _] ->
+        {:error,
+         "Unable to infer the Green Line branch for #{example_trip["route_id"]}, #{example_trip["trp_direction"]}, #{example_trip["via_variant"]}, #{example_trip["route"]}. Please request the via_variant be updated to the branch name and provide an updated export"}
+
+      [] ->
+        {:ok, trip_route_directions}
+    end
+  end
+
+  defp infer_green_line_branches(_line, _revenue_trips, _all_stop_times), do: {:ok, []}
+
+  defp find_branch_based_on_stop_times(canonical_stops_by_branch, stop_ids_for_trip) do
+    case Enum.filter(canonical_stops_by_branch, fn {_route_id, canonical_stops} ->
+           Enum.all?(
+             stop_ids_for_trip,
+             &(&1 in Enum.map(canonical_stops, fn canonical_stop -> canonical_stop.stop_id end))
+           )
+         end) do
+      [] -> nil
+      [{route_id, _canonical_stops}] -> route_id
+      [_ | _] -> nil
     end
   end
 
