@@ -57,7 +57,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
                    name: "RTL12025-hmb15017-Sunday-01",
                    service_dates: [%{start_date: ~D[2025-03-23], end_date: ~D[2025-03-23]}]
                  }
-               ], "line-Blue", _}} = data
+               ], "line-Blue", [], _}} = data
     end
 
     @tag export: "trips_no_shapes.zip"
