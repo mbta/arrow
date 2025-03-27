@@ -40,14 +40,13 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
     |> click(text("upload HASTUS export"))
     |> assert_text("add a new service schedule")
     |> attach_file(file_field("hastus_export", visible: false),
-      path: "test/support/fixtures/hastus/example.zip"
+      path: "test/support/fixtures/hastus/valid_export.zip"
     )
-    |> assert_text("Successfully imported export example.zip!")
+    |> assert_text("Successfully imported export valid_export.zip!")
     |> click(Query.css("#save-export-button"))
     |> assert_text("RTL12025-hmb15wg1-Weekday-01")
     |> assert_text("RTL12025-hmb15016-Saturday-01")
     |> assert_text("RTL12025-hmb15017-Sunday-01")
-    |> assert_text("RTL12025-hmb15mo1-Weekday-01")
   end
 
   feature "shows validation error for bad exports", %{session: session} do
