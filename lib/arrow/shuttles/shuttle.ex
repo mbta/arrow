@@ -87,6 +87,8 @@ defmodule Arrow.Shuttles.Shuttle do
   @spec route_stops_missing_time_to_next_stop?([Arrow.Shuttles.RouteStop.t()]) :: boolean()
   defp route_stops_missing_time_to_next_stop?(route_stops) do
     route_stops
+    |> Enum.filter(&(&1.action not in [:replace, :delete]))
+    |> Enum.sort_by(&get_field(&1, :stop_sequence))
     |> Enum.slice(0..-2//1)
     |> Enum.any?(&(&1 |> get_field(:time_to_next_stop) |> is_nil()))
   end
