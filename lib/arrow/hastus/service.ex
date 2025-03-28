@@ -15,7 +15,7 @@ defmodule Arrow.Hastus.Service do
 
   schema "hastus_services" do
     field :name, :string
-    field :import?, :boolean, source: :should_import, default: false
+    field :import?, :boolean, source: :should_import, default: true
 
     has_many :service_dates, Arrow.Hastus.ServiceDate,
       on_replace: :delete,
