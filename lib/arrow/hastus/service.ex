@@ -21,7 +21,7 @@ defmodule Arrow.Hastus.Service do
       on_replace: :delete,
       foreign_key: :service_id
 
-    belongs_to :export, Arrow.Hastus.Service
+    belongs_to :export, Arrow.Hastus.Export
 
     timestamps(type: :utc_datetime)
   end
