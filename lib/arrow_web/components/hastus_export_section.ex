@@ -40,6 +40,7 @@ defmodule ArrowWeb.HastusExportSection do
           id={"export-table-#{export.id}"}
           class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3"
         >
+          <% imported_services = Enum.filter(export.services, & &1.import?) %>
           <table class="w-[40rem] sm:w-full">
             <thead>
               <tr>
@@ -51,9 +52,7 @@ defmodule ArrowWeb.HastusExportSection do
               </tr>
             </thead>
             <tbody class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700">
-              <tr :for={
-                {service, i} <- export.services |> Enum.filter(& &1.import?) |> Enum.with_index()
-              }>
+              <tr :for={{service, i} <- Enum.with_index(imported_services)}>
                 <td class="align-top">
                   <span
                     :if={i == 0}
@@ -74,7 +73,7 @@ defmodule ArrowWeb.HastusExportSection do
                     {Calendar.strftime(date, "%m/%d/%Y")}
                   </div>
                 </td>
-                <td :if={i == length(export.services) - 1}>
+                <td :if={i == length(imported_services) - 1}>
                   <div class="text-right">
                     <.button
                       id={"edit-export-button-#{export.id}"}
