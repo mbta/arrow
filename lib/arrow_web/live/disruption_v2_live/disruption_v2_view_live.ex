@@ -2,7 +2,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   use ArrowWeb, :live_view
   import Phoenix.HTML.Form
 
-  alias Arrow.{Adjustment, Disruptions}
+  alias Arrow.{Adjustment, Disruptions, Limits}
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
   alias Arrow.Hastus.Export
   alias Arrow.Limits.LimitDayOfWeek
@@ -307,6 +307,38 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     day_of_weeks = Enum.map(limit.limit_day_of_weeks, &LimitDayOfWeek.set_all_day_default/1)
 
     {:noreply, assign(socket, :limit_in_form, %{limit | limit_day_of_weeks: day_of_weeks})}
+  end
+
+  def handle_event("duplicate_limit", %{"limit" => limit_id}, socket) do
+    {parsed_id, _} = Integer.parse(limit_id)
+
+    duplicated_limit =
+      parsed_id
+      |> Limits.get_limit!()
+      |> Map.from_struct()
+      |> Map.drop([:id, :inserted_at, :updated_at, :__meta__])
+
+    duplicated_day_of_weeks =
+      duplicated_limit
+      |> Map.get(:limit_day_of_weeks)
+      |> Enum.map(fn day_of_week ->
+        day =
+          day_of_week
+          |> Map.from_struct()
+          |> Map.drop([:id, :inserted_at, :updated_at, :limit_id, :__meta__, :limit])
+          |> LimitDayOfWeek.set_all_day_default()
+
+        struct(LimitDayOfWeek, day)
+      end)
+
+    {:noreply,
+     assign(socket,
+       limit_in_form:
+         Limit.new(%{
+           duplicated_limit
+           | limit_day_of_weeks: duplicated_day_of_weeks
+         })
+     )}
   end
 
   def handle_event(
