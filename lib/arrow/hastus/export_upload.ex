@@ -9,9 +9,22 @@ defmodule Arrow.Hastus.ExportUpload do
 
   alias Arrow.Hastus.TripRouteDirection
 
-  @type error_message :: String.t()
-  @type error_details :: list(String.t())
-  @type rescued_exception_error :: {:ok, {:error, list({error_message(), []})}}
+  @type t :: %__MODULE__{
+          services: list(map()),
+          line_id: String.t(),
+          trip_route_directions: list(TripRouteDirection.t()),
+          zip_file_data: binary(),
+          dup_service_ids_amended?: boolean()
+        }
+
+  @enforce_keys [
+    :services,
+    :line_id,
+    :trip_route_directions,
+    :zip_file_data,
+    :dup_service_ids_amended?
+  ]
+  defstruct @enforce_keys
 
   @filenames [
     ~c"all_calendar.txt",
@@ -29,10 +42,7 @@ defmodule Arrow.Hastus.ExportUpload do
   Includes a rescue clause to catch errors while parsing user-provided data
   """
   @spec extract_data_from_upload(%{:path => binary()}, String.t()) ::
-          {:ok,
-           {:error, error_message}
-           | {:ok, list(map()), String.t(), list(TripRouteDirection.t()), binary()}}
-          | rescued_exception_error()
+          {:ok, {:ok, t()} | {:error, String.t()}}
   def extract_data_from_upload(%{path: zip_path}, user_id) do
     tmp_dir = ~c"tmp/hastus/#{user_id}"
 
@@ -40,12 +50,24 @@ defmodule Arrow.Hastus.ExportUpload do
          {:ok, unzipped_file_list} <-
            :zip.unzip(zip_file_data, [{:file_list, @filenames}, {:cwd, tmp_dir}]),
          {:ok, file_map} <- read_csvs(unzipped_file_list, tmp_dir),
+         {:ok, file_map, zip_file_data, amended?} <-
+           amend_dup_service_ids(file_map, zip_file_data, tmp_dir),
          revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
          :ok <- validate_trip_shapes(revenue_trips),
-         {:ok, line} <- infer_line(revenue_trips, file_map["all_stop_times.txt"]),
+         {:ok, line_id} <- infer_line(revenue_trips, file_map["all_stop_times.txt"]),
          {:ok, trip_route_directions} <-
-           infer_green_line_branches(line, revenue_trips, file_map["all_stop_times.txt"]) do
-      {:ok, {:ok, parse_export(file_map, tmp_dir), line, trip_route_directions, zip_file_data}}
+           infer_green_line_branches(line_id, revenue_trips, file_map["all_stop_times.txt"]) do
+      services = parse_export(file_map, tmp_dir)
+
+      export_data = %__MODULE__{
+        services: services,
+        line_id: line_id,
+        trip_route_directions: trip_route_directions,
+        zip_file_data: zip_file_data,
+        dup_service_ids_amended?: amended?
+      }
+
+      {:ok, {:ok, export_data}}
     else
       {:error, error} ->
         _ = File.rm_rf!(tmp_dir)
@@ -69,6 +91,100 @@ defmodule Arrow.Hastus.ExportUpload do
     else
       {:ok, "disabled"}
     end
+  end
+
+  @spec amend_dup_service_ids(map(), binary(), charlist()) ::
+          {:ok, map(), binary(), amended? :: boolean()} | {:error, term()}
+  defp amend_dup_service_ids(file_map, zip_file_data, tmp_dir) do
+    export_service_ids =
+      MapSet.new(for row <- Map.get(file_map, "all_calendar.txt", []), do: row["service_id"])
+
+    existing_service_ids =
+      MapSet.new(Arrow.Repo.all(from s in Arrow.Hastus.Service, select: s.name))
+
+    dups = MapSet.intersection(export_service_ids, existing_service_ids)
+
+    if Enum.empty?(dups) do
+      {:ok, file_map, zip_file_data, false}
+    else
+      other_service_ids =
+        MapSet.difference(
+          MapSet.union(export_service_ids, existing_service_ids),
+          dups
+        )
+
+      {replacements, _ids} =
+        Enum.map_reduce(dups, other_service_ids, fn dup, other_ids ->
+          new_id = get_amended_service_id(dup, other_ids)
+          {{dup, new_id}, MapSet.put(other_ids, new_id)}
+        end)
+
+      amended_map = Enum.reduce(replacements, file_map, &amend_service_id/2)
+
+      with {:ok, amended_zip_file_data} <- write_zip(amended_map, tmp_dir) do
+        {:ok, amended_map, amended_zip_file_data, true}
+      end
+    end
+  end
+
+  defp write_zip(file_map, tmp_dir) do
+    file_specs =
+      for {filename, rows} <- file_map do
+        original_headers =
+          tmp_dir
+          |> Path.join(filename)
+          |> File.stream!()
+          |> CSV.decode!()
+          |> Enum.at(0)
+
+        csv =
+          rows
+          |> CSV.encode(headers: original_headers)
+          |> Enum.join()
+
+        {to_charlist(filename), csv}
+      end
+
+    with {:ok, filename} <- :zip.zip(~c"#{tmp_dir}/amended_export.zip", file_specs, []) do
+      # TODO: Remove!
+      :ok = File.cp(filename, "/Users/jzimbel/code/amended_export.zip")
+      File.read(filename)
+    end
+  end
+
+  defp get_amended_service_id(dup, other_ids, deduplicator \\ 1) do
+    new_id = "#{dup}-#{deduplicator}"
+
+    if new_id in other_ids,
+      do: get_amended_service_id(dup, other_ids, deduplicator + 1),
+      else: new_id
+  end
+
+  defp amend_service_id({old_id, new_id}, file_map) do
+    trip_id_pattern = ~r/^(\d+)-#{Regex.escape(old_id)}$/
+    trip_replacer = &Regex.replace(trip_id_pattern, &1, "\\1-#{new_id}")
+
+    file_map
+    |> replace_service_id(old_id, new_id, "all_calendar.txt")
+    |> replace_service_id(old_id, new_id, "all_calendar_dates.txt")
+    |> replace_service_id(old_id, new_id, "all_trips.txt")
+    |> replace_trip_id(trip_replacer, "all_trips.txt")
+    |> replace_trip_id(trip_replacer, "all_stop_times.txt")
+  end
+
+  defp replace_service_id(file_map, old_id, new_id, filename) do
+    Map.replace_lazy(file_map, filename, fn rows_stream ->
+      Stream.map(rows_stream, fn
+        %{"service_id" => ^old_id} = row -> %{row | "service_id" => new_id}
+        row -> row
+      end)
+    end)
+  end
+
+  defp replace_trip_id(file_map, replacer, filename) do
+    Map.replace_lazy(file_map, filename, fn rows_stream ->
+      Stream.map(rows_stream, &Map.replace_lazy(&1, "trip_id", replacer))
+    end)
   end
 
   defp do_upload(file_data, filename) do
@@ -105,7 +221,7 @@ defmodule Arrow.Hastus.ExportUpload do
 
     if Enum.any?(missing_files) do
       {:error,
-       ["The following files are missing from the export: #{Enum.join(missing_files, ", ")}"]}
+       "The following files are missing from the export: #{Enum.join(missing_files, ", ")}"}
     else
       map =
         @filenames
