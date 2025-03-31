@@ -146,8 +146,6 @@ defmodule Arrow.Hastus.ExportUpload do
       end
 
     with {:ok, filename} <- :zip.zip(~c"#{tmp_dir}/amended_export.zip", file_specs, []) do
-      # TODO: Remove!
-      :ok = File.cp(filename, "/Users/jzimbel/code/amended_export.zip")
       File.read(filename)
     end
   end
