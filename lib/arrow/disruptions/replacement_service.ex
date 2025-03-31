@@ -111,7 +111,6 @@ defmodule Arrow.Disruptions.ReplacementService do
           })
   def get_replacement_services_with_timetables(start_date, end_date) do
     from(r in __MODULE__,
-      # where: r.start_date >= ^start_date and r.end_date <= ^end_date,
       join: s in assoc(r, :shuttle),
       join: d in assoc(r, :disruption),
       join: sr in assoc(s, :routes),
@@ -205,7 +204,10 @@ defmodule Arrow.Disruptions.ReplacementService do
   defp build_stop_times_for_start_time(start_time, direction_id, headway_periods, shuttle_route) do
     total_runtime =
       headway_periods
-      |> Map.get(start_of_hour(start_time))
+      |> Map.get(
+        start_of_hour(start_time),
+        find_period_by_time_range(headway_periods, start_time)
+      )
       |> Map.get("running_time_#{direction_id}")
 
     total_times_to_next_stop =
@@ -258,7 +260,12 @@ defmodule Arrow.Disruptions.ReplacementService do
          headway_periods
        ) do
     headway =
-      headway_periods |> Map.get(start_of_hour(first_trip_start_time)) |> Map.get("headway")
+      headway_periods
+      |> Map.get(
+        start_of_hour(first_trip_start_time),
+        find_period_by_time_range(headway_periods, first_trip_start_time)
+      )
+      |> Map.get("headway")
 
     first_trip_start_time
     |> add_minutes(headway)
@@ -267,6 +274,15 @@ defmodule Arrow.Disruptions.ReplacementService do
       trip_start_times ++ [first_trip_start_time],
       headway_periods
     )
+  end
+
+  defp find_period_by_time_range(headway_periods, first_trip_start_time) do
+    headway_periods
+    |> Enum.find({nil, nil}, fn {_, headway_period} ->
+      headway_period["start_time"] <= first_trip_start_time and
+        headway_period["end_time"] >= first_trip_start_time
+    end)
+    |> elem(1)
   end
 
   defp start_of_hour(gtfs_time_string) do
