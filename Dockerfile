@@ -14,7 +14,7 @@ RUN mix local.hex --force && \
   mix local.rebar --force
 
 ADD \
-  --checksum=sha256:05c6b4a9bf4daa95c888711481e19cc8e2e11aed4de8db759f51f4a6fce64917 \
+  --checksum=sha256:5fa49cac7e6e9202ef85331c6f83377a71339d692d5644c9417a2d81406f0c03 \
   https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
   /root/aws-cert-bundle.pem
 
