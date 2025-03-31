@@ -152,7 +152,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       </div>
       <:actions>
         <div class="w-25 mr-2">
-          <.button class="btn-primary w-100">Save Shuttle</.button>
+          <.button class="btn-primary w-100">Save shuttle</.button>
         </div>
         <div class="w-25 mr-2">
           <.link_button
