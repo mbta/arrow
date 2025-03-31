@@ -61,7 +61,8 @@ defmodule Arrow.Shuttles.ShuttleTest do
 
       shuttle = Arrow.Shuttles.get_shuttle!(shuttle.id)
 
-      changeset = Shuttle.changeset(shuttle, %{status: :active})
+      changeset =
+        Shuttle.changeset(shuttle, %{status: :active})
 
       assert %Ecto.Changeset{
                valid?: false,
@@ -117,7 +118,56 @@ defmodule Arrow.Shuttles.ShuttleTest do
 
       shuttle = Arrow.Shuttles.get_shuttle!(shuttle.id)
 
-      changeset = Shuttle.changeset(shuttle, %{status: :active})
+      # Update the route_stops to trigger replacement and verify that
+      # the validation handles that correctly
+      changeset =
+        Shuttle.changeset(shuttle, %{
+          status: :active,
+          routes: [
+            %{
+              id: route0.id,
+              shape_id: route0.shape_id,
+              destination: "Harvard",
+              direction_id: :"0",
+              direction_desc: "South",
+              waypoint: "Brattle",
+              route_stops: [
+                %{
+                  direction_id: :"0",
+                  stop_sequence: 1,
+                  display_stop_id: stop1.id,
+                  time_to_next_stop: 60.0
+                },
+                %{
+                  direction_id: :"0",
+                  stop_sequence: 2,
+                  display_stop_id: stop2.id
+                }
+              ]
+            },
+            %{
+              id: route1.id,
+              shape_id: route1.shape_id,
+              destination: "Alewife",
+              direction_id: :"1",
+              direction_desc: "North",
+              waypoint: "Brattle",
+              route_stops: [
+                %{
+                  direction_id: :"1",
+                  stop_sequence: 1,
+                  display_stop_id: stop3.id,
+                  time_to_next_stop: 60.0
+                },
+                %{
+                  direction_id: :"0",
+                  stop_sequence: 1,
+                  display_stop_id: stop4.id
+                }
+              ]
+            }
+          ]
+        })
 
       assert %Ecto.Changeset{valid?: true} = changeset
     end
