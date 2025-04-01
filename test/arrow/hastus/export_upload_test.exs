@@ -41,6 +41,18 @@ defmodule Arrow.Hastus.ExportUploadTest do
               {:ok,
                [
                  %{
+                   name: "RTL12025-hmb15016-Saturday-01",
+                   service_dates: [%{start_date: ~D[2025-03-22], end_date: ~D[2025-03-22]}]
+                 },
+                 %{
+                   name: "RTL12025-hmb15017-Sunday-01",
+                   service_dates: [%{start_date: ~D[2025-03-23], end_date: ~D[2025-03-23]}]
+                 },
+                 %{
+                   name: "RTL12025-hmb15mo1-Weekday-01",
+                   service_dates: []
+                 },
+                 %{
                    name: "RTL12025-hmb15wg1-Weekday-01",
                    service_dates: [
                      %{start_date: ~D[2025-03-21], end_date: ~D[2025-03-21]},
@@ -48,14 +60,6 @@ defmodule Arrow.Hastus.ExportUploadTest do
                      %{start_date: ~D[2025-03-27], end_date: ~D[2025-04-01]},
                      %{start_date: ~D[2025-04-04], end_date: ~D[2025-04-04]}
                    ]
-                 },
-                 %{
-                   name: "RTL12025-hmb15016-Saturday-01",
-                   service_dates: [%{start_date: ~D[2025-03-22], end_date: ~D[2025-03-22]}]
-                 },
-                 %{
-                   name: "RTL12025-hmb15017-Sunday-01",
-                   service_dates: [%{start_date: ~D[2025-03-23], end_date: ~D[2025-03-23]}]
                  }
                ], "line-Blue", [], _}} = data
     end
@@ -179,6 +183,44 @@ defmodule Arrow.Hastus.ExportUploadTest do
               {:error,
                "Unable to infer the Green Line branch for 800-1428, West, U, 800. Please request the via_variant be updated to the branch name and provide an updated export"}} =
                data
+    end
+
+    @tag export: "empty_all_calendar.zip"
+    test "exports services even when all_calendar.txt is empty", %{export: export} do
+      line = insert(:gtfs_line, id: "line-Blue")
+      route = insert(:gtfs_route, id: "Blue", line_id: line.id)
+
+      direction = insert(:gtfs_direction, direction_id: 0, route_id: route.id, route: route)
+
+      route_pattern =
+        insert(:gtfs_route_pattern,
+          route_id: route.id,
+          route: route,
+          representative_trip_id: "Test",
+          direction_id: 0
+        )
+
+      insert(:gtfs_stop_time,
+        trip:
+          insert(:gtfs_trip,
+            id: "Test",
+            route: route,
+            route_pattern_id: route_pattern.id,
+            directions: [direction]
+          ),
+        stop: insert(:gtfs_stop, id: "70054")
+      )
+
+      assert {:ok,
+              {:ok,
+               [
+                 %{name: "RTL12025-hmb15016-Saturday-01", service_dates: []},
+                 %{name: "RTL12025-hmb15017-Sunday-01", service_dates: []},
+                 %{name: "RTL12025-hmb15mo1-Weekday-01", service_dates: []},
+                 %{name: "RTL12025-hmb15wg1-Weekday-01", service_dates: []}
+               ], "line-Blue", [],
+               _}} =
+               ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
     end
   end
 end

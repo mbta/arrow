@@ -247,50 +247,60 @@ defmodule Arrow.Hastus.ExportUpload do
   defp get_unzipped_file_path(filename, tmp_dir), do: ~c"#{tmp_dir}/#{filename}"
 
   defp parse_export(
-         %{"all_calendar.txt" => calendar, "all_calendar_dates.txt" => calendar_dates},
+         %{
+           "all_calendar.txt" => calendar,
+           "all_calendar_dates.txt" => calendar_dates,
+           "all_trips.txt" => trips
+         },
          tmp_dir
        ) do
+    service_ids =
+      trips
+      |> Stream.map(& &1["service_id"])
+      |> Stream.reject(&is_nil/1)
+      |> Enum.uniq()
+      |> Enum.sort()
+
     imported_service =
-      calendar
-      |> Enum.map(fn
-        %{
-          "service_id" => service_id,
-          "start_date" => start_date_string,
-          "end_date" => end_date_string
-        } = service ->
-          [start_year, start_month, start_day] = extract_date_parts(start_date_string)
-          [end_year, end_month, end_day] = extract_date_parts(end_date_string)
-          start_date = Date.from_iso8601!("#{start_year}-#{start_month}-#{start_day}")
-          end_date = Date.from_iso8601!("#{end_year}-#{end_month}-#{end_day}")
-          range = Date.range(start_date, end_date)
+      service_ids
+      |> Enum.map(fn service_id ->
+        case Enum.find(calendar, &(&1["service_id"] == service_id)) do
+          %{
+            "service_id" => service_id,
+            "start_date" => start_date_string,
+            "end_date" => end_date_string
+          } = service ->
+            [start_year, start_month, start_day] = extract_date_parts(start_date_string)
+            [end_year, end_month, end_day] = extract_date_parts(end_date_string)
+            start_date = Date.from_iso8601!("#{start_year}-#{start_month}-#{start_day}")
+            end_date = Date.from_iso8601!("#{end_year}-#{end_month}-#{end_day}")
+            range = Date.range(start_date, end_date)
 
-          exceptions =
-            calendar_dates
-            |> Enum.filter(&(&1["service_id"] == service_id and &1["exception_type"] == "2"))
-            |> Enum.map(fn %{"date" => date_string} ->
-              [year, month, day] = extract_date_parts(date_string)
-              Date.from_iso8601!("#{year}-#{month}-#{day}")
-            end)
+            exceptions =
+              calendar_dates
+              |> Enum.filter(&(&1["service_id"] == service_id and &1["exception_type"] == "2"))
+              |> Enum.map(&date_field_to_date/1)
 
-          additions =
-            calendar_dates
-            |> Enum.filter(&(&1["service_id"] == service_id and &1["exception_type"] == "1"))
-            |> Enum.map(fn %{"date" => date_string} ->
-              [year, month, day] = extract_date_parts(date_string)
-              Date.from_iso8601!("#{year}-#{month}-#{day}")
-            end)
+            additions =
+              calendar_dates
+              |> Enum.filter(&(&1["service_id"] == service_id and &1["exception_type"] == "1"))
+              |> Enum.map(&date_field_to_date/1)
 
-          dates =
-            range
-            |> Enum.chunk_while(
-              {nil, nil},
-              &chunk_dates(&1, &2, service, exceptions),
-              &chunk_dates/1
-            )
-            |> apply_additions(additions)
-            |> merge_adjacent_service_dates([])
+            dates =
+              range
+              |> Enum.chunk_while(
+                {nil, nil},
+                &chunk_dates(&1, &2, service, exceptions),
+                &chunk_dates/1
+              )
+              |> apply_additions(additions)
+              |> merge_adjacent_service_dates([])
 
-          %{name: service_id, service_dates: dates}
+            %{name: service_id, service_dates: dates}
+
+          _ ->
+            %{name: service_id, service_dates: []}
+        end
       end)
 
     _ = File.rm_rf!(tmp_dir)
@@ -329,6 +339,11 @@ defmodule Arrow.Hastus.ExportUpload do
 
   # all remaining dates are inactive, throw them out
   defp chunk_dates(_), do: {:cont, []}
+
+  defp date_field_to_date(%{"date" => date_string}) do
+    [year, month, day] = extract_date_parts(date_string)
+    Date.from_iso8601!("#{year}-#{month}-#{day}")
+  end
 
   defp apply_additions(dates, additions) do
     additions
