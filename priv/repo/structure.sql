@@ -17,6 +17,20 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: btree_gist; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION btree_gist; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION btree_gist IS 'support for indexing common datatypes in GiST';
+
+
+--
 -- Name: day_name; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -896,7 +910,8 @@ CREATE TABLE public.limits (
     start_stop_id character varying,
     end_stop_id character varying,
     inserted_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    check_for_overlap boolean DEFAULT true NOT NULL
 );
 
 
@@ -1633,6 +1648,14 @@ ALTER TABLE ONLY public.limit_day_of_weeks
 
 ALTER TABLE ONLY public.limits
     ADD CONSTRAINT limits_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: limits no_overlap; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.limits
+    ADD CONSTRAINT no_overlap EXCLUDE USING gist (disruption_id WITH =, route_id WITH =, LEAST(start_stop_id, end_stop_id) WITH =, GREATEST(start_stop_id, end_stop_id) WITH =, daterange(start_date, end_date, '[]'::text) WITH &&) WHERE ((check_for_overlap = true));
 
 
 --
@@ -2394,3 +2417,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250319170602);
 INSERT INTO public."schema_migrations" (version) VALUES (20250320151207);
 INSERT INTO public."schema_migrations" (version) VALUES (20250326151019);
 INSERT INTO public."schema_migrations" (version) VALUES (20250328193906);
+INSERT INTO public."schema_migrations" (version) VALUES (20250402181804);
