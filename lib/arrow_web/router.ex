@@ -95,6 +95,8 @@ defmodule ArrowWeb.Router do
     resources("/disruptions", DisruptionController, only: [:index])
     resources("/adjustments", AdjustmentController, only: [:index])
     resources("/shuttle-stops", StopsController, only: [:index])
+
+    get "/service-schedules", ServiceScheduleController, :index
   end
 
   scope "/api", ArrowWeb.API do
