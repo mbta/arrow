@@ -4,6 +4,7 @@ defmodule Arrow.Hastus do
   """
 
   import Ecto.Query, warn: false
+
   alias Arrow.Repo
 
   @preloads [:line, :disruption, :trip_route_directions, services: [:service_dates]]
@@ -294,5 +295,44 @@ defmodule Arrow.Hastus do
   """
   def change_service_date(%ServiceDate{} = service_date, attrs \\ %{}) do
     ServiceDate.changeset(service_date, attrs)
+  end
+
+  @doc """
+  Returns `Arrow.Hastus.Export`s with an active disruption and service dates
+  within `:start_date` and `:end_date`.
+  """
+  def list_service_schedules(opts) do
+    start_date = Keyword.fetch!(opts, :start_date)
+    end_date = Keyword.fetch!(opts, :end_date)
+
+    query =
+      from exports in Export,
+        join: disruptions in assoc(exports, :disruption),
+        left_join: trip_route_directions in assoc(exports, :trip_route_directions),
+        join: services in assoc(exports, :services),
+        join: service_dates in assoc(services, :service_dates),
+        where: disruptions.is_active == true,
+        where:
+          fragment(
+            "daterange(?, ?, '[]') && daterange(?, ?, '[]')",
+            service_dates.start_date,
+            service_dates.end_date,
+            ^start_date,
+            ^end_date
+          ),
+        preload: [
+          disruption: disruptions,
+          trip_route_directions: trip_route_directions,
+          services: {services, service_dates: service_dates}
+        ]
+
+    Repo.all(query)
+  end
+
+  def export_download_url(%Export{s3_path: "s3://" <> s3_path}) do
+    [bucket, path] = String.split(s3_path, "/", parts: 2)
+
+    ExAws.Config.new(:s3)
+    |> ExAws.S3.presigned_url(:get, bucket, path)
   end
 end
