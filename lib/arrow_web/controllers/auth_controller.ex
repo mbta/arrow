@@ -44,6 +44,8 @@ defmodule ArrowWeb.AuthController do
           nil
       end
 
+    Logger.info("roles_for_user #{IO.inspect(roles)}")
+
     conn
     |> configure_session(drop: true)
     |> put_session(:logout_url, logout_url)
