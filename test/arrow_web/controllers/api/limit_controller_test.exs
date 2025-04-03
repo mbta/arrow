@@ -166,6 +166,7 @@ defmodule ArrowWeb.API.LimitControllerTest do
       route = insert(:gtfs_route)
       start_stop = insert(:gtfs_stop)
       end_stop = insert(:gtfs_stop)
+      end_stop_2 = insert(:gtfs_stop)
 
       # Limit that starts before and ends during range
       insert(:limit, %{
@@ -182,7 +183,7 @@ defmodule ArrowWeb.API.LimitControllerTest do
         disruption: disruption,
         route: route,
         start_stop: start_stop,
-        end_stop: end_stop,
+        end_stop: end_stop_2,
         start_date: ~D[2025-06-15],
         end_date: ~D[2025-07-15]
       })

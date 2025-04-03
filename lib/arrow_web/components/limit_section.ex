@@ -10,7 +10,6 @@ defmodule ArrowWeb.LimitSection do
 
   alias Arrow.{Adjustment, Limits}
   alias Arrow.Disruptions.{DisruptionV2, Limit}
-  alias Arrow.Limits.LimitDayOfWeek
 
   attr :id, :string
   attr :limit_form, :any, required: true
@@ -50,26 +49,24 @@ defmodule ArrowWeb.LimitSection do
                 <td>{limit.end_date}</td>
                 <td class="text-center">
                   <.button
-                    disabled={!is_nil(@limit_form)}
+                    disabled={!is_nil(@limit_form) or @disabled?}
                     type="button"
                     phx-click="edit_limit"
                     phx-value-limit={limit.id}
-                    phx-target={@myself}
                   >
                     <.icon name="hero-pencil-solid" class="bg-primary" />
                   </.button>
                   <.button
                     id={"duplicate-limit-#{limit.id}"}
-                    disabled={!is_nil(@limit_form)}
+                    disabled={!is_nil(@limit_form) or @disabled?}
                     type="button"
                     phx-click="duplicate_limit"
                     phx-value-limit={limit.id}
-                    phx-target={@myself}
                   >
                     <.icon name="hero-document-duplicate-solid" class="bg-primary" />
                   </.button>
                   <.button
-                    disabled={!is_nil(@limit_form)}
+                    disabled={!is_nil(@limit_form) or @disabled?}
                     type="button"
                     phx-click="delete_limit"
                     phx-value-limit={limit.id}
@@ -313,38 +310,6 @@ defmodule ArrowWeb.LimitSection do
         send(self(), {:put_flash, :error, "Error when deleting limit!"})
         {:noreply, assign(socket, limit: to_form(changeset))}
     end
-  end
-
-  def handle_event("duplicate_limit", %{"limit" => limit_id}, socket) do
-    {parsed_id, _} = Integer.parse(limit_id)
-
-    duplicated_limit =
-      parsed_id
-      |> Limits.get_limit!()
-      |> Map.from_struct()
-      |> Map.drop([:id, :inserted_at, :updated_at])
-
-    duplicated_day_of_weeks =
-      duplicated_limit
-      |> Map.get(:limit_day_of_weeks)
-      |> Enum.map(fn day_of_week ->
-        day_of_week
-        |> Map.from_struct()
-        |> Map.drop([:id, :inserted_at, :updated_at])
-        |> LimitDayOfWeek.set_all_day_default()
-      end)
-
-    form =
-      %Limit{}
-      |> Limits.change_limit(%{duplicated_limit | limit_day_of_weeks: duplicated_day_of_weeks})
-      |> to_form()
-
-    {:noreply,
-     socket
-     |> assign(limit_form: form)
-     |> assign(limit: Limit.new(duplicated_limit))
-     |> assign(show_form?: true)
-     |> assign(action: "create")}
   end
 
   defp get_route_options do

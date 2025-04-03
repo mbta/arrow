@@ -13,7 +13,7 @@ defmodule Arrow.HastusFixtures do
     {:ok, export} =
       attrs
       |> Enum.into(%{
-        s3_path: "some s3_path",
+        s3_path: "s3://mbta-arrow/test/hastus-export-uploads/export.zip",
         services: [
           %{
             name: "some-Weekday-service",

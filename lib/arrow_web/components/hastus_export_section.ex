@@ -79,7 +79,7 @@ defmodule ArrowWeb.HastusExportSection do
                     <.button
                       id={"edit-export-button-#{export.id}"}
                       class="btn-sm p-0"
-                      disabled={@show_service_import_form}
+                      disabled={!is_nil(@form) or @disabled?}
                       type="button"
                       phx-click="edit_export"
                       phx-value-export={export.id}
@@ -90,7 +90,7 @@ defmodule ArrowWeb.HastusExportSection do
                     <.button
                       id={"delete-export-button-#{export.id}"}
                       class="btn-sm p-0"
-                      disabled={@show_service_import_form}
+                      disabled={!is_nil(@form) or @disabled?}
                       type="button"
                       phx-click="delete_export"
                       phx-value-export={export.id}
