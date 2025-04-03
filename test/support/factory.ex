@@ -296,4 +296,19 @@ defmodule Arrow.Factory do
       ]
     }
   end
+
+  def hastus_service_factory(attrs \\ %{}) do
+    %Arrow.Hastus.Service{
+      name: sequence(:service_id, &"hastus-service-#{&1}"),
+      service_dates: [],
+      import?: true,
+      export: not_loaded(Arrow.Hastus.Service, :export)
+    }
+    |> merge_attributes(attrs)
+  end
+
+  defp not_loaded(schema, field) do
+    %{cardinality: cardinality} = schema.__schema__(:association, field)
+    %Ecto.Association.NotLoaded{__field__: field, __owner__: schema, __cardinality__: cardinality}
+  end
 end

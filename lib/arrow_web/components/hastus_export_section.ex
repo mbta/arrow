@@ -295,6 +295,7 @@ defmodule ArrowWeb.HastusExportSection do
             <div class="row no-gutters">
               <div class="col-lg-auto">
                 <.button
+                  id="accept-duplicate-service-ids-button"
                   type="button"
                   class="btn btn-primary btn-sm mr-2"
                   phx-click="confirm_dup_service_ids"
@@ -305,6 +306,7 @@ defmodule ArrowWeb.HastusExportSection do
               </div>
               <div class="col-lg-auto">
                 <.button
+                  id="reject-duplicate-service-ids-button"
                   type="button"
                   class="btn btn-outline-primary btn-sm"
                   phx-click="cancel_add_hastus_export"
