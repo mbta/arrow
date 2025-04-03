@@ -117,7 +117,7 @@ defmodule Arrow.Disruptions.ReplacementService do
       join: rs in assoc(sr, :route_stops),
       left_join: gs in assoc(rs, :gtfs_stop),
       left_join: st in assoc(rs, :stop),
-      where: r.start_date <= ^end_date and r.end_date >= ^start_date,
+      where: r.start_date <= ^end_date and r.end_date >= ^start_date and d.is_active,
       preload: [:disruption, shuttle: {s, routes: {sr, route_stops: [:gtfs_stop, :stop]}}]
     )
     |> Repo.all()
