@@ -371,7 +371,8 @@ defmodule Arrow.Hastus.ExportUpload do
          %{
            "all_calendar.txt" => calendar,
            "all_calendar_dates.txt" => calendar_dates,
-           "all_trips.txt" => trips
+           "all_trips.txt" => trips,
+           "all_stop_times.txt" => stop_times
          },
          tmp_dir
        ) do
@@ -385,6 +386,17 @@ defmodule Arrow.Hastus.ExportUpload do
     imported_service =
       service_ids
       |> Enum.map(fn service_id ->
+        trip_ids =
+          trips |> Enum.filter(&(&1["service_id"] == service_id)) |> Enum.map(& &1["trip_id"])
+
+        {hastus_start_stop, hastus_end_stop} =
+          stop_times
+          |> Stream.filter(&(&1["trip_id"] in trip_ids))
+          |> Enum.min_max_by(& &1["stop_sequence"])
+
+        start_stop_id = hastus_start_stop["stop_id"]
+        end_stop_id = hastus_end_stop["stop_id"]
+
         case Enum.find(calendar, &(&1["service_id"] == service_id)) do
           %{
             "service_id" => service_id,
@@ -417,10 +429,20 @@ defmodule Arrow.Hastus.ExportUpload do
               |> apply_additions(additions)
               |> merge_adjacent_service_dates([])
 
-            %{name: service_id, service_dates: dates}
+            %{
+              name: service_id,
+              start_stop_id: start_stop_id,
+              end_stop_id: end_stop_id,
+              service_dates: dates
+            }
 
           _ ->
-            %{name: service_id, service_dates: []}
+            %{
+              name: service_id,
+              start_stop_id: start_stop_id,
+              end_stop_id: end_stop_id,
+              service_dates: []
+            }
         end
       end)
 
