@@ -613,7 +613,7 @@ defmodule ArrowWeb.HastusExportSection do
            show_upload_form: false,
            show_service_import_form: true,
            uploaded_file_name: client_name,
-           uploaded_file_data: export_data.zip_file_data,
+           uploaded_file_data: export_data.zip_binary,
            confirming_dup_service_ids?: export_data.dup_service_ids_amended?
          )}
     end

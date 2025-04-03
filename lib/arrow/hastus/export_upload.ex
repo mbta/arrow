@@ -13,7 +13,7 @@ defmodule Arrow.Hastus.ExportUpload do
           services: list(map()),
           line_id: String.t(),
           trip_route_directions: list(TripRouteDirection.t()),
-          zip_file_data: binary(),
+          zip_binary: binary(),
           dup_service_ids_amended?: boolean()
         }
 
@@ -21,7 +21,7 @@ defmodule Arrow.Hastus.ExportUpload do
     :services,
     :line_id,
     :trip_route_directions,
-    :zip_file_data,
+    :zip_binary,
     :dup_service_ids_amended?
   ]
   defstruct @enforce_keys
@@ -46,12 +46,8 @@ defmodule Arrow.Hastus.ExportUpload do
   def extract_data_from_upload(%{path: zip_path}, user_id) do
     tmp_dir = ~c"tmp/hastus/#{user_id}"
 
-    with {:ok, zip_file_data} <- File.read(zip_path),
-         {:ok, unzipped_file_list} <-
-           :zip.unzip(zip_file_data, [{:file_list, @filenames}, {:cwd, tmp_dir}]),
-         {:ok, file_map} <- read_csvs(unzipped_file_list, tmp_dir),
-         {:ok, file_map, zip_file_data, amended?} <-
-           amend_dup_service_ids(file_map, zip_file_data, tmp_dir),
+    with {:ok, zip_bin, file_map} <- read_zip(zip_path, tmp_dir),
+         {:ok, zip_bin, file_map, amended?} <- amend_service_ids(zip_bin, file_map, tmp_dir),
          revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
          :ok <- validate_trip_shapes(revenue_trips),
          {:ok, line_id} <- infer_line(revenue_trips, file_map["all_stop_times.txt"]),
@@ -63,7 +59,7 @@ defmodule Arrow.Hastus.ExportUpload do
         services: services,
         line_id: line_id,
         trip_route_directions: trip_route_directions,
-        zip_file_data: zip_file_data,
+        zip_binary: zip_bin,
         dup_service_ids_amended?: amended?
       }
 
@@ -93,11 +89,29 @@ defmodule Arrow.Hastus.ExportUpload do
     end
   end
 
-  @spec amend_dup_service_ids(map(), binary(), charlist()) ::
-          {:ok, map(), binary(), amended? :: boolean()} | {:error, term()}
-  defp amend_dup_service_ids(file_map, zip_file_data, tmp_dir) do
+  @spec read_zip(Path.t(), Path.t()) :: {:ok, binary(), map()} | {:error, term()}
+  defp read_zip(zip_path, tmp_dir) do
+    with {:ok, zip_bin} <- File.read(zip_path),
+         {:ok, unzipped_file_list} <- :zip.unzip(zip_bin, file_list: @filenames, cwd: tmp_dir),
+         {:ok, file_map} <- read_csvs(unzipped_file_list, tmp_dir) do
+      {:ok, zip_bin, file_map}
+    end
+  end
+
+  # Detects service IDs in the export that are duplicates of existing
+  # service IDs in hastus_services.
+  # If any such service IDs exist, edits the export so that they are
+  # unique.
+  #
+  # Returns:
+  # - the (potentially edited) binary of the export ZIP,
+  # - the (potentially edited) map of %{filename => parsed_csv_rows}, and
+  # - a boolean indicating whether edits occurred.
+  @spec amend_service_ids(binary(), map(), charlist()) ::
+          {:ok, binary(), map(), amended? :: boolean()} | {:error, term()}
+  defp amend_service_ids(zip_bin, file_map, tmp_dir) do
     export_service_ids =
-      MapSet.new(for row <- Map.get(file_map, "all_calendar.txt", []), do: row["service_id"])
+      MapSet.new(for row <- file_map["all_calendar.txt"], do: row["service_id"])
 
     existing_service_ids =
       MapSet.new(Arrow.Repo.all(from s in Arrow.Hastus.Service, select: s.name))
@@ -105,7 +119,7 @@ defmodule Arrow.Hastus.ExportUpload do
     dups = MapSet.intersection(export_service_ids, existing_service_ids)
 
     if Enum.empty?(dups) do
-      {:ok, file_map, zip_file_data, false}
+      {:ok, zip_bin, file_map, false}
     else
       other_service_ids =
         MapSet.difference(
@@ -116,37 +130,16 @@ defmodule Arrow.Hastus.ExportUpload do
       {replacements, _ids} =
         Enum.map_reduce(dups, other_service_ids, fn dup, other_ids ->
           new_id = get_amended_service_id(dup, other_ids)
-          {{dup, new_id}, MapSet.put(other_ids, new_id)}
+          other_ids = MapSet.put(other_ids, new_id)
+          {{dup, new_id}, other_ids}
         end)
 
-      amended_map = Enum.reduce(replacements, file_map, &amend_service_id/2)
+      Enum.each(replacements, &amend_service_id(&1, tmp_dir))
 
-      with {:ok, amended_zip_file_data} <- write_zip(amended_map, tmp_dir) do
-        {:ok, amended_map, amended_zip_file_data, true}
+      with {:ok, zip_path} <- write_amended_zip(tmp_dir),
+           {:ok, amended_zip_bin, amended_file_map} <- read_zip(zip_path, tmp_dir) do
+        {:ok, amended_zip_bin, amended_file_map, true}
       end
-    end
-  end
-
-  defp write_zip(file_map, tmp_dir) do
-    file_specs =
-      for {filename, rows} <- file_map do
-        original_headers =
-          tmp_dir
-          |> Path.join(filename)
-          |> File.stream!()
-          |> CSV.decode!()
-          |> Enum.at(0)
-
-        csv =
-          rows
-          |> CSV.encode(headers: original_headers)
-          |> Enum.join()
-
-        {to_charlist(filename), csv}
-      end
-
-    with {:ok, filename} <- :zip.zip(~c"#{tmp_dir}/amended_export.zip", file_specs, []) do
-      File.read(filename)
     end
   end
 
@@ -158,31 +151,45 @@ defmodule Arrow.Hastus.ExportUpload do
       else: new_id
   end
 
-  defp amend_service_id({old_id, new_id}, file_map) do
-    trip_id_pattern = ~r/^(\d+)-#{Regex.escape(old_id)}$/
-    trip_replacer = &Regex.replace(trip_id_pattern, &1, "\\1-#{new_id}")
-
-    file_map
-    |> replace_service_id(old_id, new_id, "all_calendar.txt")
-    |> replace_service_id(old_id, new_id, "all_calendar_dates.txt")
-    |> replace_service_id(old_id, new_id, "all_trips.txt")
-    |> replace_trip_id(trip_replacer, "all_trips.txt")
-    |> replace_trip_id(trip_replacer, "all_stop_times.txt")
+  defp tables_with_service_or_trip_id do
+    ["all_calendar.txt", "all_calendar_dates.txt", "all_trips.txt", "all_stop_times.txt"]
   end
 
-  defp replace_service_id(file_map, old_id, new_id, filename) do
-    Map.replace_lazy(file_map, filename, fn rows_stream ->
-      Stream.map(rows_stream, fn
-        %{"service_id" => ^old_id} = row -> %{row | "service_id" => new_id}
-        row -> row
-      end)
-    end)
+  defp amend_service_id({old_id, new_id}, tmp_dir) do
+    # `CSV.encode/2` mangles (read: standardizes, which may or may not cause issues for gtfs_creator et al)
+    # values in other columns if we use it to rewrite the CSVs.
+    # Instead, let's do a very careful find-and-replace.
+    pattern = ~r"""
+    (*ANYCRLF)               # Sets newline convention to accept LF, CRLF, or CR
+    (\G|,)                   # left-delimited by start of the search, or a comma
+    (\d+-)?                  # a trip ID is formed by prefixing service ID with a number--this captures the prefix
+    #{Regex.escape(old_id)}  # the service ID to replace
+    ($|,)                    # right-delimited by end of line or a comma
+    """x
+
+    replacement = "\\1\\2#{new_id}\\3"
+
+    for filename <- tables_with_service_or_trip_id() do
+      path = Path.join(tmp_dir, filename)
+      tmp_path = path <> ".tmp"
+
+      :ok =
+        path
+        |> File.stream!()
+        |> Stream.map(fn line -> Regex.replace(pattern, line, replacement) end)
+        |> Stream.into(File.stream!(tmp_path))
+        |> Stream.run()
+
+      File.rename!(tmp_path, path)
+    end
   end
 
-  defp replace_trip_id(file_map, replacer, filename) do
-    Map.replace_lazy(file_map, filename, fn rows_stream ->
-      Stream.map(rows_stream, &Map.replace_lazy(&1, "trip_id", replacer))
-    end)
+  # Writes a new ZIP containing the amended CSVs and returns its path.
+  @spec write_amended_zip(charlist()) :: {:ok, charlist()} | {:error, term()}
+  defp write_amended_zip(tmp_dir) do
+    # :cwd opt does not apply to the path being written to, so we need to do it ourselves.
+    zip_path = Path.join(tmp_dir, "amended_export.zip")
+    :zip.zip(to_charlist(zip_path), @filenames, cwd: tmp_dir)
   end
 
   defp do_upload(file_data, filename) do
