@@ -31,6 +31,7 @@ defmodule Arrow.Disruptions.Limit do
   schema "limits" do
     field :start_date, :date
     field :end_date, :date
+    field :check_for_overlap, :boolean, default: true
     field :editing?, :boolean, virtual: true, default: false
     belongs_to :disruption, Arrow.Disruptions.DisruptionV2
     belongs_to :route, Arrow.Gtfs.Route, type: :string
@@ -56,9 +57,14 @@ defmodule Arrow.Disruptions.Limit do
       :disruption_id,
       :editing?
     ])
+    |> put_change(:check_for_overlap, true)
     |> cast_assoc(:limit_day_of_weeks, with: &Arrow.Limits.LimitDayOfWeek.changeset/2)
     |> validate_required([:start_date, :end_date, :route_id, :start_stop_id, :end_stop_id])
     |> validate_start_date_before_end_date()
+    |> exclusion_constraint(:end_date,
+      name: :no_overlap,
+      message: "cannot overlap another limit"
+    )
     |> assoc_constraint(:route)
     |> assoc_constraint(:start_stop)
     |> assoc_constraint(:end_stop)
