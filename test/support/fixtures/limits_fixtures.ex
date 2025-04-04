@@ -22,7 +22,9 @@ defmodule Arrow.LimitsFixtures do
         start_stop_id: start_stop.id,
         end_stop_id: end_stop.id,
         route_id: route.id,
-        limit_day_of_weeks: []
+        limit_day_of_weeks: [
+          %{active?: true, day_name: :friday, start_time: "14:00", end_time: "15:00"}
+        ]
       })
       |> Arrow.Limits.create_limit()
 
