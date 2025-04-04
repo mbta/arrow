@@ -41,6 +41,8 @@ defmodule Arrow.Shuttles.Shuttle do
     status = get_field(changeset, :status)
     # Set error on status field for now
 
+    dbg()
+
     case status do
       :active ->
         routes = get_assoc(changeset, :routes)
@@ -56,6 +58,14 @@ defmodule Arrow.Shuttles.Shuttle do
               changeset,
               :status,
               "all stops except the last in each direction must have a time to next stop"
+            )
+
+          routes
+          |> Enum.any?(fn route -> !route.shape end) ->
+            add_error(
+              changeset,
+              :status,
+              "all routes must have an associated shape"
             )
 
           true ->
