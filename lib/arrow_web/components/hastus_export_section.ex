@@ -21,6 +21,7 @@ defmodule ArrowWeb.HastusExportSection do
   attr :uploaded_file_data, :any
   attr :disruption, DisruptionV2, required: true
   attr :disabled?, :boolean
+  attr :confirming_dup_service_ids?, :boolean, default: false
 
   @line_icon_names %{
     "line-Blue" => :blue_line,
@@ -284,30 +285,63 @@ defmodule ArrowWeb.HastusExportSection do
               </.button>
             </div>
           </.inputs_for>
-          <div class="row">
-            <div class="col-lg-4">
-              <.button
-                id="save-export-button"
-                type="submit"
-                class="btn btn-primary btn-sm w-100"
-                phx-target={@myself}
-              >
-                save
-              </.button>
+          <%= if @confirming_dup_service_ids? do %>
+            <div class="text-warning mb-3">
+              <strong>
+                The HASTUS export that you uploaded includes service IDs that have been previously imported into Arrow.<br />
+                Are you sure you would like to continue?
+              </strong>
             </div>
-            <div class="col-lg-3">
-              <.button
-                type="button"
-                id="cancel_add_hastus_export_button"
-                class="btn-outline-primary btn-sm w-100"
-                data-confirm="Are you sure you want to cancel? All changes to this HASTUS export will be lost!"
-                phx-click="cancel_add_hastus_export"
-                phx-target={@myself}
-              >
-                cancel
-              </.button>
+            <div class="row no-gutters">
+              <div class="col-lg-auto">
+                <.button
+                  id="accept-duplicate-service-ids-button"
+                  type="button"
+                  class="btn btn-primary btn-sm mr-2"
+                  phx-click="confirm_dup_service_ids"
+                  phx-target={@myself}
+                >
+                  Yes, fix duplicate service IDs in this export for me
+                </.button>
+              </div>
+              <div class="col-lg-auto">
+                <.button
+                  id="reject-duplicate-service-ids-button"
+                  type="button"
+                  class="btn btn-outline-primary btn-sm"
+                  phx-click="cancel_add_hastus_export"
+                  phx-target={@myself}
+                >
+                  No, cancel upload
+                </.button>
+              </div>
             </div>
-          </div>
+          <% else %>
+            <div class="row">
+              <div class="col-lg-4">
+                <.button
+                  id="save-export-button"
+                  type="submit"
+                  class="btn btn-primary btn-sm w-100"
+                  phx-target={@myself}
+                >
+                  save
+                </.button>
+              </div>
+              <div class="col-lg-3">
+                <.button
+                  type="button"
+                  id="cancel_add_hastus_export_button"
+                  class="btn-outline-primary btn-sm w-100"
+                  data-confirm="Are you sure you want to cancel? All changes to this HASTUS export will be lost!"
+                  phx-click="cancel_add_hastus_export"
+                  phx-target={@myself}
+                >
+                  cancel
+                </.button>
+              </div>
+            </div>
+          <% end %>
         </div>
       </.simple_form>
     </section>
@@ -433,7 +467,12 @@ defmodule ArrowWeb.HastusExportSection do
      |> assign(export: nil)
      |> assign(form: nil)
      |> assign(show_upload_form: false)
-     |> assign(show_service_import_form: false)}
+     |> assign(show_service_import_form: false)
+     |> assign(confirming_dup_service_ids?: false)}
+  end
+
+  def handle_event("confirm_dup_service_ids", _params, socket) do
+    {:noreply, assign(socket, confirming_dup_service_ids?: false)}
   end
 
   def handle_event("validate", %{"_target" => ["hastus_export"]}, socket) do
@@ -558,13 +597,13 @@ defmodule ArrowWeb.HastusExportSection do
       {:error, error} ->
         {:noreply, assign(socket, error: error)}
 
-      {:ok, data, line, trip_route_directions, zip_file_data} ->
+      {:ok, export_data} ->
         form =
           socket.assigns.export
           |> Hastus.change_export(%{
-            "services" => data,
-            "trip_route_directions" => trip_route_directions,
-            "line_id" => line,
+            "services" => export_data.services,
+            "trip_route_directions" => export_data.trip_route_directions,
+            "line_id" => export_data.line_id,
             "s3_path" => client_name,
             "disruption_id" => socket.assigns.disruption.id
           })
@@ -576,7 +615,8 @@ defmodule ArrowWeb.HastusExportSection do
            show_upload_form: false,
            show_service_import_form: true,
            uploaded_file_name: client_name,
-           uploaded_file_data: zip_file_data
+           uploaded_file_data: export_data.zip_binary,
+           confirming_dup_service_ids?: export_data.dup_service_ids_amended?
          )}
     end
   end
