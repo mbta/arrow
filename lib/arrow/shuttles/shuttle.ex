@@ -41,8 +41,6 @@ defmodule Arrow.Shuttles.Shuttle do
     status = get_field(changeset, :status)
     # Set error on status field for now
 
-    dbg()
-
     case status do
       :active ->
         routes = get_assoc(changeset, :routes)
@@ -61,7 +59,7 @@ defmodule Arrow.Shuttles.Shuttle do
             )
 
           routes
-          |> Enum.any?(fn route -> !route.shape end) ->
+          |> Enum.any?(fn route -> is_nil(route.data.shape) end) ->
             add_error(
               changeset,
               :status,
