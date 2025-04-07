@@ -3,6 +3,7 @@ defmodule ArrowWeb.LimitSection do
   LiveComponent used by disruptions to show/create/edit/delete limits
   """
 
+  alias Arrow.Limits.LimitDayOfWeek
   use ArrowWeb, :live_component
 
   import Phoenix.HTML.Form
@@ -158,7 +159,11 @@ defmodule ArrowWeb.LimitSection do
               )}
             </div>
           </div>
-          <div class="container justify-content-around mb-3">
+          <div class={[
+            "container justify-content-around mb-3",
+            limit_day_of_weeks_used?(@limit_form) && @limit_form[:limit_day_of_weeks].errors != [] &&
+              "is-invalid"
+          ]}>
             <.inputs_for :let={f_day_of_week} field={@limit_form[:limit_day_of_weeks]}>
               <div class="row">
                 <input
@@ -206,6 +211,9 @@ defmodule ArrowWeb.LimitSection do
               </div>
             </.inputs_for>
           </div>
+          <.error :for={err <- @limit_form[:limit_day_of_weeks].errors}>
+            {translate_error(err)}
+          </.error>
           <div class="row">
             <div class="col-lg-3">
               <.button type="submit" class="btn-primary btn-sm w-100" phx-target={@myself}>
@@ -370,5 +378,30 @@ defmodule ArrowWeb.LimitSection do
     else
       ""
     end
+  end
+
+  defp limit_day_of_weeks_used?(form) do
+    # Typically you could use `used_input?(form[:limit_day_of_weeks])` but that
+    # doesn't work for these subforms because the hidden inputs mark the
+    # subform as used. So instead we check the user controlled values of each of
+    # these subforms.
+    form[:limit_day_of_weeks].value
+    |> Enum.any?(fn dow ->
+      dow_form =
+        case dow do
+          %Ecto.Changeset{} = dow_changeset ->
+            to_form(dow_changeset)
+
+          %LimitDayOfWeek{} = dow ->
+            dow
+            |> LimitDayOfWeek.changeset()
+            |> to_form()
+        end
+
+      Enum.any?(
+        [:active?, :start_time, :end_time, :all_day?],
+        &Phoenix.Component.used_input?(dow_form[&1])
+      )
+    end)
   end
 end
