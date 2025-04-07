@@ -114,9 +114,9 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
 
     tab_map =
       Enum.reduce(tab_tids, %{}, fn {:ok, tid}, acc ->
-        name = Xlsxir.get_info(tid, :name)
+        name = tid |> Xlsxir.get_info(:name) |> String.trim()
 
-        if name in all_tabs do
+        if String.downcase(name) in Enum.map(all_tabs, &String.downcase/1) do
           Map.put(acc, name, tid)
         else
           Xlsxir.close(tid)
