@@ -151,6 +151,12 @@ defmodule ArrowWeb.LimitSection do
           <div class="row mb-3">
             <.input class="col-lg-3" field={@limit_form[:start_date]} type="date" label="start date" />
             <.input class="col-lg-3" field={@limit_form[:end_date]} type="date" label="end date" />
+            <div class="col text-sm text-danger align-self-center">
+              {get_limit_date_range_warning(
+                input_value(@limit_form, :start_date),
+                input_value(@limit_form, :end_date)
+              )}
+            </div>
           </div>
           <div class="container justify-content-around mb-3">
             <.inputs_for :let={f_day_of_week} field={@limit_form[:limit_day_of_weeks]}>
@@ -349,5 +355,20 @@ defmodule ArrowWeb.LimitSection do
   defp get_limit_route_icon_url(limit, icon_paths) do
     kind = Adjustment.kind(%Adjustment{route_id: limit.route.id})
     Map.get(icon_paths, kind)
+  end
+
+  defp get_limit_date_range_warning(start_date, end_date)
+       when start_date in [nil, ""] or end_date in ["", nil] do
+    ""
+  end
+
+  defp get_limit_date_range_warning(start_date, end_date) do
+    today = Date.utc_today()
+
+    if Date.before?(start_date, today) and Date.before?(end_date, today) do
+      "*Selected dates are in the past. Are you sure?"
+    else
+      ""
+    end
   end
 end
