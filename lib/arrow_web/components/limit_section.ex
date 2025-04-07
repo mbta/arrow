@@ -23,7 +23,7 @@ defmodule ArrowWeb.LimitSection do
     ~H"""
     <section id={@id}>
       <h3>Limits</h3>
-      <%= if Ecto.assoc_loaded?(@disruption.limits) and Enum.any?(@disruption.limits) do %>
+      <%= if Ecto.assoc_loaded?(@disruption.limits) and (Enum.any?(@disruption.limits) or Enum.any?(@disruption.hastus_exports)) do %>
         <div class="mb-3 border-2 border-dashed border-secondary border-mb-3 p-3">
           <table class="w-[40rem] sm:w-full">
             <thead>
@@ -41,7 +41,7 @@ defmodule ArrowWeb.LimitSection do
                 <td>
                   <span
                     class="m-icon m-icon-sm mr-1 align-middle"
-                    style={"background-image: url('#{get_limit_route_icon_url(limit, @icon_paths)}');"}
+                    style={"background-image: url('#{get_route_icon_url(limit, @icon_paths)}');"}
                   />
                 </td>
                 <td>{limit.start_stop.name}</td>
@@ -78,6 +78,28 @@ defmodule ArrowWeb.LimitSection do
                   </.button>
                 </td>
               </tr>
+              <%= for export <- @disruption.hastus_exports do %>
+                <%= for %{import?: true} = export_service <- export.services do %>
+                  <%= for service_date <- export_service.service_dates do %>
+                    <tr>
+                      <td>
+                        <span
+                          class="m-icon m-icon-sm mr-1 align-middle"
+                          style={"background-image: url('#{get_route_icon_url(export, @icon_paths)}');"}
+                        />
+                      </td>
+                      <td>{export_service.start_stop && export_service.start_stop.name}</td>
+                      <td>{export_service.end_stop && export_service.end_stop.name}</td>
+                      <td>{service_date.start_date}</td>
+                      <td>{service_date.end_date}</td>
+                      <td>
+                        <strong>via HASTUS</strong> <br />
+                        {Path.basename(export.s3_path)}
+                      </td>
+                    </tr>
+                  <% end %>
+                <% end %>
+              <% end %>
             </tbody>
           </table>
         </div>
@@ -354,10 +376,20 @@ defmodule ArrowWeb.LimitSection do
     |> String.capitalize()
   end
 
-  defp get_limit_route_icon_url(limit, icon_paths) do
+  defp get_route_icon_url(%Arrow.Disruptions.Limit{} = limit, icon_paths) do
     kind = Adjustment.kind(%Adjustment{route_id: limit.route.id})
     Map.get(icon_paths, kind)
   end
+
+  defp get_route_icon_url(%Arrow.Hastus.Export{line_id: line_id}, icon_paths) do
+    Map.get(icon_paths, icon_for_line(line_id))
+  end
+
+  def icon_for_line("line-Blue"), do: :blue_line
+  def icon_for_line("line-Orange"), do: :orange_line
+  def icon_for_line("line-Red"), do: :red_line
+  def icon_for_line("line-Mattapan"), do: :mattapan_line
+  def icon_for_line("line-Green"), do: :green_line
 
   defp limit_day_of_weeks_used?(form) do
     # Typically you could use `used_input?(form[:limit_day_of_weeks])` but that

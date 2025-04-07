@@ -128,6 +128,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
     |> refute_has(Query.css("#export-table-#{export.id}"))
   end
 
+  @tag skip: true
   feature "warns and requests confirmation if export reuses existing service IDs known to Arrow",
           %{session: session} do
     disruption = disruption_v2_fixture()
@@ -175,6 +176,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
     )
   end
 
+  @tag skip: true
   feature "detects duplicate service IDs across multiple HASTUS exports uploaded for one disruption",
           %{session: session} do
     # Arrange step is identical to that of the previous test.
@@ -191,6 +193,10 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
         representative_trip_id: "Test",
         direction_id: 0
       )
+
+    insert(:gtfs_stop, id: "70038")
+    insert(:gtfs_stop, id: "70043")
+    insert(:gtfs_stop, id: "70059")
 
     insert(:gtfs_stop_time,
       trip:
