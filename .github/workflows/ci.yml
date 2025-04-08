@@ -153,6 +153,15 @@ jobs:
       - uses: mbta/setup-chromedriver@69cc01d772a1595b8aee87d52f53e71b3904d9d0
       - name: Run integration tests
         run: mix test.integration
+      - name: Save integration test screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-screenshots
+          path: test/integration/screenshots/
+          retention-days: 5
+          if-no-files-found: ignore
+
 
   nodejs:
     name: Test Node
