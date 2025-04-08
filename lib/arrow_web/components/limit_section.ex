@@ -384,6 +384,10 @@ defmodule ArrowWeb.LimitSection do
     Map.get(icon_paths, kind)
   end
 
+  defp get_route_icon_url(%Arrow.Hastus.Export{line_id: line_id}, icon_paths) do
+    Map.get(icon_paths, icon_for_line(line_id))
+  end
+
   defp get_limit_date_range_warning(end_date)
        when end_date in ["", nil] do
     ""
@@ -404,10 +408,6 @@ defmodule ArrowWeb.LimitSection do
     else
       ""
     end
-  end
-
-  defp get_route_icon_url(%Arrow.Hastus.Export{line_id: line_id}, icon_paths) do
-    Map.get(icon_paths, icon_for_line(line_id))
   end
 
   def icon_for_line("line-Blue"), do: :blue_line
