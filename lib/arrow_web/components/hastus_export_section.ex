@@ -211,6 +211,8 @@ defmodule ArrowWeb.HastusExportSection do
           </div>
           <.inputs_for :let={f_service} field={@form[:services]}>
             <.input field={f_service[:name]} type="text" class="hidden" />
+            <.input field={f_service[:start_stop_id]} type="hidden" />
+            <.input field={f_service[:end_stop_id]} type="hidden" />
             <div class="row mb-3">
               <div class="col-lg-2">
                 <strong>service ID</strong>
