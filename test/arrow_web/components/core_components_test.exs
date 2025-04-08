@@ -18,7 +18,7 @@ defmodule ArrowWeb.CoreComponentsTest do
 
       assert [current_page_link] = current_page_links
 
-      assert Floki.text(current_page_link) =~ "Shuttle definitions"
+      assert Floki.text(current_page_link) =~ "Shuttles"
       assert Floki.attribute(current_page_link, "href") == []
     end
 
@@ -87,7 +87,7 @@ defmodule ArrowWeb.CoreComponentsTest do
 
       assert [warning_button] = warning_buttons
 
-      assert Floki.text(warning_button) == "Switch to Arrow v1"
+      assert Floki.text(warning_button) == "Switch to V1"
     end
 
     test "raises an exception if @page is unrecognized" do
