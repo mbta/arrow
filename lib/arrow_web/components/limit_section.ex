@@ -153,10 +153,7 @@ defmodule ArrowWeb.LimitSection do
             <.input class="col-lg-3" field={@limit_form[:start_date]} type="date" label="start date" />
             <.input class="col-lg-3" field={@limit_form[:end_date]} type="date" label="end date" />
             <div class="col text-sm text-danger align-self-center">
-              {get_limit_date_range_warning(
-                input_value(@limit_form, :start_date),
-                input_value(@limit_form, :end_date)
-              )}
+              {get_limit_date_range_warning(input_value(@limit_form, :end_date))}
             </div>
           </div>
           <div class={[
@@ -365,16 +362,23 @@ defmodule ArrowWeb.LimitSection do
     Map.get(icon_paths, kind)
   end
 
-  defp get_limit_date_range_warning(start_date, end_date)
-       when start_date in [nil, ""] or end_date in ["", nil] do
+  defp get_limit_date_range_warning(end_date)
+       when end_date in ["", nil] do
     ""
   end
 
-  defp get_limit_date_range_warning(start_date, end_date) do
-    today = Date.utc_today()
+  defp get_limit_date_range_warning(end_date) when is_binary(end_date) do
+    get_limit_date_range_warning(Date.from_iso8601!(end_date))
+  end
 
-    if Date.before?(start_date, today) and Date.before?(end_date, today) do
-      "*Selected dates are in the past. Are you sure?"
+  defp get_limit_date_range_warning(end_date) do
+    today =
+      DateTime.utc_now()
+      |> DateTime.shift_zone!("America/New_York")
+      |> DateTime.to_date()
+
+    if Date.before?(end_date, today) do
+      "*End date is in the past. Are you sure?"
     else
       ""
     end
