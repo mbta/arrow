@@ -284,7 +284,7 @@ defmodule ArrowWeb.CoreComponents do
   attr :type, :string,
     default: "text",
     values: ~w(checkbox color date datetime-local email file month number password
-               range search select tel text textarea time url week)
+               range search select tel text textarea time url week hidden)
 
   attr :field, Phoenix.HTML.FormField,
     doc: "a form field struct retrieved from the form, for example: @form[:email]"
@@ -599,12 +599,12 @@ defmodule ArrowWeb.CoreComponents do
   def navbar(assigns) do
     pages = [
       {~p"/disruptionsv2", "Disruptions"},
-      {~p"/shuttles", "Shuttle definitions"},
+      {~p"/shuttles", "Shuttles"},
       {~p"/shapes", "Shuttle shapes"},
       {~p"/stops", "Shuttle stops"}
     ]
 
-    if assigns[:page] not in Enum.map(pages, &elem(&1, 0)) do
+    if not Enum.any?(pages, fn {page, _title} -> String.starts_with?(assigns[:page], page) end) do
       raise "navbar component used on an unrecognized page: #{assigns[:page]}"
     end
 
@@ -614,12 +614,20 @@ defmodule ArrowWeb.CoreComponents do
     assigns = assign(assigns, pages: pages, homepage?: homepage?)
 
     ~H"""
-    <div class="col">
+    <div class="col-9">
       <%= if @homepage? do %>
-        <a :if={@create_disruption_permission?} class="btn btn-primary" href={~p"/disruptionsv2/new"}>
+        <a
+          :if={@create_disruption_permission?}
+          class="btn btn-primary navbar-other-page"
+          href={~p"/disruptionsv2/new"}
+        >
           + Create new
         </a>
-        <a :if={not @create_disruption_permission?} class="btn btn-primary" href={~p"/disruptionsv2"}>
+        <a
+          :if={not @create_disruption_permission?}
+          class="btn btn-primary navbar-other-page"
+          href={~p"/disruptionsv2"}
+        >
           Disruptions
         </a>
       <% end %>
@@ -628,9 +636,11 @@ defmodule ArrowWeb.CoreComponents do
         <a :if={current?} class="btn btn-secondary navbar-current-page" aria-disabled="true">
           {label}
         </a>
-        <a :if={not current?} class="btn btn-outline-secondary" href={page}>{label}</a>
+        <a :if={not current?} class="btn btn-outline-secondary navbar-other-page" href={page}>
+          {label}
+        </a>
       <% end %>
-      <a class="btn btn-warning" href={~p"/"}>Switch to Arrow v1</a>
+      <a class="btn btn-warning navbar-other-page" href={~p"/"}>Switch to V1</a>
     </div>
     """
   end
