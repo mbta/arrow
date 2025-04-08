@@ -803,7 +803,9 @@ CREATE TABLE public.hastus_services (
     export_id bigint,
     inserted_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    should_import boolean DEFAULT true NOT NULL
+    should_import boolean DEFAULT true NOT NULL,
+    start_stop_id character varying(255),
+    end_stop_id character varying(255)
 );
 
 
@@ -2231,11 +2233,27 @@ ALTER TABLE ONLY public.hastus_service_dates
 
 
 --
+-- Name: hastus_services hastus_services_end_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_services
+    ADD CONSTRAINT hastus_services_end_stop_id_fkey FOREIGN KEY (end_stop_id) REFERENCES public.gtfs_stops(id) ON DELETE SET NULL;
+
+
+--
 -- Name: hastus_services hastus_services_export_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.hastus_services
     ADD CONSTRAINT hastus_services_export_id_fkey FOREIGN KEY (export_id) REFERENCES public.hastus_exports(id) ON DELETE CASCADE;
+
+
+--
+-- Name: hastus_services hastus_services_start_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_services
+    ADD CONSTRAINT hastus_services_start_stop_id_fkey FOREIGN KEY (start_stop_id) REFERENCES public.gtfs_stops(id) ON DELETE SET NULL;
 
 
 --
@@ -2418,3 +2436,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250320151207);
 INSERT INTO public."schema_migrations" (version) VALUES (20250326151019);
 INSERT INTO public."schema_migrations" (version) VALUES (20250328193906);
 INSERT INTO public."schema_migrations" (version) VALUES (20250402181804);
+INSERT INTO public."schema_migrations" (version) VALUES (20250403191728);

@@ -68,7 +68,6 @@ defmodule ArrowWeb.Router do
     live("/shuttles/new", ShuttleViewLive, :new)
     live("/shuttles/:id/edit", ShuttleViewLive, :edit)
     get("/shuttles", ShuttleController, :index)
-    get("/shuttles/:id", ShuttleController, :show)
     get("/replacement_services/:replacement_service_id/timetable", TimetableController, :show)
 
     live_dashboard "/dashboard", ecto_repos: [Arrow.Repo], metrics: ArrowWeb.Telemetry

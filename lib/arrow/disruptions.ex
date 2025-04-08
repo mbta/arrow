@@ -14,7 +14,7 @@ defmodule Arrow.Disruptions do
   @preloads [
     limits: [:route, :start_stop, :end_stop, :limit_day_of_weeks],
     replacement_services: [shuttle: [routes: [route_stops: [:stop]]]],
-    hastus_exports: [:line, services: [:service_dates]]
+    hastus_exports: [:line, services: [:service_dates, :start_stop, :end_stop]]
   ]
 
   @doc """

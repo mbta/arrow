@@ -43,6 +43,12 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
       assert {:ok, _tab_map} = get_xlsx_tab_tids(tab_tids)
     end
 
+    @tag sheet: "lowercase_tabs.xlsx"
+    test "ignores case in tab names", context do
+      tab_tids = get_xlsx(context)
+      assert {:ok, _tab_map} = get_xlsx_tab_tids(tab_tids)
+    end
+
     @tag sheet: "no_valid_tabs.xlsx"
     test "errors if no spreadsheet tabs match the expected format", context do
       tab_tids = get_xlsx(context)
