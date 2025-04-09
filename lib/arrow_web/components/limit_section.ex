@@ -174,6 +174,9 @@ defmodule ArrowWeb.LimitSection do
           <div class="row mb-3">
             <.input class="col-lg-3" field={@limit_form[:start_date]} type="date" label="start date" />
             <.input class="col-lg-3" field={@limit_form[:end_date]} type="date" label="end date" />
+            <div class="col text-sm text-danger align-self-center">
+              {get_limit_date_range_warning(input_value(@limit_form, :end_date))}
+            </div>
           </div>
           <div class={[
             "container justify-content-around mb-3",
@@ -383,6 +386,28 @@ defmodule ArrowWeb.LimitSection do
 
   defp get_route_icon_url(%Arrow.Hastus.Export{line_id: line_id}, icon_paths) do
     Map.get(icon_paths, icon_for_line(line_id))
+  end
+
+  defp get_limit_date_range_warning(end_date)
+       when end_date in ["", nil] do
+    ""
+  end
+
+  defp get_limit_date_range_warning(end_date) when is_binary(end_date) do
+    get_limit_date_range_warning(Date.from_iso8601!(end_date))
+  end
+
+  defp get_limit_date_range_warning(end_date) do
+    today =
+      DateTime.utc_now()
+      |> DateTime.shift_zone!("America/New_York")
+      |> DateTime.to_date()
+
+    if Date.before?(end_date, today) do
+      "*End date is in the past. Are you sure?"
+    else
+      ""
+    end
   end
 
   def icon_for_line("line-Blue"), do: :blue_line
