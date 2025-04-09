@@ -19,7 +19,8 @@ defmodule ArrowWeb.API.ServiceScheduleController do
               %{
                 hastus_route_id: trip_route_direction.hastus_route_id,
                 via_variant: trip_route_direction.via_variant,
-                avi_code: trip_route_direction.avi_code
+                avi_code: trip_route_direction.avi_code,
+                route_id: trip_route_direction.route_id
               }
             end
 
