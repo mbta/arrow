@@ -47,7 +47,7 @@ defmodule ArrowWeb.StopController do
           {"Error updating stop, please try again",
            ErrorHelpers.changeset_error_messages(changeset)}
         )
-        |> redirect(to: ~p"/stops/#{id}/edit")
+        |> redirect(to: ~p"/stops/#{stop.stop_id}/edit")
     end
   end
 end

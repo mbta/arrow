@@ -57,7 +57,7 @@ defmodule ArrowWeb.Router do
     live("/disruptionsv2/:id/edit", DisruptionV2ViewLive, :edit)
 
     live("/stops/new", StopViewLive, :new)
-    live("/stops/:id/edit", StopViewLive, :edit)
+    live("/stops/:stop_id/edit", StopViewLive, :edit)
     get("/stops", StopController, :index)
     put("/stops/:id", StopController, :update)
     post("/stops", StopController, :create)

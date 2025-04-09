@@ -60,6 +60,22 @@ defmodule Arrow.Stops do
   end
 
   @doc """
+  Gets a single stop by stop_id.
+
+  Raises `Ecto.NoResultsError` if the Stop does not exist.
+
+  ## Examples
+
+      iex> get_stop_by_stop_id!("123")
+      %Stop{}
+
+      iex> get_stop_by_stop_id!("456")
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_stop_by_stop_id!(stop_id), do: Repo.get_by!(Stop, stop_id: stop_id)
+
+  @doc """
   Creates a stop.
 
   ## Examples
@@ -128,7 +144,7 @@ defmodule Arrow.Stops do
   @latitude_degrees_per_mile 1 / 69
 
   @doc """
-  Get other Arrow shuttle stops within one mile of a given longitude and latitude, excluding 
+  Get other Arrow shuttle stops within one mile of a given longitude and latitude, excluding
   the stop identified by `arrow_stop_id`
 
   ## Examples

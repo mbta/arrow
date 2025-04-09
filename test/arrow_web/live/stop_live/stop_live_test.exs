@@ -103,7 +103,7 @@ defmodule ArrowWeb.StopLiveTest do
     setup [:create_stop]
     @tag :authenticated_admin
     test "renders form for editing chosen stop", %{conn: conn, stop: stop} do
-      {:ok, _edit_live, html} = live(conn, ~p"/stops/#{stop}/edit")
+      {:ok, _edit_live, html} = live(conn, ~p"/stops/#{stop.stop_id}/edit")
       assert html =~ "edit shuttle stop"
       assert html =~ "Components.StopViewMap"
     end
@@ -114,7 +114,7 @@ defmodule ArrowWeb.StopLiveTest do
 
     @tag :authenticated_admin
     test "updates and redirects when data is valid", %{conn: conn, stop: stop} do
-      {:ok, edit_live, _html} = live(conn, ~p"/stops/#{stop}/edit")
+      {:ok, edit_live, _html} = live(conn, ~p"/stops/#{stop.stop_id}/edit")
 
       edit_live
       |> form("#stop-form", stop: @update_attrs)
@@ -129,7 +129,7 @@ defmodule ArrowWeb.StopLiveTest do
 
     @tag :authenticated_admin
     test "renders errors when data is invalid", %{conn: conn, stop: stop} do
-      {:ok, edit_live, _html} = live(conn, ~p"/stops/#{stop}/edit")
+      {:ok, edit_live, _html} = live(conn, ~p"/stops/#{stop.stop_id}/edit")
 
       form =
         edit_live
