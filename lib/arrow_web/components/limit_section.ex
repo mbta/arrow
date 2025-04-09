@@ -432,6 +432,11 @@ defmodule ArrowWeb.LimitSection do
             dow
             |> LimitDayOfWeek.changeset()
             |> to_form()
+
+          {_, params} ->
+            %LimitDayOfWeek{}
+            |> LimitDayOfWeek.changeset(params)
+            |> to_form()
         end
 
       Enum.any?(
