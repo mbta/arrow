@@ -33,7 +33,7 @@ defmodule ArrowWeb.HastusExportSection do
 
   def render(assigns) do
     ~H"""
-    <section id={@id}>
+    <section id={@id} class="py-4 my-4">
       <h3>HASTUS Service Schedules</h3>
       <%= if Ecto.assoc_loaded?(@disruption.hastus_exports) and Enum.any?(@disruption.hastus_exports) do %>
         <div
@@ -211,6 +211,8 @@ defmodule ArrowWeb.HastusExportSection do
           </div>
           <.inputs_for :let={f_service} field={@form[:services]}>
             <.input field={f_service[:name]} type="text" class="hidden" />
+            <.input field={f_service[:start_stop_id]} type="hidden" />
+            <.input field={f_service[:end_stop_id]} type="hidden" />
             <div class="row mb-3">
               <div class="col-lg-2">
                 <strong>service ID</strong>
@@ -224,7 +226,7 @@ defmodule ArrowWeb.HastusExportSection do
                 <div class="col-lg-1"></div>
                 <%= if f_date.index == 0 do %>
                   <div class="col-lg-1">
-                    <.label for={f_service[:import?].id}>import?</.label>
+                    <.label for={f_service[:import?].id}>activate?</.label>
                     <.input
                       class="ml-4"
                       field={f_service[:import?]}
@@ -411,7 +413,7 @@ defmodule ArrowWeb.HastusExportSection do
                | "s3_path" => s3_path
              }) do
         send(self(), :update_disruption)
-        send(self(), {:put_flash, :info, "HASTUS export created successfully"})
+        send(self(), {:put_flash, :info, "HASTUS service schedules imported successfully!"})
 
         {:noreply,
          socket
@@ -444,7 +446,7 @@ defmodule ArrowWeb.HastusExportSection do
       case Hastus.update_export(export, export_params) do
         {:ok, _} ->
           send(self(), :update_disruption)
-          send(self(), {:put_flash, :info, "HASTUS export updated successfully"})
+          send(self(), {:put_flash, :info, "HASTUS service schedules updated successfully!"})
 
           {:noreply,
            socket

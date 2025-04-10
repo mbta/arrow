@@ -264,7 +264,7 @@ defmodule Arrow.Disruptions.ReplacementService do
          stop_times ++
            [
              %{
-               stop_id: route_stop.display_stop_id,
+               stop_id: Shuttles.get_display_stop_id(route_stop),
                stop_time: "#{current_stop_time}:00"
              }
            ]}

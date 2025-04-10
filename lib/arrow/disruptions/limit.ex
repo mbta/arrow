@@ -69,6 +69,14 @@ defmodule Arrow.Disruptions.Limit do
     |> assoc_constraint(:start_stop)
     |> assoc_constraint(:end_stop)
     |> assoc_constraint(:disruption)
+    |> validate_change(:limit_day_of_weeks, fn
+      :limit_day_of_weeks, value when is_list(value) ->
+        if Enum.any?(value, &get_field(&1, :active?, false)) do
+          []
+        else
+          [limit_day_of_weeks: "at least one day of week must be active"]
+        end
+    end)
   end
 
   @spec validate_start_date_before_end_date(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())

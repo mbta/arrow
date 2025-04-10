@@ -134,7 +134,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         disabled?={not is_nil(@hastus_export_in_form) or not is_nil(@limit_in_form)}
       />
 
-      <div class="d-flex justify-content-center">
+      <div class="d-flex justify-content-center py-4 mb-5">
         <div class="w-25 mr-2">
           <.button
             type="submit"
