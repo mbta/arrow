@@ -209,9 +209,7 @@ defmodule Arrow.Disruptions.ReplacementServiceTest do
 
       first_last_trips = ReplacementService.first_last_trip_times(result)
 
-      last_weekday_0 =
-        first_last_trips.weekday.last_trips[0] |> IO.inspect(label: "last_weekday_0")
-
+      last_weekday_0 = first_last_trips.weekday.last_trips[0]
       last_weekday_1 = first_last_trips.weekday.last_trips[1]
 
       last_saturday_0 = first_last_trips.saturday.last_trips[0]
