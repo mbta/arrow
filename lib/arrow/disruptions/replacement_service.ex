@@ -273,12 +273,12 @@ defmodule Arrow.Disruptions.ReplacementService do
     stop_times
   end
 
-  defp unfold_trip_start_times(nil, _last_trip_start_time, _headway_periods) do
+  defp unfold_trip_start_times(:stop, _last_trip_start_time, _headway_periods) do
     nil
   end
 
   defp unfold_trip_start_times(last_trip_start_time, last_trip_start_time, _headway_periods) do
-    {last_trip_start_time, nil}
+    {last_trip_start_time, :stop}
   end
 
   defp unfold_trip_start_times(trip_start_time, last_trip_start_time, headway_periods) do
