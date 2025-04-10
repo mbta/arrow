@@ -345,19 +345,11 @@ defmodule Arrow.Shuttles do
 
   @spec populate_display_stop_ids(map()) :: map()
   def populate_display_stop_ids(shuttle) do
-    %{
-      shuttle
-      | routes:
-          Enum.map(shuttle.routes, fn route ->
-            %{
-              route
-              | route_stops:
-                  Enum.map(route.route_stops, fn route_stop ->
-                    Map.put(route_stop, :display_stop_id, get_display_stop_id(route_stop))
-                  end)
-            }
-          end)
-    }
+    update_in(
+      shuttle,
+      [Access.key(:routes), Access.all(), Access.key(:route_stops), Access.all()],
+      fn route_stop -> %{route_stop | display_stop_id: get_display_stop_id(route_stop)} end
+    )
   end
 
   @spec get_display_stop_id(RouteStop.t()) :: String.t()
