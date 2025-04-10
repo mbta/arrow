@@ -16,6 +16,8 @@ defmodule Arrow.Hastus.Service do
   schema "hastus_services" do
     field :name, :string
     field :import?, :boolean, source: :should_import, default: true
+    belongs_to :start_stop, Arrow.Gtfs.Stop, type: :string
+    belongs_to :end_stop, Arrow.Gtfs.Stop, type: :string
 
     has_many :service_dates, Arrow.Hastus.ServiceDate,
       on_replace: :delete,
@@ -29,9 +31,11 @@ defmodule Arrow.Hastus.Service do
   @doc false
   def changeset(service, attrs) do
     service
-    |> cast(attrs, [:name, :export_id, :import?])
+    |> cast(attrs, [:name, :export_id, :import?, :start_stop_id, :end_stop_id])
     |> validate_required([:name])
     |> cast_assoc(:service_dates, with: &ServiceDate.changeset/2)
     |> assoc_constraint(:export)
+    |> foreign_key_constraint(:start_stop_id, name: :hastus_services_start_stop_id_fkey)
+    |> foreign_key_constraint(:end_stop_id, name: :hastus_services_end_stop_id_fkey)
   end
 end

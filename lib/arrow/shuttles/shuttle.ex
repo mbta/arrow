@@ -58,6 +58,14 @@ defmodule Arrow.Shuttles.Shuttle do
               "all stops except the last in each direction must have a time to next stop"
             )
 
+          routes
+          |> Enum.any?(fn route -> is_nil(route.data.shape) end) ->
+            add_error(
+              changeset,
+              :status,
+              "all routes must have an associated shape"
+            )
+
           true ->
             changeset
         end

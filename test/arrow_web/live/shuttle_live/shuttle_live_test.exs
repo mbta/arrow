@@ -87,7 +87,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
 
   describe "create shuttle" do
     @tag :authenticated_admin
-    test "redirects to new shuttle when data is valid", %{conn: conn} do
+    test "redirects to shuttles table when data is valid", %{conn: conn} do
       {:ok, new_live, _html} = live(conn, ~p"/shuttles/new")
 
       {:ok, conn} =
@@ -97,8 +97,6 @@ defmodule ArrowWeb.ShuttleLiveTest do
         |> follow_redirect(conn)
 
       assert html_response(conn, 200) =~ ~r/shuttle created successfully/i
-
-      assert %{"id" => _id} = conn.params
     end
 
     @tag :authenticated_admin

@@ -3,6 +3,7 @@ defmodule ArrowWeb.LimitSection do
   LiveComponent used by disruptions to show/create/edit/delete limits
   """
 
+  alias Arrow.Limits.LimitDayOfWeek
   use ArrowWeb, :live_component
 
   import Phoenix.HTML.Form
@@ -22,7 +23,7 @@ defmodule ArrowWeb.LimitSection do
     ~H"""
     <section id={@id}>
       <h3>Limits</h3>
-      <%= if Ecto.assoc_loaded?(@disruption.limits) and Enum.any?(@disruption.limits) do %>
+      <%= if Ecto.assoc_loaded?(@disruption.limits) and (Enum.any?(@disruption.limits) or Enum.any?(@disruption.hastus_exports)) do %>
         <div class="mb-3 border-2 border-dashed border-secondary border-mb-3 p-3">
           <table class="w-[40rem] sm:w-full">
             <thead>
@@ -40,7 +41,7 @@ defmodule ArrowWeb.LimitSection do
                 <td>
                   <span
                     class="m-icon m-icon-sm mr-1 align-middle"
-                    style={"background-image: url('#{get_limit_route_icon_url(limit, @icon_paths)}');"}
+                    style={"background-image: url('#{get_route_icon_url(limit, @icon_paths)}');"}
                   />
                 </td>
                 <td>{limit.start_stop.name}</td>
@@ -77,6 +78,28 @@ defmodule ArrowWeb.LimitSection do
                   </.button>
                 </td>
               </tr>
+              <%= for export <- @disruption.hastus_exports do %>
+                <%= for %{import?: true} = export_service <- export.services do %>
+                  <%= for service_date <- export_service.service_dates do %>
+                    <tr>
+                      <td>
+                        <span
+                          class="m-icon m-icon-sm mr-1 align-middle"
+                          style={"background-image: url('#{get_route_icon_url(export, @icon_paths)}');"}
+                        />
+                      </td>
+                      <td>{export_service.start_stop && export_service.start_stop.name}</td>
+                      <td>{export_service.end_stop && export_service.end_stop.name}</td>
+                      <td>{service_date.start_date}</td>
+                      <td>{service_date.end_date}</td>
+                      <td>
+                        <strong>via HASTUS</strong> <br />
+                        {Path.basename(export.s3_path)}
+                      </td>
+                    </tr>
+                  <% end %>
+                <% end %>
+              <% end %>
             </tbody>
           </table>
         </div>
@@ -151,8 +174,15 @@ defmodule ArrowWeb.LimitSection do
           <div class="row mb-3">
             <.input class="col-lg-3" field={@limit_form[:start_date]} type="date" label="start date" />
             <.input class="col-lg-3" field={@limit_form[:end_date]} type="date" label="end date" />
+            <div class="col text-sm text-danger align-self-center">
+              {get_limit_date_range_warning(input_value(@limit_form, :end_date))}
+            </div>
           </div>
-          <div class="container justify-content-around mb-3">
+          <div class={[
+            "container justify-content-around mb-3",
+            limit_day_of_weeks_used?(@limit_form) && @limit_form[:limit_day_of_weeks].errors != [] &&
+              "is-invalid"
+          ]}>
             <.inputs_for :let={f_day_of_week} field={@limit_form[:limit_day_of_weeks]}>
               <div class="row">
                 <input
@@ -200,6 +230,9 @@ defmodule ArrowWeb.LimitSection do
               </div>
             </.inputs_for>
           </div>
+          <.error :for={err <- @limit_form[:limit_day_of_weeks].errors}>
+            {translate_error(err)}
+          </.error>
           <div class="row">
             <div class="col-lg-3">
               <.button type="submit" class="btn-primary btn-sm w-100" phx-target={@myself}>
@@ -346,8 +379,65 @@ defmodule ArrowWeb.LimitSection do
     |> String.capitalize()
   end
 
-  defp get_limit_route_icon_url(limit, icon_paths) do
+  defp get_route_icon_url(%Arrow.Disruptions.Limit{} = limit, icon_paths) do
     kind = Adjustment.kind(%Adjustment{route_id: limit.route.id})
     Map.get(icon_paths, kind)
+  end
+
+  defp get_route_icon_url(%Arrow.Hastus.Export{line_id: line_id}, icon_paths) do
+    Map.get(icon_paths, icon_for_line(line_id))
+  end
+
+  defp get_limit_date_range_warning(end_date)
+       when end_date in ["", nil] do
+    ""
+  end
+
+  defp get_limit_date_range_warning(end_date) when is_binary(end_date) do
+    get_limit_date_range_warning(Date.from_iso8601!(end_date))
+  end
+
+  defp get_limit_date_range_warning(end_date) do
+    today =
+      DateTime.utc_now()
+      |> DateTime.shift_zone!("America/New_York")
+      |> DateTime.to_date()
+
+    if Date.before?(end_date, today) do
+      "*End date is in the past. Are you sure?"
+    else
+      ""
+    end
+  end
+
+  def icon_for_line("line-Blue"), do: :blue_line
+  def icon_for_line("line-Orange"), do: :orange_line
+  def icon_for_line("line-Red"), do: :red_line
+  def icon_for_line("line-Mattapan"), do: :mattapan_line
+  def icon_for_line("line-Green"), do: :green_line
+
+  defp limit_day_of_weeks_used?(form) do
+    # Typically you could use `used_input?(form[:limit_day_of_weeks])` but that
+    # doesn't work for these subforms because the hidden inputs mark the
+    # subform as used. So instead we check the user controlled values of each of
+    # these subforms.
+    form[:limit_day_of_weeks].value
+    |> Enum.any?(fn dow ->
+      dow_form =
+        case dow do
+          %Ecto.Changeset{} = dow_changeset ->
+            to_form(dow_changeset)
+
+          %LimitDayOfWeek{} = dow ->
+            dow
+            |> LimitDayOfWeek.changeset()
+            |> to_form()
+        end
+
+      Enum.any?(
+        [:active?, :start_time, :end_time, :all_day?],
+        &Phoenix.Component.used_input?(dow_form[&1])
+      )
+    end)
   end
 end
