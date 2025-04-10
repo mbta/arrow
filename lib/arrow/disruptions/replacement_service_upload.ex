@@ -196,7 +196,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
         start_hour = time_str_to_hour(start_time)
 
         end_hour =
-          if String.slice(end_time, 2..-1//1) == ":00" do
+          if String.ends_with?(end_time, ":00") do
             time_str_to_hour(end_time) - 1
           else
             time_str_to_hour(end_time)
@@ -352,16 +352,23 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
     end
   end
 
+  @spec validate_row({:error, String.t()}) :: {:error, String.t()}
   def validate_row({:error, error}) do
     {:error, error}
   end
 
+  @spec validate_row(parsed_row()) ::
+          {:error, Keyword.t(String.t())}
+          | {:ok, Keyword.t(String.t() | number())}
   def validate_row(row) do
     row
-    |> Enum.split_with(fn {_k, v} -> elem(v, 0) == :ok end)
+    |> Enum.group_by(
+      fn {_k, {ok_or_error, _v}} -> ok_or_error end,
+      fn {k, {_ok_or_error, v}} -> {k, v} end
+    )
     |> case do
-      {rows, []} -> {:ok, rows |> Enum.map(fn {k, v} -> {k, elem(v, 1)} end)}
-      {_, errors} -> {:error, errors |> Enum.map(fn {k, v} -> {k, elem(v, 1)} end)}
+      %{error: errors} -> {:error, errors}
+      %{ok: values} -> {:ok, values}
     end
   end
 
