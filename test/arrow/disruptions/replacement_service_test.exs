@@ -10,48 +10,48 @@ defmodule Arrow.Disruptions.ReplacementServiceTest do
       shuttle = ShuttlesFixtures.shuttle_fixture(%{status: :active}, true, true)
 
       in_range_service =
-        insert(:replacement_service, %{
+        insert(:replacement_service,
           disruption: disruption,
           shuttle: shuttle,
           start_date: ~D[2025-01-01],
           end_date: ~D[2025-01-31]
-        })
+        )
 
       # Service that starts before and ends during the range
       overlap_start_service =
-        insert(:replacement_service, %{
+        insert(:replacement_service,
           disruption: disruption,
           shuttle: shuttle,
           start_date: ~D[2024-12-15],
           end_date: ~D[2025-01-10]
-        })
+        )
 
       # Service that starts during and ends after the range
       overlap_end_service =
-        insert(:replacement_service, %{
+        insert(:replacement_service,
           disruption: disruption,
           shuttle: shuttle,
           start_date: ~D[2025-01-25],
           end_date: ~D[2025-02-15]
-        })
+        )
 
       # Service completely outside the range (before)
       before_service =
-        insert(:replacement_service, %{
+        insert(:replacement_service,
           disruption: disruption,
           shuttle: shuttle,
           start_date: ~D[2024-11-01],
           end_date: ~D[2024-12-15]
-        })
+        )
 
       # Service completely outside the range (after)
       after_service =
-        insert(:replacement_service, %{
+        insert(:replacement_service,
           disruption: disruption,
           shuttle: shuttle,
           start_date: ~D[2025-02-01],
           end_date: ~D[2025-02-28]
-        })
+        )
 
       result =
         ReplacementService.get_replacement_services_with_timetables(
@@ -80,20 +80,20 @@ defmodule Arrow.Disruptions.ReplacementServiceTest do
       inactive_disruption = insert(:disruption_v2, is_active: false)
 
       active_service =
-        insert(:replacement_service, %{
+        insert(:replacement_service,
           disruption: active_disruption,
           shuttle: shuttle,
           start_date: ~D[2025-01-01],
           end_date: ~D[2025-01-31]
-        })
+        )
 
       _inactive_service =
-        insert(:replacement_service, %{
+        insert(:replacement_service,
           disruption: inactive_disruption,
           shuttle: shuttle,
           start_date: ~D[2025-01-01],
           end_date: ~D[2025-01-31]
-        })
+        )
 
       result =
         ReplacementService.get_replacement_services_with_timetables(
@@ -111,12 +111,12 @@ defmodule Arrow.Disruptions.ReplacementServiceTest do
       shuttle = ShuttlesFixtures.shuttle_fixture(%{status: :active}, true, true)
 
       # Our fixture here generates a replacement service based on a workbook with Weekday and Saturday data
-      insert(:replacement_service, %{
+      insert(:replacement_service,
         disruption: disruption,
         shuttle: shuttle,
         start_date: ~D[2025-01-01],
         end_date: ~D[2025-01-31]
-      })
+      )
 
       [result] =
         ReplacementService.get_replacement_services_with_timetables(
