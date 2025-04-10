@@ -37,40 +37,34 @@ defmodule Arrow.Hastus.ExportUploadTest do
 
       data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
 
+      expected_services = [
+        %{
+          name: "RTL12025-hmb15016-Saturday-01",
+          service_dates: [%{start_date: ~D[2025-03-22], end_date: ~D[2025-03-22]}]
+        },
+        %{
+          name: "RTL12025-hmb15017-Sunday-01",
+          service_dates: [%{start_date: ~D[2025-03-23], end_date: ~D[2025-03-23]}]
+        },
+        %{
+          name: "RTL12025-hmb15mo1-Weekday-01",
+          service_dates: []
+        },
+        %{
+          name: "RTL12025-hmb15wg1-Weekday-01",
+          service_dates: [
+            %{start_date: ~D[2025-03-21], end_date: ~D[2025-03-21]},
+            %{start_date: ~D[2025-03-24], end_date: ~D[2025-03-25]},
+            %{start_date: ~D[2025-03-27], end_date: ~D[2025-04-01]},
+            %{start_date: ~D[2025-04-04], end_date: ~D[2025-04-04]}
+          ]
+        }
+      ]
+
       assert {:ok,
               {:ok,
                %ExportUpload{
-                 services: [
-                   %{
-                     name: "RTL12025-hmb15016-Saturday-01",
-                     start_stop_id: "70038",
-                     end_stop_id: "70054",
-                     service_dates: [%{start_date: ~D[2025-03-22], end_date: ~D[2025-03-22]}]
-                   },
-                   %{
-                     name: "RTL12025-hmb15017-Sunday-01",
-                     start_stop_id: "70038",
-                     end_stop_id: "70054",
-                     service_dates: [%{start_date: ~D[2025-03-23], end_date: ~D[2025-03-23]}]
-                   },
-                   %{
-                     name: "RTL12025-hmb15mo1-Weekday-01",
-                     start_stop_id: "70059",
-                     end_stop_id: "70043",
-                     service_dates: []
-                   },
-                   %{
-                     name: "RTL12025-hmb15wg1-Weekday-01",
-                     start_stop_id: "70059",
-                     end_stop_id: "70043",
-                     service_dates: [
-                       %{start_date: ~D[2025-03-21], end_date: ~D[2025-03-21]},
-                       %{start_date: ~D[2025-03-24], end_date: ~D[2025-03-25]},
-                       %{start_date: ~D[2025-03-27], end_date: ~D[2025-04-01]},
-                       %{start_date: ~D[2025-04-04], end_date: ~D[2025-04-04]}
-                     ]
-                   }
-                 ],
+                 services: ^expected_services,
                  line_id: "line-Blue",
                  trip_route_directions: [],
                  dup_service_ids_amended?: false
@@ -229,15 +223,17 @@ defmodule Arrow.Hastus.ExportUploadTest do
         stop: insert(:gtfs_stop, id: "70054")
       )
 
+      expected_services = [
+        %{name: "RTL12025-hmb15016-Saturday-01", service_dates: []},
+        %{name: "RTL12025-hmb15017-Sunday-01", service_dates: []},
+        %{name: "RTL12025-hmb15mo1-Weekday-01", service_dates: []},
+        %{name: "RTL12025-hmb15wg1-Weekday-01", service_dates: []}
+      ]
+
       assert {:ok,
               {:ok,
                %ExportUpload{
-                 services: [
-                   %{name: "RTL12025-hmb15016-Saturday-01", service_dates: []},
-                   %{name: "RTL12025-hmb15017-Sunday-01", service_dates: []},
-                   %{name: "RTL12025-hmb15mo1-Weekday-01", service_dates: []},
-                   %{name: "RTL12025-hmb15wg1-Weekday-01", service_dates: []}
-                 ],
+                 services: ^expected_services,
                  line_id: "line-Blue",
                  trip_route_directions: [],
                  dup_service_ids_amended?: false
