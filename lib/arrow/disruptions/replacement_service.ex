@@ -207,13 +207,11 @@ defmodule Arrow.Disruptions.ReplacementService do
 
     [direction_0_trips, direction_1_trips] =
       for direction_id <- [0, 1] do
+        first_trip = first_trips[direction_id]
+        last_trip = last_trips[direction_id]
+
         start_times =
-          do_make_trip_start_times(
-            first_trips[direction_id],
-            last_trips[direction_id],
-            [],
-            headway_periods
-          )
+          Stream.unfold(first_trip, &unfold_trip_start_times(&1, last_trip, headway_periods))
 
         shuttle_route =
           Enum.find(
@@ -275,36 +273,28 @@ defmodule Arrow.Disruptions.ReplacementService do
     stop_times
   end
 
-  defp do_make_trip_start_times(
-         first_trip_start_time,
-         last_trip_start_time,
-         trip_start_times,
-         _headway_periods
-       )
-       when first_trip_start_time > last_trip_start_time,
-       do: trip_start_times
+  defp unfold_trip_start_times(nil, _last_trip_start_time, _headway_periods) do
+    nil
+  end
 
-  defp do_make_trip_start_times(
-         first_trip_start_time,
-         last_trip_start_time,
-         trip_start_times,
-         headway_periods
-       ) do
+  defp unfold_trip_start_times(last_trip_start_time, last_trip_start_time, _headway_periods) do
+    {last_trip_start_time, nil}
+  end
+
+  defp unfold_trip_start_times(trip_start_time, last_trip_start_time, headway_periods) do
     headway =
       headway_periods
-      |> Map.get(
-        start_of_hour(first_trip_start_time),
-        find_period_by_time_range(headway_periods, first_trip_start_time)
-      )
+      |> Map.get_lazy(start_of_hour(trip_start_time), fn ->
+        find_period_by_time_range(headway_periods, trip_start_time)
+      end)
       |> Map.get("headway")
 
-    first_trip_start_time
-    |> add_minutes(headway)
-    |> do_make_trip_start_times(
-      last_trip_start_time,
-      trip_start_times ++ [first_trip_start_time],
-      headway_periods
-    )
+    # Ensure that the sequence ends with the last trip time indicated in the spreadsheet,
+    # even if it doesn't line up exactly with the headway cadence.
+    next_trip_start_time =
+      min(add_minutes(trip_start_time, headway), last_trip_start_time)
+
+    {trip_start_time, next_trip_start_time}
   end
 
   defp find_period_by_time_range(headway_periods, first_trip_start_time) do
