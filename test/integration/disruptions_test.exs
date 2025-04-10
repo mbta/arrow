@@ -33,7 +33,7 @@ defmodule Arrow.Integration.DisruptionsTest do
     disruption_id =
       session
       |> visit("/")
-      |> click(link("create new"))
+      |> click(link("Create new"))
       |> assert_text("create new disruption")
       |> click(text("Pending"))
       |> click(text("Subway"))

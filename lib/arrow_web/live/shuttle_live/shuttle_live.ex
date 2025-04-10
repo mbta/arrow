@@ -287,7 +287,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       socket
       |> assign(:form, form)
       |> assign(:form_action, "edit")
-      |> assign(:http_action, ~p"/shuttles/#{id}")
+      |> assign(:http_action, ~p"/shuttles")
       |> assign(:shuttle, shuttle)
       |> assign(:title, "edit shuttle")
       |> assign(:gtfs_disruptable_routes, gtfs_disruptable_routes)
@@ -346,11 +346,11 @@ defmodule ArrowWeb.ShuttleViewLive do
     shuttle = Shuttles.get_shuttle!(socket.assigns.shuttle.id)
 
     case Shuttles.update_shuttle(shuttle, shuttle_params) do
-      {:ok, shuttle} ->
+      {:ok, _shuttle} ->
         {:noreply,
          socket
          |> put_flash(:info, "Shuttle updated successfully")
-         |> redirect(to: ~p"/shuttles/#{shuttle}")}
+         |> redirect(to: ~p"/shuttles")}
 
       {:error, changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -359,11 +359,11 @@ defmodule ArrowWeb.ShuttleViewLive do
 
   def handle_event("create", %{"shuttle" => shuttle_params}, socket) do
     case Shuttles.create_shuttle(shuttle_params) do
-      {:ok, shuttle} ->
+      {:ok, _shuttle} ->
         {:noreply,
          socket
          |> put_flash(:info, "Shuttle created successfully")
-         |> redirect(to: ~p"/shuttles/#{shuttle}")}
+         |> redirect(to: ~p"/shuttles")}
 
       {:error, changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
