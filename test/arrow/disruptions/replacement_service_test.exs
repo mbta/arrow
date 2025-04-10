@@ -209,17 +209,37 @@ defmodule Arrow.Disruptions.ReplacementServiceTest do
 
       first_last_trips = ReplacementService.first_last_trip_times(result)
 
-      last_weekday_0 = first_last_trips.weekday.last_trips[0]
+      last_weekday_0 =
+        first_last_trips.weekday.last_trips[0] |> IO.inspect(label: "last_weekday_0")
+
       last_weekday_1 = first_last_trips.weekday.last_trips[1]
 
       last_saturday_0 = first_last_trips.saturday.last_trips[0]
       last_saturday_1 = first_last_trips.saturday.last_trips[1]
 
       assert last_weekday_0 == "06:31"
+      assert first_stop_time_of_last_trip(result, :weekday, "0") == last_weekday_0
+
       assert last_weekday_1 == "06:30"
+      assert first_stop_time_of_last_trip(result, :weekday, "1") == last_weekday_1
 
       assert last_saturday_0 == "06:30"
+      assert first_stop_time_of_last_trip(result, :saturday, "0") == last_saturday_0
+
       assert last_saturday_1 == "06:27"
+      assert first_stop_time_of_last_trip(result, :saturday, "1") == last_saturday_1
     end
+  end
+
+  defp first_stop_time_of_last_trip(replacement_service, schedule_service_type, direction_id) do
+    get_in(replacement_service.timetable, [
+      schedule_service_type,
+      direction_id,
+      Access.at(-1),
+      Access.at(0),
+      :stop_time
+    ])
+    # stop times in the timetable include seconds, we don't care about those here
+    |> String.slice(0..4//1)
   end
 end
