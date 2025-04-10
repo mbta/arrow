@@ -24,7 +24,7 @@ defmodule ArrowWeb.ReplacementServiceSection do
 
   def render(assigns) do
     ~H"""
-    <section id={@id}>
+    <section id={@id} class="py-4 my-4">
       <h3>Replacement Service</h3>
       <%= if Ecto.assoc_loaded?(@disruption.replacement_services) and Enum.any?(@disruption.replacement_services) do %>
         <div
@@ -56,37 +56,39 @@ defmodule ArrowWeb.ReplacementServiceSection do
             </div>
           </div>
           <div class="row mt-3">
-            <div class="col-lg-11">
-              <.button
-                class="btn-link btn-sm pl-0"
-                disabled={!is_nil(@form) or @disabled?}
-                id={"edit_replacement_service-#{replacement_service.id}"}
-                type="button"
-                phx-click="edit_replacement_service"
-                phx-value-replacement_service={replacement_service.id}
-              >
-                <.icon name="hero-pencil-solid" class="bg-primary" /> Edit/Manage Activation
-              </.button>
-              <a
-                class="btn-link btn-sm pl-0"
-                href={~p"/replacement_services/#{replacement_service.id}/timetable"}
-                target="_blank"
-              >
-                <.icon name="hero-table-cells" class="bg-primary" /> View Parsed Timetables
-              </a>
-            </div>
-            <div class="col-lg-1">
-              <.button
-                class="btn-sm"
-                disabled={!is_nil(@form) or @disabled?}
-                type="button"
-                phx-click="delete_replacement_service"
-                phx-value-replacement_service={replacement_service.id}
-                phx-target={@myself}
-                data-confirm="Are you sure you want to delete this replacement service?"
-              >
-                <.icon name="hero-trash-solid" class="bg-primary" />
-              </.button>
+            <div class="flex justify-between w-full px-3 py-2">
+              <div>
+                <.button
+                  class="btn-link btn-sm pl-0"
+                  disabled={!is_nil(@form) or @disabled?}
+                  id={"edit_replacement_service-#{replacement_service.id}"}
+                  type="button"
+                  phx-click="edit_replacement_service"
+                  phx-value-replacement_service={replacement_service.id}
+                >
+                  <.icon name="hero-pencil-solid" class="bg-primary" /> Edit/Manage Activation
+                </.button>
+                <a
+                  class="btn-link btn-sm pl-0"
+                  href={~p"/replacement_services/#{replacement_service.id}/timetable"}
+                  target="_blank"
+                >
+                  <.icon name="hero-table-cells" class="bg-primary" /> View Parsed Timetables
+                </a>
+              </div>
+              <div>
+                <.button
+                  class="btn-sm"
+                  disabled={!is_nil(@form) or @disabled?}
+                  type="button"
+                  phx-click="delete_replacement_service"
+                  phx-value-replacement_service={replacement_service.id}
+                  phx-target={@myself}
+                  data-confirm="Are you sure you want to delete this replacement service?"
+                >
+                  <.icon name="hero-trash-solid" class="bg-primary" />
+                </.button>
+              </div>
             </div>
           </div>
         </div>
