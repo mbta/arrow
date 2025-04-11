@@ -24,62 +24,95 @@ defmodule ArrowWeb.LimitSection do
     <section id={@id} class="py-4 my-4">
       <h3>Limits</h3>
       <%= if Ecto.assoc_loaded?(@disruption.limits) and Enum.any?(@disruption.limits) do %>
-        <div class="mb-3 border-2 border-dashed border-secondary border-mb-3 p-3">
-          <table class="w-[40rem] sm:w-full">
-            <thead>
-              <tr>
-                <th>route</th>
-                <th>start stop</th>
-                <th>end stop</th>
-                <th>start date</th>
-                <th>end date</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700">
-              <tr :for={limit <- @disruption.limits}>
-                <td>
-                  <span
-                    class="m-icon m-icon-sm mr-1 align-middle"
-                    style={"background-image: url('#{get_limit_route_icon_url(limit, @icon_paths)}');"}
-                  />
-                </td>
-                <td>{limit.start_stop.name}</td>
-                <td>{limit.end_stop.name}</td>
-                <td>{limit.start_date}</td>
-                <td>{limit.end_date}</td>
-                <td class="text-center">
-                  <.button
-                    disabled={!is_nil(@limit_form) or @disabled?}
-                    type="button"
-                    phx-click="edit_limit"
-                    phx-value-limit={limit.id}
-                  >
-                    <.icon name="hero-pencil-solid" class="bg-primary" />
-                  </.button>
-                  <.button
-                    id={"duplicate-limit-#{limit.id}"}
-                    disabled={!is_nil(@limit_form) or @disabled?}
-                    type="button"
-                    phx-click="duplicate_limit"
-                    phx-value-limit={limit.id}
-                  >
-                    <.icon name="hero-document-duplicate-solid" class="bg-primary" />
-                  </.button>
-                  <.button
-                    disabled={!is_nil(@limit_form) or @disabled?}
-                    type="button"
-                    phx-click="delete_limit"
-                    phx-value-limit={limit.id}
-                    phx-target={@myself}
-                    data-confirm="Are you sure you want to delete this limit?"
-                  >
-                    <.icon name="hero-trash-solid" class="bg-primary" />
-                  </.button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div class={
+          [
+            "flex flex-col",
+            "md:grid gap-y-4 gap-x-2",
+            # buckle up...
+            "grid-cols-[[route]_minmax(60px,auto)_[start]_1.5fr_[to]_minmax(40px,auto)_[end]_1.5fr_[startdate]_auto_[enddate]_0.8fr_[days]_1fr_[actions]_minmax(90px,auto)]"
+          ]
+        }>
+          <%= for grouped_limits <- group_limits(@disruption.limits) do %>
+            <div class="md:grid md:grid-cols-subgrid col-span-full border-2 border-dashed border-secondary p-3 gap-y-1">
+              <div class="hidden md:contents">
+                <div class="font-bold col-[route]">Route</div>
+                <div class="font-bold col-[start]">Start Stop</div>
+                <div class="font-bold col-[end]">End Stop</div>
+                <div class="font-bold col-[startdate]">Start Date</div>
+                <div class="font-bold col-[enddate]">End Date</div>
+                <div class="font-bold col-[days]">Days of Week</div>
+              </div>
+              <%= for {limit, idx} <- Enum.with_index(grouped_limits) do %>
+                <div class="contents text-sm">
+                  <%= if idx == 0 do %>
+                    <div class="flex flex-row items-center gap-x-1 md:contents">
+                      <div class="col-[route] flex flex-row items-center justify-around">
+                        <span
+                          class="m-icon m-icon-sm"
+                          style={"background-image: url('#{get_limit_route_icon_url(limit, @icon_paths)}');"}
+                        />
+                      </div>
+                      <div class="col-[start] flex flex-row items-center font-bold md:font-normal">
+                        {limit.start_stop.name}
+                      </div>
+                      <div class="col-[to] flex flex-row items-center font-bold italic">to</div>
+                      <div class="col-[end] flex flex-row items-center font-bold md:font-normal">
+                        {limit.end_stop.name}
+                      </div>
+                    </div>
+                  <% end %>
+                  <div class="flex flex-row items-center gap-x-2 md:contents">
+                    <div class="col-[startdate] flex flex-row items-center">{limit.start_date}</div>
+                    <div class="md:hidden">-</div>
+                    <div class="col-[enddate] flex flex-row items-center">{limit.end_date}</div>
+                    <div class="col-[days] text-sm gap-x-1 flex flex-row items-center">
+                      <span
+                        :for={dow <- limit.limit_day_of_weeks}
+                        class={if(dow.active?, do: "text-primary", else: "text-gray-400")}
+                      >
+                        {format_day_name_short(dow.day_name)}
+                      </span>
+                    </div>
+                    <div class="col-[actions] flex flex-row items-center">
+                      <.button
+                        class="p-0"
+                        disabled={!is_nil(@limit_form) or @disabled?}
+                        type="button"
+                        phx-click="edit_limit"
+                        phx-value-limit={limit.id}
+                      >
+                        <.icon name="hero-pencil-solid" class="bg-primary m-icon m-icon-sm" />
+                      </.button>
+                      <.button
+                        id={"duplicate-limit-#{limit.id}"}
+                        class="p-0"
+                        disabled={!is_nil(@limit_form) or @disabled?}
+                        type="button"
+                        phx-click="duplicate_limit"
+                        phx-value-limit={limit.id}
+                      >
+                        <.icon
+                          name="hero-document-duplicate-solid"
+                          class="bg-primary m-icon m-icon-sm"
+                        />
+                      </.button>
+                      <.button
+                        class="p-0"
+                        disabled={!is_nil(@limit_form) or @disabled?}
+                        type="button"
+                        phx-click="delete_limit"
+                        phx-value-limit={limit.id}
+                        phx-target={@myself}
+                        data-confirm="Are you sure you want to delete this limit?"
+                      >
+                        <.icon name="hero-trash-solid" class="bg-primary m-icon m-icon-sm" />
+                      </.button>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
         </div>
       <% end %>
 
@@ -357,6 +390,14 @@ defmodule ArrowWeb.LimitSection do
     |> String.capitalize()
   end
 
+  defp format_day_name_short(:monday), do: "M"
+  defp format_day_name_short(:tuesday), do: "Tu"
+  defp format_day_name_short(:wednesday), do: "W"
+  defp format_day_name_short(:thursday), do: "Th"
+  defp format_day_name_short(:friday), do: "F"
+  defp format_day_name_short(:saturday), do: "Sa"
+  defp format_day_name_short(:sunday), do: "Su"
+
   defp get_limit_route_icon_url(limit, icon_paths) do
     kind = Adjustment.kind(%Adjustment{route_id: limit.route.id})
     Map.get(icon_paths, kind)
@@ -412,5 +453,11 @@ defmodule ArrowWeb.LimitSection do
         &Phoenix.Component.used_input?(dow_form[&1])
       )
     end)
+  end
+
+  defp group_limits(limits) do
+    limits
+    |> Enum.group_by(&{&1.route_id, &1.start_stop_id, &1.end_stop_id})
+    |> Map.values()
   end
 end
