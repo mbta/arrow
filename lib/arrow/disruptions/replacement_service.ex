@@ -211,7 +211,9 @@ defmodule Arrow.Disruptions.ReplacementService do
         last_trip = last_trips[direction_id]
 
         start_times =
-          Stream.unfold(first_trip, &unfold_trip_start_times(&1, last_trip, headway_periods))
+          first_trip
+          |> Stream.iterate(&next_trip_start_time(&1, last_trip, headway_periods))
+          |> Enum.take_while(&(&1 != :done))
 
         shuttle_route =
           Enum.find(
@@ -273,28 +275,20 @@ defmodule Arrow.Disruptions.ReplacementService do
     stop_times
   end
 
-  defp unfold_trip_start_times(:stop, _last_trip_start_time, _headway_periods) do
-    nil
-  end
+  defp next_trip_start_time(last_trip_start, last_trip_start, _headway_periods), do: :done
 
-  defp unfold_trip_start_times(last_trip_start_time, last_trip_start_time, _headway_periods) do
-    {last_trip_start_time, :stop}
-  end
-
-  defp unfold_trip_start_times(trip_start_time, last_trip_start_time, headway_periods) do
+  defp next_trip_start_time(trip_start, last_trip_start, headway_periods)
+       when trip_start < last_trip_start do
     headway =
       headway_periods
-      |> Map.get_lazy(start_of_hour(trip_start_time), fn ->
-        find_period_by_time_range(headway_periods, trip_start_time)
+      |> Map.get_lazy(start_of_hour(trip_start), fn ->
+        find_period_by_time_range(headway_periods, trip_start)
       end)
       |> Map.get("headway")
 
     # Ensure that the sequence ends with the last trip time indicated in the spreadsheet,
     # even if it doesn't line up exactly with the headway cadence.
-    next_trip_start_time =
-      min(add_minutes(trip_start_time, headway), last_trip_start_time)
-
-    {trip_start_time, next_trip_start_time}
+    min(add_minutes(trip_start, headway), last_trip_start)
   end
 
   defp find_period_by_time_range(headway_periods, first_trip_start_time) do
