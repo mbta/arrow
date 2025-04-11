@@ -12,13 +12,12 @@ defmodule Arrow.HastusTest do
 
     test "list_exports/0 returns all exports" do
       export = export_fixture()
-      assert Enum.map(Hastus.list_exports(), & &1.id) == [export.id]
+      assert Hastus.list_exports() == [export]
     end
 
     test "get_export!/1 returns the export with given id" do
       export = export_fixture()
-      assert returned_export = Hastus.get_export!(export.id)
-      assert returned_export.id == export.id
+      assert Hastus.get_export!(export.id) == export
     end
 
     test "create_export/1 with valid data creates a export" do
@@ -43,6 +42,7 @@ defmodule Arrow.HastusTest do
     test "update_export/2 with invalid data returns error changeset" do
       export = export_fixture()
       assert {:error, %Ecto.Changeset{}} = Hastus.update_export(export, @invalid_attrs)
+      assert export == Hastus.get_export!(export.id)
     end
 
     test "delete_export/1 deletes the export" do

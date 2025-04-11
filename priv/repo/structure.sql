@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.10 (Debian 15.10-1.pgdg120+1)
--- Dumped by pg_dump version 15.12 (Homebrew)
+-- Dumped from database version 15.10 (Homebrew)
+-- Dumped by pg_dump version 15.10 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -803,9 +803,7 @@ CREATE TABLE public.hastus_services (
     export_id bigint,
     inserted_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    should_import boolean DEFAULT true NOT NULL,
-    start_stop_id character varying(255),
-    end_stop_id character varying(255)
+    should_import boolean DEFAULT true NOT NULL
 );
 
 
@@ -2233,27 +2231,11 @@ ALTER TABLE ONLY public.hastus_service_dates
 
 
 --
--- Name: hastus_services hastus_services_end_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.hastus_services
-    ADD CONSTRAINT hastus_services_end_stop_id_fkey FOREIGN KEY (end_stop_id) REFERENCES public.gtfs_stops(id) ON DELETE SET NULL;
-
-
---
 -- Name: hastus_services hastus_services_export_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.hastus_services
     ADD CONSTRAINT hastus_services_export_id_fkey FOREIGN KEY (export_id) REFERENCES public.hastus_exports(id) ON DELETE CASCADE;
-
-
---
--- Name: hastus_services hastus_services_start_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.hastus_services
-    ADD CONSTRAINT hastus_services_start_stop_id_fkey FOREIGN KEY (start_stop_id) REFERENCES public.gtfs_stops(id) ON DELETE SET NULL;
 
 
 --
@@ -2437,3 +2419,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250326151019);
 INSERT INTO public."schema_migrations" (version) VALUES (20250328193906);
 INSERT INTO public."schema_migrations" (version) VALUES (20250402181804);
 INSERT INTO public."schema_migrations" (version) VALUES (20250403191728);
+INSERT INTO public."schema_migrations" (version) VALUES (20250410180228);
