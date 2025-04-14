@@ -52,6 +52,22 @@ defmodule Arrow.Shuttles do
   def get_shape!(id), do: Repo.get!(Shape, id)
 
   @doc """
+  Gets a single shape by name.
+
+  Raises `Ecto.NoResultsError` if the Shape does not exist.
+
+  ## Examples
+
+      iex> get_shape_by_name!("Shape1")
+      %Shape{}
+
+      iex> get_shape_by_name!("Shape2")
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_shape_by_name!(name), do: Repo.get_by!(Shape, name: name)
+
+  @doc """
   Gets the shapes specifiied by a list of ids. Does not raise if any of the ids are missing,
   meaning the resulting list may be shorter than the input list.
   """

@@ -94,15 +94,15 @@ defmodule ArrowWeb.ShapeController do
     end
   end
 
-  def show(conn, %{"id" => id}) do
-    shape = Shuttles.get_shape!(id)
+  def show(conn, %{"name" => name}) do
+    shape = Shuttles.get_shape_by_name!(name)
     shape_upload = Shuttles.get_shapes_upload(shape)
     render(conn, :show, shape: shape, shape_upload: shape_upload)
   end
 
-  def download(conn, %{"id" => id}) do
+  def download(conn, %{"name" => name}) do
     enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
-    shape = Shuttles.get_shape!(id)
+    shape = Shuttles.get_shape_by_name!(name)
     basic_url = "https://#{shape.bucket}.s3.amazonaws.com/#{shape.path}"
 
     {:ok, url} =
@@ -118,8 +118,8 @@ defmodule ArrowWeb.ShapeController do
     )
   end
 
-  def delete(conn, %{"id" => id}) do
-    shape = Shuttles.get_shape!(id)
+  def delete(conn, %{"name" => name}) do
+    shape = Shuttles.get_shape_by_name!(name)
     {:ok, _shape} = Shuttles.delete_shape(shape)
 
     conn
