@@ -127,6 +127,37 @@ defmodule Arrow.Disruptions.ReplacementService do
   @spec schedule_service_types :: list(atom())
   def schedule_service_types, do: [:weekday, :saturday, :sunday]
 
+  @spec first_last_trip_times(t(), list(atom())) :: %{
+          atom() => %{
+            first_trips: %{0 => String.t(), 1 => String.t()},
+            last_trips: %{0 => String.t(), 1 => String.t()}
+          }
+        }
+  def first_last_trip_times(
+        %__MODULE__{} = replacement_service,
+        schedule_service_types \\ schedule_service_types()
+      ) do
+    schedule_service_types
+    |> Enum.map(fn service_type ->
+      service_type_abbreviation = Map.get(@service_type_to_workbook_abbreviation, service_type)
+
+      day_of_week_data =
+        Map.get(
+          replacement_service.source_workbook_data,
+          workbook_column_from_day_of_week(service_type_abbreviation)
+        )
+
+      {service_type, day_of_week_data}
+    end)
+    |> Enum.reject(&match?({_service_type, nil}, &1))
+    |> Map.new(fn {service_type, day_of_week_data} ->
+      {first_trips, last_trips, _headway_periods} =
+        Enum.reduce(day_of_week_data, {%{}, %{}, %{}}, &reduce_workbook_data/2)
+
+      {service_type, %{first_trips: first_trips, last_trips: last_trips}}
+    end)
+  end
+
   defp trips_with_times(
          %__MODULE__{source_workbook_data: workbook_data} = replacement_service,
          service_type_atom
@@ -176,13 +207,13 @@ defmodule Arrow.Disruptions.ReplacementService do
 
     [direction_0_trips, direction_1_trips] =
       for direction_id <- [0, 1] do
+        first_trip = first_trips[direction_id]
+        last_trip = last_trips[direction_id]
+
         start_times =
-          do_make_trip_start_times(
-            first_trips[direction_id],
-            last_trips[direction_id],
-            [],
-            headway_periods
-          )
+          first_trip
+          |> Stream.iterate(&next_trip_start_time(&1, last_trip, headway_periods))
+          |> Enum.take_while(&(&1 != :done))
 
         shuttle_route =
           Enum.find(
@@ -244,36 +275,20 @@ defmodule Arrow.Disruptions.ReplacementService do
     stop_times
   end
 
-  defp do_make_trip_start_times(
-         first_trip_start_time,
-         last_trip_start_time,
-         trip_start_times,
-         _headway_periods
-       )
-       when first_trip_start_time > last_trip_start_time,
-       do: trip_start_times
+  defp next_trip_start_time(last_trip_start, last_trip_start, _headway_periods), do: :done
 
-  defp do_make_trip_start_times(
-         first_trip_start_time,
-         last_trip_start_time,
-         trip_start_times,
-         headway_periods
-       ) do
+  defp next_trip_start_time(trip_start, last_trip_start, headway_periods)
+       when trip_start < last_trip_start do
     headway =
       headway_periods
-      |> Map.get(
-        start_of_hour(first_trip_start_time),
-        find_period_by_time_range(headway_periods, first_trip_start_time)
-      )
+      |> Map.get_lazy(start_of_hour(trip_start), fn ->
+        find_period_by_time_range(headway_periods, trip_start)
+      end)
       |> Map.get("headway")
 
-    first_trip_start_time
-    |> add_minutes(headway)
-    |> do_make_trip_start_times(
-      last_trip_start_time,
-      trip_start_times ++ [first_trip_start_time],
-      headway_periods
-    )
+    # Ensure that the sequence ends with the last trip time indicated in the spreadsheet,
+    # even if it doesn't line up exactly with the headway cadence.
+    min(add_minutes(trip_start, headway), last_trip_start)
   end
 
   defp find_period_by_time_range(headway_periods, first_trip_start_time) do
