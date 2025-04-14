@@ -82,8 +82,8 @@ defmodule ArrowWeb.StopViewLive do
     """
   end
 
-  def mount(%{"id" => id} = _params, _session, socket) do
-    stop = Stops.get_stop!(id)
+  def mount(%{"stop_id" => stop_id} = _params, _session, socket) do
+    stop = Stops.get_stop_by_stop_id!(stop_id)
     form = to_form(Stops.change_stop(stop))
 
     # get stops from arrow DB and gtfs, excluding current stop
@@ -97,7 +97,7 @@ defmodule ArrowWeb.StopViewLive do
       socket
       |> assign(:form, form)
       |> assign(:form_action, "edit")
-      |> assign(:http_action, ~p"/stops/#{id}")
+      |> assign(:http_action, ~p"/stops/#{stop.id}")
       |> assign(:stop, stop)
       |> assign(:title, "edit shuttle stop")
       |> assign(:stop_map_props, stop)
