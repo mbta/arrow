@@ -11,14 +11,14 @@
   </:actions>
 </.header>
 
-<.table id="shapes" rows={@shapes} row_click={&JS.navigate(~p"/shapes/#{&1}")}>
+<.table id="shapes" rows={@shapes} row_click={&JS.navigate(~p"/shapes/#{&1.name}")}>
   <:col :let={shape} label="Name">{shape.name}</:col>
   <:col :let={shape} label="File">{shape.path}</:col>
   <:action :let={shape}>
-    <.link navigate={~p"/shapes/#{shape}"}>Show</.link>
+    <.link navigate={~p"/shapes/#{shape.name}"}>Show</.link>
   </:action>
   <:action :let={shape}>
-    <.link navigate={~p"/shapes/#{shape}/download"}>Download</.link>
+    <.link navigate={~p"/shapes/#{shape.name}/download"}>Download</.link>
   </:action>
   <:action :let={shape}>
     <.link href={~p"/shapes/#{shape}"} method="delete" data-confirm="Are you sure?">

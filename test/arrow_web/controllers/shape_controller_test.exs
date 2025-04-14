@@ -62,7 +62,7 @@ defmodule ArrowWeb.ShapeControllerTest do
 
       shape = s3_mocked_shape_fixture()
 
-      conn = get(conn, ~p"/shapes/#{shape.id}")
+      conn = get(conn, ~p"/shapes/#{shape.name}")
       assert html_response(conn, 200) =~ "test-show-shape"
       assert html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
@@ -89,11 +89,11 @@ defmodule ArrowWeb.ShapeControllerTest do
 
       assert redirected_to(conn) == ~p"/shapes/"
 
-      %{id: id} = Repo.get_by(Shape, name: "some name-S")
+      %{name: name} = Repo.get_by(Shape, name: "some name-S")
 
       # Attempt to download:
       conn = ArrowWeb.ConnCase.authenticated_admin()
-      conn = get(conn, ~p"/shapes/#{id}/download")
+      conn = get(conn, ~p"/shapes/#{name}/download")
 
       assert redirected_to(conn, 302) ==
                "https://disabled.s3.amazonaws.com/disabled"
@@ -170,7 +170,7 @@ defmodule ArrowWeb.ShapeControllerTest do
       conn = ArrowWeb.ConnCase.authenticated_admin()
 
       assert_error_sent 404, fn ->
-        get(conn, ~p"/shapes/#{shape}")
+        get(conn, ~p"/shapes/#{shape.name}")
       end
     end
   end
