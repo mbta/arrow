@@ -118,8 +118,8 @@ defmodule ArrowWeb.ShapeController do
     )
   end
 
-  def delete(conn, %{"id" => id}) do
-    shape = Shuttles.get_shape!(id)
+  def delete(conn, %{"name" => name}) do
+    shape = Shuttles.get_shape_by_name!(name)
     {:ok, _shape} = Shuttles.delete_shape(shape)
 
     conn

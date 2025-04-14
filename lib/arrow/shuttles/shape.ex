@@ -1,5 +1,8 @@
 defmodule Arrow.Shuttles.Shape do
   @moduledoc "schema for shuttle shapes for the db"
+
+  @derive {Phoenix.Param, key: :name}
+
   use Ecto.Schema
   import Ecto.Changeset
 

@@ -1,6 +1,8 @@
 defmodule Arrow.Shuttles.Stop do
   @moduledoc false
 
+  @derive {Phoenix.Param, key: :stop_id}
+
   use Ecto.Schema
   import Ecto.Changeset
 

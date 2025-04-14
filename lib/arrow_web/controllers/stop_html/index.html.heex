@@ -11,7 +11,7 @@
   </:actions>
 </.header>
 
-<.table id="stops" rows={@stops} row_click={&JS.navigate(~p"/stops/#{&1.stop_id}/edit")}>
+<.table id="stops" rows={@stops} row_click={&JS.navigate(~p"/stops/#{&1}/edit")}>
   <:col :let={stop} label="Stop" link={sort_link(@order_by, "stop_id")}>{stop.stop_id}</:col>
   <:col :let={stop} label="Stop name" link={sort_link(@order_by, "stop_name")}>
     {stop.stop_name}
@@ -54,6 +54,6 @@
     {format_timestamp(stop.updated_at)}
   </:col>
   <:action :let={stop}>
-    <.link navigate={~p"/stops/#{stop.stop_id}/edit"}>Edit</.link>
+    <.link navigate={~p"/stops/#{stop}/edit"}>Edit</.link>
   </:action>
 </.table>
