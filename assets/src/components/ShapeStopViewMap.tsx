@@ -146,7 +146,9 @@ const MapLayer = ({
                 position={[stop.stop_lat, stop.stop_lon]}
                 icon={genIcon(colorValue, stop.stop_sequence.toString())}
               >
-                <Popup>{stop.stop_name}</Popup>
+                <Popup>
+                  {stop.stop_name} ({stop.stop_id})
+                </Popup>
               </Marker>
             )
         )}
