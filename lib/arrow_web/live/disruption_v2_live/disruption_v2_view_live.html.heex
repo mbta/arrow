@@ -1,22 +1,26 @@
-<hr />
+<div class="my-3">
+  <.navbar page={~p"/disruptionsv2/new"} />
 
-<.header>
-  {@title}
-</.header>
+  <hr />
 
-<hr />
+  <.header>
+    {@title}
+  </.header>
 
-<h2>Disruption</h2>
+  <hr />
 
-<.disruption_form
-  id="disruption_v2_form"
-  form={@form}
-  action={@form_action}
-  disruption_v2={@disruption_v2}
-  icon_paths={@icon_paths}
-  errors={@errors}
-  limit_in_form={@limit_in_form}
-  replacement_service_in_form={@replacement_service_in_form}
-  hastus_export_in_form={@hastus_export_in_form}
-  user_id={@user_id}
-/>
+  <h2>Disruption</h2>
+
+  <.disruption_form
+    id="disruption_v2_form"
+    form={@form}
+    action={@form_action}
+    disruption_v2={@disruption_v2}
+    icon_paths={@icon_paths}
+    errors={@errors}
+    limit_in_form={@limit_in_form}
+    replacement_service_in_form={@replacement_service_in_form}
+    hastus_export_in_form={@hastus_export_in_form}
+    user_id={@user_id}
+  />
+</div>
