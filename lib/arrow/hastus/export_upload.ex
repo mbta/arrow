@@ -318,10 +318,9 @@ defmodule Arrow.Hastus.ExportUpload do
         message =
           unknown_trips
           |> Enum.map(&elem(&1, 1))
-          |> Enum.map(fn trip ->
+          |> Enum.map_join("\n", fn trip ->
             "Unable to infer the Green Line branch for #{trip["route_id"]}, #{trip["trp_direction"]}, #{trip["via_variant"]}, #{trip["route"]}. Please request the via_variant be updated to the branch name and provide an updated export"
           end)
-          |> Enum.join("\n")
 
         {:error, message}
 
