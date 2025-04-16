@@ -332,30 +332,26 @@ defmodule Arrow.Hastus.ExportUpload do
   defp infer_green_line_branches(_line, _revenue_trips, _all_stop_times), do: {:ok, []}
 
   defp infer_green_line_branch_for_trip(trip, canonical_stops_by_branch, stop_times_by_trip_id) do
-    if trip["via_variant"] in ["B", "C", "D", "E"] do
+    new_route_id =
+      if trip["via_variant"] in ["B", "C", "D", "E"] do
+        "Green-#{trip["via_variant"]}"
+      else
+        find_branch_based_on_stop_times(
+          canonical_stops_by_branch,
+          Enum.map(stop_times_by_trip_id[trip["trip_id"]], & &1["stop_id"])
+        )
+      end
+
+    if is_nil(new_route_id) do
+      {:error, trip}
+    else
       {:ok,
        %{
          hastus_route_id: trip["route_id"],
          via_variant: trip["via_variant"],
          avi_code: trip["avi_code"],
-         route_id: "Green-#{trip["via_variant"]}"
+         route_id: new_route_id
        }}
-    else
-      stop_ids_for_trip = Enum.map(stop_times_by_trip_id[trip["trip_id"]], & &1["stop_id"])
-
-      case find_branch_based_on_stop_times(canonical_stops_by_branch, stop_ids_for_trip) do
-        nil ->
-          {:error, trip}
-
-        route_id ->
-          {:ok,
-           %{
-             hastus_route_id: trip["route_id"],
-             via_variant: trip["via_variant"],
-             avi_code: trip["avi_code"],
-             route_id: route_id
-           }}
-      end
     end
   end
 
