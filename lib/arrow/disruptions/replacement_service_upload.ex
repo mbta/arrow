@@ -344,7 +344,9 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
           {:error, list(sheet_errors())} | {:ok, list(sheet_data())}
   def parse_sheet([_headers | data] = _tab) do
     data
-    |> Enum.with_index(fn r, i -> {i + 2, r |> parse_row() |> validate_row()} end)
+    |> Enum.with_index(fn r, i ->
+      {i + 2, r |> Enum.reject(&is_nil/1) |> parse_row() |> validate_row()}
+    end)
     |> Enum.split_with(fn {_i, r} -> elem(r, 0) == :ok end)
     |> case do
       {rows, []} -> {:ok, rows |> Enum.map(fn {_idx, {:ok, data}} -> Map.new(data) end)}
@@ -375,14 +377,14 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
   @spec parse_row(list(xlsxir_types())) ::
           {:error, String.t()}
           | parsed_row()
-  def parse_row([nil, nil, nil, "First " <> trip_0, "First " <> trip_1]) do
+  def parse_row(["First " <> trip_0, "First " <> trip_1 | _]) do
     %{
       first_trip_0: parse_time(trip_0),
       first_trip_1: parse_time(trip_1)
     }
   end
 
-  def parse_row([nil, nil, nil, "Last " <> trip_0, "Last " <> trip_1]) do
+  def parse_row(["Last " <> trip_0, "Last " <> trip_1 | _]) do
     %{
       last_trip_0: parse_time(trip_0),
       last_trip_1: parse_time(trip_1)
