@@ -287,16 +287,6 @@ defmodule Arrow.Hastus.ExportUpload do
   @spec infer_green_line_branches(String.t(), Enumerable.t(), Enumerable.t()) ::
           {:ok, [TripRouteDirection.t()]} | {:error, String.t()}
   defp infer_green_line_branches("line-Green", revenue_trips, all_stop_times) do
-    {branches, unknown_trips} =
-      Enum.reduce(revenue_trips, {MapSet.new([]), []}, fn revenue_trip,
-                                                          {branches, unknown_trips} ->
-        if revenue_trip["via_variant"] in ["B", "C", "D", "E"] do
-          {MapSet.put(branches, "Green-" <> revenue_trip["via_variant"]), unknown_trips}
-        else
-          {branches, [revenue_trip | unknown_trips]}
-        end
-      end)
-
     stop_times_by_trip_id = Enum.group_by(all_stop_times, & &1["trip_id"])
 
     canonical_stops_by_branch =
@@ -313,44 +303,57 @@ defmodule Arrow.Hastus.ExportUpload do
         & &1.route_id
       )
 
-    {_branches, unknown_trips, trip_route_directions} =
-      unknown_trips
-      |> Enum.group_by(& &1["via_variant"])
+    result =
+      revenue_trips
+      |> Enum.group_by(&{&1["route_id"], &1["via_variant"], &1["avi_code"]})
       |> Map.values()
-      |> Enum.reduce({branches, [], []}, fn [revenue_trip | _],
-                                            {branches, unknown_trips, trip_route_directions} ->
-        stop_ids_for_trip =
-          Enum.map(stop_times_by_trip_id[revenue_trip["trip_id"]], & &1["stop_id"])
+      |> Enum.map(&List.first/1)
+      |> Enum.map(
+        &infer_green_line_branch_for_trip(&1, canonical_stops_by_branch, stop_times_by_trip_id)
+      )
+      |> Enum.group_by(&elem(&1, 0))
 
-        case find_branch_based_on_stop_times(canonical_stops_by_branch, stop_ids_for_trip) do
-          nil ->
-            {branches, [revenue_trip | unknown_trips], trip_route_directions}
+    case result do
+      %{error: unknown_trips} ->
+        message =
+          unknown_trips
+          |> Enum.map(&elem(&1, 1))
+          |> Enum.map_join("\n", fn trip ->
+            "Unable to infer the Green Line branch for #{trip["route_id"]}, #{trip["trp_direction"]}, #{trip["via_variant"]}, #{trip["route"]}. Please request the via_variant be updated to the branch name and provide an updated export"
+          end)
 
-          route_id ->
-            {MapSet.put(branches, route_id), unknown_trips,
-             [
-               %{
-                 hastus_route_id: revenue_trip["route_id"],
-                 via_variant: revenue_trip["via_variant"],
-                 avi_code: revenue_trip["avi_code"],
-                 route_id: route_id
-               }
-               | trip_route_directions
-             ]}
-        end
-      end)
+        {:error, message}
 
-    case unknown_trips do
-      [example_trip | _] ->
-        {:error,
-         "Unable to infer the Green Line branch for #{example_trip["route_id"]}, #{example_trip["trp_direction"]}, #{example_trip["via_variant"]}, #{example_trip["route"]}. Please request the via_variant be updated to the branch name and provide an updated export"}
-
-      [] ->
-        {:ok, trip_route_directions}
+      %{ok: trip_route_directions} ->
+        {:ok, trip_route_directions |> Enum.map(&elem(&1, 1))}
     end
   end
 
   defp infer_green_line_branches(_line, _revenue_trips, _all_stop_times), do: {:ok, []}
+
+  defp infer_green_line_branch_for_trip(trip, canonical_stops_by_branch, stop_times_by_trip_id) do
+    new_route_id =
+      if trip["via_variant"] in ["B", "C", "D", "E"] do
+        "Green-#{trip["via_variant"]}"
+      else
+        find_branch_based_on_stop_times(
+          canonical_stops_by_branch,
+          Enum.map(stop_times_by_trip_id[trip["trip_id"]], & &1["stop_id"])
+        )
+      end
+
+    if is_nil(new_route_id) do
+      {:error, trip}
+    else
+      {:ok,
+       %{
+         hastus_route_id: trip["route_id"],
+         via_variant: trip["via_variant"],
+         avi_code: trip["avi_code"],
+         route_id: new_route_id
+       }}
+    end
+  end
 
   defp find_branch_based_on_stop_times(canonical_stops_by_branch, stop_ids_for_trip) do
     case Enum.filter(canonical_stops_by_branch, fn {_route_id, canonical_stops} ->
