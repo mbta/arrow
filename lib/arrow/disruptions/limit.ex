@@ -88,8 +88,8 @@ defmodule Arrow.Disruptions.Limit do
       is_nil(start_date) or is_nil(end_date) ->
         changeset
 
-      not (Date.compare(start_date, end_date) == :lt) ->
-        add_error(changeset, :start_date, "start date should be before end date")
+      Date.compare(start_date, end_date) == :gt ->
+        add_error(changeset, :start_date, "start date should not be after end date")
 
       true ->
         changeset
