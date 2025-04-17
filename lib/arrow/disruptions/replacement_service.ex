@@ -83,7 +83,7 @@ defmodule Arrow.Disruptions.ReplacementService do
       is_nil(start_date) or is_nil(end_date) ->
         changeset
 
-      Date.compare(start_date, end_date) not in [:lt, :eq] ->
+      Date.compare(start_date, end_date) == :gt ->
         add_error(changeset, :start_date, "start date should not be after end date")
 
       true ->
