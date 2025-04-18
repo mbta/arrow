@@ -36,7 +36,7 @@ defmodule ArrowWeb.CoreComponentsTest do
       assert length(Floki.attribute(secondary_links, "href")) == 3
     end
 
-    test "first link is to /disruptionsv2 when not on Disruptions page" do
+    test "first link is to / when not on Disruptions page" do
       assigns = %{page: "/shapes"}
 
       hrefs =
@@ -46,11 +46,11 @@ defmodule ArrowWeb.CoreComponentsTest do
         |> rendered_to_string()
         |> Floki.attribute("a", "href")
 
-      assert ["/disruptionsv2" | _] = hrefs
+      assert ["/" | _] = hrefs
     end
 
-    test "first link is to /disruptionsv2/new when on Disruptions page, with create permission" do
-      assigns = %{page: "/disruptionsv2", create_disruption_permission?: true}
+    test "first link is to /disruptions/new when on Disruptions page, with create permission" do
+      assigns = %{page: "/", create_disruption_permission?: true}
 
       hrefs =
         ~H"""
@@ -59,11 +59,11 @@ defmodule ArrowWeb.CoreComponentsTest do
         |> rendered_to_string()
         |> Floki.attribute("a", "href")
 
-      assert ["/disruptionsv2/new" | _] = hrefs
+      assert ["/disruptions/new" | _] = hrefs
     end
 
-    test "first link is to /disruptionsv2 when on Disruptions page, without create permission" do
-      assigns = %{page: "/disruptionsv2"}
+    test "first link is to / when on Disruptions page, without create permission" do
+      assigns = %{page: "/"}
 
       hrefs =
         ~H"""
@@ -72,7 +72,7 @@ defmodule ArrowWeb.CoreComponentsTest do
         |> rendered_to_string()
         |> Floki.attribute("a", "href")
 
-      assert ["/disruptionsv2" | _] = hrefs
+      assert ["/" | _] = hrefs
     end
 
     test "renders link to v1 homepage with .btn-warning class" do
