@@ -49,7 +49,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
   describe "Changing Disruptions" do
     @tag :authenticated_admin
     test "saves new disruption_v2", %{conn: conn} do
-      {:ok, index_live, _html} = live(conn, ~p"/disruptionsv2/new")
+      {:ok, index_live, _html} = live(conn, ~p"/disruptions/new")
 
       assert index_live
              |> form("#disruption_v2-form", disruption_v2: @invalid_attrs)
@@ -67,7 +67,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     setup [:create_disruption_v2]
 
     test "updates disruption_v2", %{conn: conn, disruption_v2: disruption_v2} do
-      {:ok, index_live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+      {:ok, index_live, _html} = live(conn, ~p"/disruptions/#{disruption_v2.id}/edit")
 
       assert index_live
              |> form("#disruption_v2-form", disruption_v2: @invalid_attrs)
@@ -90,7 +90,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     setup [:create_disruption_v2]
 
     test "can activate add replacement service flow", %{conn: conn, disruption_v2: disruption_v2} do
-      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+      {:ok, live, _html} = live(conn, ~p"/disruptions/#{disruption_v2.id}/edit")
 
       assert live |> element("#add_replacement_service") |> render_click() =~
                "add new replacement service component"
@@ -116,7 +116,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       conn: conn,
       disruption_v2: disruption_v2
     } do
-      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+      {:ok, live, _html} = live(conn, ~p"/disruptions/#{disruption_v2.id}/edit")
 
       live |> element("#add_replacement_service") |> render_click()
 
@@ -131,7 +131,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       conn: conn,
       disruption_v2: disruption_v2
     } do
-      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+      {:ok, live, _html} = live(conn, ~p"/disruptions/#{disruption_v2.id}/edit")
 
       assert live |> element("#add_replacement_service") |> render_click() =~
                "add new replacement service component"
@@ -182,7 +182,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       conn: conn,
       disruption_v2: disruption_v2
     } do
-      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+      {:ok, live, _html} = live(conn, ~p"/disruptions/#{disruption_v2.id}/edit")
 
       replacement_service = List.first(disruption_v2.replacement_services)
 
@@ -234,7 +234,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       conn: conn,
       disruption_v2: disruption_v2
     } do
-      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+      {:ok, live, _html} = live(conn, ~p"/disruptions/#{disruption_v2.id}/edit")
 
       replacement_service = List.first(disruption_v2.replacement_services)
       shuttle = replacement_service.shuttle
@@ -289,7 +289,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       conn: conn,
       disruption_v2: %DisruptionV2{limits: [limit]} = disruption
     } do
-      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption.id}/edit")
+      {:ok, live, _html} = live(conn, ~p"/disruptions/#{disruption.id}/edit")
 
       html = live |> element("button#duplicate-limit-#{limit.id}") |> render_click()
 
@@ -309,7 +309,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       conn: conn,
       disruption_v2: %DisruptionV2{} = disruption
     } do
-      {:ok, _live, _html} = live(conn, ~p"/disruptionsv2/#{disruption.id}/edit")
+      {:ok, _live, _html} = live(conn, ~p"/disruptions/#{disruption.id}/edit")
 
       update_response =
         DisruptionV2ViewLive.handle_info(:update_disruption, %{

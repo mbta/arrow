@@ -147,7 +147,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         </div>
         <div class="w-25 mr-2">
           <.link_button
-            href={~p"/disruptionsv2"}
+            href={~p"/"}
             class="btn-outline-primary w-100"
             data-confirm="Are you sure you want to cancel? All changes will be lost!"
           >
@@ -191,7 +191,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     socket =
       socket
       |> assign(:form_action, :create)
-      |> assign(:http_action, ~p"/disruptionsv2/new")
+      |> assign(:http_action, ~p"/disruptions/new")
       |> assign(:title, "create new disruption")
       |> assign(:form, form)
       |> assign(:errors, %{})
@@ -234,7 +234,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
          |> assign(:disruption_v2, disruption)
          |> assign(:form_action, :edit)
          |> assign(:title, "edit disruption")
-         |> push_patch(to: ~p"/disruptionsv2/#{disruption.id}/edit")
+         |> push_patch(to: ~p"/disruptions/#{disruption.id}/edit")
          |> put_flash(:info, "Disruption created successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -275,7 +275,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
          |> assign(:disruption_v2, disruption)
          |> assign(:form_action, :edit)
          |> assign(:title, "edit disruption")
-         |> push_patch(to: ~p"/disruptionsv2/#{disruption.id}/edit")
+         |> push_patch(to: ~p"/disruptions/#{disruption.id}/edit")
          |> assign(:limit_in_form, Limit.new())
          |> assign(:replacement_service_in_form, nil)
          |> assign(:hastus_export_in_form, nil)}
@@ -355,7 +355,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
          |> assign(:disruption_v2, disruption)
          |> assign(:form_action, :edit)
          |> assign(:title, "edit disruption")
-         |> push_patch(to: ~p"/disruptionsv2/#{disruption.id}/edit")
+         |> push_patch(to: ~p"/disruptions/#{disruption.id}/edit")
          |> assign(:limit_in_form, nil)
          |> assign(:replacement_service_in_form, %ReplacementService{})
          |> assign(:hastus_export_in_form, nil)}

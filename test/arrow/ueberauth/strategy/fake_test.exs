@@ -1,4 +1,4 @@
-defmodule SignsUi.Ueberauth.Strategy.FakeTest do
+defmodule Arrow.Ueberauth.Strategy.FakeTest do
   use ExUnit.Case
   use Plug.Test
   import Arrow.Ueberauth.Strategy.Fake

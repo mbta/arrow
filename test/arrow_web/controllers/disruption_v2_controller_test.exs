@@ -11,7 +11,7 @@ defmodule ArrowWeb.DisruptionV2ControllerTest do
         route: build(:gtfs_route, id: "Red")
       )
 
-      resp = conn |> get(~p"/disruptionsv2") |> html_response(200)
+      resp = conn |> get(~p"/") |> html_response(200)
 
       assert resp =~ "Test disruption"
     end
@@ -23,7 +23,7 @@ defmodule ArrowWeb.DisruptionV2ControllerTest do
         route: build(:gtfs_route, id: "Red")
       )
 
-      resp = conn |> get(~p"/disruptionsv2?kinds[]=red_line") |> html_response(200)
+      resp = conn |> get(~p"/?kinds[]=red_line") |> html_response(200)
 
       assert resp =~ "Test disruption"
     end
@@ -35,7 +35,7 @@ defmodule ArrowWeb.DisruptionV2ControllerTest do
         route: build(:gtfs_route, id: "Red")
       )
 
-      resp = conn |> get(~p"/disruptionsv2?kinds[]=orange_line") |> html_response(200)
+      resp = conn |> get(~p"/?kinds[]=orange_line") |> html_response(200)
 
       refute resp =~ "Test disruption"
     end
@@ -47,7 +47,7 @@ defmodule ArrowWeb.DisruptionV2ControllerTest do
         route: build(:gtfs_route, id: "Red")
       )
 
-      resp = conn |> get(~p"/disruptionsv2?only_approved=true") |> html_response(200)
+      resp = conn |> get(~p"/?only_approved=true") |> html_response(200)
 
       assert resp =~ "Test disruption"
     end
@@ -59,7 +59,7 @@ defmodule ArrowWeb.DisruptionV2ControllerTest do
         route: build(:gtfs_route, id: "Red")
       )
 
-      resp = conn |> get(~p"/disruptionsv2?only_approved=true") |> html_response(200)
+      resp = conn |> get(~p"/?only_approved=true") |> html_response(200)
 
       refute resp =~ "Test disruption"
     end
@@ -69,7 +69,7 @@ defmodule ArrowWeb.DisruptionV2ControllerTest do
       insert(:disruption_v2, title: "Test disruption Alpha")
       insert(:disruption_v2, title: "Test disruption Beta")
 
-      resp = conn |> get(~p"/disruptionsv2?search=Alpha") |> html_response(200)
+      resp = conn |> get(~p"/?search=Alpha") |> html_response(200)
 
       assert resp =~ "Test disruption Alpha"
       refute resp =~ "Test disruption Beta"
@@ -93,7 +93,7 @@ defmodule ArrowWeb.DisruptionV2ControllerTest do
         route: route
       )
 
-      resp = conn |> get(~p"/disruptionsv2?search=UniqueStopName") |> html_response(200)
+      resp = conn |> get(~p"/?search=UniqueStopName") |> html_response(200)
 
       assert resp =~ "Matching Disruption"
       refute resp =~ "Nonmatching Disruption"
@@ -143,7 +143,7 @@ defmodule ArrowWeb.DisruptionV2ControllerTest do
       insert(:limit, disruption: disruption_with_shuttle, route: route)
       insert(:limit, disruption: disruption_without_shuttle, route: route)
 
-      resp = conn |> get(~p"/disruptionsv2?search=Right") |> html_response(200)
+      resp = conn |> get(~p"/?search=Right") |> html_response(200)
 
       assert resp =~ "Matching Disruption"
       refute resp =~ "Nonmatching Disruption"
@@ -153,7 +153,7 @@ defmodule ArrowWeb.DisruptionV2ControllerTest do
     test "search is case-insensitive", %{conn: conn} do
       insert(:disruption_v2, title: "Case Sensitive Test")
 
-      resp = conn |> get(~p"/disruptionsv2?search=case sensitive") |> html_response(200)
+      resp = conn |> get(~p"/?search=case sensitive") |> html_response(200)
 
       assert resp =~ "Case Sensitive Test"
     end
@@ -163,7 +163,7 @@ defmodule ArrowWeb.DisruptionV2ControllerTest do
       insert(:disruption_v2, title: "Test disruption Alpha")
       insert(:disruption_v2, title: "Test disruption Beta")
 
-      resp = conn |> get(~p"/disruptionsv2?search=") |> html_response(200)
+      resp = conn |> get(~p"/?search=") |> html_response(200)
 
       assert resp =~ "Alpha"
       assert resp =~ "Beta"

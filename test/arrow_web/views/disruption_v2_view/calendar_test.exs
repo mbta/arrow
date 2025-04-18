@@ -48,7 +48,7 @@ defmodule ArrowWeb.DisruptionV2View.CalendarTest do
           classNames: "kind-red-line status-approved",
           start: ~D[2021-01-04],
           end: ~D[2021-01-06],
-          url: "/disruptionsv2/123/edit",
+          url: "/disruptions/123/edit",
           extendedProps: %{statusOrder: 0}
         },
         %{
@@ -56,7 +56,7 @@ defmodule ArrowWeb.DisruptionV2View.CalendarTest do
           classNames: "kind-red-line status-approved",
           start: ~D[2021-01-11],
           end: ~D[2021-01-13],
-          url: "/disruptionsv2/123/edit",
+          url: "/disruptions/123/edit",
           extendedProps: %{statusOrder: 0}
         },
         %{
@@ -64,7 +64,7 @@ defmodule ArrowWeb.DisruptionV2View.CalendarTest do
           classNames: "kind-red-line status-approved",
           start: ~D[2021-01-18],
           end: ~D[2021-01-20],
-          url: "/disruptionsv2/123/edit",
+          url: "/disruptions/123/edit",
           extendedProps: %{statusOrder: 0}
         },
         %{
@@ -72,7 +72,7 @@ defmodule ArrowWeb.DisruptionV2View.CalendarTest do
           classNames: "kind-red-line status-approved",
           start: ~D[2021-01-25],
           end: ~D[2021-01-27],
-          url: "/disruptionsv2/123/edit",
+          url: "/disruptions/123/edit",
           extendedProps: %{statusOrder: 0}
         },
         %{
@@ -80,7 +80,7 @@ defmodule ArrowWeb.DisruptionV2View.CalendarTest do
           classNames: "kind-blue-line status-approved",
           start: ~D[2021-02-01],
           end: ~D[2021-03-01],
-          url: "/disruptionsv2/123/edit",
+          url: "/disruptions/123/edit",
           extendedProps: %{statusOrder: 0}
         }
       ]
