@@ -89,18 +89,5 @@ defmodule ArrowWeb.CoreComponentsTest do
 
       assert Floki.text(warning_button) == "Switch to V1"
     end
-
-    test "raises an exception if @page is unrecognized" do
-      assigns = %{page: "/unknown_page"}
-
-      expect_msg = "navbar component used on an unrecognized page: /unknown_page"
-
-      ExUnit.Assertions.assert_raise(RuntimeError, expect_msg, fn ->
-        ~H"""
-        <.navbar page={@page} />
-        """
-        |> rendered_to_string()
-      end)
-    end
   end
 end

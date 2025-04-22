@@ -604,11 +604,6 @@ defmodule ArrowWeb.CoreComponents do
       {~p"/stops", "Shuttle stops"}
     ]
 
-    if not String.starts_with?(assigns[:page], "/disruptions/") and
-         not Enum.any?(pages, fn {page, _title} -> assigns[:page] == page end) do
-      raise "navbar component used on an unrecognized page: #{assigns[:page]}"
-    end
-
     homepage? = assigns[:page] == ~p"/"
     pages = if homepage?, do: tl(pages), else: pages
 
