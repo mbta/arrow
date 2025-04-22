@@ -21,7 +21,7 @@
       <% {start_date, end_date} = Disruptions.start_end_dates(disruption) %>
       <tr>
         <td>
-          <a href={~p"/disruptionsv2/#{disruption.id}/edit"} class="btn-link btn-sm">
+          <a href={~p"/disruptions/#{disruption.id}/edit"} class="btn-link btn-sm">
             <.icon name="hero-pencil-square-solid" />
           </a>
         </td>
