@@ -1,112 +1,97 @@
 defmodule ArrowWeb.DisruptionV2ViewLive do
   use ArrowWeb, :live_view
-  import Phoenix.HTML.Form
 
   alias Arrow.{Adjustment, Disruptions, Limits}
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
   alias Arrow.Hastus.Export
   alias Arrow.Limits.LimitDayOfWeek
 
-  @spec mode_labels :: list(tuple())
-  def mode_labels,
-    do: [
-      {"Subway/Light Rail", :subway},
-      {"Commuter Rail", :commuter_rail},
-      {"Bus", :bus},
-      {"Silver Line", :silver_line}
-    ]
+  defp mode_labels,
+    do: %{
+      subway: "Subway/Light Rail",
+      commuter_rail: "Commuter Rail",
+      bus: "Bus",
+      silver_line: "Silver Line"
+    }
 
-  attr :id, :string
-  attr :form, :any, required: true
-  attr :action, :string, required: true
-  attr :disruption_v2, DisruptionV2, required: true
+  attr :disruption, DisruptionV2, required: true
   attr :icon_paths, :map, required: true
-  attr :errors, :map, default: %{}
-  attr :limit_in_form, :any
-  attr :replacement_service_in_form, :any
-  attr :hastus_export_in_form, :any
-  attr :user_id, :string
 
-  def disruption_form(assigns) do
+  def view_disruption(assigns) do
     ~H"""
-    <div>
-      <.simple_form for={@form} id="disruption_v2-form" phx-submit={@action} phx-change="validate">
-        <div class="flex flex-row">
-          <fieldset class="w-50">
-            <legend>Title</legend>
-            <.input field={@form[:title]} type="text" placeholder="Add text" />
-          </fieldset>
-          <fieldset class="w-50 ml-20">
-            <legend>Approval Status</legend>
-            <div class="form-check">
-              <input
-                name={@form[:is_active].name}
-                id="status-approved"
-                class="form-check-input"
-                type="radio"
-                checked={normalize_value("checkbox", input_value(@form, :is_active))}
-                value="true"
-                disabled={@action == :create}
-              />
-              <label for="status-approved" class="form-check-label">
-                Approved
-              </label>
-            </div>
-            <div class="form-check">
-              <input
-                name={@form[:is_active].name}
-                id="status-pending"
-                class="form-check-input"
-                type="radio"
-                checked={!normalize_value("checkbox", input_value(@form, :is_active))}
-                value="false"
-              />
-              <label for="status-pending" class="form-check-label">
-                Pending
-              </label>
-            </div>
-          </fieldset>
+    <div class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3">
+      <div class="flex flex-row">
+        <div class="w-50">
+          <h4>Title</h4>
+          <p>{@disruption.title}</p>
         </div>
-        <fieldset>
-          <legend>Mode</legend>
-          <div :for={{{mode, value}, idx} <- Enum.with_index(mode_labels())} class="form-check">
-            <input
-              name={@form[:mode].name}
-              id={"#{@form[:mode].id}-#{idx}"}
-              class="form-check-input"
-              type="radio"
-              checked={input_value(@form, :mode) == value}
-              disabled={value != :subway}
-              value={value}
-            />
-            <label for={"#{@form[:mode].id}-#{idx}"} class="form-check-label">
-              <span
-                class="m-icon m-icon-sm mr-1"
-                style={"background-image: url('#{Map.get(@icon_paths, value)}');"}
-              >
-              </span>
-              {mode}
-            </label>
-          </div>
-        </fieldset>
-        <fieldset>
-          <legend>Description</legend>
-          <.input
-            type="textarea"
-            class="form-control"
-            cols={30}
-            field={@form[:description]}
-            aria-describedby="descriptionHelp"
-            aria-label="description"
-          />
+        <div class="w-50">
+          <h4>Approval Status</h4>
+          <%= if @disruption.is_active do %>
+            <p>Approved</p>
+          <% else %>
+            <p>Pending</p>
+          <% end %>
+        </div>
+      </div>
+      <div class="w-full">
+        <h4>Mode</h4>
+        <p>
+          <span
+            class="m-icon m-icon-sm mr-1"
+            style={"background-image: url('#{Map.get(@icon_paths, @disruption.mode)}');"}
+          >
+          </span>
+          {mode_labels()[@disruption.mode]}
+        </p>
+      </div>
+      <div class="flex flex-row">
+        <div class="flex-grow">
+          <h4>Description</h4>
+          <span>{@disruption.description}</span>
+        </div>
+        <div class="flex flex-col flex-shrink justify-end">
+          <.link
+            id="edit-disruption-button"
+            class="grow-0 shrink"
+            patch={~p"/disruptions/#{@disruption.id}/edit"}
+          >
+            <.icon name="hero-pencil-solid" class="bg-primary" />
+          </.link>
+        </div>
+      </div>
+    </div>
+    """
+  end
 
-          <small id="descriptionHelp" class="form-text">
-            please include: types of disruption, place, and reason
-          </small>
-        </fieldset>
-      </.simple_form>
+  @impl true
+  def render(assigns) do
+    ~H"""
+    <.navbar page={~p"/disruptions/new"} />
 
-      <.live_component
+    <hr />
+
+    <.header>
+      {@title}
+    </.header>
+
+    <hr />
+
+    <h2>Disruption</h2>
+    <div>
+      <%= if @disruption == @editing do %>
+        <.live_component
+          id="disruption_form"
+          module={ArrowWeb.EditDisruptionForm}
+          icon_paths={@icon_paths}
+          disruption={@editing}
+        />
+      <% else %>
+        <.view_disruption disruption={@disruption} icon_paths={@icon_paths} />
+      <% end %>
+    </div>
+
+    <%!-- <.live_component
         id="limit_section"
         module={ArrowWeb.LimitSection}
         limit={@limit_in_form}
@@ -132,78 +117,37 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         disruption={@disruption_v2}
         icon_paths={@icon_paths}
         disabled?={not is_nil(@hastus_export_in_form) or not is_nil(@limit_in_form)}
-      />
-
-      <div class="d-flex justify-content-center py-4 mb-5">
-        <div class="w-25 mr-2">
-          <.button
-            type="submit"
-            disabled={not Enum.empty?(@errors)}
-            class="btn btn-primary w-100"
-            form="disruption_v2-form"
-          >
-            save disruption
-          </.button>
-        </div>
-        <div class="w-25 mr-2">
-          <.link_button
-            href={~p"/"}
-            class="btn-outline-primary w-100"
-            data-confirm="Are you sure you want to cancel? All changes will be lost!"
-          >
-            cancel
-          </.link_button>
-        </div>
-      </div>
-    </div>
+      /> --%>
     """
   end
 
   @impl true
-  def mount(%{"id" => disruption_id}, session, socket) do
-    disruption = Disruptions.get_disruption_v2!(disruption_id)
-
-    socket =
-      socket
-      |> assign(:form_action, :edit)
-      |> assign(:title, "edit disruption")
-      |> assign(:form, Disruptions.change_disruption_v2(disruption) |> to_form)
-      |> assign(:errors, %{})
-      |> assign(:icon_paths, icon_paths(socket))
-      |> assign(:disruption_v2, disruption)
-      |> assign(:limit_in_form, nil)
-      |> assign(:replacement_service_in_form, nil)
-      |> assign(:hastus_export_in_form, nil)
-      |> assign(:user_id, session["current_user"].id)
-
-    {:ok, socket}
+  def mount(_params, _session, socket) do
+    {:ok, socket |> assign(:icon_paths, icon_paths(socket))}
   end
 
-  @impl true
-  def mount(%{} = _params, session, socket) do
-    disruption = DisruptionV2.new()
+  # @impl true
+  # def mount(_params, session, socket) do
+  #   disruption = DisruptionV2.new()
 
-    form =
-      disruption
-      |> Disruptions.change_disruption_v2(%{is_active: false, mode: :subway})
-      |> to_form()
+  #   form =
+  #     disruption
+  #     |> Disruptions.change_disruption_v2(%{is_active: false, mode: :subway})
+  #     |> to_form()
 
-    socket =
-      socket
-      |> assign(:form_action, :create)
-      |> assign(:http_action, ~p"/disruptions/new")
-      |> assign(:title, "create new disruption")
-      |> assign(:form, form)
-      |> assign(:errors, %{})
-      |> assign(:icon_paths, icon_paths(socket))
-      |> assign(:disruption_v2, disruption)
-      |> assign(:limit_in_form, nil)
-      |> assign(:replacement_service_in_form, nil)
-      |> assign(:hastus_export_in_form, nil)
-      |> assign(:user_id, session["current_user"].id)
+  #   socket =
+  #     socket
+  #     |> assign(:form_action, :create)
+  #     |> assign(:title, "create new disruption")
+  #     |> assign(:form, form)
+  #     |> assign(:errors, %{})
+  #     |> assign(:icon_paths, icon_paths(socket))
+  #     |> assign(:disruption_v2, disruption)
+  #     |> assign(:editing, disruption)
+  #     |> assign(:user_id, session["current_user"].id)
 
-    {:ok, socket}
-  end
+  #   {:ok, socket}
+  # end
 
   @impl true
   def handle_params(params, _url, socket) do
@@ -469,16 +413,31 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     )
   end
 
-  defp apply_action(socket, :edit, %{"id" => id}) do
+  defp apply_action(socket, :show, %{"id" => id}) do
     socket
-    |> assign(title: "edit disruption")
+    |> assign(:page_title, "Show Disruption v2")
+    |> assign(:title, "view disruption")
+    |> assign(:disruption, Disruptions.get_disruption_v2!(id))
+    |> assign(:editing, false)
+  end
+
+  defp apply_action(socket, :edit, %{"id" => id}) do
+    disruption = Disruptions.get_disruption_v2!(id)
+
+    socket
+    |> assign(:title, "edit disruption")
     |> assign(:page_title, "Edit Disruption v2")
-    |> assign(:disruption_v2, Disruptions.get_disruption_v2!(id))
+    |> assign(:disruption, disruption)
+    |> assign(:editing, disruption)
   end
 
   defp apply_action(socket, :new, _params) do
+    disruption = %DisruptionV2{}
+
     socket
     |> assign(:page_title, "New Disruption v2")
-    |> assign(:disruption_v2, %DisruptionV2{})
+    |> assign(:title, "create disruption")
+    |> assign(:disruption, disruption)
+    |> assign(:editing, disruption)
   end
 end

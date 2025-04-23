@@ -54,6 +54,7 @@ defmodule ArrowWeb.Router do
 
     get("/", DisruptionV2Controller, :index)
     live("/disruptions/new", DisruptionV2ViewLive, :new)
+    live("/disruptions/:id", DisruptionV2ViewLive, :show)
     live("/disruptions/:id/edit", DisruptionV2ViewLive, :edit)
 
     live("/stops/new", StopViewLive, :new)
