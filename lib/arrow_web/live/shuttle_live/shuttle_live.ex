@@ -87,7 +87,7 @@ defmodule ArrowWeb.ShuttleViewLive do
                   type="select"
                   label="Direction Description"
                   prompt="Choose a value"
-                  options={Ecto.Enum.values(Arrow.Shuttles.Route, :direction_desc)}
+                  options={Arrow.Shuttles.Route.direction_desc_values(f_route[:direction_id].value)}
                 />
               </div>
               <div class="col offset-md-1">

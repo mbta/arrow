@@ -5,9 +5,16 @@ defmodule Arrow.Shuttles.Route do
 
   alias Arrow.Shuttles
 
-  @direction_desc_values [:Inbound, :Outbound, :North, :South, :East, :West]
+  @direction_0_desc_values [:Outbound, :South, :West]
+  @direction_1_desc_values [:Inbound, :North, :East]
 
-  def direction_desc_values, do: @direction_desc_values
+  def direction_desc_values, do: @direction_0_desc_values ++ @direction_1_desc_values
+
+  def direction_desc_values(direction_id) when direction_id in [:"0", "0"],
+    do: @direction_0_desc_values
+
+  def direction_desc_values(direction_id) when direction_id in [:"1", "1"],
+    do: @direction_1_desc_values
 
   @type t :: %__MODULE__{
           suffix: String.t(),
@@ -24,7 +31,7 @@ defmodule Arrow.Shuttles.Route do
     field :suffix, :string
     field :destination, :string
     field :direction_id, Ecto.Enum, values: [:"0", :"1"]
-    field :direction_desc, Ecto.Enum, values: @direction_desc_values
+    field :direction_desc, Ecto.Enum, values: @direction_0_desc_values ++ @direction_1_desc_values
     field :waypoint, :string
     belongs_to :shuttle, Arrow.Shuttles.Shuttle
     belongs_to :shape, Arrow.Shuttles.Shape
