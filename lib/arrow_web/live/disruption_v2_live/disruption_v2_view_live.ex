@@ -5,64 +5,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
   alias Arrow.Hastus.Export
   alias Arrow.Limits.LimitDayOfWeek
-
-  defp mode_labels,
-    do: %{
-      subway: "Subway/Light Rail",
-      commuter_rail: "Commuter Rail",
-      bus: "Bus",
-      silver_line: "Silver Line"
-    }
-
-  attr :disruption, DisruptionV2, required: true
-  attr :icon_paths, :map, required: true
-
-  def view_disruption(assigns) do
-    ~H"""
-    <div class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3">
-      <div class="flex flex-row">
-        <div class="w-50">
-          <h4>Title</h4>
-          <p>{@disruption.title}</p>
-        </div>
-        <div class="w-50">
-          <h4>Approval Status</h4>
-          <%= if @disruption.is_active do %>
-            <p>Approved</p>
-          <% else %>
-            <p>Pending</p>
-          <% end %>
-        </div>
-      </div>
-      <div class="w-full">
-        <h4>Mode</h4>
-        <p>
-          <span
-            class="m-icon m-icon-sm mr-1"
-            style={"background-image: url('#{Map.get(@icon_paths, @disruption.mode)}');"}
-          >
-          </span>
-          {mode_labels()[@disruption.mode]}
-        </p>
-      </div>
-      <div class="flex flex-row">
-        <div class="flex-grow">
-          <h4>Description</h4>
-          <span>{@disruption.description}</span>
-        </div>
-        <div class="flex flex-col flex-shrink justify-end">
-          <.link
-            id="edit-disruption-button"
-            class="grow-0 shrink"
-            patch={~p"/disruptions/#{@disruption.id}/edit"}
-          >
-            <.icon name="hero-pencil-solid" class="bg-primary" />
-          </.link>
-        </div>
-      </div>
-    </div>
-    """
-  end
+  alias ArrowWeb.DisruptionComponents
 
   @impl true
   def render(assigns) do
@@ -87,9 +30,19 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
           disruption={@editing}
         />
       <% else %>
-        <.view_disruption disruption={@disruption} icon_paths={@icon_paths} />
+        <DisruptionComponents.view_disruption
+          disruption={@disruption}
+          icon_paths={@icon_paths}
+          editing={@editing}
+        />
       <% end %>
     </div>
+
+    <DisruptionComponents.view_limits
+      disruption={@disruption}
+      icon_paths={@icon_paths}
+      editing={@editing}
+    />
 
     <%!-- <.live_component
         id="limit_section"
@@ -345,6 +298,27 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     {:noreply, socket}
   end
 
+  def handle_event("delete_limit", %{"limit" => limit_id}, socket) do
+    {parsed_id, _} = Integer.parse(limit_id)
+    limit = Limits.get_limit!(parsed_id)
+
+    case Limits.delete_limit(limit) do
+      {:ok, _} ->
+        disruption = %{
+          socket.assigns.disruption
+          | limits: Enum.reject(socket.assigns.disruption.limits, &(&1.id == parsed_id))
+        }
+
+        {:noreply,
+         socket
+         |> assign(:disruption, disruption)
+         |> put_flash(:info, "Limit deleted successfully")}
+
+      {:error, %Ecto.Changeset{} = _changeset} ->
+        {:noreply, socket |> put_flash(:error, "Error when deleting limit!")}
+    end
+  end
+
   @impl true
   def handle_info(:update_disruption, socket) do
     disruption = Disruptions.get_disruption_v2!(socket.assigns.disruption_v2.id)
@@ -439,5 +413,37 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     |> assign(:title, "create disruption")
     |> assign(:disruption, disruption)
     |> assign(:editing, disruption)
+  end
+
+  defp apply_action(socket, :new_limit, %{"id" => id}) do
+    disruption = Disruptions.get_disruption_v2!(id)
+
+    socket
+    |> assign(:title, "edit disruption")
+    |> assign(:page_title, "Edit Disruption v2")
+    |> assign(:disruption, disruption)
+    |> assign(:editing, Limit.new(disruption_id: disruption.id))
+  end
+
+  defp apply_action(socket, :edit_limit, %{"id" => id, "limit_id" => limit_id}) do
+    disruption = Disruptions.get_disruption_v2!(id)
+    limit = Limits.get_limit!(limit_id)
+
+    socket
+    |> assign(:title, "edit disruption")
+    |> assign(:page_title, "Edit Disruption v2")
+    |> assign(:disruption, disruption)
+    |> assign(:editing, limit)
+  end
+
+  defp apply_action(socket, :duplicate_limit, %{"id" => id, "limit_id" => limit_id}) do
+    disruption = Disruptions.get_disruption_v2!(id)
+    limit = Limits.get_limit!(limit_id) |> Map.put(:id, nil)
+
+    socket
+    |> assign(:title, "edit disruption")
+    |> assign(:page_title, "Edit Disruption v2")
+    |> assign(:disruption, disruption)
+    |> assign(:editing, limit)
   end
 end
