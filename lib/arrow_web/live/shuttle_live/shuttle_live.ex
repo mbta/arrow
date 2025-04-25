@@ -180,18 +180,20 @@ defmodule ArrowWeb.ShuttleViewLive do
         :if={is_list(@f[:route_stops].value) and Enum.any?(@f[:route_stops].value)}
         class="row item align-items-center mt-3"
       >
-        <div class="col-lg-1"></div>
+        <div class="col-lg-auto ml-3"></div>
+        <div class="col-lg-1">Index</div>
         <div class="col-lg-6">Stop ID</div>
-        <div class="col-lg-4">Time to next stop</div>
+        <div class="col-lg-3">Time To Next Stop</div>
       </div>
       <.inputs_for :let={f_route_stop} field={@f[:route_stops]}>
         <div
           class="row item align-items-center"
           data-stop_sequence={input_value(f_route_stop, :stop_sequence)}
         >
-          <div class="col-lg-1">
+          <div class="col-lg-auto">
             <.icon name="hero-bars-3" class="h-4 w-4 drag-handle cursor-grab" />
           </div>
+          <div class="col-lg-1">{input_value(f_route_stop, :stop_sequence)}</div>
           <.stop_input
             field={f_route_stop[:display_stop_id]}
             stop_or_gtfs_stop={
