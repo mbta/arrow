@@ -176,6 +176,14 @@ defmodule ArrowWeb.ShuttleViewLive do
     ~H"""
     <div id={"stops-dir-#{@direction_id}"} phx-hook="sortable" data-direction_id={@direction_id}>
       <h4>direction {@direction_id}</h4>
+      <div
+        :if={is_list(@f[:route_stops].value) and Enum.any?(@f[:route_stops].value)}
+        class="row item align-items-center mt-3"
+      >
+        <div class="col-lg-1"></div>
+        <div class="col-lg-6">Stop ID</div>
+        <div class="col-lg-4">Time to next stop</div>
+      </div>
       <.inputs_for :let={f_route_stop} field={@f[:route_stops]}>
         <div
           class="row item align-items-center"
@@ -190,14 +198,9 @@ defmodule ArrowWeb.ShuttleViewLive do
               Phoenix.HTML.Form.input_value(f_route_stop, :stop) ||
                 Phoenix.HTML.Form.input_value(f_route_stop, :gtfs_stop)
             }
-            class="col-lg-6"
+            class="col-lg-6 mb-n2"
           />
-          <.input
-            field={f_route_stop[:time_to_next_stop]}
-            type="number"
-            label="Time to next stop"
-            class="col-lg-4"
-          />
+          <.input field={f_route_stop[:time_to_next_stop]} type="number" class="col-lg-3 mb-0" />
           <button
             class="btn"
             type="button"
@@ -226,7 +229,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       </.inputs_for>
     </div>
     <input type="hidden" name={input_name(@f, :route_stops_drop) <> "[]"} />
-    <div class="row form-group">
+    <div class="row form-group mt-3">
       <div class="offset-lg-1 col-lg-6">
         <button
           class="btn btn-primary"
