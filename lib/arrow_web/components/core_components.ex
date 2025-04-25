@@ -422,7 +422,7 @@ defmodule ArrowWeb.CoreComponents do
     doc: "a form field struct retrieved from the form, for example: @form[:email]"
 
   attr :class, :string, default: nil
-  attr :label, :string
+  attr :label, :string, default: nil
   # live-select opts
   attr :placeholder, :string
   attr :options, :any
@@ -443,7 +443,7 @@ defmodule ArrowWeb.CoreComponents do
     ~H"""
     <div class="form-group">
       <div>
-        <.label for={@field.id}>{@label}</.label>
+        <.label :if={@label} for={@field.id}>{@label}</.label>
         <LiveSelect.live_select
           field={@field}
           text_input_class={[
@@ -480,7 +480,7 @@ defmodule ArrowWeb.CoreComponents do
     required: true,
     doc: "Currently selected stop or GTFS stop, if any"
 
-  attr :label, :string, default: "Stop ID"
+  attr :label, :string, default: nil
   attr :class, :string, default: nil
   attr :type, :atom, default: nil
 

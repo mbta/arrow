@@ -198,10 +198,9 @@ defmodule ArrowWeb.ShuttleViewLive do
               Phoenix.HTML.Form.input_value(f_route_stop, :stop) ||
                 Phoenix.HTML.Form.input_value(f_route_stop, :gtfs_stop)
             }
-            class="col-lg-6"
-            label=""
+            class="col-lg-6 mb-n2"
           />
-          <.input field={f_route_stop[:time_to_next_stop]} type="number" label="" class="col-lg-4" />
+          <.input field={f_route_stop[:time_to_next_stop]} type="number" class="col-lg-3 mb-0" />
           <button
             class="btn"
             type="button"
@@ -230,7 +229,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       </.inputs_for>
     </div>
     <input type="hidden" name={input_name(@f, :route_stops_drop) <> "[]"} />
-    <div class="row form-group">
+    <div class="row form-group mt-3">
       <div class="offset-lg-1 col-lg-6">
         <button
           class="btn btn-primary"
