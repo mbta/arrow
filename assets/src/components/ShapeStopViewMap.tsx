@@ -155,7 +155,12 @@ const MapLayer = ({
                   stop.stop_source
                 )}
               >
-                <Popup>{stop.stop_name}</Popup>
+                <Popup>
+                  <div>{stop.stop_name}</div>
+                  <div>
+                    source: {stop.stop_source === "gtfs" ? "GTFS" : "Arrow"}
+                  </div>
+                </Popup>
               </Marker>
             )
         )}
