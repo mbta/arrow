@@ -10,7 +10,6 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
   @create_attrs %{
     title: "the great molasses disruption of 2025",
     mode: "subway",
-    is_active: false,
     description: nil
   }
   @update_attrs %{
@@ -22,7 +21,6 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
   @invalid_attrs %{
     title: nil,
     mode: "subway",
-    is_active: false,
     description: "foobar"
   }
 
@@ -50,6 +48,11 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     @tag :authenticated_admin
     test "saves new disruption_v2", %{conn: conn} do
       {:ok, index_live, _html} = live(conn, ~p"/disruptions/new")
+
+      result =
+        index_live
+        |> form("#disruption_v2-form", disruption_v2: @invalid_attrs)
+        |> render_change()
 
       assert index_live
              |> form("#disruption_v2-form", disruption_v2: @invalid_attrs)

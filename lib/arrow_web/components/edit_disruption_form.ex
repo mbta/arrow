@@ -140,7 +140,7 @@ defmodule ArrowWeb.EditDisruptionForm do
     form =
       socket.assigns.disruption
       |> Disruptions.change_disruption_v2(disruption_v2_params)
-      |> to_form()
+      |> to_form(action: :validate)
 
     {:noreply, assign(socket, form: form)}
   end
