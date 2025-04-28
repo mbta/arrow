@@ -3,6 +3,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   alias Arrow.{Adjustment, Disruptions, Limits}
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
+  alias Arrow.Hastus
   alias Arrow.Hastus.Export
   alias Arrow.Limits.LimitDayOfWeek
   alias ArrowWeb.DisruptionComponents
@@ -37,11 +38,18 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         />
       <% end %>
     </div>
-
+    <!-- #TODO: Don't show when creating new disruption -->
     <DisruptionComponents.view_limits
       disruption={@disruption}
       icon_paths={@icon_paths}
       editing={@editing}
+    />
+
+    <DisruptionComponents.view_hastus_service_schedules
+      disruption={@disruption}
+      icon_paths={@icon_paths}
+      editing={@editing}
+      user_id={@user_id}
     />
 
     <%!-- <.live_component
@@ -75,8 +83,11 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   end
 
   @impl true
-  def mount(_params, _session, socket) do
-    {:ok, socket |> assign(:icon_paths, icon_paths(socket))}
+  def mount(_params, session, socket) do
+    {:ok,
+     socket
+     |> assign(:icon_paths, icon_paths(socket))
+     |> assign(:user_id, session["current_user"].id)}
   end
 
   # @impl true
@@ -445,5 +456,27 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     |> assign(:page_title, "Edit Disruption v2")
     |> assign(:disruption, disruption)
     |> assign(:editing, limit)
+  end
+
+  defp apply_action(socket, :new_hastus_export, %{"id" => id}) do
+    disruption = Disruptions.get_disruption_v2!(id)
+    hastus_export = %Export{services: []}
+
+    socket
+    |> assign(:title, "edit disruption")
+    |> assign(:page_title, "Edit Disruption v2")
+    |> assign(:disruption, disruption)
+    |> assign(:editing, hastus_export)
+  end
+
+  defp apply_action(socket, :edit_hastus_export, %{"id" => id, "export_id" => export_id}) do
+    disruption = Disruptions.get_disruption_v2!(id)
+    hastus_export = Hastus.get_export!(export_id)
+
+    socket
+    |> assign(:title, "edit disruption")
+    |> assign(:page_title, "Edit Disruption v2")
+    |> assign(:disruption, disruption)
+    |> assign(:editing, hastus_export)
   end
 end

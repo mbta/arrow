@@ -4,7 +4,9 @@ defmodule ArrowWeb.DisruptionComponents do
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Disruptions.Limit
   alias Arrow.Adjustment
+  alias Arrow.Hastus.Export
   alias ArrowWeb.EditLimitForm
+  alias ArrowWeb.HastusExportEditForm
 
   attr :disruption, DisruptionV2, required: true
   attr :icon_paths, :map, required: true
@@ -152,6 +154,7 @@ defmodule ArrowWeb.DisruptionComponents do
                   </div>
                 </div>
                 <%= if @editing == limit do %>
+                  #TODO: firas requested increasing the gap here
                   <div class="col-span-full">
                     <.live_component
                       module={EditLimitForm}
@@ -185,6 +188,131 @@ defmodule ArrowWeb.DisruptionComponents do
       <% end %>
     </section>
     """
+  end
+
+  attr :disruption, DisruptionV2, required: true
+  attr :editing, :any, required: true
+  attr :icon_paths, :map, required: true
+  attr :user_id, :string, required: true
+
+  def view_hastus_service_schedules(assigns) do
+    ~H"""
+    <section id="hastus_service_schedules" class="py-4 my-4">
+      <h3>HASTUS Service Schedules</h3>
+      <%= if Ecto.assoc_loaded?(@disruption.hastus_exports) and Enum.any?(@disruption.hastus_exports) do %>
+        <div
+          :for={export <- @disruption.hastus_exports}
+          id={"export-table-#{export.id}"}
+          class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3"
+        >
+          <% imported_services = Enum.filter(export.services, & &1.import?) %>
+          <table class="w-[40rem] sm:w-full">
+            <thead>
+              <tr>
+                <th>route</th>
+                <th>service ID</th>
+                <th>start date</th>
+                <th>end date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700">
+              <tr :for={{service, i} <- Enum.with_index(imported_services)}>
+                <td class="align-top">
+                  <span
+                    :if={i == 0}
+                    class="m-icon m-icon-sm mr-1"
+                    style={"background-image: url('#{line_icon_path(@icon_paths, export.line.id)}');"}
+                  />
+                </td>
+                <td class="align-top">{service.name}</td>
+                <td>
+                  <div :for={date <- Enum.map(service.service_dates, & &1.start_date)}>
+                    <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
+                    {Calendar.strftime(date, "%m/%d/%Y")}
+                  </div>
+                </td>
+                <td>
+                  <div :for={date <- Enum.map(service.service_dates, & &1.end_date)}>
+                    <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
+                    {Calendar.strftime(date, "%m/%d/%Y")}
+                  </div>
+                </td>
+                <td :if={i == length(imported_services) - 1}>
+                  <div class="text-right">
+                    <.link
+                      :if={!@editing}
+                      id={"edit-export-button-#{export.id}"}
+                      class="btn-sm p-0"
+                      patch={~p"/disruptions/#{@disruption.id}/hastus_export/#{export.id}/edit"}
+                    >
+                      <.icon name="hero-pencil-solid" class="bg-primary" />
+                    </.link>
+                    <.button
+                      :if={!@editing}
+                      id={"delete-export-button-#{export.id}"}
+                      class="btn-sm p-0"
+                      type="button"
+                      phx-click="delete_export"
+                      phx-value-export={export.id}
+                      data-confirm="Are you sure you want to delete this export?"
+                    >
+                      <.icon name="hero-trash-solid" class="bg-primary" />
+                    </.button>
+                  </div>
+                </td>
+              </tr>
+              <%= if @editing && is_struct(@editing, Export) && @editing.id == export.id do %>
+                <tr>
+                  <td colspan="4">
+                    <.live_component
+                      module={HastusExportEditForm}
+                      id="hastus-export-edit-form"
+                      disruption={@disruption}
+                      export={@editing}
+                      icon_paths={@icon_paths}
+                      user_id={@user_id}
+                    />
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+      <.link
+        :if={!@editing}
+        patch={~p"/disruptions/#{@disruption.id}/hastus_export/new"}
+        id="upload-hastus-export-component"
+      >
+        <.icon name="hero-plus" />
+        <span>upload HASTUS export</span>
+      </.link>
+
+      <%= if is_struct(@editing, Export) and !@editing.id do %>
+        <.live_component
+          module={HastusExportEditForm}
+          id="hastus-export-edit-form"
+          disruption={@disruption}
+          export={@editing}
+          icon_paths={@icon_paths}
+          user_id={@user_id}
+        />
+      <% end %>
+    </section>
+    """
+  end
+
+  @line_icon_names %{
+    "line-Blue" => :blue_line,
+    "line-Green" => :green_line,
+    "line-Orange" => :orange_line,
+    "line-Red" => :red_line,
+    "line-Mattapan" => :mattapan_line
+  }
+
+  defp line_icon_path(icon_paths, line_id) do
+    Map.get(icon_paths, @line_icon_names[line_id])
   end
 
   defp group_limits(limits) do
