@@ -330,6 +330,28 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     end
   end
 
+  def handle_event("delete_export", %{"export" => export_id}, socket) do
+    {parsed_id, _} = Integer.parse(export_id)
+    export = Hastus.get_export!(parsed_id)
+
+    case Hastus.delete_export(export) do
+      {:ok, _} ->
+        disruption = %{
+          socket.assigns.disruption
+          | hastus_exports:
+              Enum.reject(socket.assigns.disruption.hastus_exports, &(&1.id == parsed_id))
+        }
+
+        {:noreply,
+         socket
+         |> assign(:disruption, disruption)
+         |> put_flash(:info, "Export deleted successfully")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, put_flash(socket, :error, "Error when deleting export!")}
+    end
+  end
+
   @impl true
   def handle_info(:update_disruption, socket) do
     disruption = Disruptions.get_disruption_v2!(socket.assigns.disruption_v2.id)
