@@ -45,7 +45,9 @@ const StopLayerControl = ({
                       `arrow-stop-${s.stop_id}`
                     )}
                   >
-                    <Popup>{s.stop_name}</Popup>
+                    <Popup>
+                      {s.stop_name} ({s.stop_id})
+                    </Popup>
                   </Marker>
                 )
             )}
@@ -64,7 +66,9 @@ const StopLayerControl = ({
                     position={[s.lat, s.lon]}
                     icon={genIcon(existingBusStopColor, `gtfs-stop-${s.id}`)}
                   >
-                    <Popup>{s.name}</Popup>
+                    <Popup>
+                      {s.name} ({s.id})
+                    </Popup>
                   </Marker>
                 )
             )}
@@ -77,7 +81,9 @@ const StopLayerControl = ({
             position={[selectedStop.stop_lat, selectedStop.stop_lon]}
             icon={genIcon(newStopColor, "selected-stop")}
           >
-            <Popup>{selectedStop.stop_name}</Popup>
+            <Popup>
+              {selectedStop.stop_name} ({selectedStop.stop_id})
+            </Popup>
           </Marker>
         </LayersControl.Overlay>
       )}
