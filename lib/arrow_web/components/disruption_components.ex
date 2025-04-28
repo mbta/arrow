@@ -153,8 +153,8 @@ defmodule ArrowWeb.DisruptionComponents do
                     </div>
                   </div>
                 </div>
-                <%= if @editing == limit do %>
-                  #TODO: firas requested increasing the gap here
+                <%= if @editing && is_struct(@editing, Limit) && @editing.id == limit.id do %>
+                  <!-- #TODO: firas requested increasing the gap here -->
                   <div class="col-span-full">
                     <.live_component
                       module={EditLimitForm}
