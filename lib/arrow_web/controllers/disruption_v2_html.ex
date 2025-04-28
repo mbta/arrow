@@ -3,7 +3,6 @@ defmodule ArrowWeb.DisruptionV2View do
 
   alias __MODULE__.Calendar, as: DCalendar
   alias Arrow.Disruptions
-  alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Permissions
   alias ArrowWeb.DisruptionV2Controller.Filters
   alias Phoenix.Controller
@@ -69,6 +68,7 @@ defmodule ArrowWeb.DisruptionV2View do
   attr :filters, ArrowWeb.DisruptionV2Controller.Filters, required: true
   attr :field, :atom, required: true
   attr :label, :string, required: true
+  attr :class, :string, default: nil
 
   defp sort_link(assigns) do
     %{view: %{sort: sort_state, active_sort: active_field}} = assigns.filters
@@ -96,7 +96,7 @@ defmodule ArrowWeb.DisruptionV2View do
 
     ~H"""
     <a
-      class={["m-disruption-table__sortable", @active? and "active"]}
+      class={["m-disruption-table__sortable", @active? and "active", @class]}
       href={update_view_path(@conn, @filters, sort: @new_sort, active_sort: @field)}
     >
       {@label}<span class="mx-1 m-disruption-table__sortable-indicator">{@icon}</span>
@@ -121,10 +121,6 @@ defmodule ArrowWeb.DisruptionV2View do
       class: "m-icon m-icon-#{size} #{Keyword.get(opts, :class, "")}",
       style: "background-image: url(#{disruption_kind_icon_path(conn, kind)})"
     )
-  end
-
-  defp disrupted_routes(%DisruptionV2{limits: limits}) do
-    limits |> Enum.map(& &1.route.id) |> Enum.uniq()
   end
 
   defp format_date(nil), do: "N/A"

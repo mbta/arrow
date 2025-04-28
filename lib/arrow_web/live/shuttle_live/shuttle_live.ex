@@ -176,28 +176,33 @@ defmodule ArrowWeb.ShuttleViewLive do
     ~H"""
     <div id={"stops-dir-#{@direction_id}"} phx-hook="sortable" data-direction_id={@direction_id}>
       <h4>direction {@direction_id}</h4>
+      <div
+        :if={is_list(@f[:route_stops].value) and Enum.any?(@f[:route_stops].value)}
+        class="row item align-items-center mt-3"
+      >
+        <div class="col-lg-auto ml-3"></div>
+        <div class="col-lg-1">Index</div>
+        <div class="col-lg-6">Stop ID</div>
+        <div class="col-lg-3">Time To Next Stop</div>
+      </div>
       <.inputs_for :let={f_route_stop} field={@f[:route_stops]}>
         <div
           class="row item align-items-center"
           data-stop_sequence={input_value(f_route_stop, :stop_sequence)}
         >
-          <div class="col-lg-1">
+          <div class="col-lg-auto">
             <.icon name="hero-bars-3" class="h-4 w-4 drag-handle cursor-grab" />
           </div>
+          <div class="col-lg-1">{input_value(f_route_stop, :stop_sequence)}</div>
           <.stop_input
             field={f_route_stop[:display_stop_id]}
             stop_or_gtfs_stop={
               Phoenix.HTML.Form.input_value(f_route_stop, :stop) ||
                 Phoenix.HTML.Form.input_value(f_route_stop, :gtfs_stop)
             }
-            class="col-lg-6"
+            class="col-lg-6 mb-n2"
           />
-          <.input
-            field={f_route_stop[:time_to_next_stop]}
-            type="number"
-            label="Time to next stop"
-            class="col-lg-4"
-          />
+          <.input field={f_route_stop[:time_to_next_stop]} type="number" class="col-lg-3 mb-0" />
           <button
             class="btn"
             type="button"
@@ -226,7 +231,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       </.inputs_for>
     </div>
     <input type="hidden" name={input_name(@f, :route_stops_drop) <> "[]"} />
-    <div class="row form-group">
+    <div class="row form-group mt-3">
       <div class="offset-lg-1 col-lg-6">
         <button
           class="btn btn-primary"

@@ -15,7 +15,7 @@ defmodule Arrow.Integration.DisruptionsV2Test do
       })
 
     session
-    |> visit("/disruptionsv2")
+    |> visit("/")
     |> click(link("include past"))
     |> assert_text(disruption.title)
     |> assert_text("01/01/24")
@@ -26,7 +26,7 @@ defmodule Arrow.Integration.DisruptionsV2Test do
     disruption_v2_fixture()
 
     session
-    |> visit("/disruptionsv2")
+    |> visit("/")
     |> assert_text("N/A")
     |> assert_text("N/A")
   end
