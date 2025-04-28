@@ -156,10 +156,10 @@ const MapLayer = ({
                 )}
               >
                 <Popup>
-                  <div>{stop.stop_name}</div>
+                  <div>{stop.stop_name} ({stop.stop_id})</div>
                   <div>
                     source: {stop.stop_source === "gtfs" ? "GTFS" : "Arrow"}
-                  </div>
+                  </div>             
                 </Popup>
               </Marker>
             )

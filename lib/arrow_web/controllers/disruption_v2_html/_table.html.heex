@@ -2,15 +2,26 @@
   <thead>
     <tr>
       <th></th>
-      <th></th>
       <th>Title</th>
       <th>Limits</th>
       <th>Replacement Service</th>
-      <th>
-        <.sort_link conn={@conn} filters={@filters} field={:start_date} label="Start Date" />
+      <th class="col-lg-auto">
+        <.sort_link
+          conn={@conn}
+          filters={@filters}
+          field={:start_date}
+          class="p-0"
+          label="Start Date"
+        />
       </th>
-      <th>
-        <.sort_link conn={@conn} filters={@filters} field={:end_date} label="End Date" />
+      <th class="col-lg-auto">
+        <.sort_link
+          conn={@conn}
+          filters={@filters}
+          field={:end_date}
+          class="p-0"
+          label="End Date"
+        />
       </th>
       <th>Status</th>
     </tr>
@@ -19,40 +30,40 @@
   <tbody>
     <%= for disruption <- @disruptions do %>
       <% {start_date, end_date} = Disruptions.start_end_dates(disruption) %>
-      <tr>
-        <td>
-          <a href={~p"/disruptions/#{disruption.id}/edit"} class="btn-link btn-sm">
+      <tr class="align-top">
+        <td class="col-lg-auto">
+          <a href={~p"/disruptions/#{disruption.id}/edit"} class="btn-link btn-sm p-0">
             <.icon name="hero-pencil-square-solid" />
           </a>
         </td>
 
-        <td>
-          <div class="d-flex flex-column">
-            <%= for route <- disrupted_routes(disruption) do %>
-              <.route_icon conn={@conn} route_id={route} size="sm" class="my-1 mr-2" />
-            <% end %>
-          </div>
-        </td>
+        <td class="col-lg-3"><b>{disruption.title}</b></td>
 
-        <td><b>{disruption.title}</b></td>
-
-        <td>
+        <td class="col-lg-3">
           <%= for limit <- disruption.limits do %>
-            {limit.start_stop.name} to {limit.end_stop.name}<br />
+            <div class="d-flex mb-3">
+              <.route_icon
+                conn={@conn}
+                route_id={limit.route_id}
+                size="sm"
+                class="my-1 mr-2 flex-shrink-0"
+              />
+              <span>{limit.start_stop.name} to {limit.end_stop.name}</span>
+            </div>
           <% end %>
         </td>
 
-        <td>
+        <td class="col-lg-3 text-break">
           <%= for service <- disruption.replacement_services do %>
-            {service.shuttle.shuttle_name}
+            <div class="mb-3">{service.shuttle.shuttle_name}</div>
           <% end %>
         </td>
 
-        <td>{format_date(start_date)}</td>
+        <td class="col-lg-auto text-center">{format_date(start_date)}</td>
 
-        <td>{format_date(end_date)}</td>
+        <td class="col-lg-auto text-center">{format_date(end_date)}</td>
 
-        <td>{if disruption.is_active, do: "Approved", else: "Pending"}</td>
+        <td class="col-lg-auto">{if disruption.is_active, do: "Approved", else: "Pending"}</td>
       </tr>
     <% end %>
   </tbody>
