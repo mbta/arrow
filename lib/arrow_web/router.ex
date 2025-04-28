@@ -91,6 +91,7 @@ defmodule ArrowWeb.Router do
 
     get("/replacement-service", ReplacementServiceController, :index)
     get("/shuttles", ShuttleController, :index)
+    get("/unscheduled-shuttles", ShuttleController, :unscheduled)
     get("/limits", LimitController, :index)
     resources("/disruptions", DisruptionController, only: [:index])
     resources("/adjustments", AdjustmentController, only: [:index])
