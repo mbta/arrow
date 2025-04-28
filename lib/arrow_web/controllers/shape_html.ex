@@ -96,7 +96,8 @@ defmodule ArrowWeb.ShapeView do
         stop_name: route_stop.stop.stop_name,
         stop_desc: route_stop.stop.stop_desc,
         stop_lat: route_stop.stop.stop_lat,
-        stop_lon: route_stop.stop.stop_lon
+        stop_lon: route_stop.stop.stop_lon,
+        stop_source: :arrow
       }
     end
   end
@@ -116,7 +117,8 @@ defmodule ArrowWeb.ShapeView do
         stop_name: route_stop.gtfs_stop.name,
         stop_desc: route_stop.gtfs_stop.desc,
         stop_lat: route_stop.gtfs_stop.lat,
-        stop_lon: route_stop.gtfs_stop.lon
+        stop_lon: route_stop.gtfs_stop.lon,
+        stop_source: :gtfs
       }
     end
   end
