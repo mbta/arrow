@@ -29,6 +29,7 @@ interface Stop {
   stop_lat: number
   stop_lon: number
   stop_sequence: number
+  stop_source: "arrow" | "gtfs"
 }
 
 interface Layer {
