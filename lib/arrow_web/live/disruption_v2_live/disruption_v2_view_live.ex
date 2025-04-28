@@ -52,6 +52,12 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       user_id={@user_id}
     />
 
+    <DisruptionComponents.view_replacement_services
+      disruption={@disruption}
+      icon_paths={@icon_paths}
+      editing={@editing}
+    />
+
     <%!-- <.live_component
         id="limit_section"
         module={ArrowWeb.LimitSection}
@@ -347,8 +353,34 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
          |> assign(:disruption, disruption)
          |> put_flash(:info, "Export deleted successfully")}
 
-      {:error, %Ecto.Changeset{} = changeset} ->
+      {:error, %Ecto.Changeset{} = _changeset} ->
         {:noreply, put_flash(socket, :error, "Error when deleting export!")}
+    end
+  end
+
+  def handle_event(
+        "delete_replacement_service",
+        %{"replacement_service" => replacement_service_id},
+        socket
+      ) do
+    {parsed_id, _} = Integer.parse(replacement_service_id)
+    replacement_service = Disruptions.get_replacement_service!(parsed_id)
+
+    case Disruptions.delete_replacement_service(replacement_service) do
+      {:ok, _} ->
+        disruption = %{
+          socket.assigns.disruption
+          | replacement_services:
+              Enum.reject(socket.assigns.disruption.replacement_services, &(&1.id == parsed_id))
+        }
+
+        {:noreply,
+         socket
+         |> assign(:disruption, disruption)
+         |> put_flash(:info, "Replacement service deleted successfully")}
+
+      {:error, %Ecto.Changeset{} = _changeset} ->
+        {:noreply, put_flash(socket, :error, "Error when deleting replacement service!")}
     end
   end
 
@@ -500,5 +532,30 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     |> assign(:page_title, "Edit Disruption v2")
     |> assign(:disruption, disruption)
     |> assign(:editing, hastus_export)
+  end
+
+  defp apply_action(socket, :new_replacement_service, %{"id" => id}) do
+    disruption = Disruptions.get_disruption_v2!(id)
+    replacement_service = %ReplacementService{disruption_id: disruption.id}
+
+    socket
+    |> assign(:title, "edit disruption")
+    |> assign(:page_title, "Edit Disruption v2")
+    |> assign(:disruption, disruption)
+    |> assign(:editing, replacement_service)
+  end
+
+  defp apply_action(socket, :edit_replacement_service, %{
+         "id" => id,
+         "replacement_service_id" => replacement_service_id
+       }) do
+    disruption = Disruptions.get_disruption_v2!(id)
+    replacement_service = Disruptions.get_replacement_service!(replacement_service_id)
+
+    socket
+    |> assign(:title, "edit disruption")
+    |> assign(:page_title, "Edit Disruption v2")
+    |> assign(:disruption, disruption)
+    |> assign(:editing, replacement_service)
   end
 end

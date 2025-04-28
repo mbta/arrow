@@ -67,6 +67,18 @@ defmodule ArrowWeb.Router do
       :edit_hastus_export
     )
 
+    live(
+      "/disruptions/:id/replacement_services/new",
+      DisruptionV2ViewLive,
+      :new_replacement_service
+    )
+
+    live(
+      "/disruptions/:id/replacement_services/:replacement_service_id/edit",
+      DisruptionV2ViewLive,
+      :edit_replacement_service
+    )
+
     live("/stops/new", StopViewLive, :new)
     live("/stops/:stop_id/edit", StopViewLive, :edit)
     get("/stops", StopController, :index)

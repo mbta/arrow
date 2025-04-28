@@ -1,4 +1,4 @@
-defmodule ArrowWeb.HastusExportEditForm do
+defmodule ArrowWeb.EditHastusExportForm do
   use ArrowWeb, :live_component
 
   import Phoenix.HTML.Form

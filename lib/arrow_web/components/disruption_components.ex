@@ -1,4 +1,5 @@
 defmodule ArrowWeb.DisruptionComponents do
+  alias Arrow.Disruptions.ReplacementService
   use ArrowWeb, :live_component
 
   alias Arrow.Disruptions.DisruptionV2
@@ -6,7 +7,8 @@ defmodule ArrowWeb.DisruptionComponents do
   alias Arrow.Adjustment
   alias Arrow.Hastus.Export
   alias ArrowWeb.EditLimitForm
-  alias ArrowWeb.HastusExportEditForm
+  alias ArrowWeb.EditHastusExportForm
+  alias ArrowWeb.EditReplacementServiceForm
 
   attr :disruption, DisruptionV2, required: true
   attr :icon_paths, :map, required: true
@@ -266,7 +268,7 @@ defmodule ArrowWeb.DisruptionComponents do
                 <tr>
                   <td colspan="4">
                     <.live_component
-                      module={HastusExportEditForm}
+                      module={EditHastusExportForm}
                       id="hastus-export-edit-form"
                       disruption={@disruption}
                       export={@editing}
@@ -291,12 +293,123 @@ defmodule ArrowWeb.DisruptionComponents do
 
       <%= if is_struct(@editing, Export) and !@editing.id do %>
         <.live_component
-          module={HastusExportEditForm}
+          module={EditHastusExportForm}
           id="hastus-export-edit-form"
           disruption={@disruption}
           export={@editing}
           icon_paths={@icon_paths}
           user_id={@user_id}
+        />
+      <% end %>
+    </section>
+    """
+  end
+
+  attr :disruption, DisruptionV2, required: true
+  attr :editing, :any, required: true
+  attr :icon_paths, :map, required: true
+
+  def view_replacement_services(assigns) do
+    ~H"""
+    <section id="replacement_services_section" class="py-4 my-4">
+      <h3>Replacement Service</h3>
+      <%= if Ecto.assoc_loaded?(@disruption.replacement_services) and Enum.any?(@disruption.replacement_services) do %>
+        <div
+          :for={replacement_service <- @disruption.replacement_services}
+          class="container border-2 border-dashed border-secondary border-mb-3 p-3 mb-3"
+        >
+          <div class="row">
+            <div class="col-lg-1 pr-lg-0">
+              <span
+                class="m-icon m-icon-lg"
+                style={"background-image: url('#{Map.get(@icon_paths, :bus_outline)}');"}
+              />
+            </div>
+            <div class="col pl-lg-0">
+              {replacement_service.shuttle.shuttle_name}
+              <div class="text-sm">
+                Activated via <i>{replacement_service.source_workbook_filename}</i>
+              </div>
+            </div>
+            <div class="col-lg-3 text-sm">
+              <div>start date</div>
+              <div>
+                {replacement_service.start_date}
+              </div>
+            </div>
+            <div class="col-lg-3 text-sm">
+              <div>end date</div>
+              {replacement_service.end_date}
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="flex justify-between w-full px-3 py-2">
+              <div>
+                <.link
+                  :if={!@editing}
+                  class="btn-link btn-sm pl-0"
+                  id={"edit_replacement_service-#{replacement_service.id}"}
+                  patch={
+                    ~p"/disruptions/#{@disruption.id}/replacement_services/#{replacement_service.id}/edit"
+                  }
+                >
+                  <.icon name="hero-pencil-solid" class="bg-primary" /> Edit/Manage Activation
+                </.link>
+                <a
+                  class="btn-link btn-sm pl-0"
+                  href={~p"/replacement_services/#{replacement_service.id}/timetable"}
+                  target="_blank"
+                >
+                  <.icon name="hero-table-cells" class="bg-primary" /> View Parsed Timetables
+                </a>
+              </div>
+              <div>
+                <.button
+                  :if={!@editing}
+                  class="btn-sm"
+                  type="button"
+                  phx-click="delete_replacement_service"
+                  phx-value-replacement_service={replacement_service.id}
+                  data-confirm="Are you sure you want to delete this replacement service?"
+                >
+                  <.icon name="hero-trash-solid" class="bg-primary" />
+                </.button>
+              </div>
+            </div>
+          </div>
+          <%= if @editing && is_struct(@editing, ReplacementService) && @editing.id == replacement_service.id do %>
+            <div class="row">
+              <div class="col-12">
+                <.live_component
+                  id="edit_replacement_service_form"
+                  module={EditReplacementServiceForm}
+                  disruption={@disruption}
+                  replacement_service={@editing}
+                  icon_paths={@icon_paths}
+                />
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <.link
+        :if={!@editing}
+        type="button"
+        id="add_replacement_service"
+        class="btn-link"
+        patch={~p"/disruptions/#{@disruption.id}/replacement_services/new"}
+      >
+        <.icon name="hero-plus" /> <span>add replacement service component</span>
+      </.link>
+
+      <%= if @editing && is_struct(@editing, ReplacementService) && !@editing.id do %>
+        <.live_component
+          id="edit_replacement_service_form"
+          module={EditReplacementServiceForm}
+          disruption={@disruption}
+          replacement_service={@editing}
+          icon_paths={@icon_paths}
         />
       <% end %>
     </section>
