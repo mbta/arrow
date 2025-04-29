@@ -38,12 +38,20 @@ defmodule ArrowWeb.ShapeControllerTest do
   @create_attrs [
     {0,
      %{
-       name: "some other name-S",
+       start_location: "A",
+       end_location: "B",
+       suffix: "",
        save: "false",
        coordinates: "-71.14163,42.39551 -71.14163,42.39551 -71.14163,42.39551"
      }},
     {1,
-     %{name: "some name-S", save: "true", coordinates: "-71.14163,42.39551 -71.14163,42.39551 "}}
+     %{
+       start_location: "C",
+       end_location: "D",
+       suffix: "E",
+       save: "true",
+       coordinates: "-71.14163,42.39551 -71.14163,42.39551 "
+     }}
   ]
 
   describe "index" do
@@ -89,7 +97,7 @@ defmodule ArrowWeb.ShapeControllerTest do
 
       assert redirected_to(conn) == ~p"/shapes/"
 
-      shape = Repo.get_by(Shape, name: "some name-S")
+      shape = Repo.get_by(Shape, name: "CToDViaE-S")
 
       # Attempt to download:
       conn = ArrowWeb.ConnCase.authenticated_admin()
@@ -153,7 +161,7 @@ defmodule ArrowWeb.ShapeControllerTest do
 
       conn = ArrowWeb.ConnCase.authenticated_admin()
       conn = get(conn, ~p"/shapes")
-      assert html_response(conn, 200) =~ "some name-S"
+      assert html_response(conn, 200) =~ "CToDViaE-S"
       refute html_response(conn, 200) =~ "some other name-S"
       refute html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
