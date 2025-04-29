@@ -1,8 +1,9 @@
 defmodule ArrowWeb.EditDisruptionForm do
+  @moduledoc false
   use ArrowWeb, :live_component
 
-  alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Disruptions
+  alias Arrow.Disruptions.DisruptionV2
 
   import Phoenix.HTML.Form
 

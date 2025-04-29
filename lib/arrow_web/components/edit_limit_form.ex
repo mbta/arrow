@@ -1,9 +1,10 @@
 defmodule ArrowWeb.EditLimitForm do
+  @moduledoc false
   use ArrowWeb, :live_component
 
   alias Arrow.Disruptions.Limit
-  alias Arrow.Limits.LimitDayOfWeek
   alias Arrow.Limits
+  alias Arrow.Limits.LimitDayOfWeek
 
   import Phoenix.HTML.Form
   import Ecto.Query, only: [from: 2]

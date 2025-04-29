@@ -1,12 +1,13 @@
 defmodule ArrowWeb.EditReplacementServiceForm do
+  @moduledoc false
   use ArrowWeb, :live_component
 
   import Phoenix.HTML.Form
 
   alias Arrow.Disruptions
+  alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Disruptions.ReplacementService
   alias Arrow.Disruptions.ReplacementServiceUpload
-  alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Shuttles
   alias ArrowWeb.ShapeView
   alias Phoenix.LiveView.UploadEntry

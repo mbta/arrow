@@ -1,13 +1,14 @@
 defmodule ArrowWeb.DisruptionComponents do
+  @moduledoc false
   alias Arrow.Disruptions.ReplacementService
   use ArrowWeb, :live_component
 
+  alias Arrow.Adjustment
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Disruptions.Limit
-  alias Arrow.Adjustment
   alias Arrow.Hastus.Export
-  alias ArrowWeb.EditLimitForm
   alias ArrowWeb.EditHastusExportForm
+  alias ArrowWeb.EditLimitForm
   alias ArrowWeb.EditReplacementServiceForm
 
   attr :disruption, DisruptionV2, required: true

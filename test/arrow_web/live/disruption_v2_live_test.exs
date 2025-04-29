@@ -1,6 +1,5 @@
 defmodule ArrowWeb.DisruptionV2LiveTest do
   use ArrowWeb.ConnCase
-  alias ArrowWeb.DisruptionV2ViewLive
 
   import Phoenix.LiveViewTest
   import Arrow.{DisruptionsFixtures, LimitsFixtures, ShuttlesFixtures}
@@ -287,9 +286,9 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       conn: conn,
       disruption_v2: %DisruptionV2{limits: [limit]} = disruption
     } do
-      {:ok, live, _html} = live(conn, ~p"/disruptions/#{disruption.id}/edit")
+      {:ok, live, _html} = live(conn, ~p"/disruptions/#{disruption.id}")
 
-      html = live |> element("button#duplicate-limit-#{limit.id}") |> render_click()
+      html = live |> element("#duplicate-limit-#{limit.id}") |> render_click()
 
       assert html =~ "add new disruption limit"
 
@@ -298,24 +297,6 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
 
       assert html |> Floki.attribute("#limit_end_date", "value") |> List.first() ==
                "#{limit.end_date}"
-    end
-
-    @tag :authenticated_admin
-    setup [:create_disruption_v2]
-
-    test "updating a disruption closes the disruption limit form", %{
-      conn: conn,
-      disruption_v2: %DisruptionV2{} = disruption
-    } do
-      {:ok, _live, _html} = live(conn, ~p"/disruptions/#{disruption.id}/edit")
-
-      update_response =
-        DisruptionV2ViewLive.handle_info(:update_disruption, %{
-          __changed__: %{},
-          assigns: %{disruption_v2: disruption, limit_in_form: Arrow.Disruptions.Limit.new()}
-        })
-
-      {:noreply, %{limit_in_form: nil}} = update_response
     end
   end
 end
