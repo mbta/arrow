@@ -23,7 +23,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       "1" => %{
         :_persistent_id => "1",
         destination: "Harvard",
-        direction_desc: "South",
+        direction_desc: "North",
         direction_id: "1",
         shape_id: "",
         suffix: "",
@@ -40,7 +40,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       "0" => %{
         :_persistent_id => "0",
         destination: "Broadway",
-        direction_desc: "South",
+        direction_desc: "Outbound",
         direction_id: "0",
         suffix: "",
         waypoint: ""
