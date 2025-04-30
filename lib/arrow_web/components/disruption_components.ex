@@ -88,6 +88,7 @@ defmodule ArrowWeb.DisruptionComponents do
       <%= if Ecto.assoc_loaded?(@disruption.limits) and Enum.any?(@disruption.limits) do %>
         <div class={
           [
+            "mb-3",
             "flex flex-col",
             "md:grid gap-y-4 gap-x-2",
             # buckle up...
