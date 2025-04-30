@@ -416,18 +416,6 @@ defmodule ArrowWeb.DisruptionComponents do
     """
   end
 
-  @line_icon_names %{
-    "line-Blue" => :blue_line,
-    "line-Green" => :green_line,
-    "line-Orange" => :orange_line,
-    "line-Red" => :red_line,
-    "line-Mattapan" => :mattapan_line
-  }
-
-  defp line_icon_path(icon_paths, line_id) do
-    Map.get(icon_paths, @line_icon_names[line_id])
-  end
-
   defp group_limits(limits) do
     limits
     |> Enum.group_by(&{&1.route_id, &1.start_stop_id, &1.end_stop_id})
@@ -438,21 +426,4 @@ defmodule ArrowWeb.DisruptionComponents do
     kind = Adjustment.kind(%Adjustment{route_id: limit.route.id})
     Map.get(icon_paths, kind)
   end
-
-  # TODO: should this live in a utility module?
-  defp format_day_name_short(:monday), do: "M"
-  defp format_day_name_short(:tuesday), do: "Tu"
-  defp format_day_name_short(:wednesday), do: "W"
-  defp format_day_name_short(:thursday), do: "Th"
-  defp format_day_name_short(:friday), do: "F"
-  defp format_day_name_short(:saturday), do: "Sa"
-  defp format_day_name_short(:sunday), do: "Su"
-
-  defp mode_labels,
-    do: %{
-      subway: "Subway/Light Rail",
-      commuter_rail: "Commuter Rail",
-      bus: "Bus",
-      silver_line: "Silver Line"
-    }
 end

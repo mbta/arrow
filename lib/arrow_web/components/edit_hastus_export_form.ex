@@ -247,7 +247,6 @@ defmodule ArrowWeb.EditHastusExportForm do
   def update(%{export: %{id: nil}} = assigns, socket) do
     socket =
       socket
-      # TODO: can I consolidate these "show" variables?
       |> assign(assigns)
       |> assign(:show_upload_form, true)
       |> assign(:show_service_import_form, false)
@@ -272,7 +271,6 @@ defmodule ArrowWeb.EditHastusExportForm do
 
     socket =
       socket
-      # TODO: can I consolidate these "show" variables?
       |> assign(assigns)
       |> assign(:show_upload_form, false)
       |> assign(:show_service_import_form, true)
@@ -472,18 +470,6 @@ defmodule ArrowWeb.EditHastusExportForm do
   end
 
   defp format_line_id(line_id), do: String.replace(line_id, "line-", "")
-
-  @line_icon_names %{
-    "line-Blue" => :blue_line,
-    "line-Green" => :green_line,
-    "line-Orange" => :orange_line,
-    "line-Red" => :red_line,
-    "line-Mattapan" => :mattapan_line
-  }
-  # TODO: deduplicate
-  defp line_icon_path(icon_paths, line_id) do
-    Map.get(icon_paths, @line_icon_names[line_id])
-  end
 
   defp date_range_outside_service_dates?(_service_id, start_date, end_date)
        when start_date in [nil, ""] or end_date in [nil, ""] do

@@ -59,7 +59,7 @@ defmodule ArrowWeb.EditDisruptionForm do
         </div>
         <fieldset>
           <legend>Mode</legend>
-          <div :for={{{mode, value}, idx} <- Enum.with_index(mode_labels())} class="form-check">
+          <div :for={{{value, mode}, idx} <- Enum.with_index(mode_labels())} class="form-check">
             <input
               name={@form[:mode].name}
               id={"#{@form[:mode].id}-#{idx}"}
@@ -101,6 +101,7 @@ defmodule ArrowWeb.EditDisruptionForm do
             </.button>
           </div>
           <div class="w-25 mr-2">
+            <!-- #TODO: return to viewing disruption if editing -->
             <.link_button
               href={~p"/"}
               class="btn-outline-primary w-100"
@@ -197,13 +198,4 @@ defmodule ArrowWeb.EditDisruptionForm do
         {:noreply, socket}
     end
   end
-
-  # TODO: consolidate mode labels
-  defp mode_labels,
-    do: [
-      {"Subway/Light Rail", :subway},
-      {"Commuter Rail", :commuter_rail},
-      {"Bus", :bus},
-      {"Silver Line", :silver_line}
-    ]
 end

@@ -169,7 +169,6 @@ defmodule ArrowWeb.EditLimitForm do
   def handle_event("validate", %{"limit" => limit_params}, socket) do
     form =
       socket.assigns.limit
-      # TODO: Our limit already has a disruption_id, should this just not be allowed in the changeset?
       |> Limits.change_limit(%{
         limit_params
         | "disruption_id" => socket.assigns.limit.disruption_id
@@ -213,14 +212,12 @@ defmodule ArrowWeb.EditLimitForm do
     end
   end
 
-  # TODO: does this get called on every update?
   defp get_route_options do
     from(r in Arrow.Gtfs.Route, where: r.type in [:light_rail, :heavy_rail])
     |> Arrow.Repo.all()
     |> Enum.map(&{&1.long_name, &1.id})
   end
 
-  # TODO: should this live in a context module?
   defp get_stops_for_route(nil), do: []
 
   defp get_stops_for_route(route_id) do
@@ -239,8 +236,6 @@ defmodule ArrowWeb.EditLimitForm do
     |> Enum.map(&{&1.name, &1.parent_station_id})
   end
 
-  # TODO: The comment here talks about issues created by subforms, but this is not longer one
-  # big form. Should this be removed?
   defp limit_day_of_weeks_used?(form) do
     # Typically you could use `used_input?(form[:limit_day_of_weeks])` but that
     # doesn't work for these subforms because the hidden inputs mark the
@@ -291,16 +286,5 @@ defmodule ArrowWeb.EditLimitForm do
     else
       ""
     end
-  end
-
-  # TODO: Should this live in a utility module?
-  defp format_day_name(day_name) when is_atom(day_name) do
-    day_name |> Atom.to_string() |> format_day_name()
-  end
-
-  defp format_day_name(day_name) do
-    day_name
-    |> String.slice(0..2)
-    |> String.capitalize()
   end
 end
