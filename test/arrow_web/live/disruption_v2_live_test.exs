@@ -61,6 +61,15 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     end
 
     @tag :authenticated_admin
+    test "Does not show additional sections when creating new disruption", %{conn: conn} do
+      {:ok, index_live, html} = live(conn, ~p"/disruptions/new")
+
+      refute html =~ "Replacement Service"
+      refute html =~ "HASTUS Service Schedules"
+      refute html =~ "Limits"
+    end
+
+    @tag :authenticated_admin
     setup [:create_disruption_v2]
 
     test "updates disruption_v2", %{conn: conn, disruption_v2: disruption_v2} do
@@ -76,6 +85,20 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
 
       html = render(index_live)
       assert html =~ "Disruption updated successfully"
+    end
+
+    @tag :authenticated_admin
+    setup [:create_disruption_v2]
+
+    test "shows additional sections when editing disruption", %{
+      conn: conn,
+      disruption_v2: disruption_v2
+    } do
+      {:ok, index_live, html} = live(conn, ~p"/disruptions/#{disruption_v2.id}/edit")
+
+      assert html =~ "Replacement Service"
+      assert html =~ "HASTUS Service Schedules"
+      assert html =~ "Limits"
     end
   end
 

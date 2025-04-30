@@ -37,25 +37,27 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         />
       <% end %>
     </div>
-    <!-- #TODO: Don't show when creating new disruption -->
-    <DisruptionComponents.view_limits
-      disruption={@disruption}
-      icon_paths={@icon_paths}
-      editing={@editing}
-    />
 
-    <DisruptionComponents.view_hastus_service_schedules
-      disruption={@disruption}
-      icon_paths={@icon_paths}
-      editing={@editing}
-      user_id={@user_id}
-    />
+    <%= if !@editing || !is_struct(@editing, DisruptionV2) || @editing.id do %>
+      <DisruptionComponents.view_limits
+        disruption={@disruption}
+        icon_paths={@icon_paths}
+        editing={@editing}
+      />
 
-    <DisruptionComponents.view_replacement_services
-      disruption={@disruption}
-      icon_paths={@icon_paths}
-      editing={@editing}
-    />
+      <DisruptionComponents.view_hastus_service_schedules
+        disruption={@disruption}
+        icon_paths={@icon_paths}
+        editing={@editing}
+        user_id={@user_id}
+      />
+
+      <DisruptionComponents.view_replacement_services
+        disruption={@disruption}
+        icon_paths={@icon_paths}
+        editing={@editing}
+      />
+    <% end %>
     """
   end
 
