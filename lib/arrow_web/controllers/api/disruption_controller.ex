@@ -16,4 +16,22 @@ defmodule ArrowWeb.API.DisruptionController do
 
     render(conn, "index.json-api", data: data)
   end
+
+  @spec active(Plug.Conn.t(), map()) :: Plug.Conn.t()
+  def active(conn, _params) do
+    cutoff = Date.utc_today() |> Date.add(-7)
+
+    data =
+      from(d in Disruption,
+        join: dr in assoc(d, :revisions),
+        order_by: [d.id, dr.id],
+        where:
+          (dr.id >= d.published_revision_id or is_nil(d.published_revision_id)) and dr.is_active and
+            (is_nil(dr.end_date) or dr.end_date > ^cutoff),
+        preload: [revisions: {dr, ^DisruptionRevision.associations()}]
+      )
+      |> Repo.all()
+
+    render(conn, "index.json-api", data: data)
+  end
 end
