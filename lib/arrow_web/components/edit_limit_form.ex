@@ -14,7 +14,17 @@ defmodule ArrowWeb.EditLimitForm do
 
   def render(assigns) do
     ~H"""
-    <div class="mt-3">
+    <div
+      class="mt-3 overflow-hidden"
+      style="display: none"
+      phx-mounted={
+        JS.show(transition: {"ease-in duration-300", "max-h-0", "max-h-screen"}, time: 300)
+        |> JS.focus()
+      }
+      phx-remove={
+        JS.hide(transition: {"ease-out duration-300", "max-h-screen", "max-h-0"}, time: 300)
+      }
+    >
       <.simple_form
         :if={!is_nil(@limit_form)}
         for={@limit_form}

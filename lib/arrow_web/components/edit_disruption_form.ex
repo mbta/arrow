@@ -12,7 +12,22 @@ defmodule ArrowWeb.EditDisruptionForm do
 
   def render(assigns) do
     ~H"""
-    <div>
+    <div
+      class="overflow-hidden"
+      style="display: none"
+      phx-mounted={
+        JS.show(
+          transition: {"ease-out duration-300", "opacity-0 max-h-0", "opacity-100 max-h-screen"},
+          time: 300
+        )
+      }
+      phx-remove={
+        JS.hide(
+          transition: {"ease-out duration-300", "opacity-100 max-h-screen", "opacity-0 max-h-0"},
+          time: 300
+        )
+      }
+    >
       <.simple_form
         for={@form}
         id="disruption_v2-form"

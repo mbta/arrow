@@ -17,7 +17,21 @@ defmodule ArrowWeb.DisruptionComponents do
 
   def view_disruption(assigns) do
     ~H"""
-    <div class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3">
+    <div
+      class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3"
+      phx-mounted={
+        JS.show(
+          transition: {"ease-out duration-300", "opacity-0 max-h-0", "opacity-100 max-h-screen"},
+          time: 300
+        )
+      }
+      phx-remove={
+        JS.hide(
+          transition: {"ease-out duration-300", "opacity-100 max-h-screen", "opacity-0 max-h-0"},
+          time: 300
+        )
+      }
+    >
       <div class="flex flex-row">
         <div class="w-50">
           <h4>Title</h4>
