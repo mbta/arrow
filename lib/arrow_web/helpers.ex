@@ -1,4 +1,7 @@
 defmodule ArrowWeb.Helpers do
+  @moduledoc """
+  Helper functions for components
+  """
   def format_day_name_short(:monday), do: "M"
   def format_day_name_short(:tuesday), do: "Tu"
   def format_day_name_short(:wednesday), do: "W"
