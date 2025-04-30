@@ -35,7 +35,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
     )
 
     session
-    |> visit("/disruptions/#{disruption.id}/edit")
+    |> visit("/disruptions/#{disruption.id}")
     |> scroll_down()
     |> click(text("upload HASTUS export"))
     |> assert_text("add a new service schedule")
@@ -53,7 +53,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
     disruption = disruption_v2_fixture()
 
     session
-    |> visit("/disruptions/#{disruption.id}/edit")
+    |> visit("/disruptions/#{disruption.id}")
     |> scroll_down()
     |> click(text("upload HASTUS export"))
     |> assert_text("add a new service schedule")
@@ -69,7 +69,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
     export = export_fixture(line_id: line.id, disruption_id: disruption.id)
 
     session
-    |> visit("/disruptions/#{disruption.id}/edit")
+    |> visit("/disruptions/#{disruption.id}")
     |> scroll_down()
     |> assert_text("some-Weekday-service")
     |> click(Query.css("#edit-export-button-#{export.id}"))
@@ -103,7 +103,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
       )
 
     session
-    |> visit("/disruptions/#{disruption.id}/edit")
+    |> visit("/disruptions/#{disruption.id}")
     |> scroll_down()
     |> assert_text("some-Weekday-service")
     |> click(Query.css("#edit-export-button-#{export.id}"))
@@ -121,7 +121,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
     export = export_fixture(line_id: line.id, disruption_id: disruption.id)
 
     session
-    |> visit("/disruptions/#{disruption.id}/edit")
+    |> visit("/disruptions/#{disruption.id}")
     |> scroll_down()
     |> assert_text("some-Weekday-service")
     |> click(Query.css("#delete-export-button-#{export.id}"))
@@ -246,7 +246,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
          assert_service_ids
        ) do
     session
-    |> visit("/disruptions/#{disruption_id}/edit")
+    |> visit("/disruptions/#{disruption_id}")
     |> scroll_down()
     |> click(text("upload HASTUS export"))
     |> assert_text("add a new service schedule")
