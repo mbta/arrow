@@ -18,7 +18,7 @@ defmodule ArrowWeb.EditHastusExportForm do
   @impl true
   def render(assigns) do
     ~H"""
-    <div>
+    <div class="mt-3">
       <.simple_form
         :if={@show_upload_form}
         for={@form}

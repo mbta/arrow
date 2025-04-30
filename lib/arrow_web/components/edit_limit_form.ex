@@ -14,7 +14,7 @@ defmodule ArrowWeb.EditLimitForm do
 
   def render(assigns) do
     ~H"""
-    <div>
+    <div class="mt-3">
       <.simple_form
         :if={!is_nil(@limit_form)}
         for={@limit_form}

@@ -18,7 +18,7 @@ defmodule ArrowWeb.EditReplacementServiceForm do
 
   def render(assigns) do
     ~H"""
-    <div>
+    <div class="mt-3">
       <.simple_form
         :if={!is_nil(@form)}
         for={@form}
