@@ -37,7 +37,7 @@ defmodule ArrowWeb.EditHastusExportForm do
         phx-change="validate"
         phx-target={@myself}
       >
-        <div class="container border-2 border-dashed border-primary p-3">
+        <div class="container-fluid border-2 border-dashed border-primary p-3">
           <h4 class="text-primary">
             add a new service schedule
           </h4>
@@ -85,7 +85,7 @@ defmodule ArrowWeb.EditHastusExportForm do
         phx-change="validate"
         phx-target={@myself}
       >
-        <div class="container border-2 border-dashed border-primary p-3">
+        <div class="container-fluid border-2 border-dashed border-primary p-3">
           <h4 class="text-primary mb-0">
             {if @export.id, do: "edit service schedule", else: "add a new service schedule"}
           </h4>

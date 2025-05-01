@@ -38,7 +38,7 @@ defmodule ArrowWeb.EditLimitForm do
           type="hidden"
           name={input_name(@limit_form, :disruption_id)}
         />
-        <div class="container border-2 border-dashed border-primary p-3">
+        <div class="container-fluid border-2 border-dashed border-primary p-3">
           <h4 class="text-primary">
             {if @limit.id, do: "edit disruption limit", else: "add new disruption limit"}
           </h4>
@@ -88,7 +88,7 @@ defmodule ArrowWeb.EditLimitForm do
             </div>
           </div>
           <div class={[
-            "container justify-content-around mb-3",
+            "container-fluid justify-content-around mb-3",
             limit_day_of_weeks_used?(@limit_form) && @limit_form[:limit_day_of_weeks].errors != [] &&
               "is-invalid"
           ]}>

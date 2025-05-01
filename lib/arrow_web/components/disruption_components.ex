@@ -331,7 +331,7 @@ defmodule ArrowWeb.DisruptionComponents do
       <%= if Ecto.assoc_loaded?(@disruption.replacement_services) and Enum.any?(@disruption.replacement_services) do %>
         <div
           :for={replacement_service <- @disruption.replacement_services}
-          class="container border-2 border-dashed border-secondary border-mb-3 p-3 mb-3"
+          class="container-fluid border-2 border-dashed border-secondary border-mb-3 p-3 mb-3"
         >
           <div class="row">
             <div class="col-lg-1 pr-lg-0">

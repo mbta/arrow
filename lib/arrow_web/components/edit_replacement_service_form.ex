@@ -38,7 +38,7 @@ defmodule ArrowWeb.EditReplacementServiceForm do
         phx-target={@myself}
       >
         <input value={@disruption.id} type="hidden" name={input_name(@form, :disruption_id)} />
-        <div class="container border-2 border-dashed border-primary p-3">
+        <div class="container-fluid border-2 border-dashed border-primary p-3">
           <h4 class="text-primary">
             {if !@replacement_service.id,
               do: "add new replacement service component",
