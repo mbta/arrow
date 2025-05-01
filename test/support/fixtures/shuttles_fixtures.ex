@@ -18,7 +18,7 @@ defmodule Arrow.ShuttlesFixtures do
   @doc """
   Generate a unique shape name.
   """
-  def unique_shape_name, do: "some name#{System.unique_integer([:positive])}-S"
+  def unique_shape_name, do: "FromPlaceToOtherPlace#{System.unique_integer([:positive])}-S"
 
   @doc """
   Generate a shape.
