@@ -145,7 +145,7 @@ defmodule ArrowWeb.EditLimitForm do
           <div class="row">
             <div class="col-lg-3">
               <.button type="submit" class="btn-primary btn-sm w-100" phx-target={@myself}>
-                save limit
+                Save limit
               </.button>
             </div>
             <div class="col-lg-3">
@@ -155,7 +155,7 @@ defmodule ArrowWeb.EditLimitForm do
                 data-confirm="Are you sure you want to cancel? All changes to this limit will be lost!"
                 patch={~p"/disruptions/#{@limit.disruption_id}"}
               >
-                cancel
+                Cancel
               </.link>
             </div>
           </div>

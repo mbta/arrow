@@ -117,7 +117,7 @@ defmodule ArrowWeb.EditReplacementServiceForm do
                 class="btn btn-primary btn-sm w-100"
                 phx-target={@myself}
               >
-                save component
+                Save component
               </.button>
             </div>
             <div class="col-lg-3">
@@ -127,7 +127,7 @@ defmodule ArrowWeb.EditReplacementServiceForm do
                 data-confirm="Are you sure you want to cancel? All changes to this replacement service component will be lost!"
                 patch={~p"/disruptions/#{@disruption.id}"}
               >
-                cancel
+                Cancel
               </.link>
             </div>
           </div>

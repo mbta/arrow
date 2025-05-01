@@ -192,7 +192,7 @@ defmodule ArrowWeb.DisruptionComponents do
         patch={~p"/disruptions/#{@disruption.id}/limit/new"}
         id="add-limit-component"
       >
-        <.icon name="hero-plus" /> <span>add limit component</span>
+        <.icon name="hero-plus" /> <span>Add limit component</span>
       </.link>
 
       <%= if is_struct(@editing, Limit) and !@editing.id do %>
@@ -303,7 +303,7 @@ defmodule ArrowWeb.DisruptionComponents do
         id="upload-hastus-export-component"
       >
         <.icon name="hero-plus" />
-        <span>upload HASTUS export</span>
+        <span>Upload HASTUS export</span>
       </.link>
 
       <%= if is_struct(@editing, Export) and !@editing.id do %>
@@ -415,7 +415,7 @@ defmodule ArrowWeb.DisruptionComponents do
         class="btn-link"
         patch={~p"/disruptions/#{@disruption.id}/replacement_services/new"}
       >
-        <.icon name="hero-plus" /> <span>add replacement service component</span>
+        <.icon name="hero-plus" /> <span>Add replacement service component</span>
       </.link>
 
       <%= if @editing && is_struct(@editing, ReplacementService) && !@editing.id do %>

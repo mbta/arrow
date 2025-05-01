@@ -65,7 +65,7 @@ defmodule ArrowWeb.EditHastusExportForm do
                 class="btn btn-outline-primary btn-sm w-100"
                 patch={~p"/disruptions/#{@disruption.id}"}
               >
-                cancel
+                Cancel
               </.link>
             </div>
           </div>
@@ -232,7 +232,7 @@ defmodule ArrowWeb.EditHastusExportForm do
                   class="btn btn-primary btn-sm w-100"
                   phx-target={@myself}
                 >
-                  save
+                  Save
                 </.button>
               </div>
               <div class="col-lg-3">
@@ -242,7 +242,7 @@ defmodule ArrowWeb.EditHastusExportForm do
                   data-confirm="Are you sure you want to cancel? All changes to this HASTUS export will be lost!"
                   patch={~p"/disruptions/#{@disruption.id}"}
                 >
-                  cancel
+                  Cancel
                 </.link>
               </div>
             </div>
