@@ -10,6 +10,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
 
   @create_attrs %{
     disrupted_route_id: "",
+    suffix: "",
     routes: %{
       "0" => %{
         :_persistent_id => "0",
@@ -17,7 +18,6 @@ defmodule ArrowWeb.ShuttleLiveTest do
         direction_desc: "South",
         direction_id: "0",
         shape_id: "",
-        suffix: "",
         waypoint: ""
       },
       "1" => %{
@@ -26,7 +26,6 @@ defmodule ArrowWeb.ShuttleLiveTest do
         direction_desc: "North",
         direction_id: "1",
         shape_id: "",
-        suffix: "",
         waypoint: ""
       }
     },
@@ -36,13 +35,13 @@ defmodule ArrowWeb.ShuttleLiveTest do
 
   @update_attrs %{
     disrupted_route_id: "",
+    suffix: "",
     routes: %{
       "0" => %{
         :_persistent_id => "0",
         destination: "Broadway",
         direction_desc: "Outbound",
         direction_id: "0",
-        suffix: "",
         waypoint: ""
       },
       "1" => %{
@@ -50,7 +49,6 @@ defmodule ArrowWeb.ShuttleLiveTest do
         destination: "Harvard",
         direction_desc: "North",
         direction_id: "1",
-        suffix: "",
         waypoint: ""
       }
     },
@@ -242,7 +240,6 @@ defmodule ArrowWeb.ShuttleLiveTest do
             destination: "Broadway",
             direction_desc: "South",
             direction_id: "0",
-            suffix: "",
             waypoint: "",
             route_stops: %{
               "0" => %{

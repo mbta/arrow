@@ -12,13 +12,15 @@ defmodule Arrow.Shuttles.Shuttle do
           id: id,
           status: :draft | :active | :inactive,
           shuttle_name: String.t(),
-          disrupted_route_id: String.t()
+          disrupted_route_id: String.t(),
+          suffix: String.t()
         }
 
   schema "shuttles" do
     field :status, Ecto.Enum, values: [:draft, :active, :inactive]
     field :shuttle_name, :string
     field :disrupted_route_id, :string
+    field :suffix, :string
 
     has_many :routes, Arrow.Shuttles.Route, preload_order: [asc: :direction_id]
 
@@ -28,7 +30,7 @@ defmodule Arrow.Shuttles.Shuttle do
   @doc false
   def changeset(shuttle, attrs) do
     shuttle
-    |> cast(attrs, [:shuttle_name, :disrupted_route_id, :status])
+    |> cast(attrs, [:shuttle_name, :disrupted_route_id, :status, :suffix])
     |> cast_assoc(:routes, with: &Arrow.Shuttles.Route.changeset/2)
     |> validate_required([:shuttle_name, :status])
     |> validate_required_for(:status)

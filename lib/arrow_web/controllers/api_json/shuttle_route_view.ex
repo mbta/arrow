@@ -2,7 +2,7 @@ defmodule ArrowWeb.API.ShuttleRouteView do
   use ArrowWeb, :html
   use JaSerializer.PhoenixView
 
-  attributes([:suffix, :destination, :direction_id, :direction_desc, :waypoint, :shape_id])
+  attributes([:destination, :direction_id, :direction_desc, :waypoint, :shape_id])
 
   has_many :route_stops,
     serializer: ArrowWeb.API.ShuttleRouteStopView,
