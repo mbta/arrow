@@ -1129,7 +1129,6 @@ CREATE TABLE public.shuttle_routes (
     direction_desc character varying(255),
     destination character varying(255),
     waypoint character varying(255),
-    suffix character varying(255),
     shuttle_id bigint,
     shape_id bigint,
     inserted_at timestamp with time zone NOT NULL,
@@ -1166,7 +1165,8 @@ CREATE TABLE public.shuttles (
     disrupted_route_id character varying,
     status character varying(255),
     inserted_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    suffix character varying(255)
 );
 
 
@@ -2420,3 +2420,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250328193906);
 INSERT INTO public."schema_migrations" (version) VALUES (20250402181804);
 INSERT INTO public."schema_migrations" (version) VALUES (20250403191728);
 INSERT INTO public."schema_migrations" (version) VALUES (20250410180228);
+INSERT INTO public."schema_migrations" (version) VALUES (20250501125059);
