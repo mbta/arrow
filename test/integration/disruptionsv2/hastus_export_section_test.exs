@@ -37,7 +37,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
     session
     |> visit("/disruptions/#{disruption.id}")
     |> scroll_down()
-    |> click(text("upload HASTUS export"))
+    |> click(text("Upload HASTUS export"))
     |> assert_text("add a new service schedule")
     |> attach_file(file_field("hastus_export", visible: false),
       path: "test/support/fixtures/hastus/valid_export.zip"
@@ -55,7 +55,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
     session
     |> visit("/disruptions/#{disruption.id}")
     |> scroll_down()
-    |> click(text("upload HASTUS export"))
+    |> click(text("Upload HASTUS export"))
     |> assert_text("add a new service schedule")
     |> attach_file(file_field("hastus_export", visible: false),
       path: "test/support/fixtures/hastus/trips_no_shapes.zip"
@@ -248,7 +248,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
     session
     |> visit("/disruptions/#{disruption_id}")
     |> scroll_down()
-    |> click(text("upload HASTUS export"))
+    |> click(text("Upload HASTUS export"))
     |> assert_text("add a new service schedule")
     |> attach_file(file_field("hastus_export", visible: false), path: export_path)
     |> assert_text("Successfully imported export valid_export.zip!")
