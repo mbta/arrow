@@ -132,11 +132,27 @@ defmodule ArrowWeb.ShapeController do
 
   def delete(conn, %{"name" => name}) do
     shape = Shuttles.get_shape_by_name!(name)
-    {:ok, _shape} = Shuttles.delete_shape(shape)
 
-    conn
-    |> put_flash(:info, "Shape deleted successfully.")
-    |> redirect(to: ~p"/shapes")
+    case Shuttles.delete_shape(shape) do
+      {:ok, _shape} ->
+        conn
+        |> put_flash(:info, "Shape deleted successfully.")
+        |> redirect(to: ~p"/shapes")
+
+      {:error, error} ->
+        message =
+          case error do
+            error when is_binary(error) ->
+              error
+
+            error ->
+              inspect(error)
+          end
+
+        conn
+        |> put_flash(:error, message)
+        |> redirect(to: ~p"/shapes")
+    end
   end
 
   defp reset_upload do
