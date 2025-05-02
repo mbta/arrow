@@ -17,6 +17,7 @@ interface Shape {
 interface ShapeViewMapProps {
   shapes: Shape[]
 }
+type ShapeViewMapContainerProps = ShapeViewMapProps | { error: string }
 
 const COLORS = [
   "da291c",
@@ -141,4 +142,10 @@ const ShapeViewMap = ({ shapes }: ShapeViewMapProps) => {
   )
 }
 
-export default ShapeViewMap
+const ShapeViewMapContainer = (props: ShapeViewMapContainerProps) => {
+  if ("error" in props)
+    return <p className="text-red-500">Error: {props.error}</p>
+  return <ShapeViewMap {...props} />
+}
+
+export default ShapeViewMapContainer

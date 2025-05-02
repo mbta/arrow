@@ -108,7 +108,13 @@ defmodule ArrowWeb.ShapeController do
 
   def show(conn, %{"name" => name}) do
     shape = Shuttles.get_shape_by_name!(name)
-    shape_upload = Shuttles.get_shapes_upload(shape)
+
+    shape_upload =
+      case Shuttles.get_shapes_upload(shape) do
+        {:ok, shape_upload} -> shape_upload
+        _ -> nil
+      end
+
     render(conn, :show, shape: shape, shape_upload: shape_upload)
   end
 

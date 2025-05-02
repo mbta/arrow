@@ -24,6 +24,8 @@ defmodule ArrowWeb.ShapeView do
 
   def shapes_map_view({:ok, :disabled}), do: %{}
 
+  def shapes_map_view(_), do: %{error: "Failed to load shape file"}
+
   defp shape_map_view(%{coordinates: coordinates, name: name}) do
     %{
       coordinates: map_coordinates(coordinates),
@@ -73,11 +75,16 @@ defmodule ArrowWeb.ShapeView do
   defp shape_to_shapeview(%Shape{bucket: "disabled"}), do: nil
 
   defp shape_to_shapeview(%Shape{} = shape) do
-    shape
-    |> Shuttles.get_shapes_upload()
-    |> shapes_map_view()
-    |> Map.get(:shapes)
-    |> List.first()
+    case Shuttles.get_shapes_upload(shape) do
+      {:ok, shapes_upload} ->
+        shapes_upload
+        |> shapes_map_view()
+        |> Map.get(:shapes)
+        |> List.first()
+
+      {:error, _} ->
+        nil
+    end
   end
 
   defp shape_to_shapeview(_), do: nil

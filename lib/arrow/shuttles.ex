@@ -81,14 +81,14 @@ defmodule Arrow.Shuttles do
   ## Examples
 
       iex> get_shapes_upload(%Shape{})
-      %ShapesUpload{}
+      {:ok, %Ecto.Changeset{data: %ShapesUpload{}}
   """
   def get_shapes_upload(%Shape{} = shape) do
     with true <- Application.get_env(:arrow, :shape_storage_enabled?),
          {:ok, %{body: shapes_kml}} <- get_shape_file(shape),
          {:ok, parsed_shapes} <- ShapesUpload.parse_kml(shapes_kml),
          {:ok, shapes} <- ShapesUpload.shapes_from_kml(parsed_shapes) do
-      ShapesUpload.changeset(%ShapesUpload{}, %{filename: shape.name, shapes: shapes})
+      {:ok, ShapesUpload.changeset(%ShapesUpload{}, %{filename: shape.name, shapes: shapes})}
     else
       false -> {:ok, :disabled}
       error -> error
