@@ -248,8 +248,32 @@ defmodule Arrow.Shuttles do
 
   """
   def delete_shape(%Shape{} = shape) do
-    {:ok, _} = delete_shape_file(shape)
-    Repo.delete(shape)
+    case shuttles_using_shape(shape) do
+      [] ->
+        Repo.transaction(fn ->
+          {:ok, shape} = Repo.delete(shape)
+          {:ok, _} = delete_shape_file(shape)
+
+          shape
+        end)
+
+      shuttles ->
+        {:error,
+         "Shape is used by the following shuttle(s) and cannot be deleted: #{Enum.map_join(shuttles, ", ", &inspect(&1.shuttle_name))}"}
+    end
+  end
+
+  @doc """
+  Returns a list of shuttles using the given shape
+  """
+  def shuttles_using_shape(%Shape{} = shape) do
+    from(s in Arrow.Shuttles.Shuttle,
+      join: r in assoc(s, :routes),
+      where: r.shape_id == ^shape.id,
+      distinct: s,
+      select: s
+    )
+    |> Repo.all()
   end
 
   @doc """
