@@ -74,6 +74,19 @@ defmodule ArrowWeb.EditHastusExportForm do
               {@error}
             </p>
           </div>
+          <div :if={not is_nil(@trips_with_invalid_shapes)} class="mt-3">
+            <p class="alert alert-danger m-0">
+              Some trips have invalid or missing shapes.
+              <.button
+                type="button"
+                class="alert-danger"
+                phx-click="download_trips_with_invalid_shapes"
+                phx-target={@myself}
+              >
+                Download list of invalid trips
+              </.button>
+            </p>
+          </div>
         </div>
       </.simple_form>
 
@@ -262,6 +275,7 @@ defmodule ArrowWeb.EditHastusExportForm do
       |> assign(:show_service_import_form, false)
       |> assign(:form, nil)
       |> assign(:error, nil)
+      |> assign(:trips_with_invalid_shapes, nil)
       |> allow_upload(:hastus_export,
         accept: ~w(.zip),
         progress: &handle_progress/3,
@@ -377,6 +391,18 @@ defmodule ArrowWeb.EditHastusExportForm do
     {:noreply, assign(socket, confirming_dup_service_ids?: false)}
   end
 
+  def handle_event("download_trips_with_invalid_shapes", _params, socket) do
+    contents =
+      if trips_with_invalid_shapes = socket.assigns.trips_with_invalid_shapes do
+        Enum.join(trips_with_invalid_shapes, "\n")
+      end
+
+    socket =
+      send_download(socket, "trips_with_invalid_shapes.txt", contents, content_type: "text/plain")
+
+    {:noreply, socket}
+  end
+
   defp create_export(export_params, socket) do
     imported_services =
       for {key, value} <- export_params["services"],
@@ -452,6 +478,9 @@ defmodule ArrowWeb.EditHastusExportForm do
            entry,
            &ExportUpload.extract_data_from_upload(&1, socket.assigns.user_id)
          ) do
+      {:error, {:trips_with_invalid_shapes, trips_with_invalid_shapes}} ->
+        {:noreply, assign(socket, trips_with_invalid_shapes: trips_with_invalid_shapes)}
+
       {:error, error} ->
         {:noreply, assign(socket, error: error)}
 

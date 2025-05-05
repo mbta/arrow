@@ -49,7 +49,7 @@ defmodule Arrow.Hastus.ExportUpload do
     with {:ok, zip_bin, file_map} <- read_zip(zip_path, tmp_dir),
          {:ok, zip_bin, file_map, amended?} <- amend_service_ids(zip_bin, file_map, tmp_dir),
          revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
-         :ok <- validate_trip_shapes(revenue_trips),
+         :ok <- validate_trip_shapes(revenue_trips, file_map["all_shapes.txt"]),
          {:ok, line_id} <- infer_line(revenue_trips, file_map["all_stop_times.txt"]),
          {:ok, trip_route_directions} <-
            infer_green_line_branches(line_id, revenue_trips, file_map["all_stop_times.txt"]) do
@@ -245,15 +245,20 @@ defmodule Arrow.Hastus.ExportUpload do
     end
   end
 
-  defp validate_trip_shapes(revenue_trips) do
-    trips_with_invalid_shapes =
-      revenue_trips
-      |> Stream.filter(&(&1["shape_id"] in [nil, ""]))
-      |> Stream.map(& &1["trip_id"])
+  defp validate_trip_shapes(revenue_trips, shapes) do
+    shape_ids = MapSet.new(shapes, & &1["shape_id"])
 
-    if Enum.any?(trips_with_invalid_shapes),
-      do: {:error, "Trips found with invalid shapes"},
-      else: :ok
+    case revenue_trips
+         |> Stream.filter(
+           &(&1["shape_id"] in [nil, ""] or not MapSet.member?(shape_ids, &1["shape_id"]))
+         )
+         |> Enum.map(& &1["trip_id"]) do
+      [] ->
+        :ok
+
+      [_ | _] = trips_with_invalid_shapes ->
+        {:error, {:trips_with_invalid_shapes, trips_with_invalid_shapes}}
+    end
   end
 
   defp infer_line(revenue_trips, exported_stop_times) do

@@ -885,4 +885,51 @@ defmodule ArrowWeb.CoreComponents do
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
   end
+
+  @doc """
+  Sends a download over the LiveSocket.
+
+  This method relies on `data:` URIs which (at time of writing) are limited to
+  between 512MB and 2048MB depending on the browser being used. Larger files (
+  and perhaps even large files that fall within those limits) should use a
+  different method.
+
+  ## Options
+
+  - `content_type`: MIME type of the file to be downloaded
+
+  See the `phx:download-file` event in `app.tsx` for the client-side implementation.
+  """
+  @spec send_download(
+          Phoenix.LiveView.Socket.t(),
+          filename :: String.t(),
+          data :: String.t() | {:binary, binary()}
+        ) :: Phoenix.LiveView.Socket.t()
+  @spec send_download(
+          Phoenix.LiveView.Socket.t(),
+          filename :: String.t(),
+          data :: String.t() | {:binary, binary()},
+          opts :: Keyword.t()
+        ) :: Phoenix.LiveView.Socket.t()
+  def send_download(socket, filename, data, opts \\ []) do
+    content_type =
+      case {Keyword.fetch(opts, :content_type), data} do
+        {{:ok, content_type}, _} -> content_type
+        {:error, {:binary, _}} -> "application/octet-stream"
+        {:error, _} -> "text/plain"
+      end
+
+    {base64, contents} =
+      case data do
+        {:binary, data} -> {true, Base.encode64(data)}
+        data -> {false, data}
+      end
+
+    Phoenix.LiveView.push_event(socket, "download-file", %{
+      base64: base64,
+      contents: contents,
+      filename: filename,
+      content_type: content_type
+    })
+  end
 end
