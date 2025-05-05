@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.12 (Postgres.app)
--- Dumped by pg_dump version 15.12 (Postgres.app)
+-- Dumped from database version 15.10 (Postgres.app)
+-- Dumped by pg_dump version 15.10 (Postgres.app)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -28,6 +28,20 @@ CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA public;
 --
 
 COMMENT ON EXTENSION btree_gist IS 'support for indexing common datatypes in GiST';
+
+
+--
+-- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION postgis IS 'PostGIS geometry and geography spatial types and functions';
 
 
 --

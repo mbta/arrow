@@ -1,131 +1,43 @@
-defmodule ArrowWeb.HastusExportSection do
-  @moduledoc """
-  LiveComponent used by disruptions to upload HASTUS service schedules
-  """
-
+defmodule ArrowWeb.EditHastusExportForm do
+  @moduledoc false
   use ArrowWeb, :live_component
+
   import Phoenix.HTML.Form
 
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Hastus
-  alias Arrow.Hastus.{Export, ExportUpload, ServiceDate}
-  alias Phoenix.LiveView
+  alias Arrow.Hastus.Export
+  alias Arrow.Hastus.ExportUpload
+  alias Arrow.Hastus.ServiceDate
+  alias Phoenix.LiveView.UploadEntry
 
-  attr :id, :string
-  attr :form, :any, required: true
-  attr :uploads, :any
-  attr :icon_paths, :map, required: true
-  attr :error, :string
-  attr :user_id, :string
-  attr :uploaded_file_name, :string
-  attr :uploaded_file_data, :any
   attr :disruption, DisruptionV2, required: true
-  attr :disabled?, :boolean
-  attr :confirming_dup_service_ids?, :boolean, default: false
+  attr :export, Export, required: true
+  attr :icon_paths, :map, required: true
 
-  @line_icon_names %{
-    "line-Blue" => :blue_line,
-    "line-Green" => :green_line,
-    "line-Orange" => :orange_line,
-    "line-Red" => :red_line,
-    "line-Mattapan" => :mattapan_line
-  }
-
+  @impl true
   def render(assigns) do
     ~H"""
-    <section id={@id} class="py-4 my-4">
-      <h3>HASTUS Service Schedules</h3>
-      <%= if Ecto.assoc_loaded?(@disruption.hastus_exports) and Enum.any?(@disruption.hastus_exports) do %>
-        <div
-          :for={export <- @disruption.hastus_exports}
-          id={"export-table-#{export.id}"}
-          class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3"
-        >
-          <% imported_services = Enum.filter(export.services, & &1.import?) %>
-          <table class="w-[40rem] sm:w-full">
-            <thead>
-              <tr>
-                <th>route</th>
-                <th>service ID</th>
-                <th>start date</th>
-                <th>end date</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody class="relative divide-y divide-zinc-100 border-t border-zinc-200 text-sm leading-6 text-zinc-700">
-              <tr :for={{service, i} <- Enum.with_index(imported_services)}>
-                <td class="align-top">
-                  <span
-                    :if={i == 0}
-                    class="m-icon m-icon-sm mr-1"
-                    style={"background-image: url('#{line_icon_path(@icon_paths, export.line.id)}');"}
-                  />
-                </td>
-                <td class="align-top">{service.name}</td>
-                <td>
-                  <div :for={date <- Enum.map(service.service_dates, & &1.start_date)}>
-                    <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
-                    {Calendar.strftime(date, "%m/%d/%Y")}
-                  </div>
-                </td>
-                <td>
-                  <div :for={date <- Enum.map(service.service_dates, & &1.end_date)}>
-                    <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
-                    {Calendar.strftime(date, "%m/%d/%Y")}
-                  </div>
-                </td>
-                <td :if={i == length(imported_services) - 1}>
-                  <div class="text-right">
-                    <.button
-                      id={"edit-export-button-#{export.id}"}
-                      class="btn-sm p-0"
-                      disabled={!is_nil(@form) or @disabled?}
-                      type="button"
-                      phx-click="edit_export"
-                      phx-value-export={export.id}
-                      phx-target={@myself}
-                    >
-                      <.icon name="hero-pencil-solid" class="bg-primary" />
-                    </.button>
-                    <.button
-                      id={"delete-export-button-#{export.id}"}
-                      class="btn-sm p-0"
-                      disabled={!is_nil(@form) or @disabled?}
-                      type="button"
-                      phx-click="delete_export"
-                      phx-value-export={export.id}
-                      phx-target={@myself}
-                      data-confirm="Are you sure you want to delete this export?"
-                    >
-                      <.icon name="hero-trash-solid" class="bg-primary" />
-                    </.button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      <% end %>
-      <.button
-        :if={is_nil(@form)}
-        type="button"
-        class="btn-link"
-        phx-click="upload_hastus_export"
-        id="upload-hastus-export-component"
-        disabled={@disabled?}
-      >
-        <.icon name="hero-plus" /> <span>upload HASTUS export</span>
-      </.button>
-
+    <div
+      class="mt-3 overflow-hidden"
+      style="display: none"
+      phx-mounted={
+        JS.show(transition: {"ease-in duration-300", "max-h-0", "max-h-screen"}, time: 300)
+        |> JS.focus()
+      }
+      phx-remove={
+        JS.hide(transition: {"ease-out duration-300", "max-h-screen", "max-h-0"}, time: 300)
+      }
+    >
       <.simple_form
         :if={@show_upload_form}
         for={@form}
         id="upload-form"
-        phx-submit={@action}
+        phx-submit="save"
         phx-change="validate"
         phx-target={@myself}
       >
-        <div class="container border-2 border-dashed border-primary p-3">
+        <div class="container-fluid border-2 border-dashed border-primary p-3">
           <h4 class="text-primary">
             add a new service schedule
           </h4>
@@ -148,16 +60,13 @@ defmodule ArrowWeb.HastusExportSection do
               </.button>
             </div>
             <div class="col-lg-3">
-              <.button
-                disabled={Enum.any?(@uploads.hastus_export.entries)}
-                type="button"
+              <.link
                 id="cancel_add_hastus_export_button"
-                class="btn-outline-primary btn-sm w-100"
-                phx-click="cancel_add_hastus_export"
-                phx-target={@myself}
+                class="btn btn-outline-primary btn-sm w-100"
+                patch={~p"/disruptions/#{@disruption.id}"}
               >
-                cancel
-              </.button>
+                Cancel
+              </.link>
             </div>
           </div>
           <div :if={not is_nil(@error)} class="mt-3">
@@ -172,13 +81,13 @@ defmodule ArrowWeb.HastusExportSection do
         :if={@show_service_import_form}
         for={@form}
         id="service-import-form"
-        phx-submit={@action}
+        phx-submit="save"
         phx-change="validate"
         phx-target={@myself}
       >
-        <div class="container border-2 border-dashed border-primary p-3">
+        <div class="container-fluid border-2 border-dashed border-primary p-3">
           <h4 class="text-primary mb-0">
-            {if @action == "create", do: "add a new service schedule", else: "edit service schedule"}
+            {if @export.id, do: "edit service schedule", else: "add a new service schedule"}
           </h4>
           <div :if={not is_nil(@error)} class="text-danger">
             {@error}
@@ -305,15 +214,13 @@ defmodule ArrowWeb.HastusExportSection do
                 </.button>
               </div>
               <div class="col-lg-auto">
-                <.button
+                <.link
                   id="reject-duplicate-service-ids-button"
-                  type="button"
                   class="btn btn-outline-primary btn-sm"
-                  phx-click="cancel_add_hastus_export"
-                  phx-target={@myself}
+                  patch={~p"/disruptions/#{@disruption.id}"}
                 >
                   No, cancel upload
-                </.button>
+                </.link>
               </div>
             </div>
           <% else %>
@@ -325,156 +232,67 @@ defmodule ArrowWeb.HastusExportSection do
                   class="btn btn-primary btn-sm w-100"
                   phx-target={@myself}
                 >
-                  save
+                  Save
                 </.button>
               </div>
               <div class="col-lg-3">
-                <.button
-                  type="button"
+                <.link
                   id="cancel_add_hastus_export_button"
-                  class="btn-outline-primary btn-sm w-100"
+                  class="btn btn-outline-primary btn-sm w-100"
                   data-confirm="Are you sure you want to cancel? All changes to this HASTUS export will be lost!"
-                  phx-click="cancel_add_hastus_export"
-                  phx-target={@myself}
+                  patch={~p"/disruptions/#{@disruption.id}"}
                 >
-                  cancel
-                </.button>
+                  Cancel
+                </.link>
               </div>
             </div>
           <% end %>
         </div>
       </.simple_form>
-    </section>
+    </div>
     """
   end
 
-  def update(%{hastus_export: nil} = assigns, socket) do
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign(form: nil)
-     |> assign(action: "create")
-     |> assign(show_upload_form: false)
-     |> assign(show_service_import_form: false)
-     |> assign(error: nil)
-     |> assign(uploaded_file_name: nil)
-     |> assign(uploaded_file_data: nil)
-     |> assign(export: %Export{})
-     |> allow_upload(:hastus_export,
-       accept: ~w(.zip),
-       progress: &handle_progress/3,
-       auto_upload: true
-     )}
+  @impl true
+  def update(%{export: %{id: nil}} = assigns, socket) do
+    socket =
+      socket
+      |> assign(assigns)
+      |> assign(:show_upload_form, true)
+      |> assign(:show_service_import_form, false)
+      |> assign(:form, nil)
+      |> assign(:error, nil)
+      |> allow_upload(:hastus_export,
+        accept: ~w(.zip),
+        progress: &handle_progress/3,
+        auto_upload: true
+      )
+
+    {:ok, socket}
   end
 
   def update(assigns, socket) do
-    hastus_export = assigns.hastus_export
-    form = hastus_export |> Export.changeset(%{}) |> to_form()
-    action = if is_nil(assigns.hastus_export.id), do: "create", else: "update"
+    form =
+      assigns.export
+      |> Hastus.change_export()
+      |> to_form()
 
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign(form: form)
-     |> assign(action: action)
-     |> assign(show_upload_form: true)
-     |> assign(show_service_import_form: false)
-     |> assign(error: nil)
-     |> assign(uploaded_file_name: nil)
-     |> assign(uploaded_file_data: nil)
-     |> assign(export: hastus_export)
-     |> allow_upload(:hastus_export,
-       accept: ~w(.zip),
-       progress: &handle_progress/3,
-       auto_upload: true
-     )}
+    filename = assigns.export.s3_path |> String.split("/") |> List.last()
+
+    socket =
+      socket
+      |> assign(assigns)
+      |> assign(:show_upload_form, false)
+      |> assign(:show_service_import_form, true)
+      |> assign(:form, form)
+      |> assign(:uploaded_file_name, filename)
+      |> assign(:error, nil)
+      |> assign(:confirming_dup_service_ids?, false)
+
+    {:ok, socket}
   end
 
-  def handle_event("create", %{"export" => export_params}, socket) do
-    imported_services =
-      for {key, value} <- export_params["services"],
-          value["import?"] == "true",
-          into: %{},
-          do: {key, value}
-
-    if imported_services == %{} do
-      {:noreply, assign(socket, error: "You must import at least one service")}
-    else
-      with {:ok, s3_path} <-
-             ExportUpload.upload_to_s3(
-               socket.assigns.uploaded_file_data,
-               socket.assigns.uploaded_file_name
-             ),
-           {:ok, _} <-
-             Hastus.create_export(%{
-               export_params
-               | "s3_path" => s3_path
-             }) do
-        send(self(), :update_disruption)
-        send(self(), {:put_flash, :info, "HASTUS service schedules imported successfully!"})
-
-        {:noreply,
-         socket
-         |> assign(export: nil)
-         |> assign(form: nil)
-         |> assign(show_upload_form: false)
-         |> assign(show_service_import_form: false)}
-      else
-        {:error, %Ecto.Changeset{} = changeset} ->
-          {:noreply, assign(socket, form: to_form(changeset))}
-
-        {:error, _} ->
-          {:noreply, assign(socket, error: "Failed to upload export to S3")}
-      end
-    end
-  end
-
-  def handle_event("update", %{"export" => export_params}, socket) do
-    imported_services =
-      for {key, value} <- export_params["services"],
-          value["import?"] == "true",
-          into: %{},
-          do: {key, value}
-
-    if imported_services == %{} do
-      {:noreply, assign(socket, error: "You must import at least one service")}
-    else
-      export = Hastus.get_export!(socket.assigns.export.id)
-
-      case Hastus.update_export(export, export_params) do
-        {:ok, _} ->
-          send(self(), :update_disruption)
-          send(self(), {:put_flash, :info, "HASTUS service schedules updated successfully!"})
-
-          {:noreply,
-           socket
-           |> assign(export: nil)
-           |> assign(form: nil)
-           |> assign(show_upload_form: false)
-           |> assign(show_service_import_form: false)}
-
-        {:error, %Ecto.Changeset{} = changeset} ->
-          {:noreply, assign(socket, form: to_form(changeset))}
-      end
-    end
-  end
-
-  def handle_event("cancel_add_hastus_export", _params, socket) do
-    send(self(), :cancel_hastus_export_form)
-
-    {:noreply,
-     socket
-     |> assign(export: nil)
-     |> assign(form: nil)
-     |> assign(show_upload_form: false)
-     |> assign(show_service_import_form: false)
-     |> assign(confirming_dup_service_ids?: false)}
-  end
-
-  def handle_event("confirm_dup_service_ids", _params, socket) do
-    {:noreply, assign(socket, confirming_dup_service_ids?: false)}
-  end
-
+  @impl true
   def handle_event("validate", %{"_target" => ["hastus_export"]}, socket) do
     socket = socket |> clear_flash() |> assign(error: nil)
 
@@ -547,44 +365,84 @@ defmodule ArrowWeb.HastusExportSection do
     {:noreply, socket}
   end
 
-  def handle_event("edit_export", %{"export" => export_id}, socket) do
-    {parsed_id, _} = Integer.parse(export_id)
-    export = Hastus.get_export!(parsed_id)
-    filename = export.s3_path |> String.split("/") |> List.last()
-
-    {:noreply,
-     socket
-     |> assign(form: export |> Hastus.change_export() |> to_form())
-     |> assign(export: export)
-     |> assign(show_service_import_form: true)
-     |> assign(show_upload_form: false)
-     |> assign(uploaded_file_name: filename)
-     |> assign(action: "update")}
-  end
-
-  def handle_event("delete_export", %{"export" => export_id}, socket) do
-    {parsed_id, _} = Integer.parse(export_id)
-    export = Hastus.get_export!(parsed_id)
-
-    case Hastus.delete_export(export) do
-      {:ok, _} ->
-        send(self(), :update_disruption)
-        send(self(), {:put_flash, :info, "Export deleted successfully"})
-        {:noreply, socket}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        send(self(), {:put_flash, :error, "Error when deleting export!"})
-        {:noreply, assign(socket, form: to_form(changeset))}
+  def handle_event("save", %{"export" => export_params}, socket) do
+    if socket.assigns.export.id do
+      update_export(export_params, socket)
+    else
+      create_export(export_params, socket)
     end
   end
 
-  defp handle_progress(:hastus_export, %LiveView.UploadEntry{done?: false}, socket) do
+  def handle_event("confirm_dup_service_ids", _params, socket) do
+    {:noreply, assign(socket, confirming_dup_service_ids?: false)}
+  end
+
+  defp create_export(export_params, socket) do
+    imported_services =
+      for {key, value} <- export_params["services"],
+          value["import?"] == "true",
+          into: %{},
+          do: {key, value}
+
+    if imported_services == %{} do
+      {:noreply, assign(socket, error: "You must import at least one service")}
+    else
+      with {:ok, s3_path} <-
+             ExportUpload.upload_to_s3(
+               socket.assigns.uploaded_file_data,
+               socket.assigns.uploaded_file_name
+             ),
+           {:ok, _} <-
+             Hastus.create_export(%{
+               export_params
+               | "s3_path" => s3_path
+             }) do
+        {:noreply,
+         socket
+         |> push_patch(to: "/disruptions/#{socket.assigns.disruption.id}")
+         |> put_flash(:info, "HASTUS service schedules imported successfully!")}
+      else
+        {:error, %Ecto.Changeset{} = changeset} ->
+          {:noreply, assign(socket, form: to_form(changeset))}
+
+        {:error, _} ->
+          {:noreply, assign(socket, error: "Failed to upload export to S3")}
+      end
+    end
+  end
+
+  defp update_export(export_params, socket) do
+    imported_services =
+      for {key, value} <- export_params["services"],
+          value["import?"] == "true",
+          into: %{},
+          do: {key, value}
+
+    if imported_services == %{} do
+      {:noreply, assign(socket, error: "You must import at least one service")}
+    else
+      export = Hastus.get_export!(socket.assigns.export.id)
+
+      case Hastus.update_export(export, export_params) do
+        {:ok, _} ->
+          {:noreply,
+           socket
+           |> push_patch(to: "/disruptions/#{socket.assigns.disruption.id}")
+           |> put_flash(:info, "HASTUS service schedules updated successfully!")}
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          {:noreply, assign(socket, form: to_form(changeset))}
+      end
+    end
+  end
+
+  defp handle_progress(:hastus_export, %UploadEntry{done?: false}, socket) do
     {:noreply, socket}
   end
 
   defp handle_progress(
          :hastus_export,
-         %LiveView.UploadEntry{client_name: client_name} = entry,
+         %UploadEntry{client_name: client_name} = entry,
          socket
        ) do
     socket = socket |> clear_flash() |> assign(error: nil)
@@ -619,10 +477,6 @@ defmodule ArrowWeb.HastusExportSection do
            confirming_dup_service_ids?: export_data.dup_service_ids_amended?
          )}
     end
-  end
-
-  defp line_icon_path(icon_paths, line_id) do
-    Map.get(icon_paths, @line_icon_names[line_id])
   end
 
   defp format_line_id(line_id), do: String.replace(line_id, "line-", "")

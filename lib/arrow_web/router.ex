@@ -54,7 +54,30 @@ defmodule ArrowWeb.Router do
 
     get("/", DisruptionV2Controller, :index)
     live("/disruptions/new", DisruptionV2ViewLive, :new)
+    live("/disruptions/:id", DisruptionV2ViewLive, :show)
     live("/disruptions/:id/edit", DisruptionV2ViewLive, :edit)
+    live("/disruptions/:id/limit/new", DisruptionV2ViewLive, :new_limit)
+    live("/disruptions/:id/limit/:limit_id/edit", DisruptionV2ViewLive, :edit_limit)
+    live("/disruptions/:id/limit/:limit_id/duplicate", DisruptionV2ViewLive, :duplicate_limit)
+    live("/disruptions/:id/hastus_export/new", DisruptionV2ViewLive, :new_hastus_export)
+
+    live(
+      "/disruptions/:id/hastus_export/:export_id/edit",
+      DisruptionV2ViewLive,
+      :edit_hastus_export
+    )
+
+    live(
+      "/disruptions/:id/replacement_services/new",
+      DisruptionV2ViewLive,
+      :new_replacement_service
+    )
+
+    live(
+      "/disruptions/:id/replacement_services/:replacement_service_id/edit",
+      DisruptionV2ViewLive,
+      :edit_replacement_service
+    )
 
     live("/stops/new", StopViewLive, :new)
     live("/stops/:stop_id/edit", StopViewLive, :edit)
