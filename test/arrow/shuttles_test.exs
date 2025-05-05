@@ -49,7 +49,7 @@ defmodule Arrow.ShuttlesTest do
 
       new_shape = s3_mocked_shape_fixture()
       shape = Shuttles.get_shape!(new_shape.id)
-      assert %Ecto.Changeset{valid?: true} = Shuttles.get_shapes_upload(shape)
+      assert {:ok, %Ecto.Changeset{valid?: true}} = Shuttles.get_shapes_upload(shape)
     end
   end
 
