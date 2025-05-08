@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.10 (Homebrew)
--- Dumped by pg_dump version 15.10 (Homebrew)
+-- Dumped from database version 15.10 (Postgres.app)
+-- Dumped by pg_dump version 15.10 (Postgres.app)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -28,6 +28,20 @@ CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA public;
 --
 
 COMMENT ON EXTENSION btree_gist IS 'support for indexing common datatypes in GiST';
+
+
+--
+-- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION postgis IS 'PostGIS geometry and geography spatial types and functions';
 
 
 --
@@ -1129,7 +1143,6 @@ CREATE TABLE public.shuttle_routes (
     direction_desc character varying(255),
     destination character varying(255),
     waypoint character varying(255),
-    suffix character varying(255),
     shuttle_id bigint,
     shape_id bigint,
     inserted_at timestamp with time zone NOT NULL,
@@ -1166,7 +1179,8 @@ CREATE TABLE public.shuttles (
     disrupted_route_id character varying,
     status character varying(255),
     inserted_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    suffix character varying(255)
 );
 
 
@@ -2420,3 +2434,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250328193906);
 INSERT INTO public."schema_migrations" (version) VALUES (20250402181804);
 INSERT INTO public."schema_migrations" (version) VALUES (20250403191728);
 INSERT INTO public."schema_migrations" (version) VALUES (20250410180228);
+INSERT INTO public."schema_migrations" (version) VALUES (20250501125059);

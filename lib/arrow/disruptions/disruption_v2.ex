@@ -53,7 +53,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   end
 
   def new(attrs \\ %{}) do
-    %__MODULE__{limits: [], replacement_services: []}
+    %__MODULE__{limits: [], replacement_services: [], mode: :subway}
     |> struct!(attrs)
   end
 

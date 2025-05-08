@@ -7,12 +7,14 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
   describe "index/2" do
     @tag :authenticated
     test "non-admin user can access the disruptions API", %{conn: conn} do
-      assert %{status: 200} = get(conn, "/api/disruptions")
+      assert %{status: 200} =
+               get(conn, "/api/disruptions", start_date: "2019-10-01", end_date: "2019-12-01")
     end
 
     @tag :authenticated_admin
     test "returns 200", %{conn: conn} do
-      assert %{status: 200} = get(conn, "/api/disruptions")
+      assert %{status: 200} =
+               get(conn, "/api/disruptions", start_date: "2019-10-01", end_date: "2019-12-01")
     end
 
     @tag :authenticated_admin
@@ -48,7 +50,11 @@ defmodule ArrowWeb.API.DisruptionControllerTest do
 
       {:ok, _multi} = Disruption.update(d1.id, "author", %{end_date: ~D[2020-01-01]})
 
-      res = json_response(get(conn, "/api/disruptions"), 200)
+      res =
+        json_response(
+          get(conn, "/api/disruptions", start_date: "2019-10-01", end_date: "2019-12-01"),
+          200
+        )
 
       assert %{
                "data" => data,

@@ -11,9 +11,13 @@
       Oops, something went wrong! Please check the errors below.
     </.error>
     <%= if f[:shapes] do %>
-      <div class="grid grid-cols-3 gap-4">
+      <div class="grid grid-cols-7 gap-4">
         <div class="block text-sm font-semibold leading-6 text-zinc-800">Uploaded Name</div>
-        <div class="block text-sm font-semibold leading-6 text-zinc-800">New Name</div>
+        <div class="block text-sm font-semibold leading-6 text-zinc-800">Start Location</div>
+        <div />
+        <div class="block text-sm font-semibold leading-6 text-zinc-800">End Location</div>
+        <div />
+        <div class="block text-sm font-semibold leading-6 text-zinc-800">Suffix (optional)</div>
         <div class="block text-sm font-semibold leading-6 text-zinc-800">Save?</div>
         <.inputs_for
           :let={f_nested}
@@ -23,7 +27,11 @@
           skip_hidden={true}
         >
           <.input field={f_nested[:name]} class="flex align-items-center" disabled />
-          <.input field={f_nested[:name]} class="flex align-items-center" />
+          <.input field={f_nested[:start_location]} class="flex align-items-center" />
+          <span>To</span>
+          <.input field={f_nested[:end_location]} class="flex align-items-center" />
+          <span>Via</span>
+          <.input field={f_nested[:suffix]} class="flex align-items-center" />
           <.input field={f_nested[:save]} type="checkbox" />
           <div class="hidden">
             <.input

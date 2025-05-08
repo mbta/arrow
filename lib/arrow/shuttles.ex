@@ -81,14 +81,14 @@ defmodule Arrow.Shuttles do
   ## Examples
 
       iex> get_shapes_upload(%Shape{})
-      %ShapesUpload{}
+      {:ok, %Ecto.Changeset{data: %ShapesUpload{}}
   """
   def get_shapes_upload(%Shape{} = shape) do
     with true <- Application.get_env(:arrow, :shape_storage_enabled?),
          {:ok, %{body: shapes_kml}} <- get_shape_file(shape),
          {:ok, parsed_shapes} <- ShapesUpload.parse_kml(shapes_kml),
          {:ok, shapes} <- ShapesUpload.shapes_from_kml(parsed_shapes) do
-      ShapesUpload.changeset(%ShapesUpload{}, %{filename: shape.name, shapes: shapes})
+      {:ok, ShapesUpload.changeset(%ShapesUpload{}, %{filename: shape.name, shapes: shapes})}
     else
       false -> {:ok, :disabled}
       error -> error
@@ -248,8 +248,32 @@ defmodule Arrow.Shuttles do
 
   """
   def delete_shape(%Shape{} = shape) do
-    {:ok, _} = delete_shape_file(shape)
-    Repo.delete(shape)
+    case shuttles_using_shape(shape) do
+      [] ->
+        Repo.transaction(fn ->
+          {:ok, shape} = Repo.delete(shape)
+          {:ok, _} = delete_shape_file(shape)
+
+          shape
+        end)
+
+      shuttles ->
+        {:error,
+         "Shape is used by the following shuttle(s) and cannot be deleted: #{Enum.map_join(shuttles, ", ", &inspect(&1.shuttle_name))}"}
+    end
+  end
+
+  @doc """
+  Returns a list of shuttles using the given shape
+  """
+  def shuttles_using_shape(%Shape{} = shape) do
+    from(s in Arrow.Shuttles.Shuttle,
+      join: r in assoc(s, :routes),
+      where: r.shape_id == ^shape.id,
+      distinct: s,
+      select: s
+    )
+    |> Repo.all()
   end
 
   @doc """

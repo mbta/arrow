@@ -32,8 +32,8 @@
       <% {start_date, end_date} = Disruptions.start_end_dates(disruption) %>
       <tr class="align-top">
         <td class="col-lg-auto">
-          <a href={~p"/disruptions/#{disruption.id}/edit"} class="btn-link btn-sm p-0">
-            <.icon name="hero-pencil-square-solid" />
+          <a href={~p"/disruptions/#{disruption.id}"} class="btn-link btn-sm p-0">
+            <.icon name="hero-eye-solid" />
           </a>
         </td>
 

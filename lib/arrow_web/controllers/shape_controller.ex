@@ -25,7 +25,6 @@ defmodule ArrowWeb.ShapeController do
 
   def create(conn, %{"shapes_upload" => shapes_upload}) do
     filename = shapes_upload["filename"].filename
-    reset_upload = ShapesUpload.changeset(%ShapesUpload{shapes: []}, %{})
 
     with {:ok, saxy_shapes} <- ShapesUpload.parse_kml_from_file(shapes_upload),
          {:ok, shapes} <- ShapesUpload.shapes_from_kml(saxy_shapes),
@@ -35,7 +34,7 @@ defmodule ArrowWeb.ShapeController do
         conn
         |> put_flash(
           :info,
-          "Successfully parsed shapes #{inspect(shapes)} from file"
+          "Successfully parsed shapes from file"
         )
         |> render(:select, form: changeset |> Phoenix.Component.to_form())
       else
@@ -44,24 +43,37 @@ defmodule ArrowWeb.ShapeController do
           :errors,
           {"Error parsing shapes from file", ErrorHelpers.changeset_error_messages(changeset)}
         )
-        |> render(:new_bulk, errors: changeset.errors, shapes_upload: reset_upload)
+        |> render(:new_bulk, errors: changeset.errors, shapes_upload: reset_upload())
       end
     else
       {:error, reason} ->
         conn
         |> put_flash(:errors, reason)
-        |> render(:new_bulk, errors: reason, shapes_upload: reset_upload)
+        |> render(:new_bulk, errors: reason, shapes_upload: reset_upload())
     end
   end
 
   def create(conn, %{"shapes" => shapes}) do
-    reset_upload = ShapesUpload.changeset(%ShapesUpload{shapes: []}, %{})
-
     saved_shapes =
       shapes
       |> Enum.map(fn {_idx, shape} -> shape end)
       |> Enum.filter(fn shape -> shape["save"] == "true" end)
-      |> Enum.map(fn shape -> %{name: shape["name"], coordinates: shape["coordinates"]} end)
+      |> Enum.map(fn shape ->
+        start_location = Map.get(shape, "start_location")
+        end_location = Map.get(shape, "end_location")
+        suffix = Map.get(shape, "suffix")
+
+        name = "#{start_location}To#{end_location}"
+
+        name =
+          if suffix && suffix != "" do
+            "#{name}Via#{suffix}"
+          else
+            name
+          end
+
+        %{name: name, coordinates: shape["coordinates"]}
+      end)
 
     case Shuttles.create_shapes(saved_shapes) do
       {:ok, []} ->
@@ -90,13 +102,19 @@ defmodule ArrowWeb.ShapeController do
           :errors,
           reason
         )
-        |> render(:new_bulk, shapes_upload: reset_upload, errors: reason)
+        |> render(:new_bulk, shapes_upload: reset_upload(), errors: reason)
     end
   end
 
   def show(conn, %{"name" => name}) do
     shape = Shuttles.get_shape_by_name!(name)
-    shape_upload = Shuttles.get_shapes_upload(shape)
+
+    shape_upload =
+      case Shuttles.get_shapes_upload(shape) do
+        {:ok, shape_upload} -> shape_upload
+        _ -> nil
+      end
+
     render(conn, :show, shape: shape, shape_upload: shape_upload)
   end
 
@@ -120,10 +138,30 @@ defmodule ArrowWeb.ShapeController do
 
   def delete(conn, %{"name" => name}) do
     shape = Shuttles.get_shape_by_name!(name)
-    {:ok, _shape} = Shuttles.delete_shape(shape)
 
-    conn
-    |> put_flash(:info, "Shape deleted successfully.")
-    |> redirect(to: ~p"/shapes")
+    case Shuttles.delete_shape(shape) do
+      {:ok, _shape} ->
+        conn
+        |> put_flash(:info, "Shape deleted successfully.")
+        |> redirect(to: ~p"/shapes")
+
+      {:error, error} ->
+        message =
+          case error do
+            error when is_binary(error) ->
+              error
+
+            error ->
+              inspect(error)
+          end
+
+        conn
+        |> put_flash(:error, message)
+        |> redirect(to: ~p"/shapes")
+    end
+  end
+
+  defp reset_upload do
+    ShapesUpload.changeset(%ShapesUpload{shapes: []}, %{})
   end
 end

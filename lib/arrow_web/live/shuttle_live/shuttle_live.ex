@@ -57,6 +57,9 @@ defmodule ArrowWeb.ShuttleViewLive do
             options={Ecto.Enum.values(Arrow.Shuttles.Shuttle, :status)}
           />
         </div>
+        <div class="col">
+          <.input field={@form[:suffix]} type="text" label="Suffix" />
+        </div>
       </div>
       <div class="row mb-3">
         <div class="col">
@@ -87,7 +90,7 @@ defmodule ArrowWeb.ShuttleViewLive do
                   type="select"
                   label="Direction Description"
                   prompt="Choose a value"
-                  options={Ecto.Enum.values(Arrow.Shuttles.Route, :direction_desc)}
+                  options={Arrow.Shuttles.Route.direction_desc_values(f_route[:direction_id].value)}
                 />
               </div>
               <div class="col offset-md-1">
@@ -112,11 +115,6 @@ defmodule ArrowWeb.ShuttleViewLive do
               </div>
               <div class="col">
                 <.input field={f_route[:waypoint]} type="text" label="Waypoint" />
-              </div>
-            </div>
-            <div class="row">
-              <div class="col">
-                <.input field={f_route[:suffix]} type="text" label="Suffix" />
               </div>
             </div>
           </div>

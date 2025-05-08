@@ -13,7 +13,7 @@ defmodule Arrow.ShuttlesTest do
 
   describe "shapes with s3 functionality enabled (mocked)" do
     @valid_shape %{
-      name: "some name-S",
+      name: "FromPlaceAToPlaceBViaC-S",
       coordinates: "-71.14163,42.39551 -71.14163,42.39551 -71.14163,42.39551"
     }
 
@@ -22,7 +22,7 @@ defmodule Arrow.ShuttlesTest do
       reassign_env(:shape_storage_prefix, "prefix/#{Ecto.UUID.generate()}/")
 
       assert {:ok, %Shape{} = shape} = Shuttles.create_shape(@valid_shape)
-      assert shape.name == "some name-S"
+      assert shape.name == "FromPlaceAToPlaceBViaC-S"
       Application.put_env(:arrow, :shape_storage_enabled?, false)
     end
 
@@ -31,9 +31,9 @@ defmodule Arrow.ShuttlesTest do
       Application.put_env(:arrow, :shape_storage_prefix, "prefix/#{Ecto.UUID.generate()}/")
 
       assert {:ok, %Shape{} = shape} =
-               Shuttles.create_shape(%{name: "some name", coordinates: coords()})
+               Shuttles.create_shape(%{name: "SomePlaceToPlace", coordinates: coords()})
 
-      assert shape.name == "some name-S"
+      assert shape.name == "SomePlaceToPlace-S"
     end
 
     test "delete_shape/1 deletes the shape" do
@@ -49,12 +49,12 @@ defmodule Arrow.ShuttlesTest do
 
       new_shape = s3_mocked_shape_fixture()
       shape = Shuttles.get_shape!(new_shape.id)
-      assert %Ecto.Changeset{valid?: true} = Shuttles.get_shapes_upload(shape)
+      assert {:ok, %Ecto.Changeset{valid?: true}} = Shuttles.get_shapes_upload(shape)
     end
   end
 
   describe "shapes" do
-    @valid_attrs %{name: "some name-S", coordinates: coords()}
+    @valid_attrs %{name: "GoingFromAToB-S", coordinates: coords()}
     @invalid_attrs %{name: "", coordinates: nil}
 
     test "list_shapes/0 returns all shapes" do
@@ -80,7 +80,7 @@ defmodule Arrow.ShuttlesTest do
 
     test "create_shapes/1 with valid data creates a shape" do
       assert {:ok, [{:ok, %Shape{} = shape}]} = Shuttles.create_shapes([@valid_attrs])
-      assert shape.name == "some name-S"
+      assert shape.name == "GoingFromAToB-S"
     end
 
     test "create_shapes/1 with invalid data returns error changeset" do
