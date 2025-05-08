@@ -33,13 +33,15 @@ const sortable = {
       ghostClass: "drag-ghost",
       forceFallback: true,
       onEnd: (e) => {
-        const params = {
-          old: e.oldDraggableIndex,
-          new: e.newDraggableIndex,
-          ...e.item.dataset,
-          ...this.el.dataset,
+        if (e.oldDraggableIndex && e.newDraggableIndex) {
+          const params = {
+            old: e.oldDraggableIndex - 1,
+            new: e.newDraggableIndex - 1,
+            ...e.item.dataset,
+            ...this.el.dataset,
+          }
+          this.pushEventTo(this.el, "reorder_stops", params)
         }
-        this.pushEventTo(this.el, "reorder_stops", params)
       },
     })
   },
