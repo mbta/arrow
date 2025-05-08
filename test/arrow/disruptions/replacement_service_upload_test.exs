@@ -280,14 +280,14 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
       %{
         first_trip_0: {:ok, "06:00"},
         first_trip_1: {:ok, "05:30"}
-      } = parse_row([nil, nil, nil, "First 06:00", "First 05:30"])
+      } = parse_row(["First 06:00", "First 05:30"])
     end
 
     test "parses a row of last trip data" do
       %{
         last_trip_0: {:ok, "25:00"},
         last_trip_1: {:ok, "24:15"}
-      } = parse_row([nil, nil, nil, "Last 25:00", "Last 24:15"])
+      } = parse_row(["Last 25:00", "Last 24:15"])
     end
 
     test "errors if a row is not as expected" do
