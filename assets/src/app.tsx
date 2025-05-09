@@ -23,6 +23,37 @@ declare global {
   }
 }
 
+interface DownloadFileEventDetails {
+  base64?: boolean
+  filename: string
+  content_type: string
+  contents: string
+}
+
+window.addEventListener("phx:download-file", (event: unknown) => {
+  if (event == null || typeof event != "object" || !("detail" in event)) {
+    throw new Error(`download-file event missing 'detail'`)
+  }
+
+  const {
+    base64 = false,
+    filename,
+    content_type: contentType,
+    contents,
+  } = event.detail as DownloadFileEventDetails
+  const encodedContents = encodeURIComponent(contents)
+  const element = document.createElement("a")
+  element.setAttribute(
+    "href",
+    `data:${contentType}${base64 ? ";base64" : ""},${encodedContents}`
+  )
+  element.setAttribute("download", filename)
+  element.style.display = "none"
+  document.body.appendChild(element)
+  element.click()
+  document.body.removeChild(element)
+})
+
 const sortable = {
   mounted() {
     new Sortable(this.el, {
