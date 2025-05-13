@@ -138,6 +138,18 @@ defmodule ArrowWeb.EditLimitForm do
                 </div>
               </div>
             </.inputs_for>
+            <div
+              :if={not Enum.empty?(mismatches = mismatched_date_range_day_of_weeks(@limit_form))}
+              class="row"
+            >
+              <div class="col text-sm text-danger align-self-center">
+                {mismatches
+                |> Enum.map_join(", ", &String.capitalize(Atom.to_string(&1)))
+                |> then(
+                  &"The selected date range does not include the following day(s) of the week: #{&1}"
+                )}
+              </div>
+            </div>
           </div>
           <.error :for={err <- @limit_form[:limit_day_of_weeks].errors}>
             {translate_error(err)}
@@ -296,5 +308,68 @@ defmodule ArrowWeb.EditLimitForm do
     else
       ""
     end
+  end
+
+  @day_of_week_atoms ~w[monday tuesday wednesday thursday friday saturday sunday]a
+
+  defp mismatched_date_range_day_of_weeks(form) do
+    import Ecto.Changeset, only: [get_field: 3, fetch_field!: 2]
+
+    active_days =
+      case input_value(form, :limit_day_of_weeks) do
+        # Day of week inputs have not yet been interacted with,
+        # but we should still show the warning if editing an existing disruption with mismatched dates/days.
+        [%Arrow.Limits.LimitDayOfWeek{} | _] = day_of_weeks ->
+          for %{active?: true} = dow <- day_of_weeks, do: dow.day_name
+
+        [%Ecto.Changeset{} | _] = day_of_weeks ->
+          for cs <- day_of_weeks, get_field(cs, :active?, false), do: fetch_field!(cs, :day_name)
+
+        # For some reason it turns into a map sometimes??
+        %{} = day_of_weeks ->
+          for %{"active?" => "true"} = dow <- Map.values(day_of_weeks), do: dow["day_name"]
+      end
+      |> MapSet.new(&normalize_day_of_week/1)
+
+    days_in_range =
+      day_of_weeks_in_range(
+        normalize_date(input_value(form, :start_date)),
+        normalize_date(input_value(form, :end_date))
+      )
+
+    active_days_outside_range =
+      MapSet.difference(active_days, days_in_range)
+
+    Enum.filter(@day_of_week_atoms, &(&1 in active_days_outside_range))
+  end
+
+  defp day_of_weeks_in_range(first_date, last_date)
+
+  defp day_of_weeks_in_range(first_date, last_date)
+       when is_nil(first_date)
+       when is_nil(last_date),
+       do: MapSet.new(@day_of_week_atoms)
+
+  defp day_of_weeks_in_range(first_date, last_date) do
+    first_date
+    |> Stream.iterate(&Date.add(&1, 1))
+    |> Stream.take_while(&(Date.compare(&1, last_date) in [:lt, :eq]))
+    |> Stream.take(7)
+    |> MapSet.new(&normalize_day_of_week/1)
+  end
+
+  defp normalize_date(%Date{} = date), do: date
+  defp normalize_date(nil), do: nil
+  defp normalize_date(""), do: nil
+  defp normalize_date(timestamp) when is_binary(timestamp), do: Date.from_iso8601!(timestamp)
+
+  # Converts Dates, strings, and integers to atoms like :monday, :tuesday, etc.
+  defp normalize_day_of_week(%Date{} = date), do: normalize_day_of_week(Date.day_of_week(date))
+  defp normalize_day_of_week(atom) when atom in @day_of_week_atoms, do: atom
+
+  for {atom, int} <- Enum.with_index(@day_of_week_atoms, 1) do
+    str = Atom.to_string(atom)
+    defp normalize_day_of_week(unquote(int)), do: unquote(atom)
+    defp normalize_day_of_week(unquote(str)), do: unquote(atom)
   end
 end
