@@ -139,7 +139,7 @@ defmodule ArrowWeb.EditDisruptionForm do
       assign(socket,
         form:
           assigns[:disruption]
-          |> Disruptions.change_disruption_v2(%{is_active: false, mode: :subway})
+          |> Disruptions.change_disruption_v2(%{mode: :subway})
           |> to_form(),
         icon_paths: assigns[:icon_paths],
         disruption: assigns[:disruption]
