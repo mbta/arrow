@@ -6,13 +6,15 @@ defmodule Arrow.Limits.LimitDayOfWeek do
 
   alias Arrow.Disruptions.Limit
 
+  @type day_name :: :monday | :tuesday | :wednesday | :thursday | :friday | :saturday | :sunday
+
   @day_name_values Enum.with_index(
                      ~w[monday tuesday wednesday thursday friday saturday sunday]a,
                      1
                    )
 
   @type t :: %__MODULE__{
-          day_name: atom(),
+          day_name: day_name(),
           start_time: String.t() | nil,
           end_time: String.t() | nil,
           active?: boolean(),
@@ -32,7 +34,7 @@ defmodule Arrow.Limits.LimitDayOfWeek do
   end
 
   @doc false
-  def changeset(limit_day_of_week, attrs \\ %{}) do
+  def changeset(limit_day_of_week, attrs \\ %{}, opts \\ []) do
     time_regex = ~r/^\d{2}:[0-5][0-9]$/
 
     limit_day_of_week
@@ -46,7 +48,24 @@ defmodule Arrow.Limits.LimitDayOfWeek do
       message: "must be a valid GTFS time in format HH:MM"
     )
     |> validate_start_time_before_end_time()
+    |> validate_in_date_range(opts[:date_range_day_of_weeks])
     |> assoc_constraint(:limit)
+  end
+
+  @spec validate_in_date_range(Ecto.Changeset.t(t()), MapSet.t(day_name) | nil) ::
+          Ecto.Changeset.t(t())
+  defp validate_in_date_range(changeset, nil), do: changeset
+
+  defp validate_in_date_range(changeset, day_of_weeks) do
+    day_name = get_field(changeset, :day_name)
+
+    if get_field(changeset, :active?) and day_name not in day_of_weeks do
+      day_name = day_name |> Atom.to_string() |> String.capitalize()
+      msg = "Dates specified above do not include a #{day_name}"
+      add_error(changeset, :day_name, msg)
+    else
+      changeset
+    end
   end
 
   @spec validate_required_times(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
@@ -98,14 +117,17 @@ defmodule Arrow.Limits.LimitDayOfWeek do
     dt
   end
 
-  @spec day_number(t()) :: 1 | 2 | 3 | 4 | 5 | 6 | 7
-  def day_number(%{day_name: :monday}), do: 1
-  def day_number(%{day_name: :tuesday}), do: 2
-  def day_number(%{day_name: :wednesday}), do: 3
-  def day_number(%{day_name: :thursday}), do: 4
-  def day_number(%{day_name: :friday}), do: 5
-  def day_number(%{day_name: :saturday}), do: 6
-  def day_number(%{day_name: :sunday}), do: 7
+  @spec day_number(t() | day_name) :: 1..7
+  def day_number(%__MODULE__{} = dow), do: day_number(dow.day_name)
+
+  for {name, number} <- @day_name_values do
+    def day_number(unquote(name)), do: unquote(number)
+  end
+
+  @spec day_name(1..7) :: day_name
+  for {name, number} <- @day_name_values do
+    def day_name(unquote(number)), do: unquote(name)
+  end
 
   @spec set_all_day_default(t()) :: t()
   def set_all_day_default(day_of_week) do

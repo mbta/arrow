@@ -37,10 +37,7 @@ defmodule Arrow.Disruptions.Limit do
     belongs_to :route, Arrow.Gtfs.Route, type: :string
     belongs_to :start_stop, Arrow.Gtfs.Stop, type: :string
     belongs_to :end_stop, Arrow.Gtfs.Stop, type: :string
-
-    has_many :limit_day_of_weeks, Arrow.Limits.LimitDayOfWeek,
-      on_replace: :delete,
-      preload_order: [:day_name]
+    has_many :limit_day_of_weeks, LimitDayOfWeek, on_replace: :delete, preload_order: [:day_name]
 
     timestamps(type: :utc_datetime)
   end
@@ -58,9 +55,9 @@ defmodule Arrow.Disruptions.Limit do
       :editing?
     ])
     |> put_change(:check_for_overlap, true)
-    |> cast_assoc(:limit_day_of_weeks, with: &Arrow.Limits.LimitDayOfWeek.changeset/2)
     |> validate_required([:start_date, :end_date, :route_id, :start_stop_id, :end_stop_id])
     |> validate_start_date_before_end_date()
+    |> cast_assoc_day_of_weeks()
     |> exclusion_constraint(:end_date,
       name: :no_overlap,
       message: "cannot overlap another limit"
@@ -77,6 +74,15 @@ defmodule Arrow.Disruptions.Limit do
           [limit_day_of_weeks: "at least one day of week must be active"]
         end
     end)
+  end
+
+  @doc """
+  Constructs a new limit with a default list of `limit_day_of_weeks`.
+  """
+  @spec new(Enum.t()) :: t()
+  def new(attrs \\ %{}) do
+    %__MODULE__{limit_day_of_weeks: @default_day_of_weeks_list}
+    |> struct!(attrs)
   end
 
   @spec validate_start_date_before_end_date(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
@@ -96,12 +102,29 @@ defmodule Arrow.Disruptions.Limit do
     end
   end
 
-  @doc """
-  Constructs a new limit with a default list of `limit_day_of_weeks`.
-  """
-  @spec new(Enum.t()) :: t()
-  def new(attrs \\ %{}) do
-    %__MODULE__{limit_day_of_weeks: @default_day_of_weeks_list}
-    |> struct!(attrs)
+  @spec cast_assoc_day_of_weeks(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
+  defp cast_assoc_day_of_weeks(changeset) do
+    start_date = get_field(changeset, :start_date)
+    end_date = get_field(changeset, :end_date)
+    dow_in_range = dow_in_date_range(start_date, end_date)
+
+    cast_assoc(changeset, :limit_day_of_weeks,
+      with: &LimitDayOfWeek.changeset(&1, &2, date_range_day_of_weeks: dow_in_range)
+    )
+  end
+
+  @spec dow_in_date_range(Date.t() | nil, Date.t() | nil) :: MapSet.t(LimitDayOfWeek.day_name())
+  defp dow_in_date_range(start_date, end_date)
+       when is_nil(start_date)
+       when is_nil(end_date) do
+    MapSet.new(~w[monday tuesday wednesday thursday friday saturday sunday]a)
+  end
+
+  defp dow_in_date_range(start_date, end_date) do
+    start_date
+    |> Stream.iterate(&Date.add(&1, 1))
+    |> Stream.take_while(&(Date.compare(&1, end_date) in [:lt, :eq]))
+    |> Stream.take(7)
+    |> MapSet.new(&(&1 |> Date.day_of_week() |> LimitDayOfWeek.day_name()))
   end
 end

@@ -137,6 +137,12 @@ defmodule ArrowWeb.EditLimitForm do
                   </div>
                 </div>
               </div>
+              <div :for={err <- f_day_of_week[:day_name].errors} class="row">
+                <div class="col text-sm text-danger mb-3">
+                  <.icon name="hero-exclamation-circle-mini" class="h-4 w-4" />
+                  {translate_error(err)}
+                </div>
+              </div>
             </.inputs_for>
           </div>
           <.error :for={err <- @limit_form[:limit_day_of_weeks].errors}>

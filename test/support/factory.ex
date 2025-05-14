@@ -77,6 +77,7 @@ defmodule Arrow.Factory do
     %Arrow.Limits.LimitDayOfWeek{
       day_name: :monday,
       active?: true,
+      all_day?: true,
       limit: build(:limit)
     }
   end

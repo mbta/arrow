@@ -17,8 +17,8 @@ defmodule Arrow.LimitsFixtures do
     {:ok, limit} =
       attrs
       |> Enum.into(%{
-        end_date: ~D[2025-01-09],
-        start_date: ~D[2025-01-08],
+        start_date: ~D[2025-01-06],
+        end_date: ~D[2025-01-10],
         start_stop_id: start_stop.id,
         end_stop_id: end_stop.id,
         route_id: route.id,

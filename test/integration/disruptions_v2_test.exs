@@ -9,10 +9,20 @@ defmodule Arrow.Integration.DisruptionsV2Test do
 
   feature "can view disruption on home page", %{session: session} do
     disruption =
-      create_disruption(%{start_date: ~D[2024-12-31], end_date: ~D[2025-01-01]}, %{
-        start_date: ~D[2024-01-01],
-        end_date: ~D[2024-12-01]
-      })
+      create_disruption(
+        %{
+          start_date: ~D[2024-12-31],
+          end_date: ~D[2025-01-01],
+          limit_day_of_weeks: [
+            %{active?: true, day_name: :tuesday, start_time: "14:00", end_time: "15:00"},
+            %{active?: true, day_name: :wednesday, start_time: "14:00", end_time: "15:00"}
+          ]
+        },
+        %{
+          start_date: ~D[2024-01-01],
+          end_date: ~D[2024-12-01]
+        }
+      )
 
     session
     |> visit("/")
