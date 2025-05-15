@@ -11,7 +11,7 @@ on:
 jobs:
   asdf:
     name: ASDF
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v2
@@ -28,7 +28,7 @@ jobs:
 
   build:
     name: Build Elixir
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: asdf
     steps:
       - uses: actions/checkout@v2
@@ -54,7 +54,7 @@ jobs:
 
   elixir:
     name: Test Elixir
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: build
     env:
       DATABASE_POSTGRESQL_PASSWORD: postgres
@@ -113,7 +113,7 @@ jobs:
 
   elixir-integration:
     name: Elixir integration tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: build
     env:
       DATABASE_POSTGRESQL_PASSWORD: postgres
@@ -166,7 +166,7 @@ jobs:
 
   nodejs:
     name: Test Node
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: build
     steps:
       - uses: actions/checkout@v2
