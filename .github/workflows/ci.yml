@@ -6,7 +6,7 @@ on:
       - master
   pull_request:
   schedule:
-    - cron: '0 5 * * *'
+    - cron: "0 5 * * *"
 
 jobs:
   asdf:
@@ -63,12 +63,12 @@ jobs:
       DATABASE_HOST: localhost
     services:
       postgres:
-        image: postgres:14
+        image: postgres:15
         ports:
           - 5432:5432
         env:
           POSTGRES_PASSWORD: ${{env.DATABASE_POSTGRESQL_PASSWORD}}
-          POSTGRES_USER:  ${{env.DATABASE_POSTGRESQL_USER}}
+          POSTGRES_USER: ${{env.DATABASE_POSTGRESQL_USER}}
           POSTGRES_DB: ${{env.DATABASE_NAME}}
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
@@ -122,12 +122,12 @@ jobs:
       DATABASE_HOST: localhost
     services:
       postgres:
-        image: postgres:14
+        image: postgres:15
         ports:
           - 5432:5432
         env:
           POSTGRES_PASSWORD: ${{env.DATABASE_POSTGRESQL_PASSWORD}}
-          POSTGRES_USER:  ${{env.DATABASE_POSTGRESQL_USER}}
+          POSTGRES_USER: ${{env.DATABASE_POSTGRESQL_USER}}
           POSTGRES_DB: ${{env.DATABASE_NAME}}
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
@@ -163,7 +163,6 @@ jobs:
           path: test/integration/screenshots/
           retention-days: 5
           if-no-files-found: ignore
-
 
   nodejs:
     name: Test Node
