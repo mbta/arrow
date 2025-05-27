@@ -34,8 +34,10 @@ defmodule Arrow.Shuttles.RouteStop do
     timestamps(type: :utc_datetime)
   end
 
+  @max_distance_meters 150
+
   @doc false
-  def changeset(route_stop, attrs) do
+  def changeset(route_stop, attrs, coordinates \\ nil) do
     change =
       route_stop
       |> cast(attrs, [
@@ -81,5 +83,42 @@ defmodule Arrow.Shuttles.RouteStop do
     |> assoc_constraint(:shuttle_route)
     |> assoc_constraint(:stop)
     |> assoc_constraint(:gtfs_stop)
+    |> maybe_validate_stop_distance(coordinates)
+  end
+
+  @spec maybe_validate_stop_distance(Ecto.Changeset.t(), [[float()]] | nil) :: Ecto.Changeset.t()
+  defp maybe_validate_stop_distance(changeset, nil), do: changeset
+
+  defp maybe_validate_stop_distance(changeset, _shape_coordinates)
+       when changeset.action in [:replace, :delete],
+       do: changeset
+
+  defp maybe_validate_stop_distance(changeset, shape_coordinates) do
+    stop =
+      get_field(changeset, :display_stop) ||
+        get_field(changeset, :stop) ||
+        get_field(changeset, :gtfs_stop)
+
+    case Shuttles.get_stop_coordinates(stop) do
+      {:ok, %{lat: lat, lon: lon}} ->
+        distance = Arrow.Geo.distance_from_point_to_shape({lat, lon}, shape_coordinates)
+
+        if distance > @max_distance_meters do
+          add_error(
+            changeset,
+            :display_stop_id,
+            "is #{round(distance)}m from shape (max allowed: #{@max_distance_meters}m)"
+          )
+        else
+          changeset
+        end
+
+      {:error, _} ->
+        add_error(
+          changeset,
+          :display_stop_id,
+          "unable to get coordinates for stop"
+        )
+    end
   end
 end

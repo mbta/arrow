@@ -43,11 +43,11 @@ defmodule Arrow.Shuttles.Route do
   end
 
   @doc false
-  def changeset(route, attrs) do
+  def changeset(route, attrs, coordinates \\ nil) do
     route
     |> cast(attrs, [:direction_id, :direction_desc, :destination, :waypoint, :shape_id])
     |> cast_assoc(:route_stops,
-      with: &Arrow.Shuttles.RouteStop.changeset/2,
+      with: &Arrow.Shuttles.RouteStop.changeset(&1, &2, coordinates),
       sort_param: :route_stops_sort,
       drop_param: :route_stops_drop
     )
