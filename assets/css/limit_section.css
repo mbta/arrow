@@ -1,0 +1,4 @@
+.derived_limit--not-imported * {
+  color: gray;
+  filter: grayscale(100%);
+}

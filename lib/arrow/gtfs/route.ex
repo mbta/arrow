@@ -22,7 +22,8 @@ defmodule Arrow.Gtfs.Route do
           fare_class: String.t(),
           line: Arrow.Gtfs.Line.t() | Ecto.Association.NotLoaded.t(),
           listed_route: atom,
-          network_id: String.t()
+          network_id: String.t(),
+          route_patterns: list(Arrow.Gtfs.RoutePattern.t()) | Ecto.Association.NotLoaded.t()
         }
 
   @route_type_values Enum.with_index(~w[light_rail heavy_rail commuter_rail bus ferry]a)
@@ -46,6 +47,7 @@ defmodule Arrow.Gtfs.Route do
 
     has_many :directions, Arrow.Gtfs.Direction
     has_many :trips, Arrow.Gtfs.Trip
+    has_many :route_patterns, Arrow.Gtfs.RoutePattern
   end
 
   def changeset(route, attrs) do

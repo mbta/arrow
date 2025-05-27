@@ -113,6 +113,59 @@ defmodule ArrowWeb.LimitSection do
               <% end %>
             </div>
           <% end %>
+          <%= for export <- @disruption.hastus_exports do %>
+            <% derived_limits = Enum.with_index(derived_limits(export)) %>
+            <div
+              :if={derived_limits != []}
+              class="md:grid md:grid-cols-subgrid col-span-full border-2 border-dashed border-secondary p-3 gap-y-1"
+            >
+              <div class="hidden md:contents">
+                <div class="font-bold col-[route]">Route</div>
+                <div class="font-bold col-[start]">Start Stop</div>
+                <div class="font-bold col-[end]">End Stop</div>
+                <div class="font-bold col-[startdate]">Start Date</div>
+                <div class="font-bold col-[enddate]">End Date</div>
+                <div class="font-bold col-[days]">Via Export</div>
+              </div>
+              <div
+                :for={{derived_limit, idx} <- derived_limits}
+                class={[
+                  "contents text-sm",
+                  not derived_limit.import? && "derived_limit--not-imported"
+                ]}
+              >
+                <%= if idx == 0 do %>
+                  <div class="flex flex-row items-center gap-x-1 md:contents">
+                    <div class="col-[route] flex flex-row items-center justify-around">
+                      <span
+                        class="m-icon m-icon-sm"
+                        style={"background-image: url('#{get_line_icon_url(derived_limit, @icon_paths)}');"}
+                      />
+                    </div>
+                    <div class="col-[start] flex flex-row items-center font-bold md:font-normal">
+                      {derived_limit.start_stop_name}
+                    </div>
+                    <div class="col-[to] flex flex-row items-center font-bold italic">to</div>
+                    <div class="col-[end] flex flex-row items-center font-bold md:font-normal">
+                      {derived_limit.end_stop_name}
+                    </div>
+                  </div>
+                <% end %>
+                <div class="flex flex-row items-center gap-x-2 md:contents">
+                  <div class="col-[startdate]">{derived_limit.start_date}</div>
+                  <div class="col-[enddate]">{derived_limit.end_date}</div>
+                </div>
+                <%= if idx == 0 do %>
+                  <div class="flex flex-row items-center gap-x-2 md:contents">
+                    <div class="col-[days]">
+                      <strong>via HASTUS</strong> <br />
+                      {Path.basename(derived_limit.s3_path)}
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
         </div>
       <% end %>
 
@@ -355,6 +408,39 @@ defmodule ArrowWeb.LimitSection do
         {:noreply, assign(socket, limit: to_form(changeset))}
     end
   end
+
+  defp derived_limits(export) do
+    services_by_name = Map.new(export.services, &{&1.name, &1})
+
+    # TODO: Should limits from non-imported service be moved to the end of the list like this?
+    # Or is it preferable to maintain the original order?
+    {imported, not_imported} =
+      export.derived_limits
+      |> Enum.map(fn limit ->
+        %{
+          line_id: export.line.id,
+          import?: services_by_name[limit.service_name].import?,
+          s3_path: export.s3_path,
+          start_stop_name: limit.start_stop.name,
+          end_stop_name: limit.end_stop.name,
+          start_date: limit.start_date,
+          end_date: limit.end_date
+        }
+      end)
+      |> Enum.split_with(& &1.import?)
+
+    imported ++ not_imported
+  end
+
+  defp get_line_icon_url(%{line_id: line_id}, icon_paths) do
+    Map.get(icon_paths, icon_for_line(line_id))
+  end
+
+  def icon_for_line("line-Blue"), do: :blue_line
+  def icon_for_line("line-Orange"), do: :orange_line
+  def icon_for_line("line-Red"), do: :red_line
+  def icon_for_line("line-Mattapan"), do: :mattapan_line
+  def icon_for_line("line-Green"), do: :green_line
 
   defp get_route_options do
     from(r in Arrow.Gtfs.Route, where: r.type in [:light_rail, :heavy_rail])

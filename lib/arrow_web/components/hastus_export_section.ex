@@ -192,6 +192,13 @@ defmodule ArrowWeb.HastusExportSection do
             <.input field={f_trip_route_directions[:avi_code]} type="text" class="hidden" />
             <.input field={f_trip_route_directions[:route_id]} type="text" class="hidden" />
           </.inputs_for>
+          <.inputs_for :let={f_derived_limit} field={@form[:derived_limits]}>
+            <.input field={f_derived_limit[:service_name]} type="text" class="hidden" />
+            <.input field={f_derived_limit[:start_stop_id]} type="text" class="hidden" />
+            <.input field={f_derived_limit[:end_stop_id]} type="text" class="hidden" />
+            <.input field={f_derived_limit[:start_date]} type="date" class="hidden" />
+            <.input field={f_derived_limit[:end_date]} type="date" class="hidden" />
+          </.inputs_for>
           <div class="text-success mb-3">
             <strong>
               <i>Successfully imported export {@uploaded_file_name}!</i>
@@ -602,6 +609,7 @@ defmodule ArrowWeb.HastusExportSection do
           socket.assigns.export
           |> Hastus.change_export(%{
             "services" => export_data.services,
+            "derived_limits" => export_data.derived_limits,
             "trip_route_directions" => export_data.trip_route_directions,
             "line_id" => export_data.line_id,
             "s3_path" => client_name,
