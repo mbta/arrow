@@ -6,6 +6,10 @@ defmodule ArrowWeb.API.NoticeController do
   plug(Authorize, :publish_notice)
 
   @spec publish(Plug.Conn.t(), map()) :: Plug.Conn.t()
+  def publish(conn, %{"revision_ids" => ""}) do
+    send_resp(conn, 200, "")
+  end
+
   def publish(conn, params) do
     revision_ids = params["revision_ids"] |> String.split(",") |> Enum.map(&String.to_integer/1)
 

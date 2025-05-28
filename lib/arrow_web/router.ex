@@ -47,14 +47,37 @@ defmodule ArrowWeb.Router do
     get("/unauthorized", UnauthorizedController, :index)
     get("/feed", FeedController, :index)
     get("/mytoken", MyTokenController, :show)
-    get("/", DisruptionController, :index)
-    resources("/disruptions", DisruptionController, except: [:index])
-    put("/disruptions/:id/row_status", DisruptionController, :update_row_status)
-    post("/disruptions/:id/notes", NoteController, :create)
+    get("/disruptionsv1", DisruptionController, :index)
+    resources("/disruptionsv1", DisruptionController, except: [:index])
+    put("/disruptionsv1/:id/row_status", DisruptionController, :update_row_status)
+    post("/disruptionsv1/:id/notes", NoteController, :create)
 
-    get("/disruptionsv2", DisruptionV2Controller, :index)
-    live("/disruptionsv2/new", DisruptionV2ViewLive, :new)
-    live("/disruptionsv2/:id/edit", DisruptionV2ViewLive, :edit)
+    get("/", DisruptionV2Controller, :index)
+    live("/disruptions/new", DisruptionV2ViewLive, :new)
+    live("/disruptions/:id", DisruptionV2ViewLive, :show)
+    live("/disruptions/:id/edit", DisruptionV2ViewLive, :edit)
+    live("/disruptions/:id/limit/new", DisruptionV2ViewLive, :new_limit)
+    live("/disruptions/:id/limit/:limit_id/edit", DisruptionV2ViewLive, :edit_limit)
+    live("/disruptions/:id/limit/:limit_id/duplicate", DisruptionV2ViewLive, :duplicate_limit)
+    live("/disruptions/:id/hastus_export/new", DisruptionV2ViewLive, :new_hastus_export)
+
+    live(
+      "/disruptions/:id/hastus_export/:export_id/edit",
+      DisruptionV2ViewLive,
+      :edit_hastus_export
+    )
+
+    live(
+      "/disruptions/:id/replacement_services/new",
+      DisruptionV2ViewLive,
+      :new_replacement_service
+    )
+
+    live(
+      "/disruptions/:id/replacement_services/:replacement_service_id/edit",
+      DisruptionV2ViewLive,
+      :edit_replacement_service
+    )
 
     live("/stops/new", StopViewLive, :new)
     live("/stops/:stop_id/edit", StopViewLive, :edit)
@@ -93,9 +116,9 @@ defmodule ArrowWeb.Router do
     get("/replacement-service", ReplacementServiceController, :index)
     get("/shuttles", ShuttleController, :index)
     get("/limits", LimitController, :index)
-    resources("/disruptions", DisruptionController, only: [:index])
-    resources("/adjustments", AdjustmentController, only: [:index])
-    resources("/shuttle-stops", StopsController, only: [:index])
+    get("/disruptions", DisruptionController, :index)
+    get("/adjustments", AdjustmentController, :index)
+    get("/shuttle-stops", StopsController, :index)
 
     get "/service-schedules", ServiceScheduleController, :index
   end

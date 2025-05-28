@@ -1,6 +1,5 @@
 defmodule ArrowWeb.DisruptionV2LiveTest do
   use ArrowWeb.ConnCase
-  alias ArrowWeb.DisruptionV2ViewLive
 
   import Phoenix.LiveViewTest
   import Arrow.{DisruptionsFixtures, LimitsFixtures, ShuttlesFixtures}
@@ -10,7 +9,6 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
   @create_attrs %{
     title: "the great molasses disruption of 2025",
     mode: "subway",
-    is_active: false,
     description: nil
   }
   @update_attrs %{
@@ -22,7 +20,6 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
   @invalid_attrs %{
     title: nil,
     mode: "subway",
-    is_active: false,
     description: "foobar"
   }
 
@@ -49,7 +46,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
   describe "Changing Disruptions" do
     @tag :authenticated_admin
     test "saves new disruption_v2", %{conn: conn} do
-      {:ok, index_live, _html} = live(conn, ~p"/disruptionsv2/new")
+      {:ok, index_live, _html} = live(conn, ~p"/disruptions/new")
 
       assert index_live
              |> form("#disruption_v2-form", disruption_v2: @invalid_attrs)
@@ -64,10 +61,19 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     end
 
     @tag :authenticated_admin
+    test "Does not show additional sections when creating new disruption", %{conn: conn} do
+      {:ok, _index_live, html} = live(conn, ~p"/disruptions/new")
+
+      refute html =~ "Replacement Service"
+      refute html =~ "HASTUS Service Schedules"
+      refute html =~ "Limits"
+    end
+
+    @tag :authenticated_admin
     setup [:create_disruption_v2]
 
     test "updates disruption_v2", %{conn: conn, disruption_v2: disruption_v2} do
-      {:ok, index_live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+      {:ok, index_live, _html} = live(conn, ~p"/disruptions/#{disruption_v2.id}/edit")
 
       assert index_live
              |> form("#disruption_v2-form", disruption_v2: @invalid_attrs)
@@ -80,6 +86,20 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       html = render(index_live)
       assert html =~ "Disruption updated successfully"
     end
+
+    @tag :authenticated_admin
+    setup [:create_disruption_v2]
+
+    test "shows additional sections when editing disruption", %{
+      conn: conn,
+      disruption_v2: disruption_v2
+    } do
+      {:ok, _index_live, html} = live(conn, ~p"/disruptions/#{disruption_v2.id}/edit")
+
+      assert html =~ "Replacement Service"
+      assert html =~ "HASTUS Service Schedules"
+      assert html =~ "Limits"
+    end
   end
 
   describe "Replacement Service" do
@@ -90,7 +110,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     setup [:create_disruption_v2]
 
     test "can activate add replacement service flow", %{conn: conn, disruption_v2: disruption_v2} do
-      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+      {:ok, live, _html} = live(conn, ~p"/disruptions/#{disruption_v2.id}")
 
       assert live |> element("#add_replacement_service") |> render_click() =~
                "add new replacement service component"
@@ -116,11 +136,11 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       conn: conn,
       disruption_v2: disruption_v2
     } do
-      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+      {:ok, live, _html} = live(conn, ~p"/disruptions/#{disruption_v2.id}")
 
       live |> element("#add_replacement_service") |> render_click()
 
-      refute live |> element("button#cancel_add_replacement_service_button") |> render_click() =~
+      refute live |> element("#cancel_add_replacement_service_button") |> render_click() =~
                "add new replacement service component"
     end
 
@@ -131,7 +151,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       conn: conn,
       disruption_v2: disruption_v2
     } do
-      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+      {:ok, live, _html} = live(conn, ~p"/disruptions/#{disruption_v2.id}")
 
       assert live |> element("#add_replacement_service") |> render_click() =~
                "add new replacement service component"
@@ -182,7 +202,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       conn: conn,
       disruption_v2: disruption_v2
     } do
-      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+      {:ok, live, _html} = live(conn, ~p"/disruptions/#{disruption_v2.id}")
 
       replacement_service = List.first(disruption_v2.replacement_services)
 
@@ -192,7 +212,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       assert live
              |> element("#edit_replacement_service-#{replacement_service.id}")
              |> render_click() =~
-               "Edit/Manage Activation"
+               "select shuttle route"
 
       html = render(live)
 
@@ -234,7 +254,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       conn: conn,
       disruption_v2: disruption_v2
     } do
-      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption_v2.id}/edit")
+      {:ok, live, _html} = live(conn, ~p"/disruptions/#{disruption_v2.id}")
 
       replacement_service = List.first(disruption_v2.replacement_services)
       shuttle = replacement_service.shuttle
@@ -245,7 +265,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       assert live
              |> element("#edit_replacement_service-#{replacement_service.id}")
              |> render_click() =~
-               "Edit/Manage Activation"
+               "select shuttle route"
 
       html = render(live)
 
@@ -289,9 +309,9 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       conn: conn,
       disruption_v2: %DisruptionV2{limits: [limit]} = disruption
     } do
-      {:ok, live, _html} = live(conn, ~p"/disruptionsv2/#{disruption.id}/edit")
+      {:ok, live, _html} = live(conn, ~p"/disruptions/#{disruption.id}")
 
-      html = live |> element("button#duplicate-limit-#{limit.id}") |> render_click()
+      html = live |> element("#duplicate-limit-#{limit.id}") |> render_click()
 
       assert html =~ "add new disruption limit"
 
@@ -300,24 +320,6 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
 
       assert html |> Floki.attribute("#limit_end_date", "value") |> List.first() ==
                "#{limit.end_date}"
-    end
-
-    @tag :authenticated_admin
-    setup [:create_disruption_v2]
-
-    test "updating a disruption closes the disruption limit form", %{
-      conn: conn,
-      disruption_v2: %DisruptionV2{} = disruption
-    } do
-      {:ok, _live, _html} = live(conn, ~p"/disruptionsv2/#{disruption.id}/edit")
-
-      update_response =
-        DisruptionV2ViewLive.handle_info(:update_disruption, %{
-          __changed__: %{},
-          assigns: %{disruption_v2: disruption, limit_in_form: Arrow.Disruptions.Limit.new()}
-        })
-
-      {:noreply, %{limit_in_form: nil}} = update_response
     end
   end
 end

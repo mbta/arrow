@@ -29,6 +29,7 @@ interface Stop {
   stop_lat: number
   stop_lon: number
   stop_sequence: number
+  stop_source: "arrow" | "gtfs"
 }
 
 interface Layer {
@@ -57,16 +58,20 @@ const COLORS = [
   "52bbc5",
 ]
 
-const genIcon = (color: string, text: string) => {
-  const markerHtmlStyles = `
+const genIcon = (color: string, text: string, source: "arrow" | "gtfs") => {
+  let markerHtmlStyles = `
   background-color: #${color};
   display: block;
   width: 30px;
   height: 30px;
-  border-radius: 50% 50% 50% 0;
   position: relative;
   transform: rotate(-45deg);
   box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);`
+
+  if (source === "gtfs") {
+    markerHtmlStyles = `${markerHtmlStyles}
+  border-radius: 50% 50% 50% 0;`
+  }
 
   const innerCircleStyles = `
   width: 18px;
@@ -144,9 +149,20 @@ const MapLayer = ({
               <Marker
                 key={stop.stop_id}
                 position={[stop.stop_lat, stop.stop_lon]}
-                icon={genIcon(colorValue, stop.stop_sequence.toString())}
+                icon={genIcon(
+                  colorValue,
+                  stop.stop_sequence.toString(),
+                  stop.stop_source
+                )}
               >
-                <Popup>{stop.stop_name}</Popup>
+                <Popup>
+                  <div>
+                    {stop.stop_name} ({stop.stop_id})
+                  </div>
+                  <div>
+                    source: {stop.stop_source === "gtfs" ? "GTFS" : "Arrow"}
+                  </div>
+                </Popup>
               </Marker>
             )
         )}

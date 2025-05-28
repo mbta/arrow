@@ -5,12 +5,18 @@ defmodule Arrow.Shuttles.Route do
 
   alias Arrow.Shuttles
 
-  @direction_desc_values [:Inbound, :Outbound, :North, :South, :East, :West]
+  @direction_0_desc_values [:Outbound, :South, :West]
+  @direction_1_desc_values [:Inbound, :North, :East]
 
-  def direction_desc_values, do: @direction_desc_values
+  def direction_desc_values, do: @direction_0_desc_values ++ @direction_1_desc_values
+
+  def direction_desc_values(direction_id) when direction_id in [:"0", "0"],
+    do: @direction_0_desc_values
+
+  def direction_desc_values(direction_id) when direction_id in [:"1", "1"],
+    do: @direction_1_desc_values
 
   @type t :: %__MODULE__{
-          suffix: String.t(),
           destination: String.t(),
           direction_id: :"0" | :"1",
           direction_desc: :Inbound | :Outbound | :North | :South | :East | :West,
@@ -21,10 +27,9 @@ defmodule Arrow.Shuttles.Route do
         }
 
   schema "shuttle_routes" do
-    field :suffix, :string
     field :destination, :string
     field :direction_id, Ecto.Enum, values: [:"0", :"1"]
-    field :direction_desc, Ecto.Enum, values: @direction_desc_values
+    field :direction_desc, Ecto.Enum, values: @direction_0_desc_values ++ @direction_1_desc_values
     field :waypoint, :string
     belongs_to :shuttle, Arrow.Shuttles.Shuttle
     belongs_to :shape, Arrow.Shuttles.Shape
@@ -40,7 +45,7 @@ defmodule Arrow.Shuttles.Route do
   @doc false
   def changeset(route, attrs) do
     route
-    |> cast(attrs, [:direction_id, :direction_desc, :destination, :waypoint, :suffix, :shape_id])
+    |> cast(attrs, [:direction_id, :direction_desc, :destination, :waypoint, :shape_id])
     |> cast_assoc(:route_stops,
       with: &Arrow.Shuttles.RouteStop.changeset/2,
       sort_param: :route_stops_sort,

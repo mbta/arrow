@@ -29,7 +29,7 @@
   <% end %>
 </div>
 
-<div class="row my-3">
+<div class="row mt-3 mb-4">
   <div class="col flex">
     <%= for kind <- disruption_kinds() do %>
       <% show_as_active? = MapSet.size(@filters.kinds) == 0 or kind in @filters.kinds %>

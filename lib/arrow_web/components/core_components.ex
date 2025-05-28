@@ -422,7 +422,7 @@ defmodule ArrowWeb.CoreComponents do
     doc: "a form field struct retrieved from the form, for example: @form[:email]"
 
   attr :class, :string, default: nil
-  attr :label, :string
+  attr :label, :string, default: nil
   # live-select opts
   attr :placeholder, :string
   attr :options, :any
@@ -443,7 +443,7 @@ defmodule ArrowWeb.CoreComponents do
     ~H"""
     <div class="form-group">
       <div>
-        <.label for={@field.id}>{@label}</.label>
+        <.label :if={@label} for={@field.id}>{@label}</.label>
         <LiveSelect.live_select
           field={@field}
           text_input_class={[
@@ -480,7 +480,7 @@ defmodule ArrowWeb.CoreComponents do
     required: true,
     doc: "Currently selected stop or GTFS stop, if any"
 
-  attr :label, :string, default: "Stop ID"
+  attr :label, :string, default: nil
   attr :class, :string, default: nil
   attr :type, :atom, default: nil
 
@@ -598,17 +598,13 @@ defmodule ArrowWeb.CoreComponents do
 
   def navbar(assigns) do
     pages = [
-      {~p"/disruptionsv2", "Disruptions"},
+      {~p"/", "Disruptions"},
       {~p"/shuttles", "Shuttles"},
       {~p"/shapes", "Shuttle shapes"},
       {~p"/stops", "Shuttle stops"}
     ]
 
-    if not Enum.any?(pages, fn {page, _title} -> String.starts_with?(assigns[:page], page) end) do
-      raise "navbar component used on an unrecognized page: #{assigns[:page]}"
-    end
-
-    homepage? = assigns[:page] == ~p"/disruptionsv2"
+    homepage? = assigns[:page] == ~p"/"
     pages = if homepage?, do: tl(pages), else: pages
 
     assigns = assign(assigns, pages: pages, homepage?: homepage?)
@@ -619,14 +615,14 @@ defmodule ArrowWeb.CoreComponents do
         <a
           :if={@create_disruption_permission?}
           class="btn btn-primary navbar-other-page"
-          href={~p"/disruptionsv2/new"}
+          href={~p"/disruptions/new"}
         >
           + Create new
         </a>
         <a
           :if={not @create_disruption_permission?}
           class="btn btn-primary navbar-other-page"
-          href={~p"/disruptionsv2"}
+          href={~p"/"}
         >
           Disruptions
         </a>
@@ -640,7 +636,7 @@ defmodule ArrowWeb.CoreComponents do
           {label}
         </a>
       <% end %>
-      <a class="btn btn-warning navbar-other-page" href={~p"/"}>Switch to V1</a>
+      <a class="btn btn-warning navbar-other-page" href={~p"/disruptionsv1"}>Switch to V1</a>
     </div>
     """
   end
@@ -888,5 +884,52 @@ defmodule ArrowWeb.CoreComponents do
   """
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
+  end
+
+  @doc """
+  Sends a download over the LiveSocket.
+
+  This method relies on `data:` URIs which (at time of writing) are limited to
+  between 512MB and 2048MB depending on the browser being used. Larger files (
+  and perhaps even large files that fall within those limits) should use a
+  different method.
+
+  ## Options
+
+  - `content_type`: MIME type of the file to be downloaded
+
+  See the `phx:download-file` event in `app.tsx` for the client-side implementation.
+  """
+  @spec send_download(
+          Phoenix.LiveView.Socket.t(),
+          filename :: String.t(),
+          data :: String.t() | {:binary, binary()}
+        ) :: Phoenix.LiveView.Socket.t()
+  @spec send_download(
+          Phoenix.LiveView.Socket.t(),
+          filename :: String.t(),
+          data :: String.t() | {:binary, binary()},
+          opts :: Keyword.t()
+        ) :: Phoenix.LiveView.Socket.t()
+  def send_download(socket, filename, data, opts \\ []) do
+    content_type =
+      case {Keyword.fetch(opts, :content_type), data} do
+        {{:ok, content_type}, _} -> content_type
+        {:error, {:binary, _}} -> "application/octet-stream"
+        {:error, _} -> "text/plain"
+      end
+
+    {base64, contents} =
+      case data do
+        {:binary, data} -> {true, Base.encode64(data)}
+        data -> {false, data}
+      end
+
+    Phoenix.LiveView.push_event(socket, "download-file", %{
+      base64: base64,
+      contents: contents,
+      filename: filename,
+      content_type: content_type
+    })
   end
 end

@@ -18,7 +18,7 @@ defmodule Arrow.ShuttlesFixtures do
   @doc """
   Generate a unique shape name.
   """
-  def unique_shape_name, do: "some name#{System.unique_integer([:positive])}-S"
+  def unique_shape_name, do: "FromPlaceToOtherPlace#{System.unique_integer([:positive])}-S"
 
   @doc """
   Generate a shape.
@@ -124,7 +124,6 @@ defmodule Arrow.ShuttlesFixtures do
         destination: "Harvard",
         direction_id: :"0",
         direction_desc: :South,
-        suffix: nil,
         waypoint: "Brattle",
         route_stops: route_stops
       },
@@ -134,7 +133,6 @@ defmodule Arrow.ShuttlesFixtures do
         destination: "Alewife",
         direction_id: :"1",
         direction_desc: :North,
-        suffix: nil,
         waypoint: "Brattle",
         route_stops: route_stops
       }

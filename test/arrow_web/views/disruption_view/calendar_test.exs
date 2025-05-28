@@ -32,7 +32,7 @@ defmodule ArrowWeb.DisruptionView.CalendarTest do
           classNames: "kind-blue-line status-approved",
           start: ~D[2021-01-04],
           end: ~D[2021-01-06],
-          url: "/disruptions/123",
+          url: "/disruptionsv1/123",
           extendedProps: %{kindOrder: 0, statusOrder: 0}
         },
         %{
@@ -40,7 +40,7 @@ defmodule ArrowWeb.DisruptionView.CalendarTest do
           classNames: "kind-blue-line status-approved",
           start: ~D[2021-01-12],
           end: ~D[2021-01-13],
-          url: "/disruptions/123",
+          url: "/disruptionsv1/123",
           extendedProps: %{kindOrder: 0, statusOrder: 0}
         },
         %{
@@ -48,7 +48,7 @@ defmodule ArrowWeb.DisruptionView.CalendarTest do
           classNames: "kind-blue-line status-approved",
           start: ~D[2021-01-18],
           end: ~D[2021-01-20],
-          url: "/disruptions/123",
+          url: "/disruptionsv1/123",
           extendedProps: %{kindOrder: 0, statusOrder: 0}
         },
         %{
@@ -56,7 +56,7 @@ defmodule ArrowWeb.DisruptionView.CalendarTest do
           classNames: "kind-blue-line status-approved",
           start: ~D[2021-01-25],
           end: ~D[2021-01-27],
-          url: "/disruptions/123",
+          url: "/disruptionsv1/123",
           extendedProps: %{kindOrder: 0, statusOrder: 0}
         },
         %{
@@ -64,7 +64,7 @@ defmodule ArrowWeb.DisruptionView.CalendarTest do
           classNames: "kind-orange-line status-approved",
           start: ~D[2021-01-04],
           end: ~D[2021-01-06],
-          url: "/disruptions/123",
+          url: "/disruptionsv1/123",
           extendedProps: %{kindOrder: 1, statusOrder: 0}
         },
         %{
@@ -72,7 +72,7 @@ defmodule ArrowWeb.DisruptionView.CalendarTest do
           classNames: "kind-orange-line status-approved",
           start: ~D[2021-01-12],
           end: ~D[2021-01-13],
-          url: "/disruptions/123",
+          url: "/disruptionsv1/123",
           extendedProps: %{kindOrder: 1, statusOrder: 0}
         },
         %{
@@ -80,7 +80,7 @@ defmodule ArrowWeb.DisruptionView.CalendarTest do
           classNames: "kind-orange-line status-approved",
           start: ~D[2021-01-18],
           end: ~D[2021-01-20],
-          url: "/disruptions/123",
+          url: "/disruptionsv1/123",
           extendedProps: %{kindOrder: 1, statusOrder: 0}
         },
         %{
@@ -88,7 +88,7 @@ defmodule ArrowWeb.DisruptionView.CalendarTest do
           classNames: "kind-orange-line status-approved",
           start: ~D[2021-01-25],
           end: ~D[2021-01-27],
-          url: "/disruptions/123",
+          url: "/disruptionsv1/123",
           extendedProps: %{kindOrder: 1, statusOrder: 0}
         }
       ]
@@ -121,7 +121,7 @@ defmodule ArrowWeb.DisruptionView.CalendarTest do
           classNames: "kind-commuter-rail status-approved",
           start: ~D[2021-01-04],
           end: ~D[2021-01-05],
-          url: "/disruptions/123",
+          url: "/disruptionsv1/123",
           extendedProps: %{kindOrder: 9, statusOrder: 0}
         }
       ]

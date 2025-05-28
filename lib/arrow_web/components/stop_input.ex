@@ -13,7 +13,7 @@ defmodule ArrowWeb.StopInput do
   attr :id, :string, required: true
   attr :field, :any, required: true
   attr :stop_or_gtfs_stop, :any, required: true
-  attr :label, :string, default: "Stop ID"
+  attr :label, :any, default: "Stop ID"
   attr :class, :string, default: nil
   attr :type, :atom, default: nil
 

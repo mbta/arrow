@@ -80,6 +80,7 @@ defmodule ArrowWeb do
       import Phoenix.HTML
       # Core UI components and translation
       import ArrowWeb.CoreComponents
+      import ArrowWeb.Helpers
       use Gettext, backend: ArrowWeb.Gettext
 
       # Shortcut for generating JS commands

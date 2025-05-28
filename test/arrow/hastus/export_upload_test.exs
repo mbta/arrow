@@ -112,7 +112,14 @@ defmodule Arrow.Hastus.ExportUploadTest do
                %ExportUpload{
                  services: [%{name: "LRV12025-hlb15016-Saturday-01"}],
                  line_id: "line-Green",
-                 trip_route_directions: [],
+                 trip_route_directions: [
+                   %{
+                     route_id: "Green-B",
+                     hastus_route_id: "800-1428",
+                     via_variant: "B",
+                     avi_code: "812"
+                   }
+                 ],
                  dup_service_ids_amended?: false
                }}} = data
     end
