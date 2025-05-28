@@ -196,13 +196,13 @@ defmodule ArrowWeb.DisruptionComponents do
                 <div class="font-bold col-[end]">End Stop</div>
                 <div class="font-bold col-[startdate]">Start Date</div>
                 <div class="font-bold col-[enddate]">End Date</div>
-                <div class="font-bold col-[days]">Via Export</div>
+                <div class="font-bold col-[days]">Via HASTUS</div>
               </div>
               <div
                 :for={{derived_limit, idx} <- derived_limits}
                 class={[
-                  "contents text-sm",
-                  not derived_limit.import? && "derived_limit--not-imported"
+                  "contents text-sm derived-limit",
+                  derived_limit.import? && "derived-limit--imported"
                 ]}
               >
                 <%= if idx == 0 do %>
@@ -213,24 +213,23 @@ defmodule ArrowWeb.DisruptionComponents do
                         style={"background-image: url('#{get_line_icon_url(derived_limit, @icon_paths)}');"}
                       />
                     </div>
-                    <div class="col-[start] flex flex-row items-center font-bold md:font-normal">
-                      {derived_limit.start_stop_name}
-                    </div>
-                    <div class="col-[to] flex flex-row items-center font-bold italic">to</div>
-                    <div class="col-[end] flex flex-row items-center font-bold md:font-normal">
-                      {derived_limit.end_stop_name}
-                    </div>
                   </div>
                 <% end %>
                 <div class="flex flex-row items-center gap-x-2 md:contents">
+                  <div class="col-[start] flex flex-row items-center font-bold md:font-normal">
+                    {derived_limit.start_stop_name}
+                  </div>
+                  <div class="col-[to] flex flex-row items-center font-bold italic">to</div>
+                  <div class="col-[end] flex flex-row items-center font-bold md:font-normal">
+                    {derived_limit.end_stop_name}
+                  </div>
                   <div class="col-[startdate]">{derived_limit.start_date}</div>
                   <div class="col-[enddate]">{derived_limit.end_date}</div>
                 </div>
                 <%= if idx == 0 do %>
                   <div class="flex flex-row items-center gap-x-2 md:contents">
                     <div class="col-[days]">
-                      <strong>via HASTUS</strong> <br />
-                      {Path.basename(derived_limit.s3_path)}
+                      <em>{Path.basename(derived_limit.s3_path)}</em>
                     </div>
                   </div>
                 <% end %>
