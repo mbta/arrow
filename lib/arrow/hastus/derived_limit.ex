@@ -21,15 +21,14 @@ defmodule Arrow.Hastus.DerivedLimit do
         }
 
   schema "hastus_derived_limits" do
-    belongs_to :export, Arrow.Hastus.Export
+    belongs_to :export, Export
     field :service_name, :string
 
-    belongs_to :start_stop, Arrow.Gtfs.Stop, type: :string
-    belongs_to :end_stop, Arrow.Gtfs.Stop, type: :string
+    belongs_to :start_stop, Stop, type: :string
+    belongs_to :end_stop, Stop, type: :string
     field :start_date, :date
     field :end_date, :date
 
-    # Needed?
     timestamps(type: :utc_datetime)
   end
 

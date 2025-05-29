@@ -13,7 +13,6 @@ defmodule Arrow.Repo.Migrations.AddHastusDerivedLimits do
 
       add :service_name, :string, null: false
 
-      # Does it need this?
       timestamps(type: :timestamptz)
     end
   end
