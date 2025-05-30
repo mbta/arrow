@@ -510,8 +510,8 @@ defmodule Arrow.Hastus.ExportUpload do
           service_name: service_id,
           start_stop_id: start_stop_id,
           end_stop_id: end_stop_id,
-          start_date: service_dates |> Enum.map(& &1.start_date) |> Enum.min(),
-          end_date: service_dates |> Enum.map(& &1.end_date) |> Enum.max()
+          start_date: service_dates |> Enum.map(& &1.start_date) |> Enum.min(Date),
+          end_date: service_dates |> Enum.map(& &1.end_date) |> Enum.max(Date)
         }
       end
     end)
