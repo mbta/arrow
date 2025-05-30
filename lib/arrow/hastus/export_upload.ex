@@ -447,59 +447,65 @@ defmodule Arrow.Hastus.ExportUpload do
        ) do
     route_ids = line_id_to_route_ids(line_id)
 
+    trp_direction_to_direction_id = trp_direction_to_direction_id(route_ids)
+
+    unique_trip_counts = Enum.frequencies_by(trips, &trip_type/1)
+    min_occurrence = 2
+
+    # Trim down the number of trips we look at to save time:
+    # - Only direction_id 0 trips
+    # - Only trips of a type that occurs more than once.
+    #   (We can assume the uncommon trip types are one-off early
+    #   morning / late night trips.)
+    trips =
+      trips
+      |> Enum.filter(&(trp_direction_to_direction_id[&1["trp_direction"]] == 0))
+      |> Enum.filter(&(unique_trip_counts[trip_type(&1)] >= min_occurrence))
+
     canonical_stop_sequences =
       route_ids
       |> stop_sequences_for_routes()
       |> Enum.map(fn seq -> {seq, MapSet.new(seq)} end)
-
-    trp_direction_to_direction_id = trp_direction_to_direction_id(route_ids)
-
-    # Trim down the number of trips we look at to save time:
-    # - Only direction_id 0 trips
-    # - Only trips of a type that occurs more than a handful of times.
-    #   (We can assume the uncommon trip types are one-off early
-    #   morning / late night trips.)
-    trip_type = fn trip -> Map.take(trip, ["route_id", "via_variant", "avi_code"]) end
-
-    # TODO: What should the minimum occurrence be?
-    # Currently set to 1 for debugging
-    min_occurrence = 1
-
-    unique_trip_counts = Enum.frequencies_by(trips, trip_type)
-
-    trips =
-      trips
-      |> Enum.filter(&(trp_direction_to_direction_id[&1["trp_direction"]] == 0))
-      |> Enum.filter(&(unique_trip_counts[trip_type.(&1)] >= min_occurrence))
 
     services
     |> Stream.reject(&match?(%{service_dates: []}, &1))
     # There can be multiple derived limits per service, hence the flat_map.
     |> Enum.flat_map(fn %{name: service_id, service_dates: service_dates} ->
       # Summary of logic:
-      # TODO :P
+      # Chunk trips within this service into time windows, based on the departure time of each trip's first stop_time.
+      # For each chunk, collect all trips' visited stops into a set of stop IDs.
+      # Compare these with canonical stop sequence(s) for the line, looking for "holes" of unvisited stops.
+      # These "holes" are the derived limits.
+      #
+      # Why:
+      # In certain cases, a limit can be formed by multiple trips.
+      # For example, service with a mix of disjoint trips on either end of a line, like:
+      # - Oak Grove to North Station, and
+      # - Back Bay to Forest Hills
+      # forms a limit from North Station to Back Bay--the downtown core.
+      # This is why we need to collect and analyze multiple trips, instead of analyzing each one independently.
 
       trips = Enum.filter(trips, &(&1["service_id"] == service_id))
       trip_ids = MapSet.new(trips, & &1["trip_id"])
 
       # List of sets. Each set contains the stop IDs visited by all trips that start within a time window.
-      stops_visited_per_time_window =
+      visited_stops_per_time_window =
         stop_times
         |> Stream.filter(&(&1["trip_id"] in trip_ids))
         |> Enum.group_by(& &1["trip_id"])
-        # TODO: Do the stop times need to be sorted by stop_sequence value? Or can we assume they're already in asc order
         |> Enum.group_by(
-          fn {_trip_id, [first_stop_time | _]} ->
+          fn {_trip_id, stop_times} ->
+            first_stop_time = Enum.min_by(stop_times, & &1["stop_sequence"])
             floor_time(first_stop_time["departure_time"])
           end,
           fn {_trip_id, stop_times} -> MapSet.new(stop_times, & &1["stop_id"]) end
         )
         |> Enum.map(fn {_window, stop_id_sets} -> Enum.reduce(stop_id_sets, &MapSet.union/2) end)
 
-      for stops_visited <- stops_visited_per_time_window,
+      for visited_stops <- visited_stops_per_time_window,
           {seq, seq_set} <- canonical_stop_sequences,
-          MapSet.subset?(stops_visited, seq_set),
-          {start_stop_id, end_stop_id} <- limits_from_sequence(seq, stops_visited) do
+          MapSet.subset?(visited_stops, seq_set),
+          {start_stop_id, end_stop_id} <- limits_from_sequence(seq, visited_stops) do
         %{
           service_name: service_id,
           start_stop_id: start_stop_id,
@@ -511,6 +517,8 @@ defmodule Arrow.Hastus.ExportUpload do
     end)
     |> Enum.uniq()
   end
+
+  defp trip_type(trip), do: Map.take(trip, ["route_id", "via_variant", "avi_code"])
 
   @spec line_id_to_route_ids(String.t()) :: [String.t()]
   defp line_id_to_route_ids(line_id) do
@@ -557,39 +565,49 @@ defmodule Arrow.Hastus.ExportUpload do
     |> Map.new()
   end
 
-  defp limits_from_sequence(stop_sequence, stops_visited) do
+  defp limits_from_sequence(stop_sequence, visited_stops) do
     Enum.chunk_while(
       stop_sequence,
       nil,
-      &chunk_limits(&1, &2, stops_visited),
+      &chunk_limits(&1, &2, &1 in visited_stops),
       &chunk_limits(&1, stop_sequence)
     )
   end
 
+  # acc starts out as nil, has tuple form for all following iterations.
+  # As a tuple, the acc records:
+  # 1. the potential first stop of a limit, and
+  # 2. whether the previous stop in the sequence was visited by any trip in the time window.
+  @typep limits_acc ::
+           nil | {potential_first_stop_of_limit :: stop_id, prev_stop_visited? :: boolean}
+  @typep limit :: {start_stop_id :: stop_id, end_stop_id :: stop_id}
+  @typep stop_id :: String.t()
+
   # chunk fun
-  defp chunk_limits(stop, acc, stops_visited)
+  @spec chunk_limits(stop_id, limits_acc, MapSet.t(stop_id)) ::
+          {:cont, limit, limits_acc} | {:cont, limits_acc}
+  defp chunk_limits(stop, acc, stop_visited?)
 
-  defp chunk_limits(stop, nil, stops_visited), do: {:cont, {stop, stop in stops_visited}}
+  # This is the first stop in the sequence.
+  # Regardless of whether it was visited, it becomes the potential first stop of a limit.
+  defp chunk_limits(stop, nil, stop_visited?), do: {:cont, {stop, stop_visited?}}
 
-  defp chunk_limits(stop, acc, stops_visited) do
-    visited? = stop in stops_visited
-
-    case {acc, visited?} do
-      # This is the first stop in the sequence.
-      {nil, visited?} -> {:cont, {stop, visited?}}
-      # Prev stop was visited, this stop was visited.
-      # Potential start of limit moves to this stop.
-      {{_, true}, true} -> {:cont, {stop, visited?}}
-      # Prev stop was not visited, this stop was visited.
-      # This is the end of a limit--emit it and form a new limit starting at this stop.
-      {{first_stop, false}, true} -> {:cont, {first_stop, stop}, {stop, visited?}}
+  defp chunk_limits(stop, {first_stop, prev_stop_visited?}, stop_visited?) do
+    cond do
       # This stop was not visited.
       # Potential start of limit remains where it was.
-      {{first_stop, _}, false} -> {:cont, {first_stop, visited?}}
+      not stop_visited? -> {:cont, {first_stop, stop_visited?}}
+      # Prev stop was visited, this stop was visited.
+      # Potential start of limit moves to this stop.
+      prev_stop_visited? -> {:cont, {stop, stop_visited?}}
+      # Prev stop was not visited, this stop was visited.
+      # This is the end of a limit--emit it and form a new limit starting at this stop.
+      not prev_stop_visited? -> {:cont, {first_stop, stop}, {stop, stop_visited?}}
     end
   end
 
   # after fun
+  @spec chunk_limits(limits_acc, [stop_id]) :: {:cont, term} | {:cont, limit, term}
   defp chunk_limits(acc, sequence)
 
   # The stop sequence was empty.
@@ -609,7 +627,7 @@ defmodule Arrow.Hastus.ExportUpload do
     # Assumes @time_window_size_minutes is a factor of 60.
     <<hour::binary-size(2), ":", minute::binary-size(2), _::binary>> = first_stop_departure_time
     minute = div(String.to_integer(minute), @time_window_size_minutes) * @time_window_size_minutes
-    "#{hour}:#{minute}"
+    "#{hour}:#{minute |> to_string() |> String.pad_leading(2, "0")}"
   end
 
   defp chunk_dates(date, {start_date, last_date}, service, exceptions) do
