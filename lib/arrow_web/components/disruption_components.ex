@@ -234,7 +234,7 @@ defmodule ArrowWeb.DisruptionComponents do
                         href={"#export-table-#{export.id}"}
                         title="Jump to source HASTUS export of this derived limit"
                         phx-click={
-                          JS.transition("grow-shrink",
+                          JS.transition("animate-grow-shrink",
                             time: 300,
                             to: "#export-table-#{export.id}"
                           )

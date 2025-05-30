@@ -32,20 +32,3 @@
   color: #888;
   font-size: medium;
 }
-
-.grow-shrink {
-  animation: grow-shrink 0.3s ease-out 1;
-}
-
-
-@keyframes grow-shrink {
-
-  0%,
-  100% {
-    scale: 100%
-  }
-
-  50% {
-    scale: 101%
-  }
-}
