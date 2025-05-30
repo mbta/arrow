@@ -228,8 +228,23 @@ defmodule ArrowWeb.DisruptionComponents do
                 </div>
                 <%= if idx == 0 do %>
                   <div class="flex flex-row items-center gap-x-2 md:contents">
-                    <div class="col-[days]">
-                      <em>{Path.basename(derived_limit.s3_path)}</em>
+                    <div class="col-[days] whitespace-nowrap">
+                      <em>{derived_limit.export_filename}</em>
+                      <.link
+                        href={"#export-table-#{export.id}"}
+                        title="Jump to source HASTUS export of this derived limit"
+                        phx-click={
+                          JS.transition("grow-shrink",
+                            time: 300,
+                            to: "#export-table-#{export.id}"
+                          )
+                        }
+                      >
+                        <.icon name="hero-arrow-long-right" class="m-icon m-icon-sm" /><.icon
+                          name="hero-table-cells"
+                          class="m-icon m-icon-sm"
+                        />
+                      </.link>
                     </div>
                   </div>
                 <% end %>
@@ -515,7 +530,7 @@ defmodule ArrowWeb.DisruptionComponents do
         %{
           line_id: export.line.id,
           import?: services_by_name[limit.service_name].import?,
-          s3_path: export.s3_path,
+          export_filename: Path.basename(export.s3_path),
           start_stop_name: limit.start_stop.name,
           end_stop_name: limit.end_stop.name,
           start_date: limit.start_date,
