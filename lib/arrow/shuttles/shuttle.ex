@@ -6,8 +6,6 @@ defmodule Arrow.Shuttles.Shuttle do
 
   alias Arrow.Disruptions.ReplacementService
   alias Arrow.Repo
-  alias Arrow.Shuttles
-  alias Arrow.Shuttles.ShapesUpload
 
   @type id :: integer
   @type t :: %__MODULE__{
@@ -31,48 +29,17 @@ defmodule Arrow.Shuttles.Shuttle do
 
   @doc false
   def changeset(shuttle, attrs) do
-    changeset =
-      shuttle
-      |> cast(attrs, [:shuttle_name, :disrupted_route_id, :status, :suffix])
-
-    status = get_field(changeset, :status)
-
-    changeset =
-      if status == :active do
-        cast_assoc(changeset, :routes, with: &route_changeset_with_validation/2)
-      else
-        cast_assoc(changeset, :routes, with: &Arrow.Shuttles.Route.changeset/2)
-      end
-
-    changeset
+    shuttle
+    |> cast(attrs, [:shuttle_name, :disrupted_route_id, :status, :suffix])
+    |> then(fn changeset ->
+      cast_assoc(changeset, :routes,
+        with: &Arrow.Shuttles.Route.changeset(&1, &2, get_field(changeset, :status) == :active)
+      )
+    end)
     |> validate_required([:shuttle_name, :status])
     |> validate_required_for(:status)
     |> foreign_key_constraint(:disrupted_route_id)
     |> unique_constraint(:shuttle_name)
-  end
-
-  # Helper function to pass shape coordinates to route changeset
-  defp route_changeset_with_validation(route, attrs) do
-    # IO.inspect(attrs, label: :attrs)
-    # IO.inspect(route, label: :route)
-    changeset = Arrow.Shuttles.Route.changeset(route, attrs)
-
-    shape = get_route_shape(changeset)
-
-    if shape do
-      case get_shape_coordinates(shape) do
-        {:ok, coordinates} when coordinates != :disabled ->
-          Arrow.Shuttles.Route.changeset(route, attrs, coordinates)
-
-        {:ok, :disabled} ->
-          changeset
-
-        {:error, reason} ->
-          add_error(changeset, :shape_id, "unable to validate stop distances: #{reason}")
-      end
-    else
-      changeset
-    end
   end
 
   defp validate_required_for(changeset, :status) do
@@ -138,41 +105,5 @@ defmodule Arrow.Shuttles.Shuttle do
     |> Enum.sort_by(&get_field(&1, :stop_sequence))
     |> Enum.slice(0..-2//1)
     |> Enum.any?(&(&1 |> get_field(:time_to_next_stop) |> is_nil()))
-  end
-
-  @spec get_route_shape(Ecto.Changeset.t()) :: Shuttles.Shape.t() | nil
-  defp get_route_shape(route_changeset) do
-    case get_field(route_changeset, :shape) do
-      %Shuttles.Shape{} = shape ->
-        shape
-
-      nil ->
-        # Try to load from shape_id if shape isn't preloaded
-        case get_field(route_changeset, :shape_id) do
-          nil -> nil
-          shape_id -> Repo.get(Shuttles.Shape, shape_id)
-        end
-    end
-  end
-
-  @spec get_shape_coordinates(Shuttles.Shape.t()) ::
-          {:ok, [[float()]]} | {:ok, :disabled} | {:error, any()}
-  defp get_shape_coordinates(shape) do
-    case Shuttles.get_shapes_upload(shape) do
-      {:ok, %Ecto.Changeset{} = changeset} ->
-        coordinates =
-          ShapesUpload.shapes_map_view(changeset)
-          |> Map.get(:shapes)
-          |> List.first()
-          |> Map.get(:coordinates)
-
-        {:ok, coordinates}
-
-      {:ok, :disabled} ->
-        {:ok, :disabled}
-
-      error ->
-        error
-    end
   end
 end
