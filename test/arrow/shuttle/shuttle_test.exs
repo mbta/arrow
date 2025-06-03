@@ -597,7 +597,6 @@ defmodule Arrow.Shuttles.ShuttleTest do
       shuttle = shuttle_fixture()
       [route0, route1] = shuttle.routes
 
-      # Create stops that are more than 150m from the shape
       stop1 = insert(:gtfs_stop, %{lat: 42.0, lon: -71.1})
       stop2 = insert(:gtfs_stop, %{lat: 42.3, lon: -71.0})
       stop3 = insert(:gtfs_stop, %{lat: 42.2, lon: -71.1})
