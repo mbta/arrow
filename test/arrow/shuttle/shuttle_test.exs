@@ -386,7 +386,6 @@ defmodule Arrow.Shuttles.ShuttleTest do
     end
 
     test "cannot mark a shuttle as active when stops are too far from shape" do
-      # Use the default shape that matches the mocked path
       reassign_env(:shape_storage_enabled?, true)
       shape = s3_mocked_shape_fixture()
 
