@@ -848,7 +848,7 @@ CREATE TABLE public.hastus_trip_route_directions (
     id bigint NOT NULL,
     hastus_export_id bigint NOT NULL,
     hastus_route_id character varying(255) NOT NULL,
-    via_variant character varying(255) NOT NULL,
+    via_variant character varying(255),
     avi_code character varying(255) NOT NULL,
     route_id character varying(255) NOT NULL,
     inserted_at timestamp with time zone NOT NULL,
@@ -2435,3 +2435,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250402181804);
 INSERT INTO public."schema_migrations" (version) VALUES (20250403191728);
 INSERT INTO public."schema_migrations" (version) VALUES (20250410180228);
 INSERT INTO public."schema_migrations" (version) VALUES (20250501125059);
+INSERT INTO public."schema_migrations" (version) VALUES (20250602151911);
