@@ -49,8 +49,10 @@ defmodule Arrow.Shuttles.Route do
     changeset =
       cast(route, attrs, [:direction_id, :direction_desc, :destination, :waypoint, :shape_id])
 
+    shape = get_route_shape(changeset)
+
     {coordinates, error} =
-      case get_coordinates(changeset, active?) do
+      case get_shape_coordinates(shape, active?) do
         {:ok, coordinates} -> {coordinates, nil}
         {:error, error} -> {nil, error}
       end
@@ -66,22 +68,6 @@ defmodule Arrow.Shuttles.Route do
     |> assoc_constraint(:shape)
   end
 
-  defp get_coordinates(_route, false), do: {:ok, nil}
-
-  defp get_coordinates(changeset, true) do
-    shape = get_route_shape(changeset)
-
-    if shape do
-      case get_shape_coordinates(shape) do
-        {:ok, :disabled} -> {:ok, nil}
-        {:ok, coordinates} -> {:ok, coordinates}
-        {:error, reason} -> {:error, reason}
-      end
-    else
-      {:ok, nil}
-    end
-  end
-
   defp get_route_shape(route_changeset) do
     case get_field(route_changeset, :shape) do
       %Shuttles.Shape{} = shape ->
@@ -95,7 +81,10 @@ defmodule Arrow.Shuttles.Route do
     end
   end
 
-  defp get_shape_coordinates(shape) do
+  defp get_shape_coordinates(nil, _), do: {:ok, nil}
+  defp get_shape_coordinates(_, false), do: {:ok, nil}
+
+  defp get_shape_coordinates(shape, _) do
     case Shuttles.get_shapes_upload(shape) do
       {:ok, %Ecto.Changeset{} = changeset} ->
         coordinates =
@@ -107,7 +96,7 @@ defmodule Arrow.Shuttles.Route do
         {:ok, coordinates}
 
       {:ok, :disabled} ->
-        {:ok, :disabled}
+        {:ok, nil}
 
       error ->
         error
