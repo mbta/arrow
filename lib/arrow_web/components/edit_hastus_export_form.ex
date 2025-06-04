@@ -69,10 +69,10 @@ defmodule ArrowWeb.EditHastusExportForm do
               </.link>
             </div>
           </div>
-          <div :if={not is_nil(@error)} class="mt-3">
-            <p class="alert alert-danger m-0">
-              {@error}
-            </p>
+          <div :if={not is_nil(@gl_inference_errors)} class="mt-3 alert alert-danger">
+            <div :for={error <- @gl_inference_errors}>
+              {error}
+            </div>
           </div>
           <div :if={not is_nil(@invalid_export_trips)} class="mt-3">
             <p class="alert alert-danger m-0">
@@ -275,6 +275,7 @@ defmodule ArrowWeb.EditHastusExportForm do
       |> assign(:show_service_import_form, false)
       |> assign(:form, nil)
       |> assign(:error, nil)
+      |> assign(:gl_inference_errors, nil)
       |> assign(:invalid_export_trips, nil)
       |> allow_upload(:hastus_export,
         accept: ~w(.zip),
@@ -301,6 +302,7 @@ defmodule ArrowWeb.EditHastusExportForm do
       |> assign(:form, form)
       |> assign(:uploaded_file_name, filename)
       |> assign(:error, nil)
+      |> assign(:gl_inference_errors, nil)
       |> assign(:confirming_dup_service_ids?, false)
 
     {:ok, socket}
@@ -481,7 +483,7 @@ defmodule ArrowWeb.EditHastusExportForm do
          %UploadEntry{client_name: client_name} = entry,
          socket
        ) do
-    socket = socket |> clear_flash() |> assign(error: nil)
+    socket = socket |> clear_flash() |> assign(error: nil, gl_inference_errors: nil)
 
     case consume_uploaded_entry(
            socket,
@@ -491,8 +493,8 @@ defmodule ArrowWeb.EditHastusExportForm do
       {:error, {_, _} = invalid_export_trips} ->
         {:noreply, assign(socket, invalid_export_trips: invalid_export_trips)}
 
-      {:error, error} ->
-        {:noreply, assign(socket, error: error)}
+      {:error, errors} when is_list(errors) ->
+        {:noreply, assign(socket, gl_inference_errors: errors)}
 
       {:ok, export_data} ->
         form =
