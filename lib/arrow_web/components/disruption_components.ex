@@ -60,7 +60,7 @@ defmodule ArrowWeb.DisruptionComponents do
       <div class="flex flex-row">
         <div class="flex-grow">
           <h4>Description</h4>
-          <pre>{@disruption.description}</pre>
+          <div style="white-space: pre-wrap;">{@disruption.description}</div>
         </div>
         <div class="flex flex-col flex-shrink justify-end">
           <.link
