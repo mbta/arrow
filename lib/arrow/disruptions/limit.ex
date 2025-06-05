@@ -122,8 +122,7 @@ defmodule Arrow.Disruptions.Limit do
 
   defp dow_in_date_range(start_date, end_date) do
     start_date
-    |> Stream.iterate(&Date.add(&1, 1))
-    |> Stream.take_while(&(Date.compare(&1, end_date) in [:lt, :eq]))
+    |> Date.range(end_date)
     |> Stream.take(7)
     |> MapSet.new(&(&1 |> Date.day_of_week() |> LimitDayOfWeek.day_name()))
   end
