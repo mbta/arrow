@@ -207,6 +207,22 @@ defmodule Arrow.Hastus do
     Service.changeset(service, attrs)
   end
 
+  @doc """
+  Returns a set of days-of-week (as integers) covered by all service_dates in a service.
+  """
+  @spec service_day_of_weeks(Service.t()) :: MapSet.t(1..7)
+  def service_day_of_weeks(%Service{} = service) do
+    if Ecto.assoc_loaded?(service.service_dates) do
+      service.service_dates
+      |> Enum.map(&service_date_day_of_weeks/1)
+      |> Enum.reduce(MapSet.new(), &MapSet.union/2)
+    else
+      service
+      |> Repo.preload(:service_dates)
+      |> service_day_of_weeks()
+    end
+  end
+
   alias Arrow.Hastus.ServiceDate
 
   @doc """
@@ -301,6 +317,18 @@ defmodule Arrow.Hastus do
   """
   def change_service_date(%ServiceDate{} = service_date, attrs \\ %{}) do
     ServiceDate.changeset(service_date, attrs)
+  end
+
+  @doc """
+  Returns a set of days-of-week (as integers) covered by a service_date.
+  """
+  @spec service_date_day_of_weeks(ServiceDate.t()) ::
+          MapSet.t(1..7)
+  def service_date_day_of_weeks(%ServiceDate{} = service_date) do
+    service_date.start_date
+    |> Date.range(service_date.end_date)
+    |> Stream.take(7)
+    |> MapSet.new(&Date.day_of_week/1)
   end
 
   @doc """

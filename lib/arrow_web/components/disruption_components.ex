@@ -6,7 +6,9 @@ defmodule ArrowWeb.DisruptionComponents do
   alias Arrow.Adjustment
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Disruptions.Limit
+  alias Arrow.Hastus
   alias Arrow.Hastus.Export
+  alias Arrow.Limits.LimitDayOfWeek
   alias ArrowWeb.EditHastusExportForm
   alias ArrowWeb.EditLimitForm
   alias ArrowWeb.EditReplacementServiceForm
@@ -184,38 +186,29 @@ defmodule ArrowWeb.DisruptionComponents do
               <% end %>
             </div>
           <% end %>
-          <%= for export <- @disruption.hastus_exports do %>
-            <% derived_limits = Enum.with_index(derived_limits(export)) %>
-            <div
-              :if={derived_limits != []}
-              class="md:grid md:grid-cols-subgrid col-span-full border-2 border-dashed border-secondary p-3 gap-y-1"
-            >
+          <%= for export <- @disruption.hastus_exports,
+                  derived_limits = Enum.with_index(imported_derived_limits(export)),
+                  derived_limits != [] do %>
+            <div class="md:grid md:grid-cols-subgrid col-span-full border-2 border-dashed border-secondary p-3 gap-y-1">
               <div class="hidden md:contents">
                 <div class="font-bold col-[route]">Route</div>
                 <div class="font-bold col-[start]">Start Stop</div>
                 <div class="font-bold col-[end]">End Stop</div>
                 <div class="font-bold col-[startdate]">Start Date</div>
                 <div class="font-bold col-[enddate]">End Date</div>
-                <div class="font-bold col-[days]">Via HASTUS</div>
+                <div class="font-bold col-[days]">Days of Week</div>
+                <div class="font-bold col-[actions]">Via HASTUS</div>
               </div>
-              <div
-                :for={{derived_limit, idx} <- derived_limits}
-                class={[
-                  "contents text-sm derived-limit",
-                  derived_limit.import? && "derived-limit--imported"
-                ]}
-              >
-                <%= if idx == 0 do %>
-                  <div class="flex flex-row items-center gap-x-1 md:contents">
+              <div :for={{derived_limit, idx} <- derived_limits} class="contents text-sm">
+                <div class="flex flex-row items-center gap-x-1 md:contents">
+                  <%= if idx == 0 do %>
                     <div class="col-[route] flex flex-row items-center justify-around">
                       <span
                         class="m-icon m-icon-sm"
                         style={"background-image: url('#{get_line_icon_url(derived_limit, @icon_paths)}');"}
                       />
                     </div>
-                  </div>
-                <% end %>
-                <div class="flex flex-row items-center gap-x-2 md:contents">
+                  <% end %>
                   <div class="col-[start] flex flex-row items-center font-bold md:font-normal">
                     {derived_limit.start_stop_name}
                   </div>
@@ -223,14 +216,25 @@ defmodule ArrowWeb.DisruptionComponents do
                   <div class="col-[end] flex flex-row items-center font-bold md:font-normal">
                     {derived_limit.end_stop_name}
                   </div>
-                  <div class="col-[startdate]">{derived_limit.start_date}</div>
-                  <div class="col-[enddate]">{derived_limit.end_date}</div>
                 </div>
-                <%= if idx == 0 do %>
-                  <div class="flex flex-row items-center gap-x-2 md:contents">
-                    <div class="col-[days] whitespace-nowrap">
-                      <em>{derived_limit.export_filename}</em>
+                <div class="flex flex-row items-center gap-x-2 md:contents">
+                  <div class="col-[startdate] flex flex-row items-center">
+                    {derived_limit.start_date}
+                  </div>
+                  <div class="md:hidden">-</div>
+                  <div class="col-[enddate] flex flex-row items-center">{derived_limit.end_date}</div>
+                  <div class="col-[days] text-sm gap-x-1 flex flex-row items-center">
+                    <span
+                      :for={dow <- derived_limit.day_of_weeks}
+                      class={if(dow.active?, do: "text-primary", else: "text-gray-400")}
+                    >
+                      {format_day_name_short(dow.day_name)}
+                    </span>
+                  </div>
+                  <%= if idx == 0 do %>
+                    <div class="col-[actions] flex flex-row items-center">
                       <.link
+                        class="font-italic max-sm:invisible max-md:max-w-[11rem] md:visible md:max-w-xs truncate pr-1"
                         href={"#export-table-#{export.id}"}
                         title="Jump to source HASTUS export of this derived limit"
                         phx-click={
@@ -240,14 +244,15 @@ defmodule ArrowWeb.DisruptionComponents do
                           )
                         }
                       >
-                        <.icon name="hero-arrow-long-right" class="m-icon m-icon-sm" /><.icon
+                        <.icon name="hero-arrow-long-right" class="visible m-icon m-icon-sm" /><.icon
                           name="hero-table-cells"
-                          class="m-icon m-icon-sm"
+                          class="visible m-icon m-icon-sm"
                         />
+                        {derived_limit.export_filename |> String.duplicate(5)}
                       </.link>
                     </div>
-                  </div>
-                <% end %>
+                  <% end %>
+                </div>
               </div>
             </div>
           <% end %>
@@ -519,26 +524,36 @@ defmodule ArrowWeb.DisruptionComponents do
   defp icon_for_line("line-Mattapan"), do: :mattapan_line
   defp icon_for_line("line-Green"), do: :green_line
 
-  defp derived_limits(export) do
-    services_by_name = Map.new(export.services, &{&1.name, &1})
+  @spec imported_derived_limits(Export.t()) :: [map]
+  defp imported_derived_limits(export) do
+    imported_services_by_name =
+      export.services
+      |> Enum.filter(& &1.import?)
+      |> Map.new(&{&1.name, &1})
 
-    # TODO: Should limits from non-imported service be moved to the end of the list like this?
-    # Or is it preferable to maintain the original order?
-    {imported, not_imported} =
-      export.derived_limits
-      |> Enum.map(fn limit ->
-        %{
-          line_id: export.line.id,
-          import?: services_by_name[limit.service_name].import?,
-          export_filename: Path.basename(export.s3_path),
-          start_stop_name: limit.start_stop.name,
-          end_stop_name: limit.end_stop.name,
-          start_date: limit.start_date,
-          end_date: limit.end_date
-        }
-      end)
-      |> Enum.split_with(& &1.import?)
+    for limit <- export.derived_limits,
+        service = imported_services_by_name[limit.service_name],
+        service != nil do
+      active_day_of_weeks = Hastus.service_day_of_weeks(service)
 
-    imported ++ not_imported
+      day_of_weeks =
+        1..7//1
+        |> Enum.map(
+          &%{
+            day_name: LimitDayOfWeek.day_name(&1),
+            active?: &1 in active_day_of_weeks
+          }
+        )
+
+      %{
+        line_id: export.line.id,
+        export_filename: Path.basename(export.s3_path),
+        start_stop_name: limit.start_stop.name,
+        end_stop_name: limit.end_stop.name,
+        start_date: limit.start_date,
+        end_date: limit.end_date,
+        day_of_weeks: day_of_weeks
+      }
+    end
   end
 end
