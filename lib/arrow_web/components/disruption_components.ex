@@ -248,7 +248,7 @@ defmodule ArrowWeb.DisruptionComponents do
                           name="hero-table-cells"
                           class="visible m-icon m-icon-sm"
                         />
-                        {derived_limit.export_filename |> String.duplicate(5)}
+                        {derived_limit.export_filename}
                       </.link>
                     </div>
                   <% end %>
