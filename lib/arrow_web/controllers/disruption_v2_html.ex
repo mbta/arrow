@@ -64,6 +64,15 @@ defmodule ArrowWeb.DisruptionV2View do
     """
   end
 
+  defp line_icon(assigns) do
+    ~H"""
+    <span
+      class={"m-icon m-icon-#{@size} #{@class}"}
+      style={"background-image: url(#{line_icon_url(@conn, @line_id)})"}
+    />
+    """
+  end
+
   attr :conn, Plug.Conn, required: true
   attr :filters, ArrowWeb.DisruptionV2Controller.Filters, required: true
   attr :field, :atom, required: true
@@ -104,9 +113,58 @@ defmodule ArrowWeb.DisruptionV2View do
     """
   end
 
-  @spec route_icon_path(Plug.Conn.t(), atom()) :: String.t()
+  defp limits(disruption) do
+    limits = Enum.map(disruption.limits, &Map.put(&1, :derived?, false))
+
+    derived_limits =
+      for export <- disruption.hastus_exports,
+          imported_services =
+            MapSet.new(for(%{import?: true, name: name} <- export.services, do: name)),
+          derived_limit <- export.derived_limits,
+          derived_limit.service_name in imported_services do
+        %{
+          derived?: true,
+          line_id: export.line_id,
+          start_stop: derived_limit.start_stop,
+          end_stop: derived_limit.end_stop
+        }
+      end
+
+    limits ++ derived_limits
+  end
+
+  @spec route_icon_path(Plug.Conn.t(), String.t()) :: String.t()
   defp route_icon_path(conn, route_id) do
     Routes.static_path(conn, "/images/icon-#{@route_icon_names[route_id]}-small.svg")
+  end
+
+  @adjustment_kind_icon_names %{
+    blue_line: "blue-line",
+    bus: "mode-bus",
+    commuter_rail: "mode-commuter-rail",
+    green_line: "green-line",
+    green_line_b: "green-line-b",
+    green_line_c: "green-line-c",
+    green_line_d: "green-line-d",
+    green_line_e: "green-line-e",
+    mattapan_line: "mattapan-line",
+    orange_line: "orange-line",
+    red_line: "red-line",
+    silver_line: "silver-line"
+  }
+
+  @line_icon_names %{
+    "line-Blue" => :blue_line,
+    "line-Orange" => :orange_line,
+    "line-Red" => :red_line,
+    "line-Mattapan" => :mattapan_line,
+    "line-Green" => :green_line
+  }
+
+  @spec line_icon_url(Plug.Conn.t(), String.t()) :: String.t()
+  defp line_icon_url(conn, line_id) do
+    path = "/images/icon-#{@adjustment_kind_icon_names[@line_icon_names[line_id]]}-small.svg"
+    Routes.static_path(conn, path)
   end
 
   @spec disruption_kind_icon_path(Plug.Conn.t(), atom()) :: String.t()
