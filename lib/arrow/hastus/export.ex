@@ -41,7 +41,7 @@ defmodule Arrow.Hastus.Export do
     |> cast(attrs, [:s3_path, :line_id, :disruption_id])
     |> validate_required([:s3_path])
     |> cast_assoc(:services, with: &Service.changeset/2, required: true)
-    |> cast_assoc(:derived_limits, with: &DerivedLimit.changeset/2, required: true)
+    |> cast_assoc(:derived_limits, with: &DerivedLimit.changeset/2)
     |> cast_assoc(:trip_route_directions, with: &TripRouteDirection.changeset/2)
     |> assoc_constraint(:line)
     |> assoc_constraint(:disruption)
