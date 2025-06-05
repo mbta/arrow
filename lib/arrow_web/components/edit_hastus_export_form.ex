@@ -6,6 +6,7 @@ defmodule ArrowWeb.EditHastusExportForm do
 
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Hastus
+  alias Arrow.Hastus.DerivedLimit
   alias Arrow.Hastus.Export
   alias Arrow.Hastus.ExportUpload
   alias Arrow.Hastus.ServiceDate
@@ -144,9 +145,14 @@ defmodule ArrowWeb.EditHastusExportForm do
               <div class="col-lg-2">
                 <strong>service ID</strong>
               </div>
-              <div class="col-lg-10">
+              <div class="col-lg-3">
                 {input_value(f_service, :name)}
               </div>
+              <.derived_limits_warning
+                :if={input_value(f_service, :import?) in [true, "true"]}
+                service_id={input_value(f_service, :name)}
+                derived_limits={input_value(@form, :derived_limits)}
+              />
             </div>
             <.inputs_for :let={f_date} field={f_service[:service_dates]}>
               <div class="row">
@@ -566,6 +572,29 @@ defmodule ArrowWeb.EditHastusExportForm do
       "*The selected dates are not #{service_part}. Are you sure?"
     end
   end
+
+  attr :service_id, :string, required: true
+  attr :derived_limits, :list, required: true
+
+  defp derived_limits_warning(assigns) do
+    ~H"""
+    <div
+      :if={@service_id not in Enum.map(@derived_limits, &get_service_name/1)}
+      class="col-lg-7 text-sm text-danger"
+    >
+      *Unable to derive any disruption limits: this service does not contain any trips with non-canonical route patterns.<br />
+      Are you sure the export is correct?
+    </div>
+    """
+  end
+
+  defp get_service_name({i, %{"service_name" => service_name}}) when is_binary(i),
+    do: service_name
+
+  defp get_service_name(%DerivedLimit{service_name: service_name}), do: service_name
+
+  defp get_service_name(%Ecto.Changeset{} = changeset),
+    do: Ecto.Changeset.fetch_field!(changeset, :service_name)
 
   defp error_to_string(:too_large), do: "File is too large. Maximum size is 8MB"
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
