@@ -584,7 +584,7 @@ defmodule Arrow.Hastus.ExportUpload do
   @typep stop_id :: String.t()
 
   # chunk fun
-  @spec chunk_limits(stop_id, limits_acc, MapSet.t(stop_id)) ::
+  @spec chunk_limits(stop_id, limits_acc, boolean) ::
           {:cont, limit, limits_acc} | {:cont, limits_acc}
   defp chunk_limits(stop, acc, stop_visited?)
 
