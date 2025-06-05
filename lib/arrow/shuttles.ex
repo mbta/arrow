@@ -194,11 +194,7 @@ defmodule Arrow.Shuttles do
 
     if enabled? and prefix_env != nil do
       filename = "#{name}.kml"
-
-      path =
-        if prefix_env,
-          do: "#{prefix_env}#{prefix}#{filename}",
-          else: "#{prefix}#{filename}"
+      path = get_shape_upload_path(filename)
 
       case do_upload_shape(content, bucket, path, request_fn) do
         error = {:error, _} -> error
@@ -221,6 +217,21 @@ defmodule Arrow.Shuttles do
       upload_request = ExAws.S3.put_object(bucket, remote_path, content)
       {:ok, _} = apply(request_module, request_func, [upload_request])
     end
+  end
+
+  defp get_shape_upload_path(filename) do
+    prefix_env = Application.get_env(:arrow, :shape_storage_prefix_env)
+    s3_prefix = Application.get_env(:arrow, :shape_storage_prefix)
+
+    username_prefix =
+      if Application.get_env(:arrow, :use_username_prefix?) do
+        {username, _} = System.cmd("whoami", [])
+        String.trim(username)
+      end
+
+    [prefix_env, username_prefix, s3_prefix, filename]
+    |> Enum.reject(&is_nil/1)
+    |> Path.join()
   end
 
   defp delete_shape_file(shape) do
