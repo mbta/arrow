@@ -6,8 +6,8 @@ defmodule ArrowWeb.DisruptionComponents do
   alias Arrow.Adjustment
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Disruptions.Limit
-  alias Arrow.Hastus
   alias Arrow.Hastus.Export
+  alias Arrow.Hastus.Service
   alias Arrow.Limits.LimitDayOfWeek
   alias ArrowWeb.EditHastusExportForm
   alias ArrowWeb.EditLimitForm
@@ -526,23 +526,14 @@ defmodule ArrowWeb.DisruptionComponents do
 
   @spec imported_derived_limits(Export.t()) :: [map]
   defp imported_derived_limits(export) do
-    imported_services_by_name =
-      export.services
-      |> Enum.filter(& &1.import?)
-      |> Map.new(&{&1.name, &1})
-
-    for limit <- export.derived_limits,
-        service = imported_services_by_name[limit.service_name],
-        service != nil do
-      active_day_of_weeks = Hastus.service_day_of_weeks(service)
+    for %{import?: true} = service <- export.services,
+        limit <- service.derived_limits do
+      active_day_of_weeks = Service.day_of_weeks(service)
 
       day_of_weeks =
-        1..7//1
-        |> Enum.map(
-          &%{
-            day_name: LimitDayOfWeek.day_name(&1),
-            active?: &1 in active_day_of_weeks
-          }
+        Enum.map(
+          1..7//1,
+          &%{day_name: LimitDayOfWeek.day_name(&1), active?: &1 in active_day_of_weeks}
         )
 
       %{
@@ -550,8 +541,8 @@ defmodule ArrowWeb.DisruptionComponents do
         export_filename: Path.basename(export.s3_path),
         start_stop_name: limit.start_stop.name,
         end_stop_name: limit.end_stop.name,
-        start_date: limit.start_date,
-        end_date: limit.end_date,
+        start_date: Service.first_date(service),
+        end_date: Service.last_date(service),
         day_of_weeks: day_of_weeks
       }
     end

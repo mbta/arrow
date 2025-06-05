@@ -118,10 +118,8 @@ defmodule ArrowWeb.DisruptionV2View do
 
     derived_limits =
       for export <- disruption.hastus_exports,
-          imported_services =
-            MapSet.new(for(%{import?: true, name: name} <- export.services, do: name)),
-          derived_limit <- export.derived_limits,
-          derived_limit.service_name in imported_services do
+          %{import?: true} = service <- export.services,
+          derived_limit <- service.derived_limits do
         %{
           derived?: true,
           line_id: export.line_id,

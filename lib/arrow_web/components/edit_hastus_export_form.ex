@@ -6,7 +6,6 @@ defmodule ArrowWeb.EditHastusExportForm do
 
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Hastus
-  alias Arrow.Hastus.DerivedLimit
   alias Arrow.Hastus.Export
   alias Arrow.Hastus.ExportUpload
   alias Arrow.Hastus.ServiceDate
@@ -115,13 +114,6 @@ defmodule ArrowWeb.EditHastusExportForm do
             <.input field={f_trip_route_directions[:avi_code]} type="text" class="hidden" />
             <.input field={f_trip_route_directions[:route_id]} type="text" class="hidden" />
           </.inputs_for>
-          <.inputs_for :let={f_derived_limit} field={@form[:derived_limits]}>
-            <.input field={f_derived_limit[:service_name]} type="text" class="hidden" />
-            <.input field={f_derived_limit[:start_stop_id]} type="text" class="hidden" />
-            <.input field={f_derived_limit[:end_stop_id]} type="text" class="hidden" />
-            <.input field={f_derived_limit[:start_date]} type="date" class="hidden" />
-            <.input field={f_derived_limit[:end_date]} type="date" class="hidden" />
-          </.inputs_for>
           <div class="text-success mb-3">
             <strong>
               <i>Successfully imported export {@uploaded_file_name}!</i>
@@ -140,6 +132,10 @@ defmodule ArrowWeb.EditHastusExportForm do
             </div>
           </div>
           <.inputs_for :let={f_service} field={@form[:services]}>
+            <.inputs_for :let={f_derived_limit} field={f_service[:derived_limits]}>
+              <.input field={f_derived_limit[:start_stop_id]} type="text" class="hidden" />
+              <.input field={f_derived_limit[:end_stop_id]} type="text" class="hidden" />
+            </.inputs_for>
             <.input field={f_service[:name]} type="text" class="hidden" />
             <div class="row mb-3">
               <div class="col-lg-2">
@@ -148,11 +144,16 @@ defmodule ArrowWeb.EditHastusExportForm do
               <div class="col-lg-3">
                 {input_value(f_service, :name)}
               </div>
-              <.derived_limits_warning
-                :if={input_value(f_service, :import?) in [true, "true"]}
-                service_id={input_value(f_service, :name)}
-                derived_limits={input_value(@form, :derived_limits)}
-              />
+              <div
+                :if={
+                  input_value(f_service, :import?) in [true, "true"] and
+                    input_value(f_service, :derived_limits) == []
+                }
+                class="col-lg-7 text-sm text-danger"
+              >
+                *Unable to derive any disruption limits: this service does not contain any trips with non-canonical route patterns.<br />
+                Consider deactivating it.
+              </div>
             </div>
             <.inputs_for :let={f_date} field={f_service[:service_dates]}>
               <div class="row">
@@ -502,7 +503,6 @@ defmodule ArrowWeb.EditHastusExportForm do
           socket.assigns.export
           |> Hastus.change_export(%{
             "services" => export_data.services,
-            "derived_limits" => export_data.derived_limits,
             "trip_route_directions" => export_data.trip_route_directions,
             "line_id" => export_data.line_id,
             "s3_path" => client_name,
@@ -572,29 +572,6 @@ defmodule ArrowWeb.EditHastusExportForm do
       "*The selected dates are not #{service_part}. Are you sure?"
     end
   end
-
-  attr :service_id, :string, required: true
-  attr :derived_limits, :list, required: true
-
-  defp derived_limits_warning(assigns) do
-    ~H"""
-    <div
-      :if={@service_id not in Enum.map(@derived_limits, &get_service_name/1)}
-      class="col-lg-7 text-sm text-danger"
-    >
-      *Unable to derive any disruption limits: this service does not contain any trips with non-canonical route patterns.<br />
-      Are you sure the export is correct?
-    </div>
-    """
-  end
-
-  defp get_service_name({i, %{"service_name" => service_name}}) when is_binary(i),
-    do: service_name
-
-  defp get_service_name(%DerivedLimit{service_name: service_name}), do: service_name
-
-  defp get_service_name(%Ecto.Changeset{} = changeset),
-    do: Ecto.Changeset.fetch_field!(changeset, :service_name)
 
   defp error_to_string(:too_large), do: "File is too large. Maximum size is 8MB"
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"

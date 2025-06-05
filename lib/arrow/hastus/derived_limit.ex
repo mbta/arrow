@@ -5,29 +5,23 @@ defmodule Arrow.Hastus.DerivedLimit do
   import Ecto.Changeset
 
   alias Arrow.Gtfs.Stop
-  alias Arrow.Hastus.Export
+  alias Arrow.Hastus.Service
 
   @type t :: %__MODULE__{
           id: integer,
-          export: Export.t() | Ecto.Association.NotLoaded.t(),
-          export_id: integer,
-          service_name: String.t(),
+          service: Service.t() | Ecto.Association.NotLoaded.t(),
+          service_id: integer,
           start_stop: Stop.t() | Ecto.Association.NotLoaded.t(),
           start_stop_id: String.t(),
           end_stop: Stop.t() | Ecto.Association.NotLoaded.t(),
-          end_stop_id: String.t(),
-          start_date: Date.t(),
-          end_date: Date.t()
+          end_stop_id: String.t()
         }
 
   schema "hastus_derived_limits" do
-    belongs_to :export, Export
-    field :service_name, :string
+    belongs_to :service, Service
 
     belongs_to :start_stop, Stop, type: :string
     belongs_to :end_stop, Stop, type: :string
-    field :start_date, :date
-    field :end_date, :date
 
     timestamps(type: :utc_datetime)
   end
@@ -36,20 +30,14 @@ defmodule Arrow.Hastus.DerivedLimit do
   def changeset(hastus_limit, attrs) do
     hastus_limit
     |> cast(attrs, [
-      :service_name,
       :start_stop_id,
-      :end_stop_id,
-      :start_date,
-      :end_date
+      :end_stop_id
     ])
     |> validate_required([
-      :service_name,
       :start_stop_id,
-      :end_stop_id,
-      :start_date,
-      :end_date
+      :end_stop_id
     ])
-    |> assoc_constraint(:export)
+    |> assoc_constraint(:service)
     |> assoc_constraint(:start_stop)
     |> assoc_constraint(:end_stop)
   end

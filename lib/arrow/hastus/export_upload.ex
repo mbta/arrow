@@ -11,7 +11,6 @@ defmodule Arrow.Hastus.ExportUpload do
 
   @type t :: %__MODULE__{
           services: list(map()),
-          derived_limits: list(map()),
           line_id: String.t(),
           trip_route_directions: list(TripRouteDirection.t()),
           zip_binary: binary(),
@@ -20,7 +19,6 @@ defmodule Arrow.Hastus.ExportUpload do
 
   @enforce_keys [
     :services,
-    :derived_limits,
     :line_id,
     :trip_route_directions,
     :zip_binary,
@@ -55,14 +53,15 @@ defmodule Arrow.Hastus.ExportUpload do
          {:ok, line_id} <- infer_line(revenue_trips, file_map["all_stop_times.txt"]),
          {:ok, trip_route_directions} <-
            infer_green_line_branches(line_id, revenue_trips, file_map["all_stop_times.txt"]) do
-      services = parse_services(file_map)
-      derived_limits = derive_limits(file_map, services, line_id)
+      services =
+        file_map
+        |> parse_services()
+        |> derive_limits(file_map, line_id)
 
       _ = File.rm_rf!(tmp_dir)
 
       export_data = %__MODULE__{
         services: services,
-        derived_limits: derived_limits,
         line_id: line_id,
         trip_route_directions: trip_route_directions,
         zip_binary: zip_bin,
@@ -437,12 +436,13 @@ defmodule Arrow.Hastus.ExportUpload do
     end)
   end
 
+  @spec derive_limits(services, map, String.t()) :: services when services: [map]
   defp derive_limits(
+         services,
          %{
            "all_trips.txt" => trips,
            "all_stop_times.txt" => stop_times
          },
-         services,
          line_id
        ) do
     route_ids = line_id_to_route_ids(line_id)
@@ -459,7 +459,7 @@ defmodule Arrow.Hastus.ExportUpload do
     #   morning / late night trips.)
     trips =
       trips
-      |> Enum.filter(&(trp_direction_to_direction_id[&1["trp_direction"]] == 0))
+      |> Stream.filter(&(trp_direction_to_direction_id[&1["trp_direction"]] == 0))
       |> Enum.filter(&(unique_trip_counts[trip_type(&1)] >= min_occurrence))
 
     canonical_stop_sequences =
@@ -467,55 +467,56 @@ defmodule Arrow.Hastus.ExportUpload do
       |> stop_sequences_for_routes()
       |> Enum.map(fn seq -> {seq, MapSet.new(seq)} end)
 
-    services
-    |> Stream.reject(&match?(%{service_dates: []}, &1))
-    # There can be multiple derived limits per service, hence the flat_map.
-    |> Enum.flat_map(fn %{name: service_id, service_dates: service_dates} ->
-      # Summary of logic:
-      # Chunk trips within this service into time windows, based on the departure time of each trip's first stop_time.
-      # For each chunk, collect all trips' visited stops into a set of stop IDs.
-      # Compare these with canonical stop sequence(s) for the line, looking for "holes" of unvisited stops.
-      # These "holes" are the derived limits.
-      #
-      # Why:
-      # In certain cases, a limit can be formed by multiple trips.
-      # For example, service with a mix of disjoint trips on either end of a line, like:
-      # - Oak Grove to North Station, and
-      # - Back Bay to Forest Hills
-      # forms a limit from North Station to Back Bay--the downtown core.
-      # This is why we need to collect and analyze multiple trips, instead of analyzing each one independently.
+    Enum.map(services, &add_derived_limits(&1, trips, stop_times, canonical_stop_sequences))
+  end
 
-      trips = Enum.filter(trips, &(&1["service_id"] == service_id))
-      trip_ids = MapSet.new(trips, & &1["trip_id"])
+  defp add_derived_limits(service, trips, stop_times, canonical_stop_sequences)
 
-      # List of sets. Each set contains the stop IDs visited by all trips that start within a time window.
-      visited_stops_per_time_window =
-        stop_times
-        |> Stream.filter(&(&1["trip_id"] in trip_ids))
-        |> Enum.group_by(& &1["trip_id"])
-        |> Enum.group_by(
-          fn {_trip_id, stop_times} ->
-            first_stop_time = Enum.min_by(stop_times, & &1["stop_sequence"])
-            floor_time(first_stop_time["departure_time"])
-          end,
-          fn {_trip_id, stop_times} -> MapSet.new(stop_times, & &1["stop_id"]) end
-        )
-        |> Enum.map(fn {_window, stop_id_sets} -> Enum.reduce(stop_id_sets, &MapSet.union/2) end)
+  defp add_derived_limits(%{service_dates: []} = service, _, _, _) do
+    Map.put(service, :derived_limits, [])
+  end
 
+  defp add_derived_limits(service, trips, stop_times, canonical_stop_sequences) do
+    # Summary of logic:
+    # Chunk trips within this service into time windows, based on the departure time of each trip's first stop_time.
+    # For each chunk, collect all trips' visited stops into a set of stop IDs.
+    # Compare these with canonical stop sequence(s) for the line, looking for "holes" of unvisited stops.
+    # These "holes" are the derived limits.
+    #
+    # Why:
+    # In certain cases, a limit can be formed by multiple trips.
+    # For example, service with a mix of disjoint trips on either end of a line, like:
+    # - Oak Grove to North Station, and
+    # - Back Bay to Forest Hills
+    # forms a limit from North Station to Back Bay--the downtown core.
+    # This is why we need to collect and analyze multiple trips, instead of analyzing each one independently.
+    trips = Enum.filter(trips, &(&1["service_id"] == service.name))
+    trip_ids = MapSet.new(trips, & &1["trip_id"])
+
+    # List of sets. Each set contains the stop IDs visited by all trips that start within a time window.
+    visited_stops_per_time_window =
+      stop_times
+      |> Stream.filter(&(&1["trip_id"] in trip_ids))
+      |> Enum.group_by(& &1["trip_id"])
+      |> Enum.group_by(
+        fn {_trip_id, stop_times} ->
+          first_stop_time = Enum.min_by(stop_times, & &1["stop_sequence"])
+          floor_time(first_stop_time["departure_time"])
+        end,
+        fn {_trip_id, stop_times} -> MapSet.new(stop_times, & &1["stop_id"]) end
+      )
+      |> Enum.map(fn {_window, stop_id_sets} -> Enum.reduce(stop_id_sets, &MapSet.union/2) end)
+
+    derived_limits =
       for visited_stops <- visited_stops_per_time_window,
           {seq, seq_set} <- canonical_stop_sequences,
           MapSet.subset?(visited_stops, seq_set),
           {start_stop_id, end_stop_id} <- limits_from_sequence(seq, visited_stops) do
-        %{
-          service_name: service_id,
-          start_stop_id: start_stop_id,
-          end_stop_id: end_stop_id,
-          start_date: service_dates |> Enum.map(& &1.start_date) |> Enum.min(Date),
-          end_date: service_dates |> Enum.map(& &1.end_date) |> Enum.max(Date)
-        }
+        %{start_stop_id: start_stop_id, end_stop_id: end_stop_id}
       end
-    end)
-    |> Enum.uniq()
+      |> Enum.uniq()
+
+    Map.put(service, :derived_limits, derived_limits)
   end
 
   defp trip_type(trip), do: Map.take(trip, ["route_id", "via_variant", "avi_code"])
@@ -620,8 +621,7 @@ defmodule Arrow.Hastus.ExportUpload do
     {:cont, {first_stop, List.last(sequence)}, nil}
   end
 
-  # TODO: Maybe 1 hour? 30 min?
-  @time_window_size_minutes 15
+  @time_window_size_minutes 30
 
   defp floor_time(first_stop_departure_time) do
     # Assumes @time_window_size_minutes is a factor of 60.
