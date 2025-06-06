@@ -439,10 +439,7 @@ defmodule Arrow.Hastus.ExportUpload do
   @spec derive_limits(services, map, String.t()) :: services when services: [map]
   defp derive_limits(
          services,
-         %{
-           "all_trips.txt" => trips,
-           "all_stop_times.txt" => stop_times
-         },
+         %{"all_trips.txt" => trips, "all_stop_times.txt" => stop_times},
          line_id
        ) do
     route_ids = line_id_to_route_ids(line_id)
@@ -566,32 +563,36 @@ defmodule Arrow.Hastus.ExportUpload do
     |> Map.new()
   end
 
-  defp limits_from_sequence(stop_sequence, visited_stops) do
+  @typep limit :: {start_stop_id :: stop_id, end_stop_id :: stop_id}
+  @typep stop_id :: String.t()
+
+  @spec limits_from_sequence([stop_id], MapSet.t(stop_id)) :: [limit]
+  defp limits_from_sequence(stop_sequence, visited_stops)
+
+  defp limits_from_sequence([], _visited_stops), do: []
+
+  defp limits_from_sequence([first_stop | stops] = stop_sequence, visited_stops) do
+    # Regardless of whether it was visited, the first stop in the sequence
+    # is the potential first stop of a limit.
+    acc = {first_stop, first_stop in visited_stops}
+
     Enum.chunk_while(
-      stop_sequence,
-      nil,
+      stops,
+      acc,
       &chunk_limits(&1, &2, &1 in visited_stops),
       &chunk_limits(&1, stop_sequence)
     )
   end
 
-  # acc starts out as nil, has tuple form for all following iterations.
-  # As a tuple, the acc records:
+  # The acc records:
   # 1. the potential first stop of a limit, and
   # 2. whether the previous stop in the sequence was visited by any trip in the time window.
-  @typep limits_acc ::
-           nil | {potential_first_stop_of_limit :: stop_id, prev_stop_visited? :: boolean}
-  @typep limit :: {start_stop_id :: stop_id, end_stop_id :: stop_id}
-  @typep stop_id :: String.t()
+  @typep limits_acc :: {potential_first_stop_of_limit :: stop_id, prev_stop_visited? :: boolean}
 
   # chunk fun
   @spec chunk_limits(stop_id, limits_acc, boolean) ::
           {:cont, limit, limits_acc} | {:cont, limits_acc}
   defp chunk_limits(stop, acc, stop_visited?)
-
-  # This is the first stop in the sequence.
-  # Regardless of whether it was visited, it becomes the potential first stop of a limit.
-  defp chunk_limits(stop, nil, stop_visited?), do: {:cont, {stop, stop_visited?}}
 
   defp chunk_limits(stop, {first_stop, prev_stop_visited?}, stop_visited?) do
     cond do
@@ -611,8 +612,6 @@ defmodule Arrow.Hastus.ExportUpload do
   @spec chunk_limits(limits_acc, [stop_id]) :: {:cont, term} | {:cont, limit, term}
   defp chunk_limits(acc, sequence)
 
-  # The stop sequence was empty.
-  defp chunk_limits(nil, _), do: {:cont, nil}
   # The last stop in the sequence was visited.
   defp chunk_limits({_, true}, _), do: {:cont, nil}
 
