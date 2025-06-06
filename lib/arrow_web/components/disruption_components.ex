@@ -532,7 +532,7 @@ defmodule ArrowWeb.DisruptionComponents do
 
       day_of_weeks =
         Enum.map(
-          1..7//1,
+          1..7,
           &%{day_name: LimitDayOfWeek.day_name(&1), active?: &1 in active_day_of_weeks}
         )
 
