@@ -66,4 +66,14 @@ defmodule Arrow.Hastus.Service do
     |> Enum.map(&ServiceDate.day_of_weeks/1)
     |> Enum.reduce(MapSet.new(), &MapSet.union/2)
   end
+
+  @doc """
+  Returns true if `service` has any derived limits.
+  """
+  @spec has_derived_limits?(t()) :: boolean
+  def has_derived_limits?(%__MODULE__{} = service) do
+    service = Arrow.Repo.preload(service, [:derived_limits])
+
+    not Enum.empty?(service.derived_limits)
+  end
 end

@@ -87,7 +87,7 @@ defmodule ArrowWeb.DisruptionComponents do
     ~H"""
     <section id="limits-section" class="py-4 my-4">
       <h3>Limits</h3>
-      <%= if Ecto.assoc_loaded?(@disruption.limits) and Enum.any?(@disruption.limits) do %>
+      <%= if DisruptionV2.has_limits?(@disruption) do %>
         <div class={
           [
             "mb-3",

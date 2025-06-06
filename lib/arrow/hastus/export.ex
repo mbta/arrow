@@ -42,4 +42,14 @@ defmodule Arrow.Hastus.Export do
     |> assoc_constraint(:line)
     |> assoc_constraint(:disruption)
   end
+
+  @doc """
+  Returns true if `export` has any derived limits.
+  """
+  @spec has_derived_limits?(t()) :: boolean
+  def has_derived_limits?(%__MODULE__{} = export) do
+    export = Arrow.Repo.preload(export, [:services])
+
+    Enum.any?(export.services, &Service.has_derived_limits?/1)
+  end
 end
