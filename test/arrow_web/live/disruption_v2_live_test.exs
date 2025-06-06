@@ -1,8 +1,10 @@
 defmodule ArrowWeb.DisruptionV2LiveTest do
   use ArrowWeb.ConnCase
 
+  import Arrow.DisruptionsFixtures
+  import Arrow.LimitsFixtures
+  import Arrow.ShuttlesFixtures
   import Phoenix.LiveViewTest
-  import Arrow.{DisruptionsFixtures, LimitsFixtures, ShuttlesFixtures}
 
   alias Arrow.Disruptions.DisruptionV2
 
@@ -29,8 +31,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     day_of_week = limit_day_of_week_fixture(limit_id: limit.id)
 
     %{
-      disruption_v2:
-        struct(disruption_v2, limits: [struct(limit, limit_day_of_weeks: [day_of_week])])
+      disruption_v2: struct(disruption_v2, limits: [struct(limit, limit_day_of_weeks: [day_of_week])])
     }
   end
 
@@ -176,12 +177,10 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
         |> render_change(%{replacement_service: valid_attrs})
 
       replacement_service_workbook_filename =
-        replacement_service_form
-        |> Floki.attribute("#display_replacement_service_source_workbook_filename", "value")
+        Floki.attribute(replacement_service_form, "#display_replacement_service_source_workbook_filename", "value")
 
       replacement_service_workbook_data =
-        replacement_service_form
-        |> Floki.attribute("#replacement_service_source_workbook_data", "value")
+        Floki.attribute(replacement_service_form, "#replacement_service_source_workbook_data", "value")
 
       assert ["some source_workbook_filename"] = replacement_service_workbook_filename
       assert [^data] = replacement_service_workbook_data

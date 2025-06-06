@@ -7,7 +7,7 @@ defmodule Arrow.Mock.ExAws.Request do
     {:ok,
      %{
        body:
-         "<?xml version=\"1.0\" encoding=\"UTF-8\"?><kml xmlns=\"http://www.opengis.net/kml/2.2\"><Folder><Placemark><name>AlewifeHarvardViaBrattle</name><LineString><coordinates>-71.1,42.1 -71.2,42.2 -71.3,42.3</coordinates></LineString></Placemark></Folder></kml>",
+         ~s(<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Folder><Placemark><name>AlewifeHarvardViaBrattle</name><LineString><coordinates>-71.1,42.1 -71.2,42.2 -71.3,42.3</coordinates></LineString></Placemark></Folder></kml>),
        headers: [],
        status_code: 200
      }}

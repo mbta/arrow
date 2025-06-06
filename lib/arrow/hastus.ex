@@ -5,11 +5,12 @@ defmodule Arrow.Hastus do
 
   import Ecto.Query, warn: false
 
+  alias Arrow.Hastus.Export
+  alias Arrow.Hastus.Service
+  alias Arrow.Hastus.ServiceDate
   alias Arrow.Repo
 
   @preloads [:line, :disruption, :trip_route_directions, services: [:service_dates]]
-
-  alias Arrow.Hastus.Export
 
   @doc """
   Returns the list of exports.
@@ -105,8 +106,6 @@ defmodule Arrow.Hastus do
     Export.changeset(export, attrs)
   end
 
-  alias Arrow.Hastus.Service
-
   @doc """
   Returns the list of hastus_services.
 
@@ -200,8 +199,6 @@ defmodule Arrow.Hastus do
   def change_service(%Service{} = service, attrs \\ %{}) do
     Service.changeset(service, attrs)
   end
-
-  alias Arrow.Hastus.ServiceDate
 
   @doc """
   Returns the list of hastus_service_dates.
@@ -332,7 +329,8 @@ defmodule Arrow.Hastus do
   def export_download_url(%Export{s3_path: "s3://" <> s3_path}) do
     [bucket, path] = String.split(s3_path, "/", parts: 2)
 
-    ExAws.Config.new(:s3)
+    :s3
+    |> ExAws.Config.new()
     |> ExAws.S3.presigned_url(:get, bucket, path)
   end
 end

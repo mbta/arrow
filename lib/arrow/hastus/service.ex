@@ -2,15 +2,18 @@ defmodule Arrow.Hastus.Service do
   @moduledoc "schema for a HASTUS service for the db"
 
   use Ecto.Schema
+
   import Ecto.Changeset
 
-  alias Arrow.Hastus.{Export, ServiceDate}
+  alias Arrow.Hastus.Export
+  alias Arrow.Hastus.ServiceDate
+  alias Ecto.Association.NotLoaded
 
   @type t :: %__MODULE__{
           name: String.t(),
-          service_dates: list(ServiceDate) | Ecto.Association.NotLoaded.t(),
+          service_dates: list(ServiceDate) | NotLoaded.t(),
           import?: boolean(),
-          export: Export.t() | Ecto.Association.NotLoaded.t()
+          export: Export.t() | NotLoaded.t()
         }
 
   schema "hastus_services" do
@@ -21,7 +24,7 @@ defmodule Arrow.Hastus.Service do
       on_replace: :delete,
       foreign_key: :service_id
 
-    belongs_to :export, Arrow.Hastus.Export
+    belongs_to :export, Export
 
     timestamps(type: :utc_datetime)
   end

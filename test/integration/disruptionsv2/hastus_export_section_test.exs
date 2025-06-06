@@ -1,10 +1,12 @@
 defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
   use ExUnit.Case
   use Wallaby.Feature
+
+  import Arrow.DisruptionsFixtures
+  import Arrow.Factory
+  import Arrow.HastusFixtures
   import Wallaby.Browser, except: [text: 1]
   import Wallaby.Query
-  import Arrow.{DisruptionsFixtures, HastusFixtures}
-  import Arrow.Factory
 
   @moduletag :integration
 
@@ -239,12 +241,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
     )
   end
 
-  defp upload_and_assert_deduplicated_service_ids(
-         session,
-         disruption_id,
-         export_path,
-         assert_service_ids
-       ) do
+  defp upload_and_assert_deduplicated_service_ids(session, disruption_id, export_path, assert_service_ids) do
     session
     |> visit("/disruptions/#{disruption_id}")
     |> scroll_down()

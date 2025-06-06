@@ -1,7 +1,10 @@
 defmodule ArrowWeb.API.DisruptionControllerTest do
   use ArrowWeb.ConnCase
+
   import Arrow.Factory
-  alias Arrow.{Disruption, Repo}
+
+  alias Arrow.Disruption
+  alias Arrow.Repo
   alias Ecto.Changeset
 
   describe "index/2" do

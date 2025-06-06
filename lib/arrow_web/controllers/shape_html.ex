@@ -1,7 +1,11 @@
 defmodule ArrowWeb.ShapeView do
   use ArrowWeb, :html
+
   alias Arrow.Shuttles
-  alias Arrow.Shuttles.{Route, RouteStop, Shape, ShapesUpload}
+  alias Arrow.Shuttles.Route
+  alias Arrow.Shuttles.RouteStop
+  alias Arrow.Shuttles.Shape
+  alias Arrow.Shuttles.ShapesUpload
   alias Phoenix.Controller
 
   embed_templates "shape_html/*"
@@ -109,8 +113,7 @@ defmodule ArrowWeb.ShapeView do
     end
   end
 
-  defp render_route_stop(%RouteStop{gtfs_stop_id: gtfs_stop_id} = route_stop)
-       when not is_nil(gtfs_stop_id) do
+  defp render_route_stop(%RouteStop{gtfs_stop_id: gtfs_stop_id} = route_stop) when not is_nil(gtfs_stop_id) do
     route_stop =
       if !Ecto.assoc_loaded?(route_stop.gtfs_stop) or
            (route_stop.gtfs_stop && route_stop.gtfs_stop.id != gtfs_stop_id),

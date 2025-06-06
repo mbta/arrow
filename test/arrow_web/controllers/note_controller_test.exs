@@ -1,8 +1,9 @@
 defmodule ArrowWeb.NoteControllerTest do
   use ArrowWeb.ConnCase, async: true
 
-  alias Arrow.Disruption
   import Arrow.Factory
+
+  alias Arrow.Disruption
 
   describe "create/2" do
     @tag :authenticated_admin

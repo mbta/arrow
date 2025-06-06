@@ -1,8 +1,8 @@
 defmodule ArrowWeb.StopLiveTest do
   use ArrowWeb.ConnCase
 
-  import Phoenix.LiveViewTest
   import Arrow.StopsFixtures
+  import Phoenix.LiveViewTest
 
   alias Arrow.Shuttles.Stop
 
@@ -69,9 +69,7 @@ defmodule ArrowWeb.StopLiveTest do
     test "creates stop and redirects to index when data is valid", %{conn: conn} do
       {:ok, new_live, _html} = live(conn, ~p"/stops/new")
 
-      form =
-        new_live
-        |> form("#stop-form", stop: @create_attrs)
+      form = form(new_live, "#stop-form", stop: @create_attrs)
 
       render_submit(form)
 
@@ -86,9 +84,7 @@ defmodule ArrowWeb.StopLiveTest do
     test "renders errors when data is invalid", %{conn: conn} do
       {:ok, new_live, _html} = live(conn, ~p"/stops/new")
 
-      form =
-        new_live
-        |> form("#stop-form", stop: @invalid_attrs)
+      form = form(new_live, "#stop-form", stop: @invalid_attrs)
 
       refute render_submit(form) =~ ~r/phx-trigger-action/
 
@@ -131,9 +127,7 @@ defmodule ArrowWeb.StopLiveTest do
     test "renders errors when data is invalid", %{conn: conn, stop: stop} do
       {:ok, edit_live, _html} = live(conn, ~p"/stops/#{stop}/edit")
 
-      form =
-        edit_live
-        |> form("#stop-form", stop: @invalid_attrs)
+      form = form(edit_live, "#stop-form", stop: @invalid_attrs)
 
       refute render_submit(form) =~ ~r/phx-trigger-action/
 

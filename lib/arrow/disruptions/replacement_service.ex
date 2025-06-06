@@ -5,6 +5,7 @@ defmodule Arrow.Disruptions.ReplacementService do
   See related: https://github.com/mbta/gtfs_creator/blob/ab5aac52561027aa13888e4c4067a8de177659f6/gtfs_creator2/disruptions/activated_shuttles.py
   """
   use Ecto.Schema
+
   import Ecto.Changeset
   import Ecto.Query, only: [from: 2]
 
@@ -13,6 +14,7 @@ defmodule Arrow.Disruptions.ReplacementService do
   alias Arrow.Repo.MapForForm
   alias Arrow.Shuttles
   alias Arrow.Shuttles.Shuttle
+  alias Ecto.Association.NotLoaded
 
   @type stop_time :: %{stop_id: String.t(), stop_time: String.t()}
   @type direction_id :: String.t()
@@ -25,8 +27,8 @@ defmodule Arrow.Disruptions.ReplacementService do
           end_date: Date.t() | nil,
           source_workbook_data: map(),
           source_workbook_filename: String.t(),
-          disruption: DisruptionV2.t() | Ecto.Association.NotLoaded.t(),
-          shuttle: Shuttle.t() | Ecto.Association.NotLoaded.t(),
+          disruption: DisruptionV2.t() | NotLoaded.t(),
+          shuttle: Shuttle.t() | NotLoaded.t(),
           timetable: %{weekday: timetable(), saturday: timetable(), sunday: timetable()} | nil
         }
 
@@ -83,7 +85,7 @@ defmodule Arrow.Disruptions.ReplacementService do
       is_nil(start_date) or is_nil(end_date) ->
         changeset
 
-      Date.compare(start_date, end_date) == :gt ->
+      Date.after?(start_date, end_date) ->
         add_error(changeset, :start_date, "start date should not be after end date")
 
       true ->
@@ -93,13 +95,11 @@ defmodule Arrow.Disruptions.ReplacementService do
 
   def add_timetable(%__MODULE__{} = replacement_service) do
     timetable =
-      schedule_service_types()
-      |> Enum.map(fn service_type ->
+      Map.new(schedule_service_types(), fn service_type ->
         {service_type, trips_with_times(replacement_service, service_type)}
       end)
-      |> Enum.into(%{})
 
-    %__MODULE__{replacement_service | timetable: timetable}
+    %{replacement_service | timetable: timetable}
   end
 
   @spec get_replacement_services_with_timetables(Date.t(), Date.t()) ::
@@ -133,10 +133,7 @@ defmodule Arrow.Disruptions.ReplacementService do
             last_trips: %{0 => String.t(), 1 => String.t()}
           }
         }
-  def first_last_trip_times(
-        %__MODULE__{} = replacement_service,
-        schedule_service_types \\ schedule_service_types()
-      ) do
+  def first_last_trip_times(%__MODULE__{} = replacement_service, schedule_service_types \\ schedule_service_types()) do
     schedule_service_types
     |> Enum.map(fn service_type ->
       service_type_abbreviation = Map.get(@service_type_to_workbook_abbreviation, service_type)
@@ -158,17 +155,12 @@ defmodule Arrow.Disruptions.ReplacementService do
     end)
   end
 
-  defp trips_with_times(
-         %__MODULE__{source_workbook_data: workbook_data} = replacement_service,
-         service_type_atom
-       ) do
+  defp trips_with_times(%__MODULE__{source_workbook_data: workbook_data} = replacement_service, service_type_atom) do
     service_type_abbreviation = Map.get(@service_type_to_workbook_abbreviation, service_type_atom)
 
     if day_of_week_data =
          Map.get(workbook_data, workbook_column_from_day_of_week(service_type_abbreviation)) do
       do_trips_with_times(replacement_service, day_of_week_data)
-    else
-      nil
     end
   end
 
@@ -186,17 +178,11 @@ defmodule Arrow.Disruptions.ReplacementService do
     {first_trips, %{0 => last_trip_0, 1 => last_trip_1}, headway_periods}
   end
 
-  defp reduce_workbook_data(
-         %{"start_time" => start_time} = headway_period,
-         {first_trips, last_trips, headway_periods}
-       ) do
+  defp reduce_workbook_data(%{"start_time" => start_time} = headway_period, {first_trips, last_trips, headway_periods}) do
     {first_trips, last_trips, Map.put(headway_periods, start_time, headway_period)}
   end
 
-  defp do_trips_with_times(
-         %__MODULE__{shuttle: shuttle},
-         day_of_week_data
-       ) do
+  defp do_trips_with_times(%__MODULE__{shuttle: shuttle}, day_of_week_data) do
     # to do: find a way to ensure that display_stop_id is always populate on every shuttle route stop
     # regardless of from where the shuttle comes
     # (e.g. if a shuttle comes from a join, it should still have display_stop_id populated)
@@ -251,8 +237,7 @@ defmodule Arrow.Disruptions.ReplacementService do
       end)
 
     {_, stop_times} =
-      Enum.reduce(shuttle_route.route_stops, {start_time, []}, fn route_stop,
-                                                                  {current_stop_time, stop_times} ->
+      Enum.reduce(shuttle_route.route_stops, {start_time, []}, fn route_stop, {current_stop_time, stop_times} ->
         {if is_nil(route_stop.time_to_next_stop) do
            current_stop_time
          else
@@ -277,8 +262,7 @@ defmodule Arrow.Disruptions.ReplacementService do
 
   defp next_trip_start_time(last_trip_start, last_trip_start, _headway_periods), do: :done
 
-  defp next_trip_start_time(trip_start, last_trip_start, headway_periods)
-       when trip_start < last_trip_start do
+  defp next_trip_start_time(trip_start, last_trip_start, headway_periods) when trip_start < last_trip_start do
     headway =
       headway_periods
       |> Map.get_lazy(start_of_hour(trip_start), fn ->

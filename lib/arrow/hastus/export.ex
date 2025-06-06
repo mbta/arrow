@@ -9,12 +9,13 @@ defmodule Arrow.Hastus.Export do
   alias Arrow.Gtfs.Line
   alias Arrow.Hastus.Service
   alias Arrow.Hastus.TripRouteDirection
+  alias Ecto.Association.NotLoaded
 
   @type t :: %__MODULE__{
           s3_path: String.t(),
-          services: list(Service) | Ecto.Association.NotLoaded.t(),
-          line: Line.t() | Ecto.Association.NotLoaded.t(),
-          disruption: DisruptionV2.t() | Ecto.Association.NotLoaded.t()
+          services: list(Service) | NotLoaded.t(),
+          line: Line.t() | NotLoaded.t(),
+          disruption: DisruptionV2.t() | NotLoaded.t()
         }
 
   schema "hastus_exports" do
@@ -25,8 +26,8 @@ defmodule Arrow.Hastus.Export do
       on_delete: :delete_all,
       foreign_key: :hastus_export_id
 
-    belongs_to :line, Arrow.Gtfs.Line, type: :string
-    belongs_to :disruption, Arrow.Disruptions.DisruptionV2
+    belongs_to :line, Line, type: :string
+    belongs_to :disruption, DisruptionV2
 
     timestamps(type: :utc_datetime)
   end

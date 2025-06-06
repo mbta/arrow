@@ -4,6 +4,7 @@ defmodule ArrowWeb.TryApiTokenAuth do
   """
 
   import Plug.Conn
+
   require Logger
 
   def init(options), do: options
@@ -13,7 +14,7 @@ defmodule ArrowWeb.TryApiTokenAuth do
 
     with [token | _] <- api_key_values,
          token = String.downcase(token),
-         auth_token = %Arrow.AuthToken{} <-
+         %Arrow.AuthToken{} = auth_token <-
            Arrow.Repo.get_by(Arrow.AuthToken, token: token),
          api_login_module = api_login_module_for_token(auth_token),
          conn = api_login_module.sign_in(conn, auth_token),
@@ -25,9 +26,7 @@ defmodule ArrowWeb.TryApiTokenAuth do
         conn
 
       reason ->
-        Logger.info(
-          "unable to login in API client api_key=#{inspect(api_key_values)} reason=#{inspect(reason)}"
-        )
+        Logger.info("unable to login in API client api_key=#{inspect(api_key_values)} reason=#{inspect(reason)}")
 
         conn |> send_resp(401, "unauthenticated") |> halt()
     end

@@ -1,6 +1,7 @@
 defmodule Arrow.DisruptionRevisionTest do
   @moduledoc false
   use Arrow.DataCase
+
   alias Arrow.DisruptionRevision
 
   describe "adjustment_kinds/1" do

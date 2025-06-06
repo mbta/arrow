@@ -1,6 +1,7 @@
 defmodule Arrow.AdjustmentTest do
   @moduledoc false
   use Arrow.DataCase
+
   alias Arrow.Adjustment
   alias Arrow.Repo
 
