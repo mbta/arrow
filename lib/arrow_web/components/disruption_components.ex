@@ -233,15 +233,13 @@ defmodule ArrowWeb.DisruptionComponents do
                   </div>
                   <%= if idx == 0 do %>
                     <div class="col-[actions] flex flex-row items-center">
+                      <% export_el_id = "export-table-#{export.id}" %>
                       <.link
                         class="font-italic max-sm:invisible max-md:max-w-[11rem] md:visible md:max-w-xs truncate pr-1"
-                        href={"#export-table-#{export.id}"}
                         title="Jump to source HASTUS export of this derived limit"
+                        onclick={"document.getElementById('#{export_el_id}').scrollIntoView({behavior:'smooth',block:'nearest'})"}
                         phx-click={
-                          JS.transition("animate-grow-shrink",
-                            time: 300,
-                            to: "#export-table-#{export.id}"
-                          )
+                          JS.transition("animate-grow-shrink", time: 300, to: "##{export_el_id}")
                         }
                       >
                         <.icon name="hero-arrow-long-right" class="visible m-icon m-icon-sm" /><.icon
