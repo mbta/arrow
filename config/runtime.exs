@@ -90,3 +90,24 @@ if config_env() == :prod do
     gtfs_archive_storage_prefix_env: System.get_env("S3_PREFIX"),
     hastus_export_storage_prefix_env: System.get_env("S3_PREFIX")
 end
+
+sync_enabled = System.get_env("ARROW_SYNC_ENABLED") == "true"
+
+if sync_enabled && config_env() != :test do
+  config :arrow,
+    sync_enabled: true,
+    sync_domain: System.fetch_env!("ARROW_DOMAIN"),
+    sync_api_key: System.fetch_env!("ARROW_API_KEY")
+
+  config :arrow, Oban,
+    plugins: [
+      {Oban.Plugins.Cron,
+       crontab: [
+         # Sync stops and shapes from prod to dev hourly
+         {"0 * * * *", Arrow.SyncWorker}
+       ]}
+    ]
+else
+  config :arrow,
+    sync_enabled: false
+end
