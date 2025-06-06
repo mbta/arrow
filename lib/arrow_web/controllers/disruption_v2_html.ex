@@ -127,6 +127,11 @@ defmodule ArrowWeb.DisruptionV2View do
           end_stop: derived_limit.end_stop
         }
       end
+      # Because incomplete details are shown for derived limits in this view,
+      # ones that are actually different (e.g. are derived from different services with different service dates)
+      # can appear as duplicates.
+      # Deduplicate them on the info shown, to avoid confusion.
+      |> Enum.uniq_by(&{&1.line_id, &1.start_stop.name, &1.end_stop.name})
 
     limits ++ derived_limits
   end
