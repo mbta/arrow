@@ -132,13 +132,27 @@ defmodule ArrowWeb.EditHastusExportForm do
             </div>
           </div>
           <.inputs_for :let={f_service} field={@form[:services]}>
+            <.inputs_for :let={f_derived_limit} field={f_service[:derived_limits]}>
+              <.input field={f_derived_limit[:start_stop_id]} type="text" class="hidden" />
+              <.input field={f_derived_limit[:end_stop_id]} type="text" class="hidden" />
+            </.inputs_for>
             <.input field={f_service[:name]} type="text" class="hidden" />
             <div class="row mb-3">
               <div class="col-lg-2">
                 <strong>service ID</strong>
               </div>
-              <div class="col-lg-10">
+              <div class="col-lg-3">
                 {input_value(f_service, :name)}
+              </div>
+              <div
+                :if={
+                  input_value(f_service, :import?) in [true, "true"] and
+                    input_value(f_service, :derived_limits) == []
+                }
+                class="col-lg-7 text-sm text-danger"
+              >
+                *Unable to derive any disruption limits: this service does not contain any trips with non-canonical route patterns.<br />
+                Consider deactivating it.
               </div>
             </div>
             <.inputs_for :let={f_date} field={f_service[:service_dates]}>

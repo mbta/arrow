@@ -17,6 +17,15 @@ module.exports = {
       colors: {
         brand: "#FD4F00",
       },
+      keyframes: {
+        "grow-shrink": {
+          "0%, 100%": { scale: "100%" },
+          "50%": { scale: "101%" },
+        },
+      },
+      animation: {
+        "grow-shrink": "grow-shrink 0.3s ease-in-out 1",
+      },
     },
   },
   plugins: [

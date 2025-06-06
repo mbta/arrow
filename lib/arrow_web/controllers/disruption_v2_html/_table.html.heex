@@ -40,15 +40,26 @@
         <td class="col-lg-3"><b>{disruption.title}</b></td>
 
         <td class="col-lg-3">
-          <%= for limit <- disruption.limits do %>
+          <%= for limit <- limits(disruption) do %>
             <div class="d-flex mb-3">
+              <.line_icon
+                :if={limit.derived?}
+                conn={@conn}
+                line_id={limit.line_id}
+                size="sm"
+                class="my-1 mr-2 flex-shrink-0"
+              />
               <.route_icon
+                :if={not limit.derived?}
                 conn={@conn}
                 route_id={limit.route_id}
                 size="sm"
                 class="my-1 mr-2 flex-shrink-0"
               />
-              <span>{limit.start_stop.name} to {limit.end_stop.name}</span>
+              <span class="whitespace-nowrap">
+                {limit.start_stop.name} to {limit.end_stop.name}
+                <span :if={limit.derived?} class="italic text-gray-500">(derived)</span>
+              </span>
             </div>
           <% end %>
         </td>

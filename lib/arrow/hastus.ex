@@ -7,7 +7,12 @@ defmodule Arrow.Hastus do
 
   alias Arrow.Repo
 
-  @preloads [:line, :disruption, :trip_route_directions, services: [:service_dates]]
+  @preloads [
+    :line,
+    :disruption,
+    :trip_route_directions,
+    services: [:service_dates, derived_limits: [:start_stop, :end_stop]]
+  ]
 
   alias Arrow.Hastus.Export
 

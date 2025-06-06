@@ -29,6 +29,17 @@ defmodule Arrow.Hastus.ServiceDate do
     |> assoc_constraint(:service)
   end
 
+  @doc """
+  Returns a set of days-of-week (as integers) covered by a service_date.
+  """
+  @spec day_of_weeks(t()) :: MapSet.t(1..7)
+  def day_of_weeks(%__MODULE__{} = service_date) do
+    service_date.start_date
+    |> Date.range(service_date.end_date)
+    |> Stream.take(7)
+    |> MapSet.new(&Date.day_of_week/1)
+  end
+
   @spec validate_start_date_before_end_date(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
   defp validate_start_date_before_end_date(changeset) do
     start_date = get_field(changeset, :start_date)

@@ -8,6 +8,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   import Ecto.Changeset
 
   alias Arrow.Disruptions
+  alias Arrow.Hastus.Export
 
   @type t :: %__MODULE__{
           title: String.t() | nil,
@@ -18,7 +19,8 @@ defmodule Arrow.Disruptions.DisruptionV2 do
           updated_at: DateTime.t() | nil,
           limits: [Arrow.Disruptions.Limit.t()] | Ecto.Association.NotLoaded.t(),
           replacement_services:
-            [Disruptions.ReplacementService.t()] | Ecto.Association.NotLoaded.t()
+            [Disruptions.ReplacementService.t()] | Ecto.Association.NotLoaded.t(),
+          hastus_exports: [Arrow.Hastus.Export.t()] | Ecto.Association.NotLoaded.t()
         }
 
   schema "disruptionsv2" do
@@ -35,7 +37,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
       foreign_key: :disruption_id,
       on_replace: :delete
 
-    has_many :hastus_exports, Arrow.Hastus.Export,
+    has_many :hastus_exports, Export,
       foreign_key: :disruption_id,
       on_replace: :delete
 
@@ -55,6 +57,17 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   def new(attrs \\ %{}) do
     %__MODULE__{limits: [], replacement_services: [], mode: :subway}
     |> struct!(attrs)
+  end
+
+  @doc """
+  Returns true if `disruption_v2` has any manually-entered or derived limits.
+  """
+  @spec has_limits?(t()) :: boolean
+  def has_limits?(%__MODULE__{} = disruption_v2) do
+    disruption_v2 = Arrow.Repo.preload(disruption_v2, [:limits, :hastus_exports])
+
+    not Enum.empty?(disruption_v2.limits) or
+      Enum.any?(disruption_v2.hastus_exports, &Export.has_derived_limits?/1)
   end
 
   @spec route(String.t()) :: atom() | nil

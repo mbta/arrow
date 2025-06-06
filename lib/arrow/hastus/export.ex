@@ -12,21 +12,22 @@ defmodule Arrow.Hastus.Export do
 
   @type t :: %__MODULE__{
           s3_path: String.t(),
-          services: list(Service) | Ecto.Association.NotLoaded.t(),
+          services: list(Service.t()) | Ecto.Association.NotLoaded.t(),
+          trip_route_directions: list(TripRouteDirection.t()) | Ecto.Association.NotLoaded.t(),
           line: Line.t() | Ecto.Association.NotLoaded.t(),
           disruption: DisruptionV2.t() | Ecto.Association.NotLoaded.t()
         }
 
   schema "hastus_exports" do
     field :s3_path, :string
-    has_many :services, Arrow.Hastus.Service, on_replace: :delete, foreign_key: :export_id
+    has_many :services, Service, on_replace: :delete, foreign_key: :export_id
 
-    has_many :trip_route_directions, Arrow.Hastus.TripRouteDirection,
+    has_many :trip_route_directions, TripRouteDirection,
       on_delete: :delete_all,
       foreign_key: :hastus_export_id
 
-    belongs_to :line, Arrow.Gtfs.Line, type: :string
-    belongs_to :disruption, Arrow.Disruptions.DisruptionV2
+    belongs_to :line, Line, type: :string
+    belongs_to :disruption, DisruptionV2
 
     timestamps(type: :utc_datetime)
   end
@@ -40,5 +41,15 @@ defmodule Arrow.Hastus.Export do
     |> cast_assoc(:trip_route_directions, with: &TripRouteDirection.changeset/2)
     |> assoc_constraint(:line)
     |> assoc_constraint(:disruption)
+  end
+
+  @doc """
+  Returns true if `export` has any derived limits.
+  """
+  @spec has_derived_limits?(t()) :: boolean
+  def has_derived_limits?(%__MODULE__{} = export) do
+    export = Arrow.Repo.preload(export, [:services])
+
+    Enum.any?(export.services, &Service.has_derived_limits?/1)
   end
 end
