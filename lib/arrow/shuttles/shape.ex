@@ -40,17 +40,24 @@ defmodule Arrow.Shuttles.Shape do
     end)
   end
 
-  def validate_and_enforce_name(attrs) do
+  def validate_and_enforce_name(attrs, validate_name \\ true) do
     changeset =
       %__MODULE__{}
       |> cast(attrs, [:name])
       |> validate_required([:name])
-      |> validate_format(
-        :name,
-        ~r/^[A-Z][A-Za-z0-9]*To[A-Z][A-Za-z0-9]*(?:Via[A-Z][A-Za-z0-9]*)?(?:-S)?$/,
-        message:
-          "should be PascalCase using only letters and numbers and include start and end location"
-      )
+
+    changeset =
+      if validate_name do
+        validate_format(
+          changeset,
+          :name,
+          ~r/^[A-Z][A-Za-z0-9]*To[A-Z][A-Za-z0-9]*(?:Via[A-Z][A-Za-z0-9]*)?(?:-S)?$/,
+          message:
+            "should be PascalCase using only letters and numbers and include start and end location"
+        )
+      else
+        changeset
+      end
 
     cond do
       not changeset.valid? ->
