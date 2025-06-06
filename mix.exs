@@ -58,7 +58,7 @@ defmodule Arrow.MixProject do
       {:ex_machina, "~> 2.3", only: :test},
       {:gettext, "~> 0.11"},
       {:guardian, "~> 2.0"},
-      {:hackney, "~> 1.9"},
+      {:hackney, "~> 1.21"},
       {:httpoison, "~> 2.2"},
       {:ja_serializer, "~> 0.18.0"},
       {:jason, "~> 1.0"},
