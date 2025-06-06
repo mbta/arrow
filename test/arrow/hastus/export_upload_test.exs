@@ -40,15 +40,18 @@ defmodule Arrow.Hastus.ExportUploadTest do
       expected_services = [
         %{
           name: "RTL12025-hmb15016-Saturday-01",
-          service_dates: [%{start_date: ~D[2025-03-22], end_date: ~D[2025-03-22]}]
+          service_dates: [%{start_date: ~D[2025-03-22], end_date: ~D[2025-03-22]}],
+          derived_limits: []
         },
         %{
           name: "RTL12025-hmb15017-Sunday-01",
-          service_dates: [%{start_date: ~D[2025-03-23], end_date: ~D[2025-03-23]}]
+          service_dates: [%{start_date: ~D[2025-03-23], end_date: ~D[2025-03-23]}],
+          derived_limits: []
         },
         %{
           name: "RTL12025-hmb15mo1-Weekday-01",
-          service_dates: []
+          service_dates: [],
+          derived_limits: []
         },
         %{
           name: "RTL12025-hmb15wg1-Weekday-01",
@@ -57,7 +60,8 @@ defmodule Arrow.Hastus.ExportUploadTest do
             %{start_date: ~D[2025-03-24], end_date: ~D[2025-03-25]},
             %{start_date: ~D[2025-03-27], end_date: ~D[2025-04-01]},
             %{start_date: ~D[2025-04-04], end_date: ~D[2025-04-04]}
-          ]
+          ],
+          derived_limits: []
         }
       ]
 
@@ -231,10 +235,10 @@ defmodule Arrow.Hastus.ExportUploadTest do
       )
 
       expected_services = [
-        %{name: "RTL12025-hmb15016-Saturday-01", service_dates: []},
-        %{name: "RTL12025-hmb15017-Sunday-01", service_dates: []},
-        %{name: "RTL12025-hmb15mo1-Weekday-01", service_dates: []},
-        %{name: "RTL12025-hmb15wg1-Weekday-01", service_dates: []}
+        %{name: "RTL12025-hmb15016-Saturday-01", service_dates: [], derived_limits: []},
+        %{name: "RTL12025-hmb15017-Sunday-01", service_dates: [], derived_limits: []},
+        %{name: "RTL12025-hmb15mo1-Weekday-01", service_dates: [], derived_limits: []},
+        %{name: "RTL12025-hmb15wg1-Weekday-01", service_dates: [], derived_limits: []}
       ]
 
       assert {:ok,
