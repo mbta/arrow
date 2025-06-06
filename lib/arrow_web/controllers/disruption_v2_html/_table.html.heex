@@ -41,7 +41,7 @@
 
         <td class="col-lg-3">
           <%= for limit <- limits(disruption) do %>
-            <div class={["d-flex mb-3", limit.derived? && "text-gray-500"]}>
+            <div class="d-flex mb-3">
               <.line_icon
                 :if={limit.derived?}
                 conn={@conn}
@@ -58,7 +58,7 @@
               />
               <span class="whitespace-nowrap">
                 {limit.start_stop.name} to {limit.end_stop.name}
-                <em :if={limit.derived?}>(derived)</em>
+                <span :if={limit.derived?} class="italic text-gray-500">(derived)</span>
               </span>
             </div>
           <% end %>
