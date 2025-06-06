@@ -5,9 +5,11 @@ defmodule Arrow.Hastus.ExportUpload do
 
   import Ecto.Query, only: [from: 2]
 
-  require Logger
-
+  alias Arrow.Gtfs.StopTime
+  alias Arrow.Gtfs.Trip
   alias Arrow.Hastus.TripRouteDirection
+
+  require Logger
 
   @type t :: %__MODULE__{
           services: list(map()),
@@ -48,7 +50,7 @@ defmodule Arrow.Hastus.ExportUpload do
 
     with {:ok, zip_bin, file_map} <- read_zip(zip_path, tmp_dir),
          {:ok, zip_bin, file_map, amended?} <- amend_service_ids(zip_bin, file_map, tmp_dir),
-         revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
+         revenue_trips = Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
          :ok <- validate_trip_shapes(revenue_trips, file_map["all_shapes.txt"]),
          :ok <- validate_trip_blocks(revenue_trips),
          {:ok, line_id} <- infer_line(revenue_trips, file_map["all_stop_times.txt"]),
@@ -72,9 +74,7 @@ defmodule Arrow.Hastus.ExportUpload do
     end
   rescue
     e ->
-      Logger.warning(
-        "Hastus.ExportUpload failed to parse zip, message=#{Exception.format(:error, e, __STACKTRACE__)}"
-      )
+      Logger.warning("Hastus.ExportUpload failed to parse zip, message=#{Exception.format(:error, e, __STACKTRACE__)}")
 
       # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
       {:ok, {:error, "Could not parse zip."}}
@@ -226,12 +226,10 @@ defmodule Arrow.Hastus.ExportUpload do
     missing_files = Enum.filter(@filenames, &(get_unzipped_file_path(&1, tmp_dir) not in unzip))
 
     if Enum.any?(missing_files) do
-      {:error,
-       "The following files are missing from the export: #{Enum.join(missing_files, ", ")}"}
+      {:error, "The following files are missing from the export: #{Enum.join(missing_files, ", ")}"}
     else
       map =
-        @filenames
-        |> Enum.map(fn filename ->
+        Map.new(@filenames, fn filename ->
           data =
             filename
             |> get_unzipped_file_path(tmp_dir)
@@ -240,7 +238,6 @@ defmodule Arrow.Hastus.ExportUpload do
 
           {to_string(filename), data}
         end)
-        |> Map.new()
 
       {:ok, map}
     end
@@ -250,9 +247,7 @@ defmodule Arrow.Hastus.ExportUpload do
     shape_ids = MapSet.new(shapes, & &1["shape_id"])
 
     case revenue_trips
-         |> Stream.filter(
-           &(&1["shape_id"] in [nil, ""] or not MapSet.member?(shape_ids, &1["shape_id"]))
-         )
+         |> Stream.filter(&(&1["shape_id"] in [nil, ""] or not MapSet.member?(shape_ids, &1["shape_id"])))
          |> Enum.map(& &1["trip_id"]) do
       [] ->
         :ok
@@ -285,9 +280,9 @@ defmodule Arrow.Hastus.ExportUpload do
 
     lines =
       Arrow.Repo.all(
-        from st in Arrow.Gtfs.StopTime,
+        from st in StopTime,
           where: st.stop_id in ^exported_stop_ids,
-          join: t in Arrow.Gtfs.Trip,
+          join: t in Trip,
           on: t.id == st.trip_id,
           join: r in Arrow.Gtfs.Route,
           on: r.id == t.route_id,
@@ -310,11 +305,11 @@ defmodule Arrow.Hastus.ExportUpload do
     canonical_stops_by_branch =
       Enum.group_by(
         Arrow.Repo.all(
-          from t in Arrow.Gtfs.Trip,
+          from t in Trip,
             where:
               t.route_id in ["Green-B", "Green-C", "Green-D", "Green-E"] and
                 t.service_id == "canonical",
-            join: st in Arrow.Gtfs.StopTime,
+            join: st in StopTime,
             on: t.id == st.trip_id,
             select: %{route_id: t.route_id, stop_id: st.stop_id}
         ),
@@ -326,9 +321,7 @@ defmodule Arrow.Hastus.ExportUpload do
       |> Enum.group_by(&{&1["route_id"], &1["via_variant"], &1["avi_code"]})
       |> Map.values()
       |> Enum.map(&List.first/1)
-      |> Enum.map(
-        &infer_green_line_branch_for_trip(&1, canonical_stops_by_branch, stop_times_by_trip_id)
-      )
+      |> Enum.map(&infer_green_line_branch_for_trip(&1, canonical_stops_by_branch, stop_times_by_trip_id))
       |> Enum.group_by(&elem(&1, 0))
 
     case result do
@@ -343,7 +336,7 @@ defmodule Arrow.Hastus.ExportUpload do
         {:error, message}
 
       %{ok: trip_route_directions} ->
-        {:ok, trip_route_directions |> Enum.map(&elem(&1, 1))}
+        {:ok, Enum.map(trip_route_directions, &elem(&1, 1))}
     end
   end
 
@@ -389,11 +382,7 @@ defmodule Arrow.Hastus.ExportUpload do
   defp get_unzipped_file_path(filename, tmp_dir), do: ~c"#{tmp_dir}/#{filename}"
 
   defp parse_export(
-         %{
-           "all_calendar.txt" => calendar,
-           "all_calendar_dates.txt" => calendar_dates,
-           "all_trips.txt" => trips
-         },
+         %{"all_calendar.txt" => calendar, "all_calendar_dates.txt" => calendar_dates, "all_trips.txt" => trips},
          tmp_dir
        ) do
     service_ids =
@@ -404,8 +393,7 @@ defmodule Arrow.Hastus.ExportUpload do
       |> Enum.sort()
 
     imported_service =
-      service_ids
-      |> Enum.map(fn service_id ->
+      Enum.map(service_ids, fn service_id ->
         case Enum.find(calendar, &(&1["service_id"] == service_id)) do
           %{
             "service_id" => service_id,
@@ -507,16 +495,13 @@ defmodule Arrow.Hastus.ExportUpload do
   end
 
   # Make sure dates are sorted before we start
-  defp merge_adjacent_service_dates([], merged_dates),
-    do: Enum.sort_by(merged_dates, & &1.start_date, Date)
+  defp merge_adjacent_service_dates([], merged_dates), do: Enum.sort_by(merged_dates, & &1.start_date, Date)
 
   # Only one date for the current service, just add it as-is
-  defp merge_adjacent_service_dates([date], []),
-    do: merge_adjacent_service_dates([], [date])
+  defp merge_adjacent_service_dates([date], []), do: merge_adjacent_service_dates([], [date])
 
   # Last date in the list, prepend it to list
-  defp merge_adjacent_service_dates([date], merged_dates),
-    do: merge_adjacent_service_dates([], [date | merged_dates])
+  defp merge_adjacent_service_dates([date], merged_dates), do: merge_adjacent_service_dates([], [date | merged_dates])
 
   defp merge_adjacent_service_dates(
          [
@@ -535,11 +520,9 @@ defmodule Arrow.Hastus.ExportUpload do
     end
   end
 
-  defp extract_date_parts(date_string),
-    do: Regex.run(~r/^(\d{4})(\d{2})(\d{2})/, date_string, capture: :all_but_first)
+  defp extract_date_parts(date_string), do: Regex.run(~r/^(\d{4})(\d{2})(\d{2})/, date_string, capture: :all_but_first)
 
-  defp revenue_trip?(%{"route_id" => route_id, "trp_is_in_service" => "X"}),
-    do: Regex.match?(~r/^\d+_*-.+$/, route_id)
+  defp revenue_trip?(%{"route_id" => route_id, "trp_is_in_service" => "X"}), do: Regex.match?(~r/^\d+_*-.+$/, route_id)
 
   defp revenue_trip?(_), do: false
 end

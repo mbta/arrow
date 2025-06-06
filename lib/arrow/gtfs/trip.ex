@@ -6,39 +6,45 @@ defmodule Arrow.Gtfs.Trip do
   table contents should be considered read-only otherwise.
   """
   use Arrow.Gtfs.Schema
+
   import Ecto.Changeset
+
+  alias Arrow.Gtfs.Importable
+  alias Arrow.Gtfs.Route
+  alias Arrow.Gtfs.RoutePattern
+  alias Arrow.Gtfs.Service
+  alias Arrow.Gtfs.Shape
+  alias Arrow.Gtfs.StopTime
+  alias Ecto.Association.NotLoaded
 
   @type t :: %__MODULE__{
           id: String.t(),
-          route: Arrow.Gtfs.Route.t() | Ecto.Association.NotLoaded.t(),
-          service: Arrow.Gtfs.Service.t() | Ecto.Association.NotLoaded.t(),
+          route: Route.t() | NotLoaded.t(),
+          service: Service.t() | NotLoaded.t(),
           headsign: String.t(),
           short_name: String.t() | nil,
           direction_id: 0 | 1,
-          directions: list(Arrow.Gtfs.Direction.t()) | Ecto.Association.NotLoaded.t(),
+          directions: list(Arrow.Gtfs.Direction.t()) | NotLoaded.t(),
           block_id: String.t() | nil,
-          shape: Arrow.Gtfs.Shape.t() | Ecto.Association.NotLoaded.t() | nil,
-          shape_points: list(Arrow.Gtfs.ShapePoint.t()) | Ecto.Association.NotLoaded.t() | nil,
+          shape: Shape.t() | NotLoaded.t() | nil,
+          shape_points: list(Arrow.Gtfs.ShapePoint.t()) | NotLoaded.t() | nil,
           wheelchair_accessible: atom,
           route_type: atom | nil,
           # The RoutePattern that this Trip follows.
-          route_pattern: Arrow.Gtfs.RoutePattern.t() | Ecto.Association.NotLoaded.t(),
+          route_pattern: RoutePattern.t() | NotLoaded.t(),
           # The RoutePattern, if any, for which this is the *representative* Trip.
-          representing_route_pattern:
-            Arrow.Gtfs.RoutePattern.t() | Ecto.Association.NotLoaded.t() | nil,
+          representing_route_pattern: RoutePattern.t() | NotLoaded.t() | nil,
           bikes_allowed: atom,
-          stop_times: list(Arrow.Gtfs.StopTime.t()) | Ecto.Association.NotLoaded.t()
+          stop_times: list(StopTime.t()) | NotLoaded.t()
         }
 
-  @wheelchair_accessibility_values Enum.with_index(
-                                     ~w[no_information_inherit_from_parent accessible not_accessible]a
-                                   )
+  @wheelchair_accessibility_values Enum.with_index(~w[no_information_inherit_from_parent accessible not_accessible]a)
   @route_type_values Enum.with_index(~w[light_rail heavy_rail commuter_rail bus ferry]a)
   @bike_boarding_values Enum.with_index(~w[no_information bikes_allowed bikes_not_allowed]a)
 
   schema "gtfs_trips" do
-    belongs_to :route, Arrow.Gtfs.Route
-    belongs_to :service, Arrow.Gtfs.Service
+    belongs_to :route, Route
+    belongs_to :service, Service
     field :headsign, :string
     field :short_name, :string
     field :direction_id, :integer
@@ -49,17 +55,16 @@ defmodule Arrow.Gtfs.Trip do
     # manually look up the relevant Direction from `directions`.
     has_many :directions, through: [:route, :directions]
     field :block_id, :string
-    belongs_to :shape, Arrow.Gtfs.Shape
+    belongs_to :shape, Shape
     has_many :shape_points, through: [:shape, :points]
     field :wheelchair_accessible, Ecto.Enum, values: @wheelchair_accessibility_values
     field :route_type, Ecto.Enum, values: @route_type_values
-    belongs_to :route_pattern, Arrow.Gtfs.RoutePattern
+    belongs_to :route_pattern, RoutePattern
 
-    has_one :representing_route_pattern, Arrow.Gtfs.RoutePattern,
-      foreign_key: :representative_trip_id
+    has_one :representing_route_pattern, RoutePattern, foreign_key: :representative_trip_id
 
     field :bikes_allowed, Ecto.Enum, values: @bike_boarding_values
-    has_many :stop_times, Arrow.Gtfs.StopTime, preload_order: [:stop_sequence]
+    has_many :stop_times, StopTime, preload_order: [:stop_sequence]
   end
 
   def changeset(trip, attrs) do
@@ -83,12 +88,12 @@ defmodule Arrow.Gtfs.Trip do
     |> assoc_constraint(:route_pattern)
   end
 
-  @impl Arrow.Gtfs.Importable
+  @impl Importable
   def filenames, do: ["trips.txt"]
 
-  @impl Arrow.Gtfs.Importable
+  @impl Importable
   def import(unzip) do
-    Arrow.Gtfs.Importable.import_using_copy(
+    Importable.import_using_copy(
       __MODULE__,
       unzip,
       header_mappings: %{

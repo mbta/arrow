@@ -5,6 +5,7 @@ defmodule Arrow.Disruption.TripShortName do
   """
 
   use Ecto.Schema
+
   import Ecto.Changeset
 
   @type t :: %__MODULE__{

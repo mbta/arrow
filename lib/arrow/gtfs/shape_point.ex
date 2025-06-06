@@ -8,10 +8,14 @@ defmodule Arrow.Gtfs.ShapePoint do
   table contents should be considered read-only otherwise.
   """
   use Arrow.Gtfs.Schema
+
   import Ecto.Changeset
 
+  alias Arrow.Gtfs.Importable
+  alias Arrow.Gtfs.Shape
+
   @type t :: %__MODULE__{
-          shape: Arrow.Gtfs.Shape.t() | Ecto.Association.NotLoaded.t(),
+          shape: Shape.t() | Ecto.Association.NotLoaded.t(),
           sequence: integer,
           lat: float,
           lon: float,
@@ -21,7 +25,7 @@ defmodule Arrow.Gtfs.ShapePoint do
   @primary_key false
 
   schema "gtfs_shape_points" do
-    belongs_to :shape, Arrow.Gtfs.Shape, primary_key: true
+    belongs_to :shape, Shape, primary_key: true
     field :lat, :float
     field :lon, :float
     field :sequence, :integer, primary_key: true
@@ -40,12 +44,12 @@ defmodule Arrow.Gtfs.ShapePoint do
     |> assoc_constraint(:shape)
   end
 
-  @impl Arrow.Gtfs.Importable
+  @impl Importable
   def filenames, do: ["shapes.txt"]
 
-  @impl Arrow.Gtfs.Importable
+  @impl Importable
   def import(unzip) do
-    Arrow.Gtfs.Importable.import_using_copy(
+    Importable.import_using_copy(
       __MODULE__,
       unzip,
       header_mappings: %{

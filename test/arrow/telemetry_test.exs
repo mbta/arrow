@@ -14,6 +14,7 @@ defmodule Arrow.TelemetryTest do
   @moduledoc false
   use ExUnit.Case, async: true
   use Oban.Testing, repo: Arrow.Repo
+
   import ExUnit.CaptureLog
 
   describe "oban.job.exception listener" do

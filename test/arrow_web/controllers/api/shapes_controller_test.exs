@@ -1,5 +1,6 @@
 defmodule ArrowWeb.API.ShapesControllerTest do
   use ArrowWeb.ConnCase
+
   import Arrow.ShuttlesFixtures
   import Test.Support.Helpers
 
@@ -19,7 +20,7 @@ defmodule ArrowWeb.API.ShapesControllerTest do
 
       assert Enum.count(data) == 3
 
-      shape_ids = data |> Enum.map(fn %{"id" => id} -> String.to_integer(id) end) |> MapSet.new()
+      shape_ids = MapSet.new(data, fn %{"id" => id} -> String.to_integer(id) end)
       assert shape_ids == MapSet.new([shape1.id, shape2.id, shape3.id])
     end
 

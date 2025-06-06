@@ -1,9 +1,11 @@
 defmodule ArrowWeb.StopViewLive do
+  @moduledoc false
   use ArrowWeb, :live_view
 
   alias Arrow.Gtfs.Stop, as: GtfsStop
   alias Arrow.Shuttles.Stop
   alias Arrow.Stops
+
   embed_templates "stop_live/*"
 
   @doc """
@@ -128,7 +130,7 @@ defmodule ArrowWeb.StopViewLive do
   end
 
   def handle_event("validate", %{"stop" => stop_params}, socket) do
-    form = Stops.change_stop(socket.assigns.stop, stop_params) |> to_form(action: :validate)
+    form = socket.assigns.stop |> Stops.change_stop(stop_params) |> to_form(action: :validate)
 
     {existing_stops, existing_gtfs_stops} =
       with %{"stop_lat" => lat, "stop_lon" => lon, "stop_id" => stop_id} <- stop_params,
@@ -141,8 +143,7 @@ defmodule ArrowWeb.StopViewLive do
       end
 
     {:noreply,
-     socket
-     |> assign(
+     assign(socket,
        stop_map_props: stop_params,
        form: form,
        existing_stops: existing_stops,

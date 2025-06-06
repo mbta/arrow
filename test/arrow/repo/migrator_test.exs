@@ -13,6 +13,7 @@ end
 defmodule Arrow.Repo.MigratorTest do
   @moduledoc false
   use ExUnit.Case
+
   import ExUnit.CaptureLog
 
   alias Arrow.Repo.Migrator

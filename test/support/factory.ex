@@ -21,7 +21,7 @@ defmodule Arrow.Factory do
   def disruption_revision_factory(attrs) do
     %Arrow.DisruptionRevision{
       start_date: Date.utc_today(),
-      end_date: Date.utc_today() |> Date.add(6),
+      end_date: Date.add(Date.utc_today(), 6),
       description: sequence("Description"),
       adjustment_kind: :bus,
       disruption: build(:disruption),
@@ -105,28 +105,30 @@ defmodule Arrow.Factory do
   end
 
   def gtfs_stop_factory(attrs \\ %{}) do
-    %Arrow.Gtfs.Stop{
-      id: sequence(:source_label, &"gtfs-stop-#{&1}"),
-      code: nil,
-      name: "Test Stop",
-      desc: nil,
-      platform_code: nil,
-      platform_name: nil,
-      lat: 42.3601,
-      lon: -71.0589,
-      zone_id: nil,
-      address: nil,
-      url: nil,
-      level: nil,
-      location_type: :stop_platform,
-      parent_station: nil,
-      wheelchair_boarding: :accessible,
-      municipality: "Boston",
-      on_street: nil,
-      at_street: nil,
-      vehicle_type: :bus
-    }
-    |> merge_attributes(attrs)
+    merge_attributes(
+      %Arrow.Gtfs.Stop{
+        id: sequence(:source_label, &"gtfs-stop-#{&1}"),
+        code: nil,
+        name: "Test Stop",
+        desc: nil,
+        platform_code: nil,
+        platform_name: nil,
+        lat: 42.3601,
+        lon: -71.0589,
+        zone_id: nil,
+        address: nil,
+        url: nil,
+        level: nil,
+        location_type: :stop_platform,
+        parent_station: nil,
+        wheelchair_boarding: :accessible,
+        municipality: "Boston",
+        on_street: nil,
+        at_street: nil,
+        vehicle_type: :bus
+      },
+      attrs
+    )
   end
 
   def gtfs_route_factory do
@@ -248,7 +250,7 @@ defmodule Arrow.Factory do
     %Arrow.Disruptions.ReplacementService{
       reason: "Maintenance",
       start_date: Date.utc_today(),
-      end_date: Date.utc_today() |> Date.add(6),
+      end_date: Date.add(Date.utc_today(), 6),
       source_workbook_data: build(:replacement_service_workbook_data),
       source_workbook_filename: "file.xlsx",
       disruption: build(:disruption_v2),

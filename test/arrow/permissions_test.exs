@@ -1,5 +1,6 @@
 defmodule Arrow.PermissionsTest do
   use ExUnit.Case
+
   alias Arrow.Accounts.User
   alias Arrow.Permissions
 

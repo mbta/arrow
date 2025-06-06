@@ -6,11 +6,16 @@ defmodule Arrow.Gtfs.Route do
   table contents should be considered read-only otherwise.
   """
   use Arrow.Gtfs.Schema
+
   import Ecto.Changeset
+
+  alias Arrow.Gtfs.Agency
+  alias Arrow.Gtfs.Line
+  alias Ecto.Association.NotLoaded
 
   @type t :: %__MODULE__{
           id: String.t(),
-          agency: Arrow.Gtfs.Agency.t() | Ecto.Association.NotLoaded.t(),
+          agency: Agency.t() | NotLoaded.t(),
           short_name: String.t() | nil,
           long_name: String.t() | nil,
           desc: String.t(),
@@ -20,7 +25,7 @@ defmodule Arrow.Gtfs.Route do
           text_color: String.t() | nil,
           sort_order: integer,
           fare_class: String.t(),
-          line: Arrow.Gtfs.Line.t() | Ecto.Association.NotLoaded.t(),
+          line: Line.t() | NotLoaded.t(),
           listed_route: atom,
           network_id: String.t()
         }
@@ -28,7 +33,7 @@ defmodule Arrow.Gtfs.Route do
   @route_type_values Enum.with_index(~w[light_rail heavy_rail commuter_rail bus ferry]a)
 
   schema "gtfs_routes" do
-    belongs_to :agency, Arrow.Gtfs.Agency
+    belongs_to :agency, Agency
     field :short_name, :string
     field :long_name, :string
     field :desc, :string
@@ -40,7 +45,7 @@ defmodule Arrow.Gtfs.Route do
     field :text_color, :string
     field :sort_order, :integer
     field :fare_class, :string
-    belongs_to :line, Arrow.Gtfs.Line
+    belongs_to :line, Line
     field :listed_route, Ecto.Enum, values: Enum.with_index(~w[Included Excluded]a)
     field :network_id, :string
 

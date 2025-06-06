@@ -45,19 +45,21 @@ defmodule Arrow.Disruptions.LimitTest do
         {:day_name, {"Dates specified above do not include a #{day}", []}}
       end
 
-      [
-        tuesday: true,
-        friday: false,
-        sunday: false
-      ]
-      |> Enum.each(fn {day, valid?} ->
-        changeset = Enum.find(dow_changesets, &(get_field(&1, :day_name) == day))
-        assert changeset.valid? == valid?
+      Enum.each(
+        [
+          tuesday: true,
+          friday: false,
+          sunday: false
+        ],
+        fn {day, valid?} ->
+          changeset = Enum.find(dow_changesets, &(get_field(&1, :day_name) == day))
+          assert changeset.valid? == valid?
 
-        if not valid? do
-          assert expected_error.(day) in changeset.errors
+          if not valid? do
+            assert expected_error.(day) in changeset.errors
+          end
         end
-      end)
+      )
     end
   end
 end
