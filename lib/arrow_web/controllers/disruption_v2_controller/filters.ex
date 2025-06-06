@@ -5,7 +5,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
   index (including e.g. sorting, in the table view) are considered filters.
   """
 
-  @behaviour Behaviour
+  @behaviour ArrowWeb.DisruptionV2Controller.Filters.Behaviour
 
   import __MODULE__.Helpers
 
@@ -13,14 +13,6 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
   alias __MODULE__.Table
 
   @empty_set MapSet.new()
-
-  defmodule Behaviour do
-    @moduledoc "Required behaviour for `Filters` sub-modules."
-    @callback from_params(Plug.Conn.params()) :: struct
-    @callback resettable?(struct) :: boolean
-    @callback reset(struct) :: struct
-    @callback to_params(struct) :: Plug.Conn.params()
-  end
 
   @type t :: %__MODULE__{
           kinds: MapSet.t(atom()),
