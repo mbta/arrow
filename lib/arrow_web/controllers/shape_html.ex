@@ -1,7 +1,9 @@
 defmodule ArrowWeb.ShapeView do
   use ArrowWeb, :html
+  alias Arrow.Gtfs.Stop, as: GtfsStop
   alias Arrow.Shuttles
   alias Arrow.Shuttles.{Route, RouteStop, Shape, ShapesUpload}
+  alias Arrow.Shuttles.Stop, as: ArrowStop
   alias Phoenix.Controller
 
   embed_templates "shape_html/*"
@@ -90,20 +92,16 @@ defmodule ArrowWeb.ShapeView do
   defp shape_to_shapeview(_), do: nil
 
   defp render_route_stop(%RouteStop{stop_id: stop_id} = route_stop) when not is_nil(stop_id) do
-    route_stop =
-      if !Ecto.assoc_loaded?(route_stop.stop) or
-           (route_stop.stop && route_stop.stop.id != stop_id),
-         do: Arrow.Repo.preload(route_stop, :stop, force: true),
-         else: route_stop
+    stop = Arrow.Repo.get(ArrowStop, stop_id)
 
-    if route_stop.stop do
+    if stop do
       %{
         stop_sequence: route_stop.stop_sequence,
-        stop_id: route_stop.stop.stop_id,
-        stop_name: route_stop.stop.stop_name,
-        stop_desc: route_stop.stop.stop_desc,
-        stop_lat: route_stop.stop.stop_lat,
-        stop_lon: route_stop.stop.stop_lon,
+        stop_id: stop.stop_id,
+        stop_name: stop.stop_name,
+        stop_desc: stop.stop_desc,
+        stop_lat: stop.stop_lat,
+        stop_lon: stop.stop_lon,
         stop_source: :arrow
       }
     end
@@ -111,20 +109,16 @@ defmodule ArrowWeb.ShapeView do
 
   defp render_route_stop(%RouteStop{gtfs_stop_id: gtfs_stop_id} = route_stop)
        when not is_nil(gtfs_stop_id) do
-    route_stop =
-      if !Ecto.assoc_loaded?(route_stop.gtfs_stop) or
-           (route_stop.gtfs_stop && route_stop.gtfs_stop.id != gtfs_stop_id),
-         do: Arrow.Repo.preload(route_stop, :gtfs_stop, force: true),
-         else: route_stop
+    gtfs_stop = Arrow.Repo.get(GtfsStop, gtfs_stop_id)
 
-    if route_stop.gtfs_stop do
+    if gtfs_stop do
       %{
         stop_sequence: route_stop.stop_sequence,
-        stop_id: route_stop.gtfs_stop.id,
-        stop_name: route_stop.gtfs_stop.name,
-        stop_desc: route_stop.gtfs_stop.desc,
-        stop_lat: route_stop.gtfs_stop.lat,
-        stop_lon: route_stop.gtfs_stop.lon,
+        stop_id: gtfs_stop.id,
+        stop_name: gtfs_stop.name,
+        stop_desc: gtfs_stop.desc,
+        stop_lat: gtfs_stop.lat,
+        stop_lon: gtfs_stop.lon,
         stop_source: :gtfs
       }
     end
