@@ -463,7 +463,7 @@ defmodule ArrowWeb.CoreComponents do
           {@live_select_opts}
         />
 
-        <.error :for={msg <- @errors}>{msg}</.error>
+        <.error :for={msg <- @errors} class="d-block">{msg}</.error>
       </div>
     </div>
     """
@@ -552,10 +552,11 @@ defmodule ArrowWeb.CoreComponents do
   Generates a generic error message.
   """
   slot :inner_block, required: true
+  attr :class, :string, default: nil
 
   def error(assigns) do
     ~H"""
-    <div class="invalid-feedback">
+    <div class={["invalid-feedback", @class]}>
       <.icon name="hero-exclamation-circle-mini" class="m-icon" />
       {render_slot(@inner_block)}
     </div>

@@ -1,6 +1,6 @@
 defmodule Arrow.Ueberauth.Strategy.FakeTest do
   use ExUnit.Case
-  use Plug.Test
+  import Plug.Test
   import Arrow.Ueberauth.Strategy.Fake
 
   describe "implements all the callbacks" do
