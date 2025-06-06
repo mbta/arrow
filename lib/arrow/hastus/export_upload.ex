@@ -50,6 +50,7 @@ defmodule Arrow.Hastus.ExportUpload do
          {:ok, zip_bin, file_map, amended?} <- amend_service_ids(zip_bin, file_map, tmp_dir),
          revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
          :ok <- validate_trip_shapes(revenue_trips, file_map["all_shapes.txt"]),
+         :ok <- validate_trip_blocks(revenue_trips),
          {:ok, line_id} <- infer_line(revenue_trips, file_map["all_stop_times.txt"]),
          {:ok, trip_route_directions} <-
            infer_green_line_branches(line_id, revenue_trips, file_map["all_stop_times.txt"]) do
@@ -263,6 +264,18 @@ defmodule Arrow.Hastus.ExportUpload do
 
       [_ | _] = trips_with_invalid_shapes ->
         {:error, {:trips_with_invalid_shapes, trips_with_invalid_shapes}}
+    end
+  end
+
+  defp validate_trip_blocks(revenue_trips) do
+    case revenue_trips
+         |> Stream.filter(&(&1["block_id"] in [nil, ""]))
+         |> Enum.map(& &1["trip_id"]) do
+      [] ->
+        :ok
+
+      [_ | _] = trips_with_invalid_blocks ->
+        {:error, {:trips_with_invalid_blocks, trips_with_invalid_blocks}}
     end
   end
 

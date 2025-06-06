@@ -74,13 +74,13 @@ defmodule ArrowWeb.EditHastusExportForm do
               {@error}
             </p>
           </div>
-          <div :if={not is_nil(@trips_with_invalid_shapes)} class="mt-3">
+          <div :if={not is_nil(@invalid_export_trips)} class="mt-3">
             <p class="alert alert-danger m-0">
-              Some trips have invalid or missing shapes.
+              {get_invalid_trips_error_message(@invalid_export_trips)}
               <.button
                 type="button"
                 class="alert-danger"
-                phx-click="download_trips_with_invalid_shapes"
+                phx-click="download_invalid_export_trips"
                 phx-target={@myself}
               >
                 Download list of invalid trips
@@ -289,7 +289,7 @@ defmodule ArrowWeb.EditHastusExportForm do
       |> assign(:show_service_import_form, false)
       |> assign(:form, nil)
       |> assign(:error, nil)
-      |> assign(:trips_with_invalid_shapes, nil)
+      |> assign(:invalid_export_trips, nil)
       |> allow_upload(:hastus_export,
         accept: ~w(.zip),
         progress: &handle_progress/3,
@@ -405,14 +405,24 @@ defmodule ArrowWeb.EditHastusExportForm do
     {:noreply, assign(socket, confirming_dup_service_ids?: false)}
   end
 
-  def handle_event("download_trips_with_invalid_shapes", _params, socket) do
-    contents =
-      if trips_with_invalid_shapes = socket.assigns.trips_with_invalid_shapes do
-        Enum.join(trips_with_invalid_shapes, "\n")
-      end
-
+  def handle_event(
+        "download_invalid_export_trips",
+        _params,
+        %{assigns: %{invalid_export_trips: {error, invalid_trips}}} = socket
+      ) do
     socket =
-      send_download(socket, "trips_with_invalid_shapes.txt", contents, content_type: "text/plain")
+      send_download(
+        socket,
+        get_invalid_trips_file_name(error),
+        Enum.join(invalid_trips, "\n"),
+        content_type: "text/plain"
+      )
+
+    {:noreply, socket}
+  end
+
+  def handle_event("download_invalid_export_trips", _params, socket) do
+    socket = send_download(socket, "invalid_trips.txt", "", content_type: "text/plain")
 
     {:noreply, socket}
   end
@@ -492,8 +502,8 @@ defmodule ArrowWeb.EditHastusExportForm do
            entry,
            &ExportUpload.extract_data_from_upload(&1, socket.assigns.user_id)
          ) do
-      {:error, {:trips_with_invalid_shapes, trips_with_invalid_shapes}} ->
-        {:noreply, assign(socket, trips_with_invalid_shapes: trips_with_invalid_shapes)}
+      {:error, {_, _} = invalid_export_trips} ->
+        {:noreply, assign(socket, invalid_export_trips: invalid_export_trips)}
 
       {:error, error} ->
         {:noreply, assign(socket, error: error)}
@@ -576,4 +586,16 @@ defmodule ArrowWeb.EditHastusExportForm do
   defp error_to_string(:too_large), do: "File is too large. Maximum size is 8MB"
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
   defp error_to_string(_), do: "Upload failed. Please try again or contact an engineer"
+
+  defp get_invalid_trips_file_name(:trips_with_invalid_shapes),
+    do: "trips_with_invalid_shapes.txt"
+
+  defp get_invalid_trips_file_name(:trips_with_invalid_blocks),
+    do: "trips_with_invalid_blocks.txt"
+
+  defp get_invalid_trips_error_message({:trips_with_invalid_shapes, _}),
+    do: "Some trips have invalid or missing shapes."
+
+  defp get_invalid_trips_error_message({:trips_with_invalid_blocks, _}),
+    do: "Some trips have invalid or missing block IDs."
 end
