@@ -361,13 +361,15 @@ defmodule Arrow.Hastus.ExportUpload do
 
   defp infer_green_line_branch_for_trip(trip, canonical_stops_by_branch, stop_times_by_trip_id) do
     new_route_id =
-      if trip["via_variant"] in ["B", "C", "D", "E"] do
-        "Green-#{trip["via_variant"]}"
-      else
-        find_branch_based_on_stop_times(
-          canonical_stops_by_branch,
-          Enum.map(stop_times_by_trip_id[trip["trip_id"]], & &1["stop_id"])
-        )
+      case String.first(trip["via_variant"] || "") do
+        branch when branch in ["B", "C", "D", "E"] ->
+          "Green-#{branch}"
+
+        _ ->
+          find_branch_based_on_stop_times(
+            canonical_stops_by_branch,
+            Enum.map(stop_times_by_trip_id[trip["trip_id"]], & &1["stop_id"])
+          )
       end
 
     if is_nil(new_route_id) do
