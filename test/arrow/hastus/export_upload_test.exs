@@ -274,9 +274,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
           name: "LRV22025-hlb25gv6-Saturday-01-1",
           service_dates: [%{start_date: ~D[2025-04-26], end_date: ~D[2025-04-26]}],
           derived_limits: [
-            # Union Squareto Government Center
             %{start_stop_id: "70504", end_stop_id: "70202"},
-            # Medford/Tufts to Government Center
             %{start_stop_id: "70512", end_stop_id: "70202"}
           ]
         },
@@ -284,9 +282,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
           name: "LRV22025-hlb25gv7-Sunday-01-1",
           service_dates: [%{start_date: ~D[2025-04-27], end_date: ~D[2025-04-27]}],
           derived_limits: [
-            # Union Square to Government Center
             %{start_stop_id: "70504", end_stop_id: "70202"},
-            # Medford/Tufts to Government Center
             %{start_stop_id: "70512", end_stop_id: "70202"}
           ]
         }
