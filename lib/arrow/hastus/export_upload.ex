@@ -52,7 +52,10 @@ defmodule Arrow.Hastus.ExportUpload do
          :ok <- validate_trip_shapes(revenue_trips, file_map["all_shapes.txt"]),
          :ok <- validate_trip_blocks(revenue_trips),
          public_stop_times <-
-           filter_public_stop_times(file_map["all_stop_times.txt"], file_map["all_stops.txt"]),
+           filter_out_private_stop_times(
+             file_map["all_stop_times.txt"],
+             file_map["all_stops.txt"]
+           ),
          {:ok, line_id} <- infer_line(revenue_trips, public_stop_times),
          {:ok, trip_route_directions} <-
            infer_green_line_branches(line_id, revenue_trips, public_stop_times) do
@@ -545,10 +548,13 @@ defmodule Arrow.Hastus.ExportUpload do
 
   defp revenue_trip?(_), do: false
 
-  defp filter_public_stop_times(stop_times, stops) do
-    public_stop_ids =
-      stops |> Stream.filter(&(&1["stp_is_public"] == "X")) |> Stream.map(& &1["stop_id"])
+  defp filter_out_private_stop_times(stop_times, stops) do
+    private_stop_ids =
+      stops
+      |> Stream.filter(&(&1["stp_is_public"] != "X"))
+      |> Stream.map(& &1["stop_id"])
+      |> MapSet.new()
 
-    Stream.filter(stop_times, &(&1["stop_id"] in public_stop_ids))
+    Stream.filter(stop_times, &(&1["stop_id"] not in private_stop_ids))
   end
 end
