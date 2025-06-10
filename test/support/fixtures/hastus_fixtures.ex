@@ -4,12 +4,22 @@ defmodule Arrow.HastusFixtures do
   entities via the `Arrow.Hastus` context.
   """
 
-  @preloads [:line, :disruption, :trip_route_directions, services: [:service_dates]]
+  import Arrow.Factory
+
+  @preloads [
+    :line,
+    :disruption,
+    :trip_route_directions,
+    services: [:service_dates, derived_limits: [:start_stop, :end_stop]]
+  ]
 
   @doc """
   Generate a export.
   """
   def export_fixture(attrs \\ %{}) do
+    start_stop = insert(:gtfs_stop)
+    end_stop = insert(:gtfs_stop)
+
     {:ok, export} =
       attrs
       |> Enum.into(%{
@@ -18,7 +28,8 @@ defmodule Arrow.HastusFixtures do
           %{
             name: "some-Weekday-service",
             service_dates: [%{start_date: ~D[2025-01-01], end_date: ~D[2025-01-10]}],
-            import?: true
+            import?: true,
+            derived_limits: [%{start_stop_id: start_stop.id, end_stop_id: end_stop.id}]
           }
         ]
       })

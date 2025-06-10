@@ -7,6 +7,8 @@ defmodule ArrowWeb.DisruptionComponents do
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Disruptions.Limit
   alias Arrow.Hastus.Export
+  alias Arrow.Hastus.Service
+  alias Arrow.Limits.LimitDayOfWeek
   alias ArrowWeb.EditHastusExportForm
   alias ArrowWeb.EditLimitForm
   alias ArrowWeb.EditReplacementServiceForm
@@ -85,7 +87,7 @@ defmodule ArrowWeb.DisruptionComponents do
     ~H"""
     <section id="limits-section" class="py-4 my-4">
       <h3>Limits</h3>
-      <%= if Ecto.assoc_loaded?(@disruption.limits) and Enum.any?(@disruption.limits) do %>
+      <%= if DisruptionV2.has_limits?(@disruption) do %>
         <div class={
           [
             "mb-3",
@@ -182,6 +184,74 @@ defmodule ArrowWeb.DisruptionComponents do
                   </div>
                 <% end %>
               <% end %>
+            </div>
+          <% end %>
+          <%= for export <- @disruption.hastus_exports,
+                  derived_limits = Enum.with_index(imported_derived_limits(export)),
+                  derived_limits != [] do %>
+            <div class="md:grid md:grid-cols-subgrid col-span-full border-2 border-dashed border-secondary p-3 gap-y-1">
+              <div class="hidden md:contents">
+                <div class="font-bold col-[route]">Route</div>
+                <div class="font-bold col-[start]">Start Stop</div>
+                <div class="font-bold col-[end]">End Stop</div>
+                <div class="font-bold col-[startdate]">Start Date</div>
+                <div class="font-bold col-[enddate]">End Date</div>
+                <div class="font-bold col-[days]">Days of Week</div>
+                <div class="font-bold col-[actions]">Via HASTUS</div>
+              </div>
+              <div :for={{derived_limit, idx} <- derived_limits} class="contents text-sm">
+                <div class="flex flex-row items-center gap-x-1 md:contents">
+                  <%= if idx == 0 do %>
+                    <div class="col-[route] flex flex-row items-center justify-around">
+                      <span
+                        class="m-icon m-icon-sm"
+                        style={"background-image: url('#{get_line_icon_url(derived_limit, @icon_paths)}');"}
+                      />
+                    </div>
+                  <% end %>
+                  <div class="col-[start] flex flex-row items-center font-bold md:font-normal">
+                    {derived_limit.start_stop_name}
+                  </div>
+                  <div class="col-[to] flex flex-row items-center font-bold italic">to</div>
+                  <div class="col-[end] flex flex-row items-center font-bold md:font-normal">
+                    {derived_limit.end_stop_name}
+                  </div>
+                </div>
+                <div class="flex flex-row items-center gap-x-2 md:contents">
+                  <div class="col-[startdate] flex flex-row items-center">
+                    {derived_limit.start_date}
+                  </div>
+                  <div class="md:hidden">-</div>
+                  <div class="col-[enddate] flex flex-row items-center">{derived_limit.end_date}</div>
+                  <div class="col-[days] text-sm gap-x-1 flex flex-row items-center">
+                    <span
+                      :for={dow <- derived_limit.day_of_weeks}
+                      class={if(dow.active?, do: "text-primary", else: "text-gray-400")}
+                    >
+                      {format_day_name_short(dow.day_name)}
+                    </span>
+                  </div>
+                  <%= if idx == 0 do %>
+                    <div class="col-[actions] flex flex-row items-center">
+                      <% export_el_id = "export-table-#{export.id}" %>
+                      <.link
+                        class="font-italic max-sm:invisible max-md:max-w-[11rem] md:visible md:max-w-xs truncate pr-1"
+                        title="Jump to source HASTUS export of this derived limit"
+                        onclick={"document.getElementById('#{export_el_id}').scrollIntoView({behavior:'smooth',block:'nearest'})"}
+                        phx-click={
+                          JS.transition("animate-grow-shrink", time: 300, to: "##{export_el_id}")
+                        }
+                      >
+                        <.icon name="hero-arrow-long-right" class="visible m-icon m-icon-sm" /><.icon
+                          name="hero-table-cells"
+                          class="visible m-icon m-icon-sm"
+                        />
+                        {derived_limit.export_filename}
+                      </.link>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
             </div>
           <% end %>
         </div>
@@ -440,5 +510,39 @@ defmodule ArrowWeb.DisruptionComponents do
   defp get_limit_route_icon_url(limit, icon_paths) do
     kind = Adjustment.kind(%Adjustment{route_id: limit.route.id})
     Map.get(icon_paths, kind)
+  end
+
+  defp get_line_icon_url(%{line_id: line_id}, icon_paths) do
+    Map.get(icon_paths, icon_for_line(line_id))
+  end
+
+  defp icon_for_line("line-Blue"), do: :blue_line
+  defp icon_for_line("line-Orange"), do: :orange_line
+  defp icon_for_line("line-Red"), do: :red_line
+  defp icon_for_line("line-Mattapan"), do: :mattapan_line
+  defp icon_for_line("line-Green"), do: :green_line
+
+  @spec imported_derived_limits(Export.t()) :: [map]
+  defp imported_derived_limits(export) do
+    for %{import?: true} = service <- export.services,
+        limit <- service.derived_limits do
+      active_day_of_weeks = Service.day_of_weeks(service)
+
+      day_of_weeks =
+        Enum.map(
+          1..7,
+          &%{day_name: LimitDayOfWeek.day_name(&1), active?: &1 in active_day_of_weeks}
+        )
+
+      %{
+        line_id: export.line.id,
+        export_filename: Path.basename(export.s3_path),
+        start_stop_name: limit.start_stop.name,
+        end_stop_name: limit.end_stop.name,
+        start_date: Service.first_date(service),
+        end_date: Service.last_date(service),
+        day_of_weeks: day_of_weeks
+      }
+    end
   end
 end
