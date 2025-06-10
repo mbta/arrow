@@ -51,13 +51,18 @@ defmodule Arrow.Hastus.ExportUpload do
          revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
          :ok <- validate_trip_shapes(revenue_trips, file_map["all_shapes.txt"]),
          :ok <- validate_trip_blocks(revenue_trips),
-         {:ok, line_id} <- infer_line(revenue_trips, file_map["all_stop_times.txt"]),
+         public_stop_times <-
+           filter_out_private_stop_times(
+             file_map["all_stop_times.txt"],
+             file_map["all_stops.txt"]
+           ),
+         {:ok, line_id} <- infer_line(revenue_trips, public_stop_times),
          {:ok, trip_route_directions} <-
-           infer_green_line_branches(line_id, revenue_trips, file_map["all_stop_times.txt"]) do
+           infer_green_line_branches(line_id, revenue_trips, public_stop_times) do
       services =
         file_map
         |> parse_services()
-        |> derive_limits(file_map, line_id)
+        |> derive_limits(file_map["all_trips.txt"], line_id, public_stop_times)
 
       _ = File.rm_rf!(tmp_dir)
 
@@ -451,12 +456,9 @@ defmodule Arrow.Hastus.ExportUpload do
 
   @min_trip_type_occurrence 20
 
-  @spec derive_limits(services, map, String.t()) :: services when services: [map]
-  defp derive_limits(
-         services,
-         %{"all_trips.txt" => trips, "all_stop_times.txt" => stop_times},
-         line_id
-       ) do
+  @spec derive_limits(services, Enumerable.t(map), String.t(), Enumerable.t(map)) :: services
+        when services: [map]
+  defp derive_limits(services, trips, line_id, stop_times) do
     route_ids = line_id_to_route_ids(line_id)
 
     trp_direction_to_direction_id = trp_direction_to_direction_id(route_ids)
@@ -725,4 +727,14 @@ defmodule Arrow.Hastus.ExportUpload do
     do: Regex.match?(~r/^\d+_*-.+$/, route_id)
 
   defp revenue_trip?(_), do: false
+
+  defp filter_out_private_stop_times(stop_times, stops) do
+    private_stop_ids =
+      stops
+      |> Stream.filter(&(&1["stp_is_public"] != "X"))
+      |> Stream.map(& &1["stop_id"])
+      |> MapSet.new()
+
+    Stream.filter(stop_times, &(&1["stop_id"] not in private_stop_ids))
+  end
 end
