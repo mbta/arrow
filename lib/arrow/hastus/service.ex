@@ -51,7 +51,7 @@ defmodule Arrow.Hastus.Service do
     service = Arrow.Repo.preload(service, :service_dates)
 
     service.service_dates
-    |> Enum.map(& &1.start_date)
+    |> Enum.map(& &1.end_date)
     |> Enum.max(Date)
   end
 
