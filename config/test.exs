@@ -59,7 +59,8 @@ config :wallaby,
   driver: Wallaby.Chrome,
   otp_app: :arrow,
   screenshot_dir: "test/integration/screenshots",
-  screenshot_on_failure: true
+  screenshot_on_failure: true,
+  max_wait_time: 10000
 
 config :ex_aws,
   access_key_id: "test_access_key_id",
