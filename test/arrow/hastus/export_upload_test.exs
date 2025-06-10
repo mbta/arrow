@@ -123,6 +123,47 @@ defmodule Arrow.Hastus.ExportUploadTest do
                data
     end
 
+    @tag skip_build_gtfs: true
+    @tag export: "gl_trips_ambiguous_branch_real_world.zip"
+    test "handles GL export with variant suffixes (e.g. BE, CE, DE)", %{export: export} do
+      line = insert(:gtfs_line, id: "line-Green")
+      route = insert(:gtfs_route, id: "Green-E", line_id: line.id)
+      direction = insert(:gtfs_direction, direction_id: 0, route_id: route.id, route: route)
+
+      route_pattern =
+        insert(:gtfs_route_pattern,
+          route_id: route.id,
+          route: route,
+          representative_trip_id: "Test",
+          direction_id: 0
+        )
+
+      insert(:gtfs_stop_time,
+        trip:
+          insert(:gtfs_trip,
+            id: "Test",
+            route: route,
+            route_pattern_id: route_pattern.id,
+            directions: [direction]
+          ),
+        stop: insert(:gtfs_stop, id: "70504")
+      )
+
+      data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
+
+      assert {:ok, {:error, errors}} = data
+
+      # These are variants that can't be inferred via patterns, but are known by the via_variant
+      refute errors =~ "West, BE, 800"
+      refute errors =~ "West, CE, 800"
+      refute errors =~ "West, DE, 800"
+
+      # These are variants that just can't be inferred
+      assert errors =~ "West, T, 800"
+      assert errors =~ "West, U, 800"
+      assert errors =~ "East, , 800"
+    end
+
     @tag export: "empty_all_calendar.zip"
     @tag build_gtfs_line: "line-Blue"
     test "exports services even when all_calendar.txt is empty", %{export: export} do
