@@ -449,6 +449,8 @@ defmodule Arrow.Hastus.ExportUpload do
     end)
   end
 
+  @min_trip_type_occurrence 20
+
   @spec derive_limits(services, map, String.t()) :: services when services: [map]
   defp derive_limits(
          services,
@@ -460,22 +462,17 @@ defmodule Arrow.Hastus.ExportUpload do
     trp_direction_to_direction_id = trp_direction_to_direction_id(route_ids)
 
     unique_trip_counts = Enum.frequencies_by(trips, &trip_type/1)
-    min_occurrence = 2
 
     # Trim down the number of trips we look at to save time:
     # - Only direction_id 0 trips
-    # - Only trips of a type that occurs more than once.
-    #   (We can assume the uncommon trip types are one-off early
-    #   morning / late night trips.)
+    # - Only trips of a type that occurs more than a handful of times.
+    #   (We can assume the uncommon trip types are train repositionings.)
     trips =
       trips
       |> Stream.filter(&(trp_direction_to_direction_id[&1["trp_direction"]] == 0))
-      |> Enum.filter(&(unique_trip_counts[trip_type(&1)] >= min_occurrence))
+      |> Enum.filter(&(unique_trip_counts[trip_type(&1)] >= @min_trip_type_occurrence))
 
-    canonical_stop_sequences =
-      route_ids
-      |> stop_sequences_for_routes()
-      |> Enum.map(fn seq -> {seq, MapSet.new(seq)} end)
+    canonical_stop_sequences = stop_sequences_for_routes(route_ids)
 
     Enum.map(services, &add_derived_limits(&1, trips, stop_times, canonical_stop_sequences))
   end
@@ -488,7 +485,7 @@ defmodule Arrow.Hastus.ExportUpload do
 
   defp add_derived_limits(service, trips, stop_times, canonical_stop_sequences) do
     # Summary of logic:
-    # Chunk trips within this service into time windows, based on the departure time of each trip's first stop_time.
+    # Chunk trips within this service into hour windows, based on the departure time of each trip's first stop_time.
     # For each chunk, collect all trips' visited stops into a set of stop IDs.
     # Compare these with canonical stop sequence(s) for the line, looking for "holes" of unvisited stops.
     # These "holes" are the derived limits.
@@ -511,16 +508,19 @@ defmodule Arrow.Hastus.ExportUpload do
       |> Enum.group_by(
         fn {_trip_id, stop_times} ->
           first_stop_time = Enum.min_by(stop_times, & &1["stop_sequence"])
-          floor_time(first_stop_time["departure_time"])
+          hour = first_stop_time["departure_time"] |> String.slice(0..1) |> String.to_integer()
+          if hour in 7..23, do: hour, else: :skip
         end,
         fn {_trip_id, stop_times} -> MapSet.new(stop_times, & &1["stop_id"]) end
       )
-      |> Enum.map(fn {_window, stop_id_sets} -> Enum.reduce(stop_id_sets, &MapSet.union/2) end)
+      |> Map.delete(:skip)
+      |> Enum.map(fn {_hour, stop_id_sets} ->
+        Enum.reduce(stop_id_sets, &MapSet.union/2)
+      end)
 
     derived_limits =
       for visited_stops <- visited_stops_per_time_window,
-          {seq, seq_set} <- canonical_stop_sequences,
-          MapSet.subset?(visited_stops, seq_set),
+          seq <- canonical_stop_sequences,
           {start_stop_id, end_stop_id} <- limits_from_sequence(seq, visited_stops) do
         %{start_stop_id: start_stop_id, end_stop_id: end_stop_id}
       end
@@ -529,7 +529,7 @@ defmodule Arrow.Hastus.ExportUpload do
     Map.put(service, :derived_limits, derived_limits)
   end
 
-  defp trip_type(trip), do: Map.take(trip, ["route_id", "via_variant", "avi_code"])
+  defp trip_type(trip), do: Map.take(trip, ["service_id", "route_id", "via_variant", "avi_code"])
 
   @spec line_id_to_route_ids(String.t()) :: [String.t()]
   defp line_id_to_route_ids(line_id) do
@@ -631,15 +631,6 @@ defmodule Arrow.Hastus.ExportUpload do
   # The last stop in the sequence was not visited. Emit a limit that ends with it.
   defp chunk_limits({first_stop, false}, sequence) do
     {:cont, {first_stop, List.last(sequence)}, nil}
-  end
-
-  @time_window_size_minutes 30
-
-  defp floor_time(first_stop_departure_time) do
-    # Assumes @time_window_size_minutes is a factor of 60.
-    <<hour::binary-size(2), ":", minute::binary-size(2), _::binary>> = first_stop_departure_time
-    minute = div(String.to_integer(minute), @time_window_size_minutes) * @time_window_size_minutes
-    "#{hour}:#{minute |> to_string() |> String.pad_leading(2, "0")}"
   end
 
   defp chunk_dates(date, {start_date, last_date}, service, exceptions) do
