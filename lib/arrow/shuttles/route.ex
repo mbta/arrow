@@ -3,7 +3,9 @@ defmodule Arrow.Shuttles.Route do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Arrow.Repo
   alias Arrow.Shuttles
+  alias Arrow.Shuttles.ShapesUpload
 
   @direction_0_desc_values [:Outbound, :South, :West]
   @direction_1_desc_values [:Inbound, :North, :East]
@@ -43,15 +45,61 @@ defmodule Arrow.Shuttles.Route do
   end
 
   @doc false
-  def changeset(route, attrs) do
-    route
-    |> cast(attrs, [:direction_id, :direction_desc, :destination, :waypoint, :shape_id])
+  def changeset(route, attrs, active? \\ false) do
+    changeset =
+      cast(route, attrs, [:direction_id, :direction_desc, :destination, :waypoint, :shape_id])
+
+    shape = get_route_shape(changeset)
+
+    {coordinates, error} =
+      case get_shape_coordinates(shape, active?) do
+        {:ok, coordinates} -> {coordinates, nil}
+        {:error, error} -> {nil, error}
+      end
+
+    changeset
+    |> then(&if error, do: add_error(&1, :shape_id, error), else: &1)
     |> cast_assoc(:route_stops,
-      with: &Arrow.Shuttles.RouteStop.changeset/2,
+      with: &Arrow.Shuttles.RouteStop.changeset(&1, &2, coordinates),
       sort_param: :route_stops_sort,
       drop_param: :route_stops_drop
     )
     |> validate_required([:direction_id, :direction_desc, :destination])
     |> assoc_constraint(:shape)
+  end
+
+  defp get_route_shape(route_changeset) do
+    case get_field(route_changeset, :shape) do
+      %Shuttles.Shape{} = shape ->
+        shape
+
+      nil ->
+        case get_field(route_changeset, :shape_id) do
+          nil -> nil
+          shape_id -> Repo.get(Shuttles.Shape, shape_id)
+        end
+    end
+  end
+
+  defp get_shape_coordinates(nil, _), do: {:ok, nil}
+  defp get_shape_coordinates(_, false), do: {:ok, nil}
+
+  defp get_shape_coordinates(shape, _) do
+    case Shuttles.get_shapes_upload(shape) do
+      {:ok, %Ecto.Changeset{} = changeset} ->
+        coordinates =
+          ShapesUpload.shapes_map_view(changeset)
+          |> Map.get(:shapes)
+          |> List.first()
+          |> Map.get(:coordinates)
+
+        {:ok, coordinates}
+
+      {:ok, :disabled} ->
+        {:ok, nil}
+
+      error ->
+        error
+    end
   end
 end

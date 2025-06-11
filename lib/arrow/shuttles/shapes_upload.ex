@@ -92,4 +92,30 @@ defmodule Arrow.Shuttles.ShapesUpload do
          end)}
     end
   end
+
+  def shapes_map_view(%__MODULE__{shapes: shapes}) do
+    %{shapes: Enum.map(shapes, &shape_map_view/1)}
+  end
+
+  def shapes_map_view(%{params: %{"shapes" => shapes}}) do
+    %{shapes: Enum.map(shapes, &shape_map_view/1)}
+  end
+
+  def shapes_map_view({:ok, :disabled}), do: %{}
+
+  def shapes_map_view(_), do: %{error: "Failed to load shape file"}
+
+  defp shape_map_view(%{coordinates: coordinates, name: name}) do
+    %{
+      coordinates: Enum.map(coordinates, &process_coordinate_pair/1),
+      name: name
+    }
+  end
+
+  defp process_coordinate_pair(coordinate_pair) do
+    coordinate_pair
+    |> String.split(",")
+    |> Enum.map(&String.to_float/1)
+    |> Enum.reverse()
+  end
 end

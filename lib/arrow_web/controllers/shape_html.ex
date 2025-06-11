@@ -16,36 +16,6 @@ defmodule ArrowWeb.ShapeView do
 
   def shape_form(assigns)
 
-  def shapes_map_view(%ShapesUpload{shapes: shapes}) do
-    %{shapes: Enum.map(shapes, &shape_map_view/1)}
-  end
-
-  def shapes_map_view(%{params: %{"shapes" => shapes}}) do
-    %{shapes: Enum.map(shapes, &shape_map_view/1)}
-  end
-
-  def shapes_map_view({:ok, :disabled}), do: %{}
-
-  def shapes_map_view(_), do: %{error: "Failed to load shape file"}
-
-  defp shape_map_view(%{coordinates: coordinates, name: name}) do
-    %{
-      coordinates: map_coordinates(coordinates),
-      name: name
-    }
-  end
-
-  defp map_coordinates(coordinates) do
-    Enum.map(coordinates, &process_coordinate_pair/1)
-  end
-
-  defp process_coordinate_pair(coordinate_pair) do
-    coordinate_pair
-    |> String.split(",")
-    |> Enum.map(&String.to_float/1)
-    |> Enum.reverse()
-  end
-
   defp direction_to_layer(%Route{} = direction, existing_props) do
     matching_shape =
       existing_props.layers
@@ -80,7 +50,7 @@ defmodule ArrowWeb.ShapeView do
     case Shuttles.get_shapes_upload(shape) do
       {:ok, shapes_upload} ->
         shapes_upload
-        |> shapes_map_view()
+        |> ShapesUpload.shapes_map_view()
         |> Map.get(:shapes)
         |> List.first()
 

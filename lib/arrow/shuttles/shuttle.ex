@@ -31,14 +31,18 @@ defmodule Arrow.Shuttles.Shuttle do
   def changeset(shuttle, attrs) do
     shuttle
     |> cast(attrs, [:shuttle_name, :disrupted_route_id, :status, :suffix])
-    |> cast_assoc(:routes, with: &Arrow.Shuttles.Route.changeset/2)
+    |> then(fn changeset ->
+      cast_assoc(changeset, :routes,
+        with: &Arrow.Shuttles.Route.changeset(&1, &2, get_field(changeset, :status) == :active)
+      )
+    end)
     |> validate_required([:shuttle_name, :status])
     |> validate_required_for(:status)
     |> foreign_key_constraint(:disrupted_route_id)
     |> unique_constraint(:shuttle_name)
   end
 
-  def validate_required_for(changeset, :status) do
+  defp validate_required_for(changeset, :status) do
     # Placeholder validation until form is complete
     status = get_field(changeset, :status)
     # Set error on status field for now
