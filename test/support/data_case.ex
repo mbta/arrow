@@ -16,23 +16,25 @@ defmodule Arrow.DataCase do
 
   use ExUnit.CaseTemplate
 
+  alias Ecto.Adapters.SQL.Sandbox
+
   using do
     quote do
-      alias Arrow.Repo
-
+      import Arrow.DataCase
+      import Arrow.Factory
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import Arrow.DataCase
-      import Arrow.Factory
+
+      alias Arrow.Repo
     end
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Arrow.Repo)
+    :ok = Sandbox.checkout(Arrow.Repo)
 
     if !tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Arrow.Repo, {:shared, self()})
+      Sandbox.mode(Arrow.Repo, {:shared, self()})
     end
 
     :ok

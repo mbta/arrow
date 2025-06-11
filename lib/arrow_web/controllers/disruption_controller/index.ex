@@ -3,15 +3,18 @@ defmodule ArrowWeb.DisruptionController.Index do
   Builds and executes the database queries for the disruptions index.
   """
 
-  alias Arrow.{Adjustment, Disruption, Repo}
-  alias ArrowWeb.DisruptionController.Filters
   import Ecto.Query
+
+  alias Arrow.Adjustment
+  alias Arrow.Disruption
+  alias Arrow.Repo
+  alias ArrowWeb.DisruptionController.Filters
 
   @spec all(Filters.t() | nil) :: [Disruption.t()]
   def all(filters \\ nil), do: base_query() |> apply_filters(filters) |> Repo.all()
 
   defp apply_filter({:include_past?, false}, query) do
-    cutoff = Date.utc_today() |> Date.add(-7)
+    cutoff = Date.add(Date.utc_today(), -7)
     from [revisions: r] in query, where: is_nil(r.end_date) or r.end_date > ^cutoff
   end
 

@@ -1,5 +1,6 @@
 defmodule Arrow.AuthTokenTest do
   use Arrow.DataCase
+
   alias Arrow.AuthToken
   alias Arrow.Repo
 

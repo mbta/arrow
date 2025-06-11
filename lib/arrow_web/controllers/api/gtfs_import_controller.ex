@@ -1,10 +1,14 @@
 defmodule ArrowWeb.API.GtfsImportController do
   use ArrowWeb, :controller
-
   use Plug.ErrorHandler
 
-  require Logger
   import Ecto.Query
+
+  alias Arrow.Gtfs.Archive
+  alias Arrow.Gtfs.ImportWorker
+  alias Arrow.Gtfs.ValidationWorker
+
+  require Logger
 
   @type error_tuple :: {:error, term} | {:error, status :: atom, term}
 
@@ -14,7 +18,7 @@ defmodule ArrowWeb.API.GtfsImportController do
   When unsuccessful, responds with non-200 status and an error message in plaintext.
   """
   def enqueue_import(conn, _) do
-    enqueue_job(conn, Arrow.Gtfs.ImportWorker)
+    enqueue_job(conn, ImportWorker)
   end
 
   @doc """
@@ -31,7 +35,7 @@ defmodule ArrowWeb.API.GtfsImportController do
   """
   def import_status(conn, params) do
     case Map.fetch(params, "id") do
-      {:ok, id} -> check_status(conn, id, Arrow.Gtfs.ImportWorker, "import")
+      {:ok, id} -> check_status(conn, id, ImportWorker, "import")
       :error -> send_resp(conn, :bad_request, "missing `id` query parameter")
     end
   end
@@ -42,7 +46,7 @@ defmodule ArrowWeb.API.GtfsImportController do
   When unsuccessful, responds with non-200 status and an error message in plaintext.
   """
   def enqueue_validation(conn, _) do
-    enqueue_job(conn, Arrow.Gtfs.ValidationWorker)
+    enqueue_job(conn, ValidationWorker)
   end
 
   @doc """
@@ -59,7 +63,7 @@ defmodule ArrowWeb.API.GtfsImportController do
   """
   def validation_status(conn, params) do
     case Map.fetch(params, "id") do
-      {:ok, id} -> check_status(conn, id, Arrow.Gtfs.ValidationWorker, "validation")
+      {:ok, id} -> check_status(conn, id, ValidationWorker, "validation")
       :error -> send_resp(conn, :bad_request, "missing `id` query parameter")
     end
   end
@@ -71,14 +75,13 @@ defmodule ArrowWeb.API.GtfsImportController do
 
   See Arrow.Gtfs.JobHelper.status_filter for available filters.
   """
-  def check_jobs(conn, %{"status_filter" => status_filter})
-      when status_filter in @status_filters do
+  def check_jobs(conn, %{"status_filter" => status_filter}) when status_filter in @status_filters do
     status_filter = String.to_existing_atom(status_filter)
 
     info = %{
       queue_state: Oban.check_queue(queue: :gtfs_import),
-      import_jobs: Arrow.Gtfs.ImportWorker.check_jobs(status_filter),
-      validate_jobs: Arrow.Gtfs.ValidationWorker.check_jobs(status_filter)
+      import_jobs: ImportWorker.check_jobs(status_filter),
+      validate_jobs: ValidationWorker.check_jobs(status_filter)
     }
 
     json(conn, info)
@@ -134,22 +137,24 @@ defmodule ArrowWeb.API.GtfsImportController do
          {:ok, s3_uri} <- upload_zip(zip_iodata) do
       changeset = worker_mod.new(%{s3_uri: s3_uri, archive_version: version})
 
-      case Oban.insert(changeset) do
-        {:ok, %Oban.Job{conflict?: true} = job} ->
-          {:error,
-           "tried to insert a duplicate GTFS import or validation job existing_job_id=#{job.id} archive_version=\"#{version}\" worker=#{inspect(worker_mod)}"}
+      case_result =
+        case Oban.insert(changeset) do
+          {:ok, %Oban.Job{conflict?: true} = job} ->
+            {:error,
+             "tried to insert a duplicate GTFS import or validation job existing_job_id=#{job.id} archive_version=\"#{version}\" worker=#{inspect(worker_mod)}"}
 
-        {:ok, job} ->
-          Logger.info(
-            "job enqueued for GTFS archive job_id=#{job.id} archive_version=\"#{version}\" worker=#{inspect(worker_mod)}"
-          )
+          {:ok, job} ->
+            Logger.info(
+              "job enqueued for GTFS archive job_id=#{job.id} archive_version=\"#{version}\" worker=#{inspect(worker_mod)}"
+            )
 
-          {:ok, %{id: job.id}}
+            {:ok, %{id: job.id}}
 
-        {:error, reason} ->
-          {:error, :internal_server_error, "failed to enqueue job, reason: #{reason}"}
-      end
-      |> to_resp(conn)
+          {:error, reason} ->
+            {:error, :internal_server_error, "failed to enqueue job, reason: #{reason}"}
+        end
+
+      to_resp(case_result, conn)
     else
       # Returned when `read_whole_body` fails
       {:error, reason, %Plug.Conn{} = conn} -> to_resp({:error, reason}, conn)
@@ -161,18 +166,20 @@ defmodule ArrowWeb.API.GtfsImportController do
   defp check_status(conn, id, worker_mod, job_description) do
     worker_name = inspect(worker_mod)
 
-    with {:ok, id} <- parse_job_id(id) do
-      job_status =
-        Arrow.Repo.one(
-          from job in Oban.Job,
-            where: job.id == ^id,
-            where: job.worker == ^worker_name,
-            select: job.state
-        )
+    with_result =
+      with {:ok, id} <- parse_job_id(id) do
+        job_status =
+          Arrow.Repo.one(
+            from job in Oban.Job,
+              where: job.id == ^id,
+              where: job.worker == ^worker_name,
+              select: job.state
+          )
 
-      report_job_status(job_status, "could not find #{job_description} job with id #{id}")
-    end
-    |> to_resp(conn)
+        report_job_status(job_status, "could not find #{job_description} job with id #{id}")
+      end
+
+    to_resp(with_result, conn)
   end
 
   @spec report_job_status(String.t() | nil, String.t()) :: {:ok, term} | error_tuple
@@ -221,7 +228,7 @@ defmodule ArrowWeb.API.GtfsImportController do
   @spec get_unzip(iodata) :: {:ok, Unzip.t()} | error_tuple
   defp get_unzip(zip_iodata) do
     zip_iodata
-    |> Arrow.Gtfs.Archive.from_iodata()
+    |> Archive.from_iodata()
     |> Unzip.new()
     |> case do
       {:ok, _} = success -> success
@@ -246,13 +253,12 @@ defmodule ArrowWeb.API.GtfsImportController do
 
   @spec upload_zip(iodata) :: {:ok, String.t()} | error_tuple
   defp upload_zip(zip_iodata) do
-    case Arrow.Gtfs.Archive.upload_to_s3(zip_iodata) do
+    case Archive.upload_to_s3(zip_iodata) do
       {:ok, _s3_uri} = success ->
         success
 
       {:error, reason} ->
-        {:error, :internal_server_error,
-         "failed to upload archive to S3, reason: #{inspect(reason)}"}
+        {:error, :internal_server_error, "failed to upload archive to S3, reason: #{inspect(reason)}"}
     end
   end
 

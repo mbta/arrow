@@ -7,6 +7,38 @@
 # General application configuration
 import Config
 
+# 12 hours in seconds
+max_session_time = 12 * 60 * 60
+
+# Addresses an issue with Oban
+# https://github.com/oban-bg/oban/issues/493#issuecomment-1187001822
+config :arrow, Arrow.Repo,
+  parameters: [
+    tcp_keepalives_idle: "60",
+    tcp_keepalives_interval: "5",
+    tcp_keepalives_count: "3"
+  ],
+  socket_options: [keepalive: true]
+
+config :arrow, ArrowWeb.AuthManager,
+  issuer: "arrow",
+  max_session_time: max_session_time,
+  # 30 minutes
+  idle_time: 30 * 60
+
+# Configures the endpoint
+config :arrow, ArrowWeb.Endpoint,
+  url: [host: "localhost"],
+  render_errors: [view: ArrowWeb.ErrorView, accepts: ~w(html json)],
+  pubsub_server: Arrow.PubSub,
+  live_view: [signing_salt: "35DDvOCJ"]
+
+# Configures Oban, the job processing library
+config :arrow, Oban,
+  engine: Oban.Engines.Basic,
+  queues: [default: 10, gtfs_import: 1],
+  repo: Arrow.Repo
+
 config :arrow,
   ecto_repos: [Arrow.Repo],
   aws_rds_mod: ExAws.RDS,
@@ -44,28 +76,7 @@ config :arrow,
   hastus_export_storage_request_fn: {ExAws, :request},
   use_username_prefix?: false
 
-# Addresses an issue with Oban
-# https://github.com/oban-bg/oban/issues/493#issuecomment-1187001822
-config :arrow, Arrow.Repo,
-  parameters: [
-    tcp_keepalives_idle: "60",
-    tcp_keepalives_interval: "5",
-    tcp_keepalives_count: "3"
-  ],
-  socket_options: [keepalive: true]
-
-# Configures the endpoint
-config :arrow, ArrowWeb.Endpoint,
-  url: [host: "localhost"],
-  render_errors: [view: ArrowWeb.ErrorView, accepts: ~w(html json)],
-  pubsub_server: Arrow.PubSub,
-  live_view: [signing_salt: "35DDvOCJ"]
-
-# Configures Oban, the job processing library
-config :arrow, Oban,
-  engine: Oban.Engines.Basic,
-  queues: [default: 10, gtfs_import: 1],
-  repo: Arrow.Repo
+config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
 config :esbuild,
   version: "0.17.11",
@@ -91,6 +102,25 @@ config :esbuild,
     }
   ]
 
+config :ex_aws, json_codec: Jason
+
+config :ja_serializer,
+  key_format: :underscored
+
+# Configures Elixir's Logger
+config :logger, :console,
+  format: "$time $metadata[$level] $message\n",
+  metadata: [:request_id]
+
+config :mime, :types, %{
+  "application/vnd.api+json" => ["json-api"]
+}
+
+config :phoenix, :format_encoders, "json-api": Jason
+
+# Use Jason for JSON parsing in Phoenix
+config :phoenix, :json_library, Jason
+
 # Configure tailwind (the version is required)
 config :tailwind,
   version: "3.4.0",
@@ -103,15 +133,6 @@ config :tailwind,
     cd: Path.expand("../assets", __DIR__)
   ]
 
-# 12 hours in seconds
-max_session_time = 12 * 60 * 60
-
-config :arrow, ArrowWeb.AuthManager,
-  issuer: "arrow",
-  max_session_time: max_session_time,
-  # 30 minutes
-  idle_time: 30 * 60
-
 config :ueberauth, Ueberauth,
   providers: [
     keycloak:
@@ -123,27 +144,6 @@ config :ueberauth, Ueberauth,
        authorization_params: %{max_age: "#{max_session_time}"},
        authorization_params_passthrough: ~w"prompt login_hint"}
   ]
-
-# Configures Elixir's Logger
-config :logger, :console,
-  format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
-
-# Use Jason for JSON parsing in Phoenix
-config :phoenix, :json_library, Jason
-
-config :phoenix, :format_encoders, "json-api": Jason
-
-config :mime, :types, %{
-  "application/vnd.api+json" => ["json-api"]
-}
-
-config :ex_aws, json_codec: Jason
-
-config :ja_serializer,
-  key_format: :underscored
-
-config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

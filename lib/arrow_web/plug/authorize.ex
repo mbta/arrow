@@ -3,6 +3,7 @@ defmodule ArrowWeb.Plug.Authorize do
   Checks a user's permissions and sends them a 403 if they are unauthorized.
   """
   import Plug.Conn
+
   alias Arrow.Accounts.User
   alias Arrow.Permissions
   alias ArrowWeb.Router.Helpers, as: Routes

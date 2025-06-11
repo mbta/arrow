@@ -23,9 +23,10 @@ defmodule ArrowWeb do
   def router do
     quote do
       use Phoenix.Router
+
+      import Phoenix.Controller
       import Phoenix.LiveView.Router
       import Plug.Conn
-      import Phoenix.Controller
     end
   end
 
@@ -39,9 +40,10 @@ defmodule ArrowWeb do
   def controller do
     quote do
       use Phoenix.Controller, namespace: ArrowWeb
+      use Gettext, backend: ArrowWeb.Gettext
 
       import Plug.Conn
-      use Gettext, backend: ArrowWeb.Gettext
+
       alias ArrowWeb.Router.Helpers, as: Routes
 
       unquote(verified_routes())
@@ -51,9 +53,19 @@ defmodule ArrowWeb do
   def html do
     quote do
       use Phoenix.Component
+      use PhoenixHTMLHelpers
+      use Gettext, backend: ArrowWeb.Gettext
+
+      import ArrowWeb.ErrorHelpers
       # Import convenience functions from controllers
       import Phoenix.Controller,
         only: [get_csrf_token: 0, view_module: 1, view_template: 1]
+
+      import Phoenix.HTML
+      import Phoenix.HTML.Form
+      import ReactPhoenix.ClientSide
+
+      alias ArrowWeb.Router.Helpers, as: Routes
 
       # Include general helpers for rendering HTML
       unquote(html_helpers())
@@ -61,27 +73,20 @@ defmodule ArrowWeb do
       # https://hexdocs.pm/phoenix_html/changelog.html#v4-0-0-2023-12-19
       # Use all HTML functionality (forms, tags, etc)
       # Still needed for old style Phoenix HTML like <link>, <content_tag>
-      import Phoenix.HTML
-      import Phoenix.HTML.Form
-      use PhoenixHTMLHelpers
-
-      import ArrowWeb.ErrorHelpers
-      use Gettext, backend: ArrowWeb.Gettext
-      alias ArrowWeb.Router.Helpers, as: Routes
 
       # Import the `react_component` helper
-      import ReactPhoenix.ClientSide
     end
   end
 
   defp html_helpers do
     quote do
+      use Gettext, backend: ArrowWeb.Gettext
+
+      import ArrowWeb.CoreComponents
+      import ArrowWeb.Helpers
       # HTML escaping functionality
       import Phoenix.HTML
       # Core UI components and translation
-      import ArrowWeb.CoreComponents
-      import ArrowWeb.Helpers
-      use Gettext, backend: ArrowWeb.Gettext
 
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS
@@ -96,10 +101,11 @@ defmodule ArrowWeb do
       use Phoenix.LiveView,
         layout: {ArrowWeb.LayoutView, :live}
 
+      import PhoenixLiveReact
+
       unquote(html_helpers())
 
       # Import the `live_react_component` helper
-      import PhoenixLiveReact
     end
   end
 
@@ -107,10 +113,11 @@ defmodule ArrowWeb do
     quote do
       use Phoenix.LiveComponent
 
+      import PhoenixLiveReact
+
       unquote(html_helpers())
 
       # Import the `live_react_component` helper
-      import PhoenixLiveReact
     end
   end
 

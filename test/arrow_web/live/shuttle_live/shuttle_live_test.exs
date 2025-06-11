@@ -1,10 +1,12 @@
 defmodule ArrowWeb.ShuttleLiveTest do
   use ArrowWeb.ConnCase
 
-  import Phoenix.LiveViewTest
   import Arrow.Factory
   import Arrow.ShuttlesFixtures
   import Mox
+  import Phoenix.LiveViewTest
+
+  alias Arrow.Shuttles.Route
 
   setup :verify_on_exit!
 
@@ -130,7 +132,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       stop_id = new_gtfs_stop.id
 
       direction_0_route
-      |> Arrow.Shuttles.Route.changeset(%{
+      |> Route.changeset(%{
         "route_stops" => [
           %{
             "direction_id" => "0",
@@ -187,7 +189,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       gtfs_stop = insert(:gtfs_stop)
 
       direction_0_route
-      |> Arrow.Shuttles.Route.changeset(%{
+      |> Route.changeset(%{
         "route_stops" => [
           %{
             "direction_id" => "0",
@@ -280,7 +282,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       [gtfs_stop1, gtfs_stop2, gtfs_stop3] = insert_list(3, :gtfs_stop)
 
       direction_0_route
-      |> Arrow.Shuttles.Route.changeset(%{
+      |> Route.changeset(%{
         "route_stops" => [
           %{
             "direction_id" => "0",
@@ -546,8 +548,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
         file_input(new_live, "#shuttle-form", :definition, [
           %{
             name: "invalid_missing_tab.xlsx",
-            content:
-              File.read!("test/support/fixtures/xlsx/shuttle_live/invalid_missing_tab.xlsx")
+            content: File.read!("test/support/fixtures/xlsx/shuttle_live/invalid_missing_tab.xlsx")
           }
         ])
 
@@ -564,8 +565,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
         file_input(new_live, "#shuttle-form", :definition, [
           %{
             name: "invalid_missing_data.xlsx",
-            content:
-              File.read!("test/support/fixtures/xlsx/shuttle_live/invalid_missing_data.xlsx")
+            content: File.read!("test/support/fixtures/xlsx/shuttle_live/invalid_missing_data.xlsx")
           }
         ])
 
@@ -585,8 +585,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
         file_input(new_live, "#shuttle-form", :definition, [
           %{
             name: "invalid_missing_headers.xlsx",
-            content:
-              File.read!("test/support/fixtures/xlsx/shuttle_live/invalid_missing_headers.xlsx")
+            content: File.read!("test/support/fixtures/xlsx/shuttle_live/invalid_missing_headers.xlsx")
           }
         ])
 

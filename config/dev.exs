@@ -9,26 +9,14 @@ config :arrow, Arrow.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
+config :arrow, ArrowWeb.AuthManager, secret_key: "test key"
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we use it
 # with webpack to recompile .js and .css sources.
-config :arrow, ArrowWeb.Endpoint,
-  http: [port: 4000],
-  debug_errors: true,
-  code_reloader: true,
-  check_origin: false,
-  secret_key_base: "local_secret_key_base_at_least_64_bytes_________________________________",
-  watchers: [
-    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
-    node:
-      ~w(assets/node_modules/.bin/tsc --project assets --noEmit --watch --preserveWatchOutput),
-    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
-  ]
-
-config :arrow, ArrowWeb.AuthManager, secret_key: "test key"
 
 # ## SSL Support
 #
@@ -53,6 +41,17 @@ config :arrow, ArrowWeb.AuthManager, secret_key: "test key"
 # If desired, both `http:` and `https:` keys can be
 # configured to run both http and https servers on
 # different ports.
+config :arrow, ArrowWeb.Endpoint,
+  http: [port: 4000],
+  debug_errors: true,
+  code_reloader: true,
+  check_origin: false,
+  secret_key_base: "local_secret_key_base_at_least_64_bytes_________________________________",
+  watchers: [
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
+    node: ~w(assets/node_modules/.bin/tsc --project assets --noEmit --watch --preserveWatchOutput),
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
+  ]
 
 # Watch static and templates for browser reloading.
 config :arrow, ArrowWeb.Endpoint,
@@ -64,16 +63,9 @@ config :arrow, ArrowWeb.Endpoint,
     ]
   ]
 
-config :ueberauth, Ueberauth,
-  providers: [
-    keycloak: {Arrow.Ueberauth.Strategy.Fake, [groups: ["admin"]]}
-  ]
-
 config :arrow, :redirect_http?, false
-
 # Enable dev routes for dashboard and mailbox
 config :arrow, dev_routes: true
-
 # Set prefix env for s3 uploads
 config :arrow,
   shape_storage_enabled?: true,
@@ -87,16 +79,21 @@ config :arrow,
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 
+# Initialize plugs at runtime for faster development compilation
+config :phoenix, :plug_init_mode, :runtime
+
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
 config :phoenix, :stacktrace_depth, 20
 
-# Initialize plugs at runtime for faster development compilation
-config :phoenix, :plug_init_mode, :runtime
-
 config :phoenix_live_view,
   # Include HEEx debug annotations as HTML comments in rendered markup
   debug_heex_annotations: true
+
+config :ueberauth, Ueberauth,
+  providers: [
+    keycloak: {Arrow.Ueberauth.Strategy.Fake, [groups: ["admin"]]}
+  ]
 
 # Enable helpful, but potentially expensive runtime checks
 # enable_expensive_runtime_checks: true

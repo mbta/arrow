@@ -1,6 +1,7 @@
 defmodule ArrowWeb.API.DBDumpController do
-  alias ArrowWeb.Plug.Authorize
   use ArrowWeb, :controller
+
+  alias ArrowWeb.Plug.Authorize
 
   plug(Authorize, :db_dump)
 

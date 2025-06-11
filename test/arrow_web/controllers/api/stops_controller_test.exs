@@ -1,5 +1,6 @@
 defmodule ArrowWeb.API.StopsControllerTest do
   use ArrowWeb.ConnCase
+
   import Arrow.Factory
 
   describe "index/2" do

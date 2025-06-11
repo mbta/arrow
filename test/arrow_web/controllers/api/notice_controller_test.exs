@@ -1,5 +1,6 @@
 defmodule ArrowWeb.API.PublishNoticeControllerTest do
   use ArrowWeb.ConnCase
+
   import Arrow.Factory
   import ExUnit.CaptureLog
 

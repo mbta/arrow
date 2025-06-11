@@ -2,10 +2,10 @@ defmodule ArrowWeb.EditDisruptionForm do
   @moduledoc false
   use ArrowWeb, :live_component
 
+  import Phoenix.HTML.Form
+
   alias Arrow.Disruptions
   alias Arrow.Disruptions.DisruptionV2
-
-  import Phoenix.HTML.Form
 
   attr :disruption, DisruptionV2, required: true
   attr :icon_paths, :map, required: true
@@ -148,11 +148,7 @@ defmodule ArrowWeb.EditDisruptionForm do
     {:ok, socket}
   end
 
-  def handle_event(
-        "validate",
-        %{"disruption_v2" => disruption_v2_params},
-        socket
-      ) do
+  def handle_event("validate", %{"disruption_v2" => disruption_v2_params}, socket) do
     form =
       socket.assigns.disruption
       |> Disruptions.change_disruption_v2(disruption_v2_params)

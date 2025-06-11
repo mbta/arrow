@@ -1,7 +1,9 @@
 defmodule Arrow.DisruptionTest do
   @moduledoc false
   use Arrow.DataCase
+
   import Ecto.Query
+
   alias Arrow.Disruption
   alias Arrow.Disruption.DayOfWeek
   alias Arrow.Disruption.Note

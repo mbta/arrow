@@ -1,5 +1,6 @@
 defmodule ArrowWeb.Plug.AuthorizeTest do
   use ArrowWeb.ConnCase
+
   alias ArrowWeb.Plug.AssignUser
   alias ArrowWeb.Plug.Authorize
 

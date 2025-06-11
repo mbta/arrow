@@ -14,8 +14,7 @@ defmodule Arrow.Shuttles.ShapeKMLTest do
                 {"name", [], ["some shape"]},
                 {"LineString", [],
                  [
-                   {"coordinates", [],
-                    ["-71.14163,42.39551 -71.14163,42.39551 -71.14163,42.39551"]}
+                   {"coordinates", [], ["-71.14163,42.39551 -71.14163,42.39551 -71.14163,42.39551"]}
                  ]}
               ]} = Saxy.Builder.build(@required_struct)
     end

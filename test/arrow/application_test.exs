@@ -1,6 +1,7 @@
 defmodule Arrow.ApplicationTest do
   @moduledoc false
   use ExUnit.Case, async: true
+
   import Arrow.Application
 
   describe "migrate_children/1" do

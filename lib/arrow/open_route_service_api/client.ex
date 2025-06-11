@@ -1,9 +1,10 @@
 defmodule Arrow.OpenRouteServiceAPI.Client do
-  @behaviour Arrow.OpenRouteServiceAPI.Client
   @moduledoc """
   An HTTP Client that reaches out to Open Route Service
   Based on mbta/skate's implementation
   """
+
+  @behaviour Arrow.OpenRouteServiceAPI.Client
 
   alias Arrow.OpenRouteServiceAPI.DirectionsRequest
 
@@ -90,8 +91,7 @@ defmodule Arrow.OpenRouteServiceAPI.Client do
 
   defp api_base_url, do: Application.get_env(:arrow, Arrow.OpenRouteServiceAPI)[:api_base_url]
 
-  defp directions_path,
-    do: "v2/directions/driving-hgv/geojson"
+  defp directions_path, do: "v2/directions/driving-hgv/geojson"
 
   defp headers(nil) do
     headers()

@@ -5,9 +5,9 @@ defmodule Arrow.StopsTest do
   alias Arrow.Stops
 
   describe "stops" do
-    alias Arrow.Shuttles.Stop
-
     import Arrow.StopsFixtures
+
+    alias Arrow.Shuttles.Stop
 
     @invalid_attrs %{
       stop_id: nil,

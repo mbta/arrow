@@ -1,5 +1,6 @@
 defmodule ArrowWeb.MyTokenController do
   use ArrowWeb, :controller
+
   alias Arrow.AuthToken
 
   @spec show(Plug.Conn.t(), Plug.Conn.params()) :: Plug.Conn.t()

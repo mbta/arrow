@@ -1,13 +1,16 @@
 defmodule ArrowWeb.API.AdjustmentController do
   use ArrowWeb, :controller
-  alias Arrow.{Adjustment, Repo}
+
   import Ecto.Query
+
+  alias Arrow.Adjustment
+  alias Arrow.Repo
 
   @filters ~w{route_id source}
 
   @spec index(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def index(conn, params) do
-    query = params |> take_filters |> format_filters |> build_query
+    query = params |> take_filters() |> format_filters() |> build_query()
 
     render(conn, "index.json-api", data: Repo.all(query))
   end
@@ -18,11 +21,9 @@ defmodule ArrowWeb.API.AdjustmentController do
   end
 
   @spec compose_query({String.t(), String.t()}, Ecto.Query.t()) :: Ecto.Query.t()
-  defp compose_query({"route_id", route_id}, query),
-    do: from(d in query, where: d.route_id == ^route_id)
+  defp compose_query({"route_id", route_id}, query), do: from(d in query, where: d.route_id == ^route_id)
 
-  defp compose_query({"source", source}, query),
-    do: from(d in query, where: d.source == ^source)
+  defp compose_query({"source", source}, query), do: from(d in query, where: d.source == ^source)
 
   @spec take_filters(map()) :: map()
   defp take_filters(params) do
@@ -35,8 +36,7 @@ defmodule ArrowWeb.API.AdjustmentController do
   end
 
   @spec do_format_filter({String.t(), String.t()}) :: [{String.t(), String.t()}]
-  defp do_format_filter({filter, value})
-       when filter in @filters do
+  defp do_format_filter({filter, value}) when filter in @filters do
     [{filter, value}]
   end
 

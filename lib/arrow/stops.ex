@@ -4,8 +4,8 @@ defmodule Arrow.Stops do
   """
 
   import Ecto.Query, warn: false
-  alias Arrow.Repo
 
+  alias Arrow.Repo
   alias Arrow.Shuttles.Stop
 
   @doc """
@@ -18,11 +18,7 @@ defmodule Arrow.Stops do
 
   """
   def list_stops(params \\ %{}) do
-    from(
-      s in Stop,
-      order_by: ^order_by(params["order_by"])
-    )
-    |> Repo.all()
+    Repo.all(from(s in Stop, order_by: ^order_by(params["order_by"])))
   end
 
   @doc """
@@ -123,7 +119,7 @@ defmodule Arrow.Stops do
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_stop(%Arrow.Shuttles.Stop{} = stop) do
+  def delete_stop(%Stop{} = stop) do
     Repo.delete(stop)
   end
 
@@ -155,7 +151,7 @@ defmodule Arrow.Stops do
       [%Arrow.Shuttles.Stop{}, ...]
   """
   @spec get_stops_within_mile(String.t() | nil, {float(), float()}) ::
-          list(Arrow.Shuttles.Stop.t())
+          list(Stop.t())
   def get_stops_within_mile(stop_id, {lat, lon}) do
     conditions =
       dynamic(
@@ -174,7 +170,7 @@ defmodule Arrow.Stops do
       end
 
     query =
-      from(s in Arrow.Shuttles.Stop,
+      from(s in Stop,
         where: ^conditions
       )
 

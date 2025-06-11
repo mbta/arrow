@@ -51,8 +51,7 @@ defmodule ArrowWeb.API.ServiceScheduleController do
           }
         end
 
-      conn
-      |> json(response_body)
+      json(conn, response_body)
     end
   end
 

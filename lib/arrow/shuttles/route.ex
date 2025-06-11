@@ -1,31 +1,32 @@
 defmodule Arrow.Shuttles.Route do
   @moduledoc "schema for a shuttle route for the db"
   use Ecto.Schema
+
   import Ecto.Changeset
 
   alias Arrow.Repo
   alias Arrow.Shuttles
+  alias Arrow.Shuttles.RouteStop
   alias Arrow.Shuttles.ShapesUpload
+  alias Ecto.Association.NotLoaded
 
   @direction_0_desc_values [:Outbound, :South, :West]
   @direction_1_desc_values [:Inbound, :North, :East]
 
   def direction_desc_values, do: @direction_0_desc_values ++ @direction_1_desc_values
 
-  def direction_desc_values(direction_id) when direction_id in [:"0", "0"],
-    do: @direction_0_desc_values
+  def direction_desc_values(direction_id) when direction_id in [:"0", "0"], do: @direction_0_desc_values
 
-  def direction_desc_values(direction_id) when direction_id in [:"1", "1"],
-    do: @direction_1_desc_values
+  def direction_desc_values(direction_id) when direction_id in [:"1", "1"], do: @direction_1_desc_values
 
   @type t :: %__MODULE__{
           destination: String.t(),
           direction_id: :"0" | :"1",
           direction_desc: :Inbound | :Outbound | :North | :South | :East | :West,
           waypoint: String.t(),
-          shuttle: Shuttles.Shuttle.t() | Ecto.Association.NotLoaded.t() | nil,
-          shape: Shuttles.Shape.t() | Ecto.Association.NotLoaded.t() | nil,
-          route_stops: [Shuttles.RouteStop.t()] | Ecto.Association.NotLoaded.t() | nil
+          shuttle: Shuttles.Shuttle.t() | NotLoaded.t() | nil,
+          shape: Shuttles.Shape.t() | NotLoaded.t() | nil,
+          route_stops: [Shuttles.RouteStop.t()] | NotLoaded.t() | nil
         }
 
   schema "shuttle_routes" do
@@ -36,7 +37,7 @@ defmodule Arrow.Shuttles.Route do
     belongs_to :shuttle, Arrow.Shuttles.Shuttle
     belongs_to :shape, Arrow.Shuttles.Shape
 
-    has_many :route_stops, Arrow.Shuttles.RouteStop,
+    has_many :route_stops, RouteStop,
       foreign_key: :shuttle_route_id,
       preload_order: [asc: :stop_sequence],
       on_replace: :delete
@@ -60,7 +61,7 @@ defmodule Arrow.Shuttles.Route do
     changeset
     |> then(&if error, do: add_error(&1, :shape_id, error), else: &1)
     |> cast_assoc(:route_stops,
-      with: &Arrow.Shuttles.RouteStop.changeset(&1, &2, coordinates),
+      with: &RouteStop.changeset(&1, &2, coordinates),
       sort_param: :route_stops_sort,
       drop_param: :route_stops_drop
     )
@@ -88,7 +89,8 @@ defmodule Arrow.Shuttles.Route do
     case Shuttles.get_shapes_upload(shape) do
       {:ok, %Ecto.Changeset{} = changeset} ->
         coordinates =
-          ShapesUpload.shapes_map_view(changeset)
+          changeset
+          |> ShapesUpload.shapes_map_view()
           |> Map.get(:shapes)
           |> List.first()
           |> Map.get(:coordinates)

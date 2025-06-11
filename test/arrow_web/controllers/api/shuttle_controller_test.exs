@@ -1,8 +1,10 @@
 defmodule ArrowWeb.API.ShuttleControllerTest do
   use ArrowWeb.ConnCase
 
-  import Arrow.ShuttlesFixtures
   import Arrow.Factory
+  import Arrow.ShuttlesFixtures
+
+  alias Arrow.Shuttles.Route
 
   describe "index/2" do
     @tag :authenticated
@@ -23,7 +25,7 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
       stop_map = %{stop1.id => stop1, stop2.id => stop2, stop3.id => stop3, stop4.id => stop4}
 
       route0
-      |> Arrow.Shuttles.Route.changeset(%{
+      |> Route.changeset(%{
         "route_stops" => [
           %{
             "direction_id" => "0",
@@ -41,7 +43,7 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
       |> Arrow.Repo.update()
 
       route1
-      |> Arrow.Shuttles.Route.changeset(%{
+      |> Route.changeset(%{
         "route_stops" => [
           %{
             "direction_id" => "1",
@@ -67,7 +69,8 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
         |> Arrow.Repo.update()
 
       res =
-        get(conn, "/api/shuttles")
+        conn
+        |> get("/api/shuttles")
         |> json_response(200)
 
       route0_id = to_string(route0.id)
@@ -93,7 +96,7 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
 
       Enum.each(included, fn
         %{"type" => "shuttle_route", "attributes" => attributes, "id" => id} ->
-          route = route_map[id |> String.to_integer()]
+          route = route_map[String.to_integer(id)]
           assert to_string(route.destination) == attributes["destination"]
           assert to_string(route.direction_id) == attributes["direction_id"]
           # Will always be disabled in test because we don't actually upload shape files

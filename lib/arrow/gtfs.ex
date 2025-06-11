@@ -2,15 +2,17 @@ defmodule Arrow.Gtfs do
   @moduledoc """
   GTFS import logic.
   """
+  import Ecto.Query
+
+  alias Arrow.Gtfs.FeedInfo
   alias Arrow.Gtfs.Importable
   alias Arrow.Gtfs.JobHelper
   alias Arrow.Repo
   alias Arrow.Repo.ForeignKeyConstraint
-  import Ecto.Query
 
   require Logger
 
-  @import_timeout_ms :timer.minutes(10)
+  @import_timeout_ms to_timeout(minute: 10)
 
   @doc """
   Loads a GTFS archive into Arrow's gtfs_* DB tables,
@@ -40,9 +42,7 @@ defmodule Arrow.Gtfs do
       if validate_only? do
         "doesn't matter for validation"
       else
-        Arrow.Repo.one(
-          from info in Arrow.Gtfs.FeedInfo, where: info.id == "mbta-ma-us", select: info.version
-        )
+        Arrow.Repo.one(from info in FeedInfo, where: info.id == "mbta-ma-us", select: info.version)
       end
 
     with :ok <- validate_required_files(unzip),
@@ -92,9 +92,7 @@ defmodule Arrow.Gtfs do
       end
     end
 
-    {elapsed_ms, result} =
-      fn -> Repo.transaction(transaction, timeout: @import_timeout_ms) end
-      |> :timer.tc(:millisecond)
+    {elapsed_ms, result} = :timer.tc(fn -> Repo.transaction(transaction, timeout: @import_timeout_ms) end, :millisecond)
 
     action = if validate_only?, do: "validation", else: "import"
     Logger.info("GTFS archive #{action} transaction completed elapsed_ms=#{elapsed_ms}")
@@ -123,7 +121,8 @@ defmodule Arrow.Gtfs do
       :ok
     else
       missing =
-        MapSet.difference(required_files(), files)
+        required_files()
+        |> MapSet.difference(files)
         |> Enum.sort()
         |> Enum.join(",")
 
@@ -140,7 +139,7 @@ defmodule Arrow.Gtfs do
   defp importable_schemas do
     # Listed in the order in which they should be imported.
     [
-      Arrow.Gtfs.FeedInfo,
+      FeedInfo,
       Arrow.Gtfs.Agency,
       Arrow.Gtfs.Checkpoint,
       Arrow.Gtfs.Level,
@@ -178,9 +177,7 @@ defmodule Arrow.Gtfs do
     # from non-GTFS tables.
     fkey_names = Enum.map_join(external_fkeys, ",", & &1.name)
 
-    Logger.info(
-      "temporarily dropping external foreign keys referencing GTFS tables fkey_names=#{fkey_names}"
-    )
+    Logger.info("temporarily dropping external foreign keys referencing GTFS tables fkey_names=#{fkey_names}")
 
     Enum.each(external_fkeys, &ForeignKeyConstraint.drop/1)
 
@@ -193,9 +190,7 @@ defmodule Arrow.Gtfs do
   defp add_external_fkeys(external_fkeys) do
     fkey_names = Enum.map_join(external_fkeys, ",", & &1.name)
 
-    Logger.info(
-      "re-adding external foreign keys referencing GTFS tables fkey_names=#{fkey_names}"
-    )
+    Logger.info("re-adding external foreign keys referencing GTFS tables fkey_names=#{fkey_names}")
 
     Enum.each(external_fkeys, fn fkey ->
       Logger.info("re-adding foreign key fkey_name=#{fkey.name}")

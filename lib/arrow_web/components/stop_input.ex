@@ -78,9 +78,7 @@ defmodule ArrowWeb.StopInput do
   end
 
   @spec option_for_stop(Stop.t() | GtfsStop.t()) :: {String.t(), String.t()}
-  defp option_for_stop(%Stop{stop_id: stop_id} = stop),
-    do: {"#{stop_id} - #{Shuttles.stop_display_name(stop)}", stop_id}
+  defp option_for_stop(%Stop{stop_id: stop_id} = stop), do: {"#{stop_id} - #{Shuttles.stop_display_name(stop)}", stop_id}
 
-  defp option_for_stop(%GtfsStop{id: id} = gtfs_stop),
-    do: {"#{id} - #{Shuttles.stop_display_name(gtfs_stop)}", id}
+  defp option_for_stop(%GtfsStop{id: id} = gtfs_stop), do: {"#{id} - #{Shuttles.stop_display_name(gtfs_stop)}", id}
 end

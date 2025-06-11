@@ -2,12 +2,16 @@ defmodule Arrow.ShuttlesTest do
   use Arrow.DataCase
 
   import Arrow.Factory
-  alias Arrow.Shuttles
-  alias Arrow.Shuttles.Shape
   import Arrow.ShuttlesFixtures
   import Arrow.StopsFixtures
-  import Test.Support.Helpers
   import Mox
+  import Test.Support.Helpers
+
+  alias Arrow.OpenRouteServiceAPI.DirectionsRequest
+  alias Arrow.OpenRouteServiceAPI.MockClient
+  alias Arrow.Shuttles
+  alias Arrow.Shuttles.Shape
+  alias Arrow.Shuttles.Stop
 
   setup :verify_on_exit!
 
@@ -124,12 +128,10 @@ defmodule Arrow.ShuttlesTest do
     end
   end
 
-  alias Arrow.Shuttles
-
   describe "shuttles" do
-    alias Arrow.Shuttles.Shuttle
-
     import Arrow.ShuttlesFixtures
+
+    alias Arrow.Shuttles.Shuttle
 
     @invalid_attrs %{status: nil, shuttle_name: nil}
 
@@ -168,10 +170,10 @@ defmodule Arrow.ShuttlesTest do
       shuttle = shuttle_fixture()
       [route1, route2] = shuttle.routes
       destination = unique_shuttle_route_destination()
-      updated_route1 = Map.merge(route1, %{destination: destination})
+      updated_route1 = Map.put(route1, :destination, destination)
 
       update_attrs =
-        Map.from_struct(%Shuttle{
+        Map.from_struct(%{
           shuttle
           | routes: [Map.from_struct(updated_route1), Map.from_struct(route2)]
         })
@@ -187,11 +189,11 @@ defmodule Arrow.ShuttlesTest do
       first_route = List.first(routes)
       new_shape = shape_fixture()
       # Updated shape is set by shape_id param
-      updated_route1 = Map.merge(List.first(routes), %{shape_id: new_shape.id})
+      updated_route1 = Map.put(List.first(routes), :shape_id, new_shape.id)
       existing_route2 = Enum.at(routes, 1)
 
       update_attrs =
-        Map.from_struct(%Shuttle{
+        Map.from_struct(%{
           shuttle
           | routes: [Map.from_struct(updated_route1), Map.from_struct(existing_route2)]
         })
@@ -236,7 +238,7 @@ defmodule Arrow.ShuttlesTest do
       stop = stop_fixture()
       stop_id = stop.stop_id
 
-      assert %Arrow.Shuttles.Stop{stop_id: ^stop_id} =
+      assert %Stop{stop_id: ^stop_id} =
                Shuttles.stop_or_gtfs_stop_for_stop_id(stop_id)
     end
 
@@ -252,7 +254,7 @@ defmodule Arrow.ShuttlesTest do
       _gtfs_stop = insert(:gtfs_stop)
       stop_id = stop.stop_id
 
-      assert %Arrow.Shuttles.Stop{stop_id: ^stop_id} =
+      assert %Stop{stop_id: ^stop_id} =
                Shuttles.stop_or_gtfs_stop_for_stop_id(stop_id)
     end
 
@@ -291,7 +293,7 @@ defmodule Arrow.ShuttlesTest do
     test "finds Arrow stop by stop ID" do
       insert(:stop, %{stop_id: "12"})
 
-      assert [%Arrow.Shuttles.Stop{stop_id: "12"}] =
+      assert [%Stop{stop_id: "12"}] =
                Shuttles.stops_or_gtfs_stops_by_search_string("1")
     end
 
@@ -299,7 +301,7 @@ defmodule Arrow.ShuttlesTest do
       stop = insert(:stop, %{stop_desc: "Description"})
       stop_id = stop.stop_id
 
-      assert [%Arrow.Shuttles.Stop{stop_id: ^stop_id}] =
+      assert [%Stop{stop_id: ^stop_id}] =
                Shuttles.stops_or_gtfs_stops_by_search_string("Des")
     end
 
@@ -307,7 +309,7 @@ defmodule Arrow.ShuttlesTest do
       stop = insert(:stop, %{stop_name: "Name"})
       stop_id = stop.stop_id
 
-      assert [%Arrow.Shuttles.Stop{stop_id: ^stop_id}] =
+      assert [%Stop{stop_id: ^stop_id}] =
                Shuttles.stops_or_gtfs_stops_by_search_string("Na")
     end
 
@@ -341,7 +343,7 @@ defmodule Arrow.ShuttlesTest do
       gtfs_stop = insert(:gtfs_stop, %{desc: "Description B"})
       gtfs_stop_id = gtfs_stop.id
 
-      assert [%Arrow.Shuttles.Stop{stop_id: ^stop_id}, %Arrow.Gtfs.Stop{id: ^gtfs_stop_id}] =
+      assert [%Stop{stop_id: ^stop_id}, %Arrow.Gtfs.Stop{id: ^gtfs_stop_id}] =
                Shuttles.stops_or_gtfs_stops_by_search_string("Des")
     end
 
@@ -350,7 +352,7 @@ defmodule Arrow.ShuttlesTest do
 
       insert(:gtfs_stop, %{id: "stop"})
 
-      assert [%Arrow.Shuttles.Stop{stop_id: "stop"}] =
+      assert [%Stop{stop_id: "stop"}] =
                Shuttles.stops_or_gtfs_stops_by_search_string("st")
     end
   end
@@ -358,9 +360,9 @@ defmodule Arrow.ShuttlesTest do
   describe "get_travel_times/1" do
     test "calculates travel time between coordinates" do
       expect(
-        Arrow.OpenRouteServiceAPI.MockClient,
+        MockClient,
         :get_directions,
-        fn %Arrow.OpenRouteServiceAPI.DirectionsRequest{
+        fn %DirectionsRequest{
              coordinates: [[-71.11934, 42.38758], [-71.1202, 42.373396]] = coordinates
            } ->
           {:ok,
@@ -391,9 +393,9 @@ defmodule Arrow.ShuttlesTest do
 
     test "handles atom keys for coordinates" do
       expect(
-        Arrow.OpenRouteServiceAPI.MockClient,
+        MockClient,
         :get_directions,
-        fn %Arrow.OpenRouteServiceAPI.DirectionsRequest{
+        fn %DirectionsRequest{
              coordinates: [[-71.11934, 42.38758], [-71.1202, 42.373396]] = coordinates
            } ->
           {:ok,
@@ -424,9 +426,9 @@ defmodule Arrow.ShuttlesTest do
 
     test "errors if it cannot determine a route between the coordinates" do
       expect(
-        Arrow.OpenRouteServiceAPI.MockClient,
+        MockClient,
         :get_directions,
-        fn %Arrow.OpenRouteServiceAPI.DirectionsRequest{} -> {:error, %{"code" => 2010}} end
+        fn %DirectionsRequest{} -> {:error, %{"code" => 2010}} end
       )
 
       coord1 = %{"lat" => 42.38758, "lon" => -71.11934}
@@ -438,9 +440,9 @@ defmodule Arrow.ShuttlesTest do
 
     test "errors if OpenRouteService returns an unknown error" do
       expect(
-        Arrow.OpenRouteServiceAPI.MockClient,
+        MockClient,
         :get_directions,
-        fn %Arrow.OpenRouteServiceAPI.DirectionsRequest{} -> {:error, %{"code" => -1}} end
+        fn %DirectionsRequest{} -> {:error, %{"code" => -1}} end
       )
 
       coord1 = %{"lat" => 42.38758, "lon" => -71.11934}
@@ -519,7 +521,7 @@ defmodule Arrow.ShuttlesTest do
     test "raises if a stop has missing lat/lon data" do
       stop2 =
         %{stop_lat: 42.373396, stop_lon: -70.1202}
-        |> stop_fixture
+        |> stop_fixture()
         |> Map.drop([:stop_lat, :stop_lon])
 
       assert {:error, error_message} = Shuttles.get_stop_coordinates(stop2)

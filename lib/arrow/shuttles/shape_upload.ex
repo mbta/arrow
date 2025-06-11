@@ -1,6 +1,7 @@
 defmodule Arrow.Shuttles.ShapeUpload do
   @moduledoc "schema for shuttle shapes as an embedded schema"
   use Ecto.Schema
+
   import Ecto.Changeset
 
   @type t :: %__MODULE__{

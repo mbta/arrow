@@ -15,6 +15,8 @@ defmodule ArrowWeb.ChannelCase do
 
   use ExUnit.CaseTemplate
 
+  alias Ecto.Adapters.SQL.Sandbox
+
   using do
     quote do
       # Import conveniences for testing with channels
@@ -26,10 +28,10 @@ defmodule ArrowWeb.ChannelCase do
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Arrow.Repo)
+    :ok = Sandbox.checkout(Arrow.Repo)
 
     if !tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Arrow.Repo, {:shared, self()})
+      Sandbox.mode(Arrow.Repo, {:shared, self()})
     end
 
     :ok

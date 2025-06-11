@@ -31,20 +31,6 @@ COMMENT ON EXTENSION btree_gist IS 'support for indexing common datatypes in GiS
 
 
 --
--- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
---
-
-CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
-
-
---
--- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON EXTENSION postgis IS 'PostGIS geometry and geography spatial types and functions';
-
-
---
 -- Name: day_name; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -742,6 +728,39 @@ CREATE TABLE public.gtfs_trips (
 
 
 --
+-- Name: hastus_derived_limits; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.hastus_derived_limits (
+    id bigint NOT NULL,
+    service_id bigint NOT NULL,
+    start_stop_id character varying(255) NOT NULL,
+    end_stop_id character varying(255) NOT NULL,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: hastus_derived_limits_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.hastus_derived_limits_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: hastus_derived_limits_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.hastus_derived_limits_id_seq OWNED BY public.hastus_derived_limits.id;
+
+
+--
 -- Name: hastus_exports; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1318,6 +1337,13 @@ ALTER TABLE ONLY public.disruptionsv2 ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
+-- Name: hastus_derived_limits id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_derived_limits ALTER COLUMN id SET DEFAULT nextval('public.hastus_derived_limits_id_seq'::regclass);
+
+
+--
 -- Name: hastus_exports id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1614,6 +1640,14 @@ ALTER TABLE ONLY public.gtfs_stops
 
 ALTER TABLE ONLY public.gtfs_trips
     ADD CONSTRAINT gtfs_trips_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: hastus_derived_limits hastus_derived_limits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_derived_limits
+    ADD CONSTRAINT hastus_derived_limits_pkey PRIMARY KEY (id);
 
 
 --
@@ -2221,6 +2255,30 @@ ALTER TABLE ONLY public.gtfs_trips
 
 
 --
+-- Name: hastus_derived_limits hastus_derived_limits_end_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_derived_limits
+    ADD CONSTRAINT hastus_derived_limits_end_stop_id_fkey FOREIGN KEY (end_stop_id) REFERENCES public.gtfs_stops(id);
+
+
+--
+-- Name: hastus_derived_limits hastus_derived_limits_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_derived_limits
+    ADD CONSTRAINT hastus_derived_limits_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.hastus_services(id) ON DELETE CASCADE;
+
+
+--
+-- Name: hastus_derived_limits hastus_derived_limits_start_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_derived_limits
+    ADD CONSTRAINT hastus_derived_limits_start_stop_id_fkey FOREIGN KEY (start_stop_id) REFERENCES public.gtfs_stops(id);
+
+
+--
 -- Name: hastus_exports hastus_exports_disruption_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2435,4 +2493,5 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250402181804);
 INSERT INTO public."schema_migrations" (version) VALUES (20250403191728);
 INSERT INTO public."schema_migrations" (version) VALUES (20250410180228);
 INSERT INTO public."schema_migrations" (version) VALUES (20250501125059);
+INSERT INTO public."schema_migrations" (version) VALUES (20250601120000);
 INSERT INTO public."schema_migrations" (version) VALUES (20250602151911);

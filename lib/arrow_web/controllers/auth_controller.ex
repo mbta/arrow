@@ -1,5 +1,6 @@
 defmodule ArrowWeb.AuthController do
   use ArrowWeb, :controller
+
   require Logger
 
   plug(Ueberauth)
@@ -59,10 +60,7 @@ defmodule ArrowWeb.AuthController do
     |> redirect(to: redirect_path)
   end
 
-  def callback(
-        %{assigns: %{ueberauth_failure: %Ueberauth.Failure{errors: errors}}} = conn,
-        _params
-      ) do
+  def callback(%{assigns: %{ueberauth_failure: %Ueberauth.Failure{errors: errors}}} = conn, _params) do
     Logger.warning("failed to authenticate errors=#{inspect(errors)}")
 
     send_resp(conn, 401, "unauthenticated")

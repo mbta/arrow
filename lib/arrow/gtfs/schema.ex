@@ -11,8 +11,9 @@ defmodule Arrow.Gtfs.Schema do
 
   defmacro __using__(_) do
     quote do
-      use Ecto.Schema
       @behaviour Arrow.Gtfs.Importable
+
+      use Ecto.Schema
 
       import Arrow.Gtfs.ImportHelper
 

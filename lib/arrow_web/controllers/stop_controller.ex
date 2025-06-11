@@ -23,8 +23,7 @@ defmodule ArrowWeb.StopController do
         conn
         |> put_flash(
           :errors,
-          {"Error creating stop, please try again",
-           ErrorHelpers.changeset_error_messages(changeset)}
+          {"Error creating stop, please try again", ErrorHelpers.changeset_error_messages(changeset)}
         )
         |> redirect(to: ~p"/stops/new")
     end
@@ -44,8 +43,7 @@ defmodule ArrowWeb.StopController do
         conn
         |> put_flash(
           :errors,
-          {"Error updating stop, please try again",
-           ErrorHelpers.changeset_error_messages(changeset)}
+          {"Error updating stop, please try again", ErrorHelpers.changeset_error_messages(changeset)}
         )
         |> redirect(to: ~p"/stops/#{stop}/edit")
     end

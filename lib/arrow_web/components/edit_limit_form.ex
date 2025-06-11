@@ -2,12 +2,12 @@ defmodule ArrowWeb.EditLimitForm do
   @moduledoc false
   use ArrowWeb, :live_component
 
+  import Ecto.Query, only: [from: 2]
+  import Phoenix.HTML.Form
+
   alias Arrow.Disruptions.Limit
   alias Arrow.Limits
   alias Arrow.Limits.LimitDayOfWeek
-
-  import Phoenix.HTML.Form
-  import Ecto.Query, only: [from: 2]
 
   attr :limit, Limit, required: true
   attr :icon_paths, :map, required: true
@@ -237,17 +237,17 @@ defmodule ArrowWeb.EditLimitForm do
   defp get_stops_for_route(nil), do: []
 
   defp get_stops_for_route(route_id) do
-    Arrow.Repo.all(
-      from t in Arrow.Gtfs.Trip,
-        where: t.route_id == ^route_id and t.direction_id == 0 and t.service_id == "canonical",
-        join: st in Arrow.Gtfs.StopTime,
-        on: t.id == st.trip_id,
-        join: s in Arrow.Gtfs.Stop,
-        on: s.id == st.stop_id,
-        where: s.location_type == :stop_platform,
-        select: s,
-        order_by: st.stop_sequence
+    from(t in Arrow.Gtfs.Trip,
+      where: t.route_id == ^route_id and t.direction_id == 0 and t.service_id == "canonical",
+      join: st in Arrow.Gtfs.StopTime,
+      on: t.id == st.trip_id,
+      join: s in Arrow.Gtfs.Stop,
+      on: s.id == st.stop_id,
+      where: s.location_type == :stop_platform,
+      select: s,
+      order_by: st.stop_sequence
     )
+    |> Arrow.Repo.all()
     |> Enum.uniq_by(& &1.parent_station_id)
     |> Enum.map(&{&1.name, &1.parent_station_id})
   end
@@ -257,8 +257,7 @@ defmodule ArrowWeb.EditLimitForm do
     # doesn't work for these subforms because the hidden inputs mark the
     # subform as used. So instead we check the user controlled values of each of
     # these subforms.
-    form[:limit_day_of_weeks].value
-    |> Enum.any?(fn dow ->
+    Enum.any?(form[:limit_day_of_weeks].value, fn dow ->
       dow_form =
         case dow do
           %Ecto.Changeset{} = dow_changeset ->
@@ -282,8 +281,7 @@ defmodule ArrowWeb.EditLimitForm do
     end)
   end
 
-  defp get_limit_date_range_warning(end_date)
-       when end_date in ["", nil] do
+  defp get_limit_date_range_warning(end_date) when end_date in ["", nil] do
     ""
   end
 

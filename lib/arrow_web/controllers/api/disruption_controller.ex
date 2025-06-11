@@ -1,7 +1,11 @@
 defmodule ArrowWeb.API.DisruptionController do
   use ArrowWeb, :controller
+
   import Ecto.Query
-  alias Arrow.{Disruption, DisruptionRevision, Repo}
+
+  alias Arrow.Disruption
+  alias Arrow.DisruptionRevision
+  alias Arrow.Repo
   alias ArrowWeb.API.Util
 
   @spec index(Plug.Conn.t(), map()) :: Plug.Conn.t()
@@ -10,15 +14,16 @@ defmodule ArrowWeb.API.DisruptionController do
          {:ok, end_date} <- parse_date_param(params, "end_date"),
          :ok <- Util.validate_date_order(start_date, end_date) do
       data =
-        from(d in Disruption,
-          join: dr in assoc(d, :revisions),
-          order_by: [d.id, dr.id],
-          where: dr.id >= d.published_revision_id or is_nil(d.published_revision_id),
-          where: dr.is_active,
-          where: dr.start_date <= ^end_date and dr.end_date >= ^start_date,
-          preload: [revisions: {dr, ^DisruptionRevision.associations()}]
+        Repo.all(
+          from(d in Disruption,
+            join: dr in assoc(d, :revisions),
+            order_by: [d.id, dr.id],
+            where: dr.id >= d.published_revision_id or is_nil(d.published_revision_id),
+            where: dr.is_active,
+            where: dr.start_date <= ^end_date and dr.end_date >= ^start_date,
+            preload: [revisions: {dr, ^DisruptionRevision.associations()}]
+          )
         )
-        |> Repo.all()
 
       render(conn, "index.json-api", data: data)
     else

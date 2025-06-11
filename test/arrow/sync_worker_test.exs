@@ -1,18 +1,20 @@
 defmodule Arrow.SyncWorkerTest do
   use Arrow.DataCase
+
   import Arrow.ShuttlesFixtures
   import Arrow.StopsFixtures
   import Mox
 
-  alias Arrow.{Shuttles, Stops, SyncWorker}
+  alias Arrow.Shuttles
+  alias Arrow.Stops
+  alias Arrow.SyncWorker
 
   # Ensure mocks are verified when the test exits
   setup :verify_on_exit!
 
   describe "perform/1" do
     test "runs sync successfully" do
-      Arrow.HTTPMock
-      |> expect(:get, 2, fn
+      expect(Arrow.HTTPMock, :get, 2, fn
         "https://test.example.com/api/shuttle-stops", _headers ->
           {:ok, %{status_code: 200, body: Jason.encode!(%{"data" => []})}}
 
@@ -58,8 +60,7 @@ defmodule Arrow.SyncWorkerTest do
         ]
       }
 
-      Arrow.HTTPMock
-      |> expect(:get, 2, fn
+      expect(Arrow.HTTPMock, :get, 2, fn
         "https://test.example.com/api/shuttle-stops", _headers ->
           {:ok, %{status_code: 200, body: Jason.encode!(api_stops)}}
 
@@ -82,8 +83,7 @@ defmodule Arrow.SyncWorkerTest do
     end
 
     test "handles API errors gracefully" do
-      Arrow.HTTPMock
-      |> expect(:get, 1, fn
+      expect(Arrow.HTTPMock, :get, 1, fn
         "https://test.example.com/api/shuttle-stops", _headers ->
           {:ok, %{status_code: 500}}
       end)
@@ -95,8 +95,7 @@ defmodule Arrow.SyncWorkerTest do
     end
 
     test "handles malformed JSON responses" do
-      Arrow.HTTPMock
-      |> expect(:get, 1, fn
+      expect(Arrow.HTTPMock, :get, 1, fn
         "https://test.example.com/api/shuttle-stops", _headers ->
           {:ok, %{status_code: 200, body: "invalid json"}}
       end)
@@ -133,8 +132,7 @@ defmodule Arrow.SyncWorkerTest do
         ]
       }
 
-      Arrow.HTTPMock
-      |> expect(:get, 2, fn
+      expect(Arrow.HTTPMock, :get, 2, fn
         "https://test.example.com/api/shuttle-stops", _headers ->
           {:ok, %{status_code: 200, body: Jason.encode!(api_stops)}}
 
@@ -169,8 +167,7 @@ defmodule Arrow.SyncWorkerTest do
               "bucket" => "test-bucket",
               "path" => "shapes/ExistingToPlace-S.kml",
               "prefix" => "shapes/",
-              "download_url" =>
-                "https://test-bucket.s3.amazonaws.com/shapes/ExistingToPlace-S.kml"
+              "download_url" => "https://test-bucket.s3.amazonaws.com/shapes/ExistingToPlace-S.kml"
             }
           },
           %{

@@ -1,8 +1,10 @@
 defmodule Arrow.RepoTest do
   use ExUnit.Case, async: false
+
   import Test.Support.Helpers
 
   defmodule FakeAwsRds do
+    @moduledoc false
     def generate_db_auth_token(_, _, _, _) do
       "iam_token"
     end

@@ -1,7 +1,9 @@
 defmodule ArrowWeb.DisruptionV2View.CalendarTest do
   use ExUnit.Case, async: true
 
-  alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
+  alias Arrow.Disruptions.DisruptionV2
+  alias Arrow.Disruptions.Limit
+  alias Arrow.Disruptions.ReplacementService
   alias Arrow.Limits.LimitDayOfWeek
   alias Arrow.Shuttles.Shuttle
   alias ArrowWeb.DisruptionV2View.Calendar, as: DCalendar

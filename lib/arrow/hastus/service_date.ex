@@ -2,6 +2,7 @@ defmodule Arrow.Hastus.ServiceDate do
   @moduledoc "schema for a HASTUS service date for the db"
 
   use Ecto.Schema
+
   import Ecto.Changeset
 
   alias Arrow.Hastus.Service
@@ -15,7 +16,7 @@ defmodule Arrow.Hastus.ServiceDate do
   schema "hastus_service_dates" do
     field :start_date, :date
     field :end_date, :date
-    belongs_to :service, Arrow.Hastus.Service, on_replace: :delete
+    belongs_to :service, Service, on_replace: :delete
 
     timestamps(type: :utc_datetime)
   end
@@ -49,7 +50,7 @@ defmodule Arrow.Hastus.ServiceDate do
       is_nil(start_date) or is_nil(end_date) ->
         changeset
 
-      Date.compare(start_date, end_date) == :gt ->
+      Date.after?(start_date, end_date) ->
         add_error(changeset, :start_date, "start date must be less than or equal to end date")
 
       true ->

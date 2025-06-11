@@ -8,18 +8,10 @@ defmodule ArrowWeb.TryApiTokenAuth.Keycloak do
   def sign_in(conn, auth_token) do
     with {:ok, user_id} <- lookup_user_id(auth_token.username),
          {:ok, roles} <- lookup_user_roles(user_id) do
-      conn
-      |> Guardian.Plug.sign_in(
-        ArrowWeb.AuthManager,
-        auth_token.username,
-        %{roles: roles},
-        ttl: {0, :second}
-      )
+      Guardian.Plug.sign_in(conn, ArrowWeb.AuthManager, auth_token.username, %{roles: roles}, ttl: {0, :second})
     else
       other ->
-        Logger.warning(
-          "unexpected response when logging #{auth_token.username} in via Keycloak API: #{inspect(other)}"
-        )
+        Logger.warning("unexpected response when logging #{auth_token.username} in via Keycloak API: #{inspect(other)}")
 
         conn
     end
@@ -89,9 +81,10 @@ defmodule ArrowWeb.TryApiTokenAuth.Keycloak do
              params: params,
              hackney: [
                ssl_options:
-                 Keyword.merge(
+                 Keyword.put(
                    :httpc.ssl_verify_host_options(true),
-                   versions: [:"tlsv1.3", :"tlsv1.2"]
+                   :versions,
+                   [:"tlsv1.3", :"tlsv1.2"]
                  )
              ]
            ) do

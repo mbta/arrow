@@ -1,12 +1,13 @@
 defmodule ArrowWeb.ShapeController do
-  require Logger
-  alias Arrow.Shuttles.ShapesUpload
-  alias ArrowWeb.ErrorHelpers
-  alias Ecto.Changeset
   use ArrowWeb, :controller
 
   alias Arrow.Shuttles
+  alias Arrow.Shuttles.ShapesUpload
+  alias ArrowWeb.ErrorHelpers
   alias ArrowWeb.Plug.Authorize
+  alias Ecto.Changeset
+
+  require Logger
 
   plug(Authorize, :view_disruption when action in [:index, :show, :download])
   plug(Authorize, :create_disruption when action in [:new, :create])
@@ -36,7 +37,7 @@ defmodule ArrowWeb.ShapeController do
           :info,
           "Successfully parsed shapes from file"
         )
-        |> render(:select, form: changeset |> Phoenix.Component.to_form())
+        |> render(:select, form: Phoenix.Component.to_form(changeset))
       else
         conn
         |> put_flash(
@@ -86,8 +87,7 @@ defmodule ArrowWeb.ShapeController do
 
       {:ok, changesets} ->
         saved_shape_names =
-          changesets
-          |> Enum.map(fn {:ok, changeset} -> changeset.name end)
+          Enum.map(changesets, fn {:ok, changeset} -> changeset.name end)
 
         conn
         |> put_flash(

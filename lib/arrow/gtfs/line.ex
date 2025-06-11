@@ -6,6 +6,7 @@ defmodule Arrow.Gtfs.Line do
   table contents should be considered read-only otherwise.
   """
   use Arrow.Gtfs.Schema
+
   import Ecto.Changeset
 
   @type t :: %__MODULE__{

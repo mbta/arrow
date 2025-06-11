@@ -6,34 +6,35 @@ defmodule Arrow.Gtfs.RoutePattern do
   table contents should be considered read-only otherwise.
   """
   use Arrow.Gtfs.Schema
+
   import Ecto.Changeset
+
+  alias Arrow.Gtfs.Route
+  alias Arrow.Gtfs.Trip
+  alias Ecto.Association.NotLoaded
 
   @type t :: %__MODULE__{
           id: String.t(),
-          route: Arrow.Gtfs.Route.t() | Ecto.Association.NotLoaded.t(),
+          route: Route.t() | NotLoaded.t(),
           direction_id: 0 | 1,
-          directions: list(Arrow.Gtfs.Direction.t()) | Ecto.Association.NotLoaded.t(),
+          directions: list(Arrow.Gtfs.Direction.t()) | NotLoaded.t(),
           name: String.t(),
           time_desc: String.t() | nil,
           typicality: atom,
           sort_order: integer,
           # The Trip that exemplifies this RoutePattern.
-          representative_trip: Arrow.Gtfs.Trip.t() | Ecto.Association.NotLoaded.t(),
+          representative_trip: Trip.t() | NotLoaded.t(),
           # All the Trips that use this RoutePattern.
-          trips: list(Arrow.Gtfs.Trip.t()) | Ecto.Association.NotLoaded.t(),
+          trips: list(Trip.t()) | NotLoaded.t(),
           canonical: atom
         }
 
-  @typicality_values Enum.with_index(
-                       ~w[not_defined typical deviation atypical diversion typical_but_unscheduled]a
-                     )
+  @typicality_values Enum.with_index(~w[not_defined typical deviation atypical diversion typical_but_unscheduled]a)
 
-  @canonicality_values Enum.with_index(
-                         ~w[no_canonical_patterns_defined_for_route canonical not_canonical]a
-                       )
+  @canonicality_values Enum.with_index(~w[no_canonical_patterns_defined_for_route canonical not_canonical]a)
 
   schema "gtfs_route_patterns" do
-    belongs_to :route, Arrow.Gtfs.Route, type: :string
+    belongs_to :route, Route, type: :string
     field :direction_id, :integer
     # I couldn't find a way to directly associate the specific Direction
     # here--composite FK relations aren't supported.
@@ -45,8 +46,8 @@ defmodule Arrow.Gtfs.RoutePattern do
     field :time_desc, :string
     field :typicality, Ecto.Enum, values: @typicality_values
     field :sort_order, :integer
-    belongs_to :representative_trip, Arrow.Gtfs.Trip
-    has_many :trips, Arrow.Gtfs.Trip
+    belongs_to :representative_trip, Trip
+    has_many :trips, Trip
     field :canonical, Ecto.Enum, values: @canonicality_values
   end
 
@@ -62,9 +63,7 @@ defmodule Arrow.Gtfs.RoutePattern do
       attrs,
       ~w[id route_id direction_id name time_desc typicality sort_order representative_trip_id canonical]a
     )
-    |> validate_required(
-      ~w[id route_id direction_id name typicality sort_order representative_trip_id canonical]a
-    )
+    |> validate_required(~w[id route_id direction_id name typicality sort_order representative_trip_id canonical]a)
     |> assoc_constraint(:route)
     |> assoc_constraint(:representative_trip)
   end

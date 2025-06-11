@@ -2,11 +2,14 @@ defmodule Arrow.Disruptions.Limit do
   @moduledoc "schema for a limit for the db"
 
   use Ecto.Schema
+
   import Ecto.Changeset
 
   alias Arrow.Disruptions.DisruptionV2
-  alias Arrow.Gtfs.{Route, Stop}
+  alias Arrow.Gtfs.Route
+  alias Arrow.Gtfs.Stop
   alias Arrow.Limits.LimitDayOfWeek
+  alias Ecto.Association.NotLoaded
 
   @default_day_of_weeks_list [
     %LimitDayOfWeek{day_name: :monday},
@@ -21,11 +24,11 @@ defmodule Arrow.Disruptions.Limit do
   @type t :: %__MODULE__{
           start_date: Date.t() | nil,
           end_date: Date.t() | nil,
-          disruption: DisruptionV2.t() | Ecto.Association.NotLoaded.t(),
-          route: Route.t() | Ecto.Association.NotLoaded.t(),
-          start_stop: Stop.t() | Ecto.Association.NotLoaded.t(),
-          end_stop: Stop.t() | Ecto.Association.NotLoaded.t(),
-          limit_day_of_weeks: [LimitDayOfWeek.t()] | Ecto.Association.NotLoaded.t()
+          disruption: DisruptionV2.t() | NotLoaded.t(),
+          route: Route.t() | NotLoaded.t(),
+          start_stop: Stop.t() | NotLoaded.t(),
+          end_stop: Stop.t() | NotLoaded.t(),
+          limit_day_of_weeks: [LimitDayOfWeek.t()] | NotLoaded.t()
         }
 
   schema "limits" do
@@ -33,10 +36,10 @@ defmodule Arrow.Disruptions.Limit do
     field :end_date, :date
     field :check_for_overlap, :boolean, default: true
     field :editing?, :boolean, virtual: true, default: false
-    belongs_to :disruption, Arrow.Disruptions.DisruptionV2
-    belongs_to :route, Arrow.Gtfs.Route, type: :string
-    belongs_to :start_stop, Arrow.Gtfs.Stop, type: :string
-    belongs_to :end_stop, Arrow.Gtfs.Stop, type: :string
+    belongs_to :disruption, DisruptionV2
+    belongs_to :route, Route, type: :string
+    belongs_to :start_stop, Stop, type: :string
+    belongs_to :end_stop, Stop, type: :string
     has_many :limit_day_of_weeks, LimitDayOfWeek, on_replace: :delete, preload_order: [:day_name]
 
     timestamps(type: :utc_datetime)
@@ -81,8 +84,7 @@ defmodule Arrow.Disruptions.Limit do
   """
   @spec new(Enum.t()) :: t()
   def new(attrs \\ %{}) do
-    %__MODULE__{limit_day_of_weeks: @default_day_of_weeks_list}
-    |> struct!(attrs)
+    struct!(%__MODULE__{limit_day_of_weeks: @default_day_of_weeks_list}, attrs)
   end
 
   @spec validate_start_date_before_end_date(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
@@ -94,7 +96,7 @@ defmodule Arrow.Disruptions.Limit do
       is_nil(start_date) or is_nil(end_date) ->
         changeset
 
-      Date.compare(start_date, end_date) == :gt ->
+      Date.after?(start_date, end_date) ->
         add_error(changeset, :start_date, "start date should not be after end date")
 
       true ->
@@ -114,9 +116,7 @@ defmodule Arrow.Disruptions.Limit do
   end
 
   @spec dow_in_date_range(Date.t() | nil, Date.t() | nil) :: MapSet.t(LimitDayOfWeek.day_name())
-  defp dow_in_date_range(start_date, end_date)
-       when is_nil(start_date)
-       when is_nil(end_date) do
+  defp dow_in_date_range(start_date, end_date) when is_nil(start_date) when is_nil(end_date) do
     MapSet.new(~w[monday tuesday wednesday thursday friday saturday sunday]a)
   end
 

@@ -10,9 +10,13 @@
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
 
-alias Arrow.Repo
 alias Arrow.Gtfs
-alias Arrow.Shuttles.{Shape, Stop, Shuttle, Route, RouteStop}
+alias Arrow.Repo
+alias Arrow.Shuttles.Route
+alias Arrow.Shuttles.RouteStop
+alias Arrow.Shuttles.Shape
+alias Arrow.Shuttles.Shuttle
+alias Arrow.Shuttles.Stop
 
 # For testing locally with dependency on /import-gtfs
 Repo.insert(%Gtfs.Route{
@@ -25,7 +29,7 @@ Repo.insert(%Gtfs.Route{
   url: "https://www.mbta.com/schedules/Red",
   color: "DA291C",
   text_color: "FFFFFF",
-  sort_order: 10010,
+  sort_order: 10_010,
   fare_class: "Rapid Transit",
   line: %Gtfs.Line{
     id: "line-Red",
@@ -155,8 +159,7 @@ Repo.insert!(%Stop{
   id: 1,
   stop_id: "9070065",
   stop_name: "Porter - Massachusetts Avenue @ Mount Vernon St",
-  stop_desc:
-    "Porter - Red Line Ashmont/Braintree Shuttle - Massachusetts Avenue @ Mount Vernon St",
+  stop_desc: "Porter - Red Line Ashmont/Braintree Shuttle - Massachusetts Avenue @ Mount Vernon St",
   platform_code: nil,
   platform_name: "Ashmont/Braintree Shuttle",
   parent_station: nil,
