@@ -107,7 +107,7 @@ defmodule Arrow.Shuttles.RouteStop do
           add_error(
             changeset,
             :display_stop_id,
-            "is #{round(distance)}m from shape (max allowed: #{@max_distance_meters}m)"
+            "is #{ceil(distance)}m from shape (max allowed: #{@max_distance_meters}m)"
           )
         else
           changeset
