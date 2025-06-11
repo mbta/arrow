@@ -7,7 +7,7 @@ defmodule Arrow.Repo.Migrations.MoveShuttleSuffixColumn do
     end
 
     alter table(:shuttle_routes) do
-      remove :suffix
+      remove :suffix, :string
     end
   end
 end

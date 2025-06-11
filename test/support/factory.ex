@@ -301,8 +301,17 @@ defmodule Arrow.Factory do
     %Arrow.Hastus.Service{
       name: sequence(:service_id, &"hastus-service-#{&1}"),
       service_dates: [],
+      derived_limits: [],
       import?: true,
       export: not_loaded(Arrow.Hastus.Service, :export)
+    }
+  end
+
+  def derived_limit_factory do
+    %Arrow.Hastus.DerivedLimit{
+      start_stop: build(:gtfs_stop),
+      end_stop: build(:gtfs_stop),
+      service: not_loaded(Arrow.Hastus.DerivedLimit, :service)
     }
   end
 
