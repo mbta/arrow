@@ -39,6 +39,10 @@ defmodule ArrowWeb.TryApiTokenAuth do
     ArrowWeb.TryApiTokenAuth.Local
   end
 
+  defp api_login_module_for_token(%Arrow.AuthToken{username: "fake_uid"}) do
+    ArrowWeb.TryApiTokenAuth.Local
+  end
+
   defp api_login_module_for_token(_token) do
     ArrowWeb.TryApiTokenAuth.Keycloak
   end

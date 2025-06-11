@@ -34,8 +34,9 @@
 - `mix ecto.setup`
 - `brew install chromedriver`
 - Add your Arrow API key from https://arrow.mbta.com/mytoken to `.envrc`
-- `mix copy_db` to seed your database
+- `mix copy_db` to seed your database (With Prod data for v1 disruptions, you may not need this)
 - `mix import_gtfs [optional/path/to/local/MBTA_GTFS.zip]` to populate your database's `gtfs_*` tables from a GTFS-static feed
+- Run `iex -S mix` and in the prompt run `Oban.insert(Arrow.SyncWorker.new(%{}))` to sync Shapes and Stops from prod
 
 ### Useful commands
 
