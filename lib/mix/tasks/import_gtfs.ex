@@ -1,12 +1,12 @@
 defmodule Mix.Tasks.ImportGtfs do
+  @shortdoc "Imports MBTA_GTFS.zip"
+
   @moduledoc """
   Mix task to import a GTFS-static feed into the local Arrow database.
   """
   use Mix.Task
 
   require Logger
-
-  @shortdoc "Imports MBTA_GTFS.zip"
 
   @impl Mix.Task
   def run(args) do
@@ -37,13 +37,13 @@ defmodule Mix.Tasks.ImportGtfs do
     Mix.shell().info("No path to MBTA_GTFS.zip provided.")
 
     use_tmp_dir_feed? = fn ->
-      "Would you like to use the feed previously downloaded by this mix task? (timestamp: #{tmp_file_timestamp!()})"
-      |> Mix.shell().yes?()
+      Mix.shell().yes?(
+        "Would you like to use the feed previously downloaded by this mix task? (timestamp: #{tmp_file_timestamp!()})"
+      )
     end
 
     use_downloaded_feed? = fn ->
-      "Would you like to download and use the latest feed from #{feed_url()}?"
-      |> Mix.shell().yes?()
+      Mix.shell().yes?("Would you like to download and use the latest feed from #{feed_url()}?")
     end
 
     cond do

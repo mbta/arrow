@@ -26,8 +26,7 @@ defmodule Arrow.Repo do
         cacertfile: Path.join(:code.priv_dir(:arrow), "aws-cert-bundle.pem"),
         verify: :verify_peer,
         server_name_indication: String.to_charlist(hostname),
-        verify_fun:
-          {&:ssl_verify_hostname.verify_fun/3, [check_hostname: String.to_charlist(hostname)]}
+        verify_fun: {&:ssl_verify_hostname.verify_fun/3, [check_hostname: String.to_charlist(hostname)]}
       ]
     )
   end

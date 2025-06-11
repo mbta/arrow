@@ -4,9 +4,9 @@ defmodule Arrow.HastusTest do
   alias Arrow.Hastus
 
   describe "exports" do
-    alias Arrow.Hastus.Export
-
     import Arrow.HastusFixtures
+
+    alias Arrow.Hastus.Export
 
     @invalid_attrs %{s3_path: nil}
 
@@ -58,9 +58,9 @@ defmodule Arrow.HastusTest do
   end
 
   describe "hastus_services" do
-    alias Arrow.Hastus.Service
-
     import Arrow.HastusFixtures
+
+    alias Arrow.Hastus.Service
 
     @invalid_attrs %{name: nil}
 
@@ -112,9 +112,9 @@ defmodule Arrow.HastusTest do
   end
 
   describe "hastus_service_dates" do
-    alias Arrow.Hastus.ServiceDate
-
     import Arrow.HastusFixtures
+
+    alias Arrow.Hastus.ServiceDate
 
     @invalid_attrs %{start_date: nil, end_date: nil}
 

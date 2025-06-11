@@ -6,6 +6,7 @@ defmodule Arrow.Gtfs.FeedInfo do
   table contents should be considered read-only otherwise.
   """
   use Arrow.Gtfs.Schema
+
   import Ecto.Changeset
 
   @type t :: %__MODULE__{
@@ -40,9 +41,7 @@ defmodule Arrow.Gtfs.FeedInfo do
       attrs,
       ~w[id publisher_name publisher_url lang start_date end_date version contact_email]a
     )
-    |> validate_required(
-      ~w[id publisher_name publisher_url lang start_date end_date version contact_email]a
-    )
+    |> validate_required(~w[id publisher_name publisher_url lang start_date end_date version contact_email]a)
     |> validate_start_date_before_end_date()
   end
 
@@ -50,7 +49,7 @@ defmodule Arrow.Gtfs.FeedInfo do
     start_date = fetch_field!(changeset, :start_date)
     end_date = fetch_field!(changeset, :end_date)
 
-    if Date.compare(start_date, end_date) == :lt do
+    if Date.before?(start_date, end_date) do
       changeset
     else
       add_error(changeset, :dates, "start date should be before end date")

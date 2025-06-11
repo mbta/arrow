@@ -12,8 +12,7 @@ defmodule ArrowWeb.TimetableController do
       |> ReplacementService.add_timetable()
 
     available_days_of_week =
-      ReplacementService.schedule_service_types()
-      |> Enum.reject(&is_nil(replacement_service.timetable[&1]))
+      Enum.reject(ReplacementService.schedule_service_types(), &is_nil(replacement_service.timetable[&1]))
 
     day_of_week =
       if day_of_week = Map.get(params, "day_of_week") do
@@ -59,8 +58,7 @@ defmodule ArrowWeb.TimetableController do
       end)
 
     [first_stop, last_stop] =
-      [List.first(sample_trip), List.last(sample_trip)]
-      |> Enum.map(fn stop ->
+      Enum.map([List.first(sample_trip), List.last(sample_trip)], fn stop ->
         stop
         |> Map.get(:stop_id)
         |> Shuttles.stop_or_gtfs_stop_for_stop_id()

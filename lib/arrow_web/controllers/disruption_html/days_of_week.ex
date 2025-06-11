@@ -65,19 +65,18 @@ defmodule ArrowWeb.DisruptionView.DaysOfWeek do
     {format_day(day_name, format), describe_times(start_time, end_time)}
   end
 
-  defp describe_days_with_contiguous_times(
-         %{day_name: first_day, start_time: start_time},
-         %{day_name: last_day, end_time: end_time}
-       ) do
+  defp describe_days_with_contiguous_times(%{day_name: first_day, start_time: start_time}, %{
+         day_name: last_day,
+         end_time: end_time
+       }) do
     from = format_day(first_day, :short) <> " " <> describe_start_time(start_time)
     to = format_day(last_day, :short) <> " " <> describe_end_time(end_time)
     [from <> " – " <> to]
   end
 
-  defp describe_days_with_same_times(
-         %{day_name: first_day, start_time: start_time, end_time: end_time},
-         %{day_name: last_day}
-       ) do
+  defp describe_days_with_same_times(%{day_name: first_day, start_time: start_time, end_time: end_time}, %{
+         day_name: last_day
+       }) do
     [
       format_day(first_day, :short) <> " – " <> format_day(last_day, :short),
       describe_times(start_time, end_time)

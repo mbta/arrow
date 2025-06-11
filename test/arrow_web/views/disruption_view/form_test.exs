@@ -1,8 +1,11 @@
 defmodule ArrowWeb.DisruptionView.FormTest do
   use ArrowWeb.ConnCase, async: true
 
-  alias Arrow.{Adjustment, DisruptionRevision}
-  alias Arrow.Disruption.{DayOfWeek, Exception, TripShortName}
+  alias Arrow.Adjustment
+  alias Arrow.Disruption.DayOfWeek
+  alias Arrow.Disruption.Exception
+  alias Arrow.Disruption.TripShortName
+  alias Arrow.DisruptionRevision
   alias ArrowWeb.DisruptionView.Form
   alias Ecto.Changeset
 
@@ -18,22 +21,21 @@ defmodule ArrowWeb.DisruptionView.FormTest do
       ]
 
       changeset =
-        %DisruptionRevision{
-          start_date: ~D[2021-01-01],
-          end_date: ~D[2021-01-31],
-          row_approved: true,
-          description: "a disruption for testing",
-          note_body: "some note",
-          adjustments: [hd(adjustments)],
-          days_of_week: [%DayOfWeek{day_name: "monday", start_time: ~T[21:15:00], end_time: nil}],
-          exceptions: [%Exception{excluded_date: ~D[2021-01-11]}],
-          trip_short_names: [
-            %TripShortName{trip_short_name: "one"},
-            %TripShortName{trip_short_name: "two"}
-          ],
-          title: "disruption title"
-        }
-        |> Changeset.change(%{end_date: ~D[2021-02-28]})
+        Changeset.change(
+          %DisruptionRevision{
+            start_date: ~D[2021-01-01],
+            end_date: ~D[2021-01-31],
+            row_approved: true,
+            description: "a disruption for testing",
+            note_body: "some note",
+            adjustments: [hd(adjustments)],
+            days_of_week: [%DayOfWeek{day_name: "monday", start_time: ~T[21:15:00], end_time: nil}],
+            exceptions: [%Exception{excluded_date: ~D[2021-01-11]}],
+            trip_short_names: [%TripShortName{trip_short_name: "one"}, %TripShortName{trip_short_name: "two"}],
+            title: "disruption title"
+          },
+          %{end_date: ~D[2021-02-28]}
+        )
 
       expected_adjustments = [
         %{"id" => 1, "label" => "Kendall", "kind" => "red_line"},

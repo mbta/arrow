@@ -1,8 +1,10 @@
 defmodule ArrowWeb.DisruptionView.Calendar do
   @moduledoc "An interface between Ecto structs and the `DisruptionCalendar` React component."
 
-  alias Arrow.{Adjustment, Disruption, DisruptionRevision}
+  alias Arrow.Adjustment
+  alias Arrow.Disruption
   alias Arrow.Disruption.DayOfWeek
+  alias Arrow.DisruptionRevision
   alias ArrowWeb.Endpoint
   alias ArrowWeb.Router.Helpers, as: Routes
 
@@ -17,10 +19,7 @@ defmodule ArrowWeb.DisruptionView.Calendar do
     Enum.flat_map(disruptions, &events/1)
   end
 
-  defp events(%Disruption{
-         id: id,
-         revisions: [%{adjustments: [], adjustment_kind: kind} = revision]
-       }) do
+  defp events(%Disruption{id: id, revisions: [%{adjustments: [], adjustment_kind: kind} = revision]}) do
     events(id, revision, kind, "(disruption #{id})")
   end
 
@@ -45,7 +44,8 @@ defmodule ArrowWeb.DisruptionView.Calendar do
     day_numbers = MapSet.new(days_of_week, &DayOfWeek.day_number/1)
     excluded_dates = MapSet.new(exceptions, & &1.excluded_date)
 
-    Date.range(start_date, end_date)
+    start_date
+    |> Date.range(end_date)
     |> Enum.filter(&(Date.day_of_week(&1) in day_numbers))
     |> Enum.reject(&(&1 in excluded_dates))
     |> Enum.chunk_while([], &chunk_dates/2, &chunk_dates/1)
