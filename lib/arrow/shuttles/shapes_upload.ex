@@ -107,13 +107,9 @@ defmodule Arrow.Shuttles.ShapesUpload do
 
   defp shape_map_view(%{coordinates: coordinates, name: name}) do
     %{
-      coordinates: map_coordinates(coordinates),
+      coordinates: Enum.map(coordinates, &process_coordinate_pair/1),
       name: name
     }
-  end
-
-  defp map_coordinates(coordinates) do
-    Enum.map(coordinates, &process_coordinate_pair/1)
   end
 
   defp process_coordinate_pair(coordinate_pair) do
