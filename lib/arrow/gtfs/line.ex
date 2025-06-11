@@ -27,6 +27,8 @@ defmodule Arrow.Gtfs.Line do
     field :color, :string
     field :text_color, :string
     field :sort_order, :integer
+
+    has_many :routes, Arrow.Gtfs.Route
   end
 
   def changeset(line, attrs) do
