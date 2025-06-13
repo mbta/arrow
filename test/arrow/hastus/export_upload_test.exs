@@ -484,6 +484,11 @@ defmodule Arrow.Hastus.ExportUploadTest do
     end
   end
 
+  ###############################################
+  # TODO: Need to also set up parent station ID #
+  # relations for all platform IDs...           #
+  ###############################################
+
   defp build_gtfs(%{skip_build_gtfs: true}), do: :ok
   defp build_gtfs(%{build_gtfs_line: line}), do: build_gtfs(line_params(line))
 

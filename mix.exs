@@ -85,6 +85,7 @@ defmodule Arrow.MixProject do
       {:tzdata, "~> 1.1"},
       {:ueberauth_oidcc, "~> 0.4.0"},
       {:ueberauth, "~> 0.10"},
+      {:unrooted_polytree, "~> 0.1.1"},
       {:wallaby, "~> 0.30", runtime: false, only: :test},
       {:sentry, "~> 10.7"},
       {:tailwind, "~> 0.2", runtime: Mix.env() == :dev},
