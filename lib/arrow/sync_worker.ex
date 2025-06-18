@@ -14,11 +14,16 @@ defmodule Arrow.SyncWorker do
     # Prevent duplicate jobs within an hour
     unique: [period: 3600]
 
-  alias Arrow.{Repo, Shuttles, Stops}
-  alias Arrow.Shuttles.{Shape, ShapesUpload, Stop}
+  import Ecto.Query
+
+  alias Arrow.Repo
+  alias Arrow.Shuttles
+  alias Arrow.Shuttles.Shape
+  alias Arrow.Shuttles.ShapesUpload
+  alias Arrow.Shuttles.Stop
+  alias Arrow.Stops
 
   require Logger
-  import Ecto.Query
 
   @impl Oban.Worker
   def perform(%Oban.Job{}) do
@@ -36,7 +41,7 @@ defmodule Arrow.SyncWorker do
   end
 
   @impl Oban.Worker
-  def timeout(_job), do: :timer.minutes(10)
+  def timeout(_job), do: to_timeout(minute: 10)
 
   defp sync_stops do
     Logger.info("Starting stops sync")
@@ -44,12 +49,12 @@ defmodule Arrow.SyncWorker do
     case fetch_prod_data("/api/shuttle-stops") do
       {:ok, %{"data" => stops_data}} ->
         existing_stop_ids =
-          Repo.all(from(s in Stop, select: s.stop_id))
+          from(s in Stop, select: s.stop_id)
+          |> Repo.all()
           |> MapSet.new()
 
         new_stops =
-          stops_data
-          |> Enum.reject(fn stop -> stop["attributes"]["stop_id"] in existing_stop_ids end)
+          Enum.reject(stops_data, fn stop -> stop["attributes"]["stop_id"] in existing_stop_ids end)
 
         sync_results = new_stops |> Enum.map(&create_stop_from_api_data/1) |> Enum.frequencies()
 
@@ -68,12 +73,12 @@ defmodule Arrow.SyncWorker do
     case fetch_prod_data("/api/shapes") do
       {:ok, %{"data" => shapes_data}} ->
         existing_shape_names =
-          Repo.all(from(s in Shape, select: s.name))
+          from(s in Shape, select: s.name)
+          |> Repo.all()
           |> MapSet.new()
 
         new_shapes =
-          shapes_data
-          |> Enum.reject(fn shape -> shape["attributes"]["name"] in existing_shape_names end)
+          Enum.reject(shapes_data, fn shape -> shape["attributes"]["name"] in existing_shape_names end)
 
         sync_results = new_shapes |> Enum.map(&create_shape_from_api_data/1) |> Enum.frequencies()
 
@@ -108,7 +113,7 @@ defmodule Arrow.SyncWorker do
 
   defp create_stop_from_api_data(%{"attributes" => attributes}) do
     stop_params =
-      %{
+      Map.new(%{
         stop_id: attributes["stop_id"],
         stop_name: attributes["stop_name"],
         stop_desc: attributes["stop_desc"],
@@ -123,8 +128,7 @@ defmodule Arrow.SyncWorker do
         municipality: attributes["municipality"],
         on_street: attributes["on_street"],
         at_street: attributes["at_street"]
-      }
-      |> Map.new()
+      })
 
     case Stops.create_stop(stop_params) do
       {:ok, stop} ->

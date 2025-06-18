@@ -1,9 +1,12 @@
 defmodule ArrowWeb.DisruptionView do
   use ArrowWeb, :html
 
-  alias Arrow.{Adjustment, DisruptionRevision, Permissions}
-  alias __MODULE__.{DaysOfWeek, Form}
   alias __MODULE__.Calendar, as: DCalendar
+  alias __MODULE__.DaysOfWeek
+  alias __MODULE__.Form
+  alias Arrow.Adjustment
+  alias Arrow.DisruptionRevision
+  alias Arrow.Permissions
   alias ArrowWeb.DisruptionController.Filters
   alias Phoenix.Controller
 
@@ -119,6 +122,6 @@ defmodule ArrowWeb.DisruptionView do
   end
 
   def date(dt) do
-    DateTime.shift_zone!(dt, "America/New_York") |> Calendar.strftime("%m/%d/%y")
+    dt |> DateTime.shift_zone!("America/New_York") |> Calendar.strftime("%m/%d/%y")
   end
 end

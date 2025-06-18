@@ -1,8 +1,9 @@
 defmodule ArrowWeb.TryApiTokenAuthTest do
   use ArrowWeb.ConnCase
 
-  alias Arrow.HTTPMock
   import Mox
+
+  alias Arrow.HTTPMock
 
   describe "init/1" do
     test "passes options through unchanged" do

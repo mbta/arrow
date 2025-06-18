@@ -1,5 +1,6 @@
 defmodule ArrowWeb.FeedControllerTest do
   use ArrowWeb.ConnCase
+
   import Arrow.Factory
 
   describe "GET /feed" do

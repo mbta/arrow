@@ -2,12 +2,13 @@ defmodule Arrow.LimitsTest do
   use Arrow.DataCase
 
   import Arrow.Factory
+
   alias Arrow.Limits
 
   describe "limits" do
-    alias Arrow.Disruptions.Limit
-
     import Arrow.LimitsFixtures
+
+    alias Arrow.Disruptions.Limit
 
     @invalid_attrs %{start_date: nil, end_date: nil}
 
@@ -83,9 +84,9 @@ defmodule Arrow.LimitsTest do
   end
 
   describe "limit_day_of_weeks" do
-    alias Arrow.Limits.LimitDayOfWeek
-
     import Arrow.LimitsFixtures
+
+    alias Arrow.Limits.LimitDayOfWeek
 
     @invalid_attrs %{day_name: nil, start_time: nil, end_time: nil}
 

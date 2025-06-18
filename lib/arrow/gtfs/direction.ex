@@ -6,10 +6,13 @@ defmodule Arrow.Gtfs.Direction do
   table contents should be considered read-only otherwise.
   """
   use Arrow.Gtfs.Schema
+
   import Ecto.Changeset
 
+  alias Arrow.Gtfs.Route
+
   @type t :: %__MODULE__{
-          route: Arrow.Gtfs.Route.t() | Ecto.Association.NotLoaded.t(),
+          route: Route.t() | Ecto.Association.NotLoaded.t(),
           direction_id: 0 | 1,
           desc: String.t(),
           destination: String.t()
@@ -18,7 +21,7 @@ defmodule Arrow.Gtfs.Direction do
   @primary_key false
 
   schema "gtfs_directions" do
-    belongs_to :route, Arrow.Gtfs.Route, primary_key: true
+    belongs_to :route, Route, primary_key: true
     field :direction_id, :integer, primary_key: true
     field :desc, :string
     field :destination, :string

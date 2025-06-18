@@ -1,11 +1,12 @@
 defmodule Arrow.Shuttles.ShuttleTest do
   use Arrow.DataCase
 
-  alias Arrow.Shuttles.Shuttle
-
   import Arrow.Factory
   import Arrow.ShuttlesFixtures
   import Test.Support.Helpers
+
+  alias Arrow.Shuttles.Route
+  alias Arrow.Shuttles.Shuttle
 
   describe "changeset/2" do
     test "cannot mark a shuttle as active without at least two shuttle_stops per shuttle_route" do
@@ -26,7 +27,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       [stop1, stop2, stop3, stop4] = insert_list(4, :gtfs_stop)
 
       route0
-      |> Arrow.Shuttles.Route.changeset(%{
+      |> Route.changeset(%{
         "route_stops" => [
           %{
             "direction_id" => "0",
@@ -45,7 +46,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       |> Arrow.Repo.update()
 
       route1
-      |> Arrow.Shuttles.Route.changeset(%{
+      |> Route.changeset(%{
         "route_stops" => [
           %{
             "direction_id" => "1",
@@ -124,7 +125,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       [stop1, stop2, stop3, stop4] = insert_list(4, :gtfs_stop)
 
       route0
-      |> Arrow.Shuttles.Route.changeset(%{
+      |> Route.changeset(%{
         "route_stops" => [
           %{
             "direction_id" => "0",
@@ -142,7 +143,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       |> Arrow.Repo.update()
 
       route1
-      |> Arrow.Shuttles.Route.changeset(%{
+      |> Route.changeset(%{
         "route_stops" => [
           %{
             "direction_id" => "1",
@@ -166,9 +167,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       assert %Ecto.Changeset{
                valid?: false,
                errors: [
-                 status:
-                   {"all stops except the last in each direction must have a time to next stop",
-                    []}
+                 status: {"all stops except the last in each direction must have a time to next stop", []}
                ]
              } = changeset
     end
@@ -180,7 +179,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       [stop1, stop2, stop3, stop4] = insert_list(4, :gtfs_stop)
 
       route0
-      |> Arrow.Shuttles.Route.changeset(%{
+      |> Route.changeset(%{
         "route_stops" => [
           %{
             "direction_id" => "0",
@@ -198,7 +197,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       |> Arrow.Repo.update()
 
       route1
-      |> Arrow.Shuttles.Route.changeset(%{
+      |> Route.changeset(%{
         "route_stops" => [
           %{
             "direction_id" => "1",
@@ -278,7 +277,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       [stop1, stop2, stop3, stop4] = insert_list(4, :gtfs_stop)
 
       route0
-      |> Arrow.Shuttles.Route.changeset(%{
+      |> Route.changeset(%{
         "route_stops" => [
           %{
             "direction_id" => "0",
@@ -296,7 +295,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       |> Arrow.Repo.update()
 
       route1
-      |> Arrow.Shuttles.Route.changeset(%{
+      |> Route.changeset(%{
         "route_stops" => [
           %{
             "direction_id" => "1",
@@ -326,8 +325,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       assert %Ecto.Changeset{
                valid?: false,
                errors: [
-                 status:
-                   {"cannot set to a non-active status while in use as a replacement service", []}
+                 status: {"cannot set to a non-active status while in use as a replacement service", []}
                ]
              } = changeset
     end
@@ -339,7 +337,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       [stop1, stop2, stop3, stop4] = insert_list(4, :gtfs_stop)
 
       route0
-      |> Arrow.Shuttles.Route.changeset(%{
+      |> Route.changeset(%{
         "route_stops" => [
           %{
             "direction_id" => "0",
@@ -357,7 +355,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       |> Arrow.Repo.update()
 
       route1
-      |> Arrow.Shuttles.Route.changeset(%{
+      |> Route.changeset(%{
         "route_stops" => [
           %{
             "direction_id" => "1",
@@ -416,7 +414,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
 
       {:ok, _} =
         route0
-        |> Arrow.Shuttles.Route.changeset(route0_attrs)
+        |> Route.changeset(route0_attrs)
         |> Arrow.Repo.update()
 
       route1_attrs = %{
@@ -438,7 +436,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
 
       {:ok, _} =
         route1
-        |> Arrow.Shuttles.Route.changeset(route1_attrs)
+        |> Route.changeset(route1_attrs)
         |> Arrow.Repo.update()
 
       shuttle = Arrow.Shuttles.get_shuttle!(shuttle.id)
@@ -489,7 +487,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
 
       {:ok, _} =
         route0
-        |> Arrow.Shuttles.Route.changeset(%{
+        |> Route.changeset(%{
           "shape_id" => shape.id,
           "route_stops" => [
             %{
@@ -509,7 +507,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
 
       {:ok, _} =
         route1
-        |> Arrow.Shuttles.Route.changeset(%{
+        |> Route.changeset(%{
           "shape_id" => shape.id,
           "route_stops" => [
             %{
@@ -545,7 +543,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
 
       {:ok, _} =
         route0
-        |> Arrow.Shuttles.Route.changeset(%{
+        |> Route.changeset(%{
           "shape_id" => shape.id,
           "route_stops" => [
             %{
@@ -565,7 +563,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
 
       {:ok, _} =
         route1
-        |> Arrow.Shuttles.Route.changeset(%{
+        |> Route.changeset(%{
           "shape_id" => shape.id,
           "route_stops" => [
             %{
@@ -621,7 +619,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
 
       {:ok, _} =
         route0
-        |> Arrow.Shuttles.Route.changeset(route0_attrs)
+        |> Route.changeset(route0_attrs)
         |> Arrow.Repo.update()
 
       route1_attrs = %{
@@ -643,7 +641,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
 
       {:ok, _} =
         route1
-        |> Arrow.Shuttles.Route.changeset(route1_attrs)
+        |> Route.changeset(route1_attrs)
         |> Arrow.Repo.update()
 
       shuttle = Arrow.Shuttles.get_shuttle!(shuttle.id)
