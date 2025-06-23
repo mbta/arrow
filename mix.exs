@@ -93,7 +93,7 @@ defmodule Arrow.MixProject do
       {:opentelemetry_semantic_conventions, "~> 1.27"},
       {:opentelemetry_phoenix, "~> 2.0"},
       {:opentelemetry_ecto, "~> 1.2"},
-      {:opentelemetry_bandit, "~> 0.2.0"},
+      {:opentelemetry_cowboy, "~> 1.0"},
       {:tailwind, "~> 0.2", runtime: Mix.env() == :dev},
       {:heroicons,
        github: "tailwindlabs/heroicons",

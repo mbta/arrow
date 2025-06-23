@@ -6,8 +6,8 @@ defmodule Arrow.Application do
   use Application
 
   def start(_type, _args) do
-    OpentelemetryBandit.setup()
-    OpentelemetryPhoenix.setup(adapter: :bandit)
+    :opentelemetry_cowboy.setup()
+    OpentelemetryPhoenix.setup(adapter: :cowboy2)
     OpentelemetryEcto.setup([:arrow, :repo])
     run_adjustment_fetcher? = Application.get_env(:arrow, :fetch_adjustments?)
     run_migrations_at_startup? = Application.get_env(:arrow, :run_migrations_at_startup?)
