@@ -90,7 +90,8 @@ defmodule Arrow.MixProject do
       {:opentelemetry, "~> 1.5"},
       {:opentelemetry_api, "~> 1.4"},
       {:opentelemetry_exporter, "~> 1.0"},
-      {:opentelemetry_semantic_conventions, "~> 1.27"},
+      # https://github.com/open-telemetry/opentelemetry-erlang-contrib/issues/428
+      {:opentelemetry_semantic_conventions, "~> 1.27", override: true},
       {:opentelemetry_phoenix, "~> 2.0"},
       {:opentelemetry_ecto, "~> 1.2"},
       {:opentelemetry_cowboy, "~> 1.0"},
