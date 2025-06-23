@@ -9,6 +9,7 @@ defmodule Arrow.Application do
     :opentelemetry_cowboy.setup()
     OpentelemetryPhoenix.setup(adapter: :cowboy2)
     OpentelemetryEcto.setup([:arrow, :repo])
+    OpentelemetryOban.setup()
     run_adjustment_fetcher? = Application.get_env(:arrow, :fetch_adjustments?)
     run_migrations_at_startup? = Application.get_env(:arrow, :run_migrations_at_startup?)
 
