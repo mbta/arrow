@@ -53,22 +53,24 @@ defmodule Arrow.PolytreeHelper do
     do_leftmost(tree, prev_ids, acc, for(id <- ids, into: visited, do: id))
   end
 
-  defp build_paths(tree, paths) do
-    if Enum.all?(paths, &match?({:done, _}, &1)) do
-      Enum.map(paths, fn {:done, path} -> Enum.reverse(path) end)
-    else
-      paths
-      |> Enum.flat_map(fn
-        {:done, path} ->
-          [{:done, path}]
+  defp build_paths(tree, paths, completed \\ [])
 
-        [id | _] = path ->
-          case UPTree.edges_for_id(tree, id).next do
-            [] -> [{:done, path}]
-            next -> Enum.map(next, &[&1 | path])
-          end
-      end)
-      |> then(&build_paths(tree, &1))
-    end
+  defp build_paths(_tree, [], completed) do
+    completed
+    |> Enum.reverse()
+    |> Enum.map(&Enum.reverse/1)
+  end
+
+  defp build_paths(tree, paths, completed) do
+    paths_with_next =
+      Enum.map(paths, fn [id | _] = path -> {path, UPTree.edges_for_id(tree, id).next} end)
+
+    {new_completed, paths} =
+      Enum.split_with(paths_with_next, &match?({_path, []}, &1))
+
+    new_completed = Enum.map(new_completed, fn {path, _} -> path end)
+    new_paths = Enum.flat_map(paths, fn {path, next} -> Enum.map(next, &[&1 | path]) end)
+
+    build_paths(tree, new_paths, Enum.reverse(new_completed) ++ completed)
   end
 end
