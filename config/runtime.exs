@@ -52,7 +52,11 @@ if config_env() == :prod do
       root_source_code_path: File.cwd!(),
       tags: %{
         env: sentry_env
-      }
+      },
+      traces_sample_rate: 1.0
+
+    config :opentelemetry, span_processor: {Sentry.OpenTelemetry.SpanProcessor, []}
+    config :opentelemetry, sampler: {Sentry.OpenTelemetry.Sampler, []}
 
     config :logger, Sentry.LoggerBackend,
       level: :warning,

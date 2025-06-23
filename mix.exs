@@ -30,7 +30,7 @@ defmodule Arrow.MixProject do
   def application do
     [
       mod: {Arrow.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :tls_certificate_check]
     ]
   end
 
@@ -86,7 +86,14 @@ defmodule Arrow.MixProject do
       {:ueberauth_oidcc, "~> 0.4.0"},
       {:ueberauth, "~> 0.10"},
       {:wallaby, "~> 0.30", runtime: false, only: :test},
-      {:sentry, "~> 10.7"},
+      {:sentry, "~> 11.0"},
+      {:opentelemetry, "~> 1.5"},
+      {:opentelemetry_api, "~> 1.4"},
+      {:opentelemetry_exporter, "~> 1.0"},
+      {:opentelemetry_semantic_conventions, "~> 1.27"},
+      {:opentelemetry_phoenix, "~> 2.0"},
+      {:opentelemetry_ecto, "~> 1.2"},
+      {:opentelemetry_bandit, "~> 0.2.0"},
       {:tailwind, "~> 0.2", runtime: Mix.env() == :dev},
       {:heroicons,
        github: "tailwindlabs/heroicons",
