@@ -4,11 +4,11 @@ defmodule Arrow.Disruptions do
   """
 
   import Ecto.Query, warn: false
-  alias Arrow.Repo
 
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Disruptions.Limit
   alias Arrow.Disruptions.ReplacementService
+  alias Arrow.Repo
   alias Arrow.Shuttles
 
   @preloads [
@@ -65,7 +65,7 @@ defmodule Arrow.Disruptions do
       |> Repo.insert()
 
     case disruption_v2 do
-      {:ok, disruption_v2} -> {:ok, disruption_v2 |> Repo.preload(@preloads)}
+      {:ok, disruption_v2} -> {:ok, Repo.preload(disruption_v2, @preloads)}
       err -> err
     end
   end
@@ -89,7 +89,7 @@ defmodule Arrow.Disruptions do
       |> Repo.update()
 
     case update_disruption_v2 do
-      {:ok, disruption_v2} -> {:ok, disruption_v2 |> Repo.preload(@preloads)}
+      {:ok, disruption_v2} -> {:ok, Repo.preload(disruption_v2, @preloads)}
       err -> err
     end
   end
@@ -138,7 +138,7 @@ defmodule Arrow.Disruptions do
 
   """
   def get_replacement_service!(id),
-    do: Repo.get!(ReplacementService, id) |> Repo.preload(@preloads[:replacement_services])
+    do: ReplacementService |> Repo.get!(id) |> Repo.preload(@preloads[:replacement_services])
 
   @doc """
   Creates a replacement_service.
@@ -159,7 +159,7 @@ defmodule Arrow.Disruptions do
       |> Repo.insert()
 
     case create_replacement_service do
-      {:ok, rs} -> {:ok, rs |> Repo.preload(@preloads[:replacement_services])}
+      {:ok, rs} -> {:ok, Repo.preload(rs, @preloads[:replacement_services])}
       err -> err
     end
   end
@@ -183,7 +183,7 @@ defmodule Arrow.Disruptions do
       |> Repo.update()
 
     case update_replacement_service do
-      {:ok, rs} -> {:ok, rs |> Repo.preload(@preloads[:replacement_services])}
+      {:ok, rs} -> {:ok, Repo.preload(rs, @preloads[:replacement_services])}
       err -> err
     end
   end
@@ -227,19 +227,14 @@ defmodule Arrow.Disruptions do
 
   """
   def get_limits_in_date_range(start_date, end_date) do
-    from(l in Limit,
-      join: d in assoc(l, :disruption),
-      where: d.is_active == true,
-      where: l.start_date <= ^end_date and l.end_date >= ^start_date,
-      preload: [
-        :disruption,
-        :route,
-        :start_stop,
-        :end_stop,
-        limit_day_of_weeks: :limit
-      ]
+    Repo.all(
+      from(l in Limit,
+        join: d in assoc(l, :disruption),
+        where: d.is_active == true,
+        where: l.start_date <= ^end_date and l.end_date >= ^start_date,
+        preload: [:disruption, :route, :start_stop, :end_stop, limit_day_of_weeks: :limit]
+      )
     )
-    |> Repo.all()
   end
 
   @spec replacement_service_trips_with_times(ReplacementService.t(), String.t()) :: map()
@@ -250,8 +245,7 @@ defmodule Arrow.Disruptions do
     day_of_week_data = source_workbook_data["#{day_of_week} headways and runtimes"]
 
     {first_trips, last_trips, headway_periods} =
-      Enum.reduce(day_of_week_data, {%{}, %{}, %{}}, fn data,
-                                                        {first_trips, last_trips, headway_periods} ->
+      Enum.reduce(day_of_week_data, {%{}, %{}, %{}}, fn data, {first_trips, last_trips, headway_periods} ->
         case data do
           %{"first_trip_0" => first_trip_0, "first_trip_1" => first_trip_1} ->
             {%{0 => first_trip_0, 1 => first_trip_1}, last_trips, headway_periods}
@@ -307,8 +301,7 @@ defmodule Arrow.Disruptions do
       end)
 
     {_, stop_times} =
-      Enum.reduce(shuttle_route.route_stops, {start_time, []}, fn route_stop,
-                                                                  {current_stop_time, stop_times} ->
+      Enum.reduce(shuttle_route.route_stops, {start_time, []}, fn route_stop, {current_stop_time, stop_times} ->
         {if is_nil(route_stop.time_to_next_stop) do
            current_stop_time
          else
@@ -333,21 +326,11 @@ defmodule Arrow.Disruptions do
     }
   end
 
-  defp do_make_trip_start_times(
-         first_trip_start_time,
-         last_trip_start_time,
-         trip_start_times,
-         _headway_periods
-       )
+  defp do_make_trip_start_times(first_trip_start_time, last_trip_start_time, trip_start_times, _headway_periods)
        when first_trip_start_time > last_trip_start_time,
        do: trip_start_times
 
-  defp do_make_trip_start_times(
-         first_trip_start_time,
-         last_trip_start_time,
-         trip_start_times,
-         headway_periods
-       ) do
+  defp do_make_trip_start_times(first_trip_start_time, last_trip_start_time, trip_start_times, headway_periods) do
     headway =
       headway_periods |> Map.get(start_of_hour(first_trip_start_time)) |> Map.get("headway")
 
@@ -383,10 +366,7 @@ defmodule Arrow.Disruptions do
     {nil, nil}
   end
 
-  def start_end_dates(%DisruptionV2{
-        limits: limits,
-        replacement_services: replacement_services
-      }) do
+  def start_end_dates(%DisruptionV2{limits: limits, replacement_services: replacement_services}) do
     min_date =
       (limits ++ replacement_services)
       |> Enum.map(& &1.start_date)

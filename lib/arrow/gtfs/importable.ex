@@ -120,14 +120,15 @@ defmodule Arrow.Gtfs.Importable do
   # then converts it back to a plain map compatible with `Repo.insert_all`.
   @spec cast_to_insertable(csv_row(), module) :: %{atom => term}
   defp cast_to_insertable(row, schema) do
-    struct(schema)
+    schema
+    |> struct()
     |> schema.changeset(row)
     |> Changeset.apply_action!(:insert)
     |> ImportHelper.schema_struct_to_map()
   end
 
   defp replace_headers(csv_stream, mappings) do
-    blob_with_headers = Enum.at(csv_stream, 0) |> to_string()
+    blob_with_headers = csv_stream |> Enum.at(0) |> to_string()
     adjusted = Regex.replace(~r/[^,\n]+/f, blob_with_headers, &Map.get(mappings, &1, &1))
 
     Stream.concat([adjusted], Stream.drop(csv_stream, 1))

@@ -5,20 +5,20 @@ defmodule Arrow.Shuttles do
 
   import Ecto.Query, warn: false
 
+  alias Arrow.Gtfs.Route, as: GtfsRoute
+  alias Arrow.Gtfs.Stop, as: GtfsStop
   alias Arrow.OpenRouteServiceAPI
   alias Arrow.OpenRouteServiceAPI.DirectionsResponse
   alias Arrow.OpenRouteServiceAPI.ErrorResponse
   alias Arrow.Repo
-  alias ArrowWeb.ErrorHelpers
-
-  alias Arrow.Gtfs.Route, as: GtfsRoute
-  alias Arrow.Gtfs.Stop, as: GtfsStop
   alias Arrow.Shuttles.KML
   alias Arrow.Shuttles.RouteStop
   alias Arrow.Shuttles.Shape
   alias Arrow.Shuttles.ShapesUpload
   alias Arrow.Shuttles.ShapeUpload
+  alias Arrow.Shuttles.Shuttle
   alias Arrow.Shuttles.Stop
+  alias ArrowWeb.ErrorHelpers
 
   @preloads [routes: [:shape, route_stops: [:stop, :gtfs_stop]]]
 
@@ -115,17 +115,15 @@ defmodule Arrow.Shuttles do
   def create_shapes(shapes) do
     changesets = Enum.map(shapes, fn shape -> create_shape(shape) end)
 
-    case Enum.all?(changesets, fn changeset -> Kernel.match?({:ok, _shape}, changeset) end) do
-      true ->
-        {:ok, changesets}
+    if Enum.all?(changesets, fn changeset -> Kernel.match?({:ok, _shape}, changeset) end) do
+      {:ok, changesets}
+    else
+      errors =
+        changesets
+        |> Enum.filter(fn changeset -> Kernel.match?({:error, _}, changeset) end)
+        |> Enum.map(&handle_create_error/1)
 
-      _ ->
-        errors =
-          changesets
-          |> Enum.filter(fn changeset -> Kernel.match?({:error, _}, changeset) end)
-          |> Enum.map(&handle_create_error/1)
-
-        {:error, {"Failed to upload some shapes", errors}}
+      {:error, {"Failed to upload some shapes", errors}}
     end
   end
 
@@ -160,8 +158,7 @@ defmodule Arrow.Shuttles do
         {:error, "Shape #{name} already exists, delete the shape to save a new one"}
 
       {:error, :already_exists} ->
-        {:error,
-         "File for shape #{attrs.name} already exists, delete the shape to save a new one"}
+        {:error, "File for shape #{attrs.name} already exists, delete the shape to save a new one"}
 
       {:error, e} ->
         {:error, e}
@@ -197,7 +194,7 @@ defmodule Arrow.Shuttles do
       path = get_shape_upload_path(filename)
 
       case do_upload_shape(content, bucket, path, request_fn) do
-        error = {:error, _} -> error
+        {:error, _} = error -> error
         {:ok, _} -> {:ok, %{bucket: bucket, prefix: prefix, path: path}}
       end
     else
@@ -278,13 +275,14 @@ defmodule Arrow.Shuttles do
   Returns a list of shuttles using the given shape
   """
   def shuttles_using_shape(%Shape{} = shape) do
-    from(s in Arrow.Shuttles.Shuttle,
-      join: r in assoc(s, :routes),
-      where: r.shape_id == ^shape.id,
-      distinct: s,
-      select: s
+    Repo.all(
+      from(s in Arrow.Shuttles.Shuttle,
+        join: r in assoc(s, :routes),
+        where: r.shape_id == ^shape.id,
+        distinct: s,
+        select: s
+      )
     )
-    |> Repo.all()
   end
 
   @doc """
@@ -300,8 +298,6 @@ defmodule Arrow.Shuttles do
     Shape.changeset(shape, attrs)
   end
 
-  alias Arrow.Shuttles.Shuttle
-
   @doc """
   Returns the list of shuttles.
 
@@ -312,7 +308,7 @@ defmodule Arrow.Shuttles do
 
   """
   def list_shuttles do
-    Repo.all(Shuttle) |> Repo.preload(@preloads)
+    Shuttle |> Repo.all() |> Repo.preload(@preloads)
   end
 
   @doc """
@@ -330,7 +326,7 @@ defmodule Arrow.Shuttles do
 
   """
   def get_shuttle!(id) do
-    Repo.get!(Shuttle, id) |> Repo.preload(@preloads) |> populate_display_stop_ids()
+    Shuttle |> Repo.get!(id) |> Repo.preload(@preloads) |> populate_display_stop_ids()
   end
 
   @doc """
@@ -424,17 +420,11 @@ defmodule Arrow.Shuttles do
       else: {:error, "Missing id for stop"}
   end
 
-  def get_stop_coordinates(%RouteStop{
-        display_stop: %Stop{} = display_stop,
-        display_stop_id: _display_stop_id
-      }) do
+  def get_stop_coordinates(%RouteStop{display_stop: %Stop{} = display_stop, display_stop_id: _display_stop_id}) do
     get_stop_coordinates(display_stop)
   end
 
-  def get_stop_coordinates(%RouteStop{
-        display_stop: %GtfsStop{} = display_stop,
-        display_stop_id: _display_stop_id
-      }) do
+  def get_stop_coordinates(%RouteStop{display_stop: %GtfsStop{} = display_stop, display_stop_id: _display_stop_id}) do
     get_stop_coordinates(display_stop)
   end
 
@@ -471,11 +461,11 @@ defmodule Arrow.Shuttles do
   @spec get_travel_times(list(%{lat: number(), lon: number()})) ::
           {:ok, list(number())} | {:error, any()}
   def get_travel_times(coordinates) do
-    coordinates = coordinates |> Enum.map(&Map.new(&1, fn {k, v} -> {to_string(k), v} end))
+    coordinates = Enum.map(coordinates, &Map.new(&1, fn {k, v} -> {to_string(k), v} end))
 
     case OpenRouteServiceAPI.directions(coordinates) do
       {:ok, %DirectionsResponse{segments: segments}} ->
-        {:ok, segments |> Enum.map(&round(&1.duration))}
+        {:ok, Enum.map(segments, &round(&1.duration))}
 
       {:error, %ErrorResponse{type: :no_route}} ->
         {:error, "Unable to retrieve estimates: no route between stops found"}
@@ -511,7 +501,7 @@ defmodule Arrow.Shuttles do
   """
   @spec stop_display_name(Stop.t() | GtfsStop.t()) :: String.t()
   def stop_display_name(%Stop{stop_desc: stop_desc, stop_name: stop_name}),
-    do: if(stop_desc != "", do: stop_desc, else: stop_name)
+    do: if(stop_desc == "", do: stop_name, else: stop_desc)
 
   def stop_display_name(%GtfsStop{desc: desc, name: name}), do: desc || name
 
@@ -536,7 +526,7 @@ defmodule Arrow.Shuttles do
 
     matching_stops = Repo.all(stops_query)
 
-    arrow_stop_ids = matching_stops |> Enum.map(& &1.stop_id) |> MapSet.new()
+    arrow_stop_ids = MapSet.new(matching_stops, & &1.stop_id)
 
     matching_gtfs_stops =
       gtfs_stops_query |> Repo.all() |> Enum.filter(&(!MapSet.member?(arrow_stop_ids, &1.id)))

@@ -1,10 +1,8 @@
 defmodule Arrow.Disruptions.ReplacementServiceUpload do
   @moduledoc "functions for extracting shuttle replacement services from xlsx uploads"
-  alias Arrow.Disruptions.ReplacementServiceUpload.{
-    FirstTrip,
-    LastTrip,
-    Runtimes
-  }
+  alias Arrow.Disruptions.ReplacementServiceUpload.FirstTrip
+  alias Arrow.Disruptions.ReplacementServiceUpload.LastTrip
+  alias Arrow.Disruptions.ReplacementServiceUpload.Runtimes
 
   require Logger
 
@@ -58,7 +56,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
       {:ok, {:ok, versioned_data}}
     else
       {:error, error} ->
-        {:ok, {:error, [{format_warning(), []} | error |> Enum.map(&error_to_error_message/1)]}}
+        {:ok, {:error, [{format_warning(), []} | Enum.map(error, &error_to_error_message/1)]}}
     end
   rescue
     e ->
@@ -72,11 +70,11 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
 
   @spec error_to_error_message(error_tab()) :: tuple()
   def error_to_error_message({tab_name, errors}) when is_binary(tab_name) and is_list(errors) do
-    {"#{tab_name}", errors |> Enum.map(&error_to_error_message/1)}
+    {"#{tab_name}", Enum.map(errors, &error_to_error_message/1)}
   end
 
   def error_to_error_message({idx, {:error, row_data}}) when is_list(row_data) do
-    row_errors = Enum.into(row_data, %{}) |> Enum.map(fn {k, v} -> "#{error_type(k)}: #{v}" end)
+    row_errors = row_data |> Map.new() |> Enum.map(fn {k, v} -> "#{error_type(k)}: #{v}" end)
     "Row #{idx}, #{row_errors}"
   end
 
@@ -105,7 +103,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
 
   @spec add_version(list(valid_tab())) :: {:ok, versioned_data()}
   def add_version(data) do
-    {:ok, data |> Enum.into(%{"version" => @version})}
+    {:ok, Enum.into(data, %{"version" => @version})}
   end
 
   @spec get_xlsx_tab_tids(any()) :: {:error, list(String.t())} | {:ok, map()}
@@ -153,8 +151,8 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
     |> Enum.map(&parse_tab/1)
     |> Enum.split_with(&(elem(&1, 0) == :ok))
     |> case do
-      {rows, []} -> {:ok, rows |> Enum.map(&elem(&1, 1))}
-      {_, errors} -> {:error, errors |> Enum.map(&elem(&1, 1))}
+      {rows, []} -> {:ok, Enum.map(rows, &elem(&1, 1))}
+      {_, errors} -> {:error, Enum.map(errors, &elem(&1, 1))}
     end
   end
 
@@ -240,7 +238,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
   end
 
   defp headers_as_string do
-    @headers_regex |> Enum.map_join(", ", &header_to_string/1)
+    Enum.map_join(@headers_regex, ", ", &header_to_string/1)
   end
 
   @spec validate_headers(list(xlsxir_types())) ::
@@ -262,7 +260,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
     |> Enum.split_with(&elem(&1, 1))
     |> case do
       {headers, []} ->
-        {:ok, headers |> Enum.map(fn {key, _val} -> elem(key, 0) end)}
+        {:ok, Enum.map(headers, fn {key, _val} -> elem(key, 0) end)}
 
       {_, missing} ->
         missing_header =
@@ -308,9 +306,9 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
         {:error, ["Duplicate row(s) for #{Enum.join(dups, " and ")} trip times"]}
 
       is_nil(first) or is_nil(last) ->
-        values = [{first, "First"}, {last, "Last"}] |> Enum.reject(&elem(&1, 0))
+        values = Enum.reject([{first, "First"}, {last, "Last"}], &elem(&1, 0))
 
-        {:error, ["Missing row for #{values |> Enum.map_join(" and ", &elem(&1, 1))} trip times"]}
+        {:error, ["Missing row for #{Enum.map_join(values, " and ", &elem(&1, 1))} trip times"]}
 
       first_trips_after_last?(first, last) ->
         {:error, ["First trip times must be after Last trip times"]}
@@ -320,10 +318,10 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
     end
   end
 
-  defp first_trips_after_last?(
-         %{first_trip_0: first_trip_0, first_trip_1: first_trip_1},
-         %{last_trip_0: last_trip_0, last_trip_1: last_trip_1}
-       ) do
+  defp first_trips_after_last?(%{first_trip_0: first_trip_0, first_trip_1: first_trip_1}, %{
+         last_trip_0: last_trip_0,
+         last_trip_1: last_trip_1
+       }) do
     first_trip_0 > last_trip_0 or first_trip_1 > last_trip_1
   end
 
@@ -349,7 +347,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
     end)
     |> Enum.split_with(fn {_i, r} -> elem(r, 0) == :ok end)
     |> case do
-      {rows, []} -> {:ok, rows |> Enum.map(fn {_idx, {:ok, data}} -> Map.new(data) end)}
+      {rows, []} -> {:ok, Enum.map(rows, fn {_idx, {:ok, data}} -> Map.new(data) end)}
       {_, errors} -> {:error, errors}
     end
   end
@@ -454,7 +452,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
 
   def truncate_seconds(time_string) when is_binary(time_string) do
     case String.split(time_string, ":") do
-      [_hr, _min, _sec] -> {:ok, String.split(time_string, ":") |> Enum.take(2) |> Enum.join(":")}
+      [_hr, _min, _sec] -> {:ok, time_string |> String.split(":") |> Enum.take(2) |> Enum.join(":")}
       [_hr, _min] -> {:ok, time_string}
       _ -> {:error, time_string}
     end
@@ -476,7 +474,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
   end
 
   def to_time_int_list(time_string) when is_binary(time_string) do
-    {:ok, String.split(time_string, ":") |> Enum.map(&String.to_integer/1) |> Enum.take(2)}
+    {:ok, time_string |> String.split(":") |> Enum.map(&String.to_integer/1) |> Enum.take(2)}
   end
 
   def to_time_int_list(time_string) do

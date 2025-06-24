@@ -1,6 +1,8 @@
 defmodule ArrowWeb.API.NoticeController do
-  alias ArrowWeb.Plug.Authorize
   use ArrowWeb, :controller
+
+  alias ArrowWeb.Plug.Authorize
+
   require Logger
 
   plug(Authorize, :publish_notice)

@@ -1,9 +1,11 @@
 defmodule ArrowWeb.DisruptionController.IndexTest do
   use Arrow.DataCase, async: true
+
   import Arrow.Factory
 
-  alias ArrowWeb.DisruptionController.{Filters, Index}
+  alias ArrowWeb.DisruptionController.Filters
   alias ArrowWeb.DisruptionController.Filters.Table
+  alias ArrowWeb.DisruptionController.Index
 
   describe "all/0" do
     test "gets disruptions whose latest revision is active" do

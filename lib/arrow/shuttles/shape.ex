@@ -1,10 +1,11 @@
 defmodule Arrow.Shuttles.Shape do
   @moduledoc "schema for shuttle shapes for the db"
 
-  @derive {Phoenix.Param, key: :name}
-
   use Ecto.Schema
+
   import Ecto.Changeset
+
+  @derive {Phoenix.Param, key: :name}
 
   @derive {Jason.Encoder, only: [:id, :name, :inserted_at, :updated_at]}
 
@@ -52,8 +53,7 @@ defmodule Arrow.Shuttles.Shape do
           changeset,
           :name,
           ~r/^[A-Z][A-Za-z0-9]*To[A-Z][A-Za-z0-9]*(?:Via[A-Z][A-Za-z0-9]*)?(?:-S)?$/,
-          message:
-            "should be PascalCase using only letters and numbers and include start and end location"
+          message: "should be PascalCase using only letters and numbers and include start and end location"
         )
       else
         changeset

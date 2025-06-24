@@ -5,6 +5,7 @@ defmodule Arrow.AuthToken do
   Primarily used by gtfs_creator to fetch disruption information.
   """
   use Ecto.Schema
+
   import Ecto.Changeset
 
   @type t :: %__MODULE__{
@@ -39,7 +40,7 @@ defmodule Arrow.AuthToken do
         token
 
       nil ->
-        token = :crypto.strong_rand_bytes(16) |> Base.encode16() |> String.downcase()
+        token = 16 |> :crypto.strong_rand_bytes() |> Base.encode16() |> String.downcase()
 
         auth_token = %__MODULE__{
           username: username,

@@ -1,5 +1,6 @@
 defmodule ArrowWeb.API.ShapesController do
   use ArrowWeb, :controller
+
   alias Arrow.Shuttles
 
   @spec index(Plug.Conn.t(), map()) :: Plug.Conn.t()

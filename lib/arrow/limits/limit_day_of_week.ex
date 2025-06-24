@@ -2,6 +2,7 @@ defmodule Arrow.Limits.LimitDayOfWeek do
   @moduledoc "schema for a limit day of week for the db"
 
   use Ecto.Schema
+
   import Ecto.Changeset
 
   alias Arrow.Disruptions.Limit
@@ -28,7 +29,7 @@ defmodule Arrow.Limits.LimitDayOfWeek do
     field :end_time, :string
     field :active?, :boolean, source: :is_active, default: false
     field :all_day?, :boolean, virtual: true
-    belongs_to :limit, Arrow.Disruptions.Limit
+    belongs_to :limit, Limit
 
     timestamps(type: :utc_datetime)
   end
@@ -41,12 +42,8 @@ defmodule Arrow.Limits.LimitDayOfWeek do
     |> cast(attrs, [:active?, :day_name, :start_time, :end_time, :limit_id, :all_day?])
     |> validate_required([:day_name])
     |> validate_required_times()
-    |> validate_format(:start_time, time_regex,
-      message: "must be a valid GTFS time in format HH:MM"
-    )
-    |> validate_format(:end_time, time_regex,
-      message: "must be a valid GTFS time in format HH:MM"
-    )
+    |> validate_format(:start_time, time_regex, message: "must be a valid GTFS time in format HH:MM")
+    |> validate_format(:end_time, time_regex, message: "must be a valid GTFS time in format HH:MM")
     |> validate_start_time_before_end_time()
     |> validate_in_date_range(opts[:date_range_day_of_weeks])
     |> assoc_constraint(:limit)
