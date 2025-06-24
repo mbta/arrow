@@ -60,6 +60,7 @@ if config_env() == :prod do
                "arrow.repo.query:oban_jobs",
                "arrow.repo.query",
                "Elixir.Oban.Stager process",
+               "Elixir.Oban.Plugins.Cron process",
                "arrow.repo.query:oban_peers"
              ] do
           false
