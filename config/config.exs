@@ -59,7 +59,8 @@ config :arrow, ArrowWeb.Endpoint,
   url: [host: "localhost"],
   render_errors: [view: ArrowWeb.ErrorView, accepts: ~w(html json)],
   pubsub_server: Arrow.PubSub,
-  live_view: [signing_salt: "35DDvOCJ"]
+  live_view: [signing_salt: "35DDvOCJ"],
+  adapter: Bandit.PhoenixAdapter
 
 # Configures Oban, the job processing library
 config :arrow, Oban,

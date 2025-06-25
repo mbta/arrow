@@ -6,7 +6,7 @@ defmodule Arrow.Application do
   use Application
 
   def start(_type, _args) do
-    :opentelemetry_cowboy.setup()
+    OpentelemetryBandit.setup()
     OpentelemetryPhoenix.setup(adapter: :cowboy2)
     :ok = OpentelemetryEcto.setup([:arrow, :repo], db_statement: :enabled)
     OpentelemetryOban.setup()
