@@ -1,6 +1,10 @@
 defmodule Mix.Tasks.CopyDbTest do
   use Arrow.DataCase
+
   import ExUnit.CaptureLog
+
+  alias Arrow.Disruption.DayOfWeek
+  alias Mix.Tasks.CopyDb
 
   setup do
     http_client = Application.get_env(:arrow, :http_client)
@@ -39,7 +43,7 @@ defmodule Mix.Tasks.CopyDbTest do
       Application.put_env(:arrow, :http_client, Fake.HTTPoison.Happy)
       pre_populate_db()
 
-      Mix.Tasks.CopyDb.run([])
+      CopyDb.run([])
 
       assert [
                %Arrow.Disruption{
@@ -59,25 +63,25 @@ defmodule Mix.Tasks.CopyDbTest do
                      }
                    ],
                    days_of_week: [
-                     %Arrow.Disruption.DayOfWeek{
+                     %DayOfWeek{
                        id: 21,
                        day_name: "monday",
                        end_time: ~T[15:00:00],
                        start_time: ~T[08:00:00]
                      },
-                     %Arrow.Disruption.DayOfWeek{
+                     %DayOfWeek{
                        id: 22,
                        day_name: "tuesday",
                        end_time: nil,
                        start_time: nil
                      },
-                     %Arrow.Disruption.DayOfWeek{
+                     %DayOfWeek{
                        id: 23,
                        day_name: "wednesday",
                        end_time: nil,
                        start_time: nil
                      },
-                     %Arrow.Disruption.DayOfWeek{
+                     %DayOfWeek{
                        id: 24,
                        day_name: "thursday",
                        end_time: nil,
@@ -99,7 +103,8 @@ defmodule Mix.Tasks.CopyDbTest do
                  }
                }
              ] =
-               Arrow.Repo.all(from d in Arrow.Disruption, order_by: d.id)
+               from(d in Arrow.Disruption, order_by: d.id)
+               |> Arrow.Repo.all()
                |> Arrow.Repo.preload(published_revision: Arrow.DisruptionRevision.associations())
 
       assert [
@@ -116,7 +121,7 @@ defmodule Mix.Tasks.CopyDbTest do
 
       log =
         capture_log(fn ->
-          Mix.Tasks.CopyDb.run([])
+          CopyDb.run([])
         end)
 
       assert log =~ "invalid JSON"
@@ -127,7 +132,7 @@ defmodule Mix.Tasks.CopyDbTest do
 
       log =
         capture_log(fn ->
-          Mix.Tasks.CopyDb.run([])
+          CopyDb.run([])
         end)
 
       assert log =~ "issue with request: 401"
@@ -136,7 +141,9 @@ defmodule Mix.Tasks.CopyDbTest do
 end
 
 defmodule Fake.HTTPoison do
+  @moduledoc false
   defmodule Happy do
+    @moduledoc false
     def start do
       {:ok, nil}
     end
@@ -242,6 +249,7 @@ defmodule Fake.HTTPoison do
   end
 
   defmodule Sad.InvalidJson do
+    @moduledoc false
     def start do
       {:ok, nil}
     end
@@ -252,6 +260,7 @@ defmodule Fake.HTTPoison do
   end
 
   defmodule Sad.Status401 do
+    @moduledoc false
     def start do
       {:ok, nil}
     end

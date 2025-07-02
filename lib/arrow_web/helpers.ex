@@ -33,10 +33,5 @@ defmodule ArrowWeb.Helpers do
   end
 
   def mode_labels,
-    do: [
-      subway: "Subway/Light Rail",
-      commuter_rail: "Commuter Rail",
-      bus: "Bus",
-      silver_line: "Silver Line"
-    ]
+    do: [subway: "Subway/Light Rail", commuter_rail: "Commuter Rail", bus: "Bus", silver_line: "Silver Line"]
 end

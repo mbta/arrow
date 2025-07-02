@@ -2,7 +2,8 @@ defmodule ArrowWeb.DisruptionV2Controller.FiltersTest do
   use ExUnit.Case, async: true
 
   alias ArrowWeb.DisruptionV2Controller.Filters
-  alias ArrowWeb.DisruptionV2Controller.Filters.{Calendar, Table}
+  alias ArrowWeb.DisruptionV2Controller.Filters.Calendar
+  alias ArrowWeb.DisruptionV2Controller.Filters.Table
 
   defp set(items \\ []), do: MapSet.new(items)
 

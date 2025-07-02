@@ -102,9 +102,7 @@ defmodule Arrow.Repo.ForeignKeyConstraintTest do
 
       assert [] = ForeignKeyConstraint.external_constraints_referencing_tables(["a"])
 
-      assert "c_a_id_fkey" not in Repo.all(
-               from fk in Arrow.Repo.ForeignKeyConstraint, select: fk.name
-             )
+      assert "c_a_id_fkey" not in Repo.all(from fk in Arrow.Repo.ForeignKeyConstraint, select: fk.name)
     end
   end
 

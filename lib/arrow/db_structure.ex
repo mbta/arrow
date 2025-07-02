@@ -17,7 +17,9 @@ defmodule Arrow.DBStructure do
   """
 
   import Ecto.Query
+
   alias Arrow.DBStructure.Table
+  alias Ecto.Adapters.SQL
 
   @temp_table "temp_join_table"
   @type db_structure :: [Table.t()]
@@ -129,8 +131,7 @@ defmodule Arrow.DBStructure do
   end
 
   defp nullify_optional_fkeys(repo, structure) do
-    structure
-    |> Enum.each(fn table ->
+    Enum.each(structure, fn table ->
       Enum.each(table.optional_fkeys, fn column ->
         set = Keyword.new([{column, nil}])
         table.name |> from(update: [set: ^set]) |> repo.update_all([])
@@ -159,7 +160,7 @@ defmodule Arrow.DBStructure do
 
   defp add_optional_fkeys(repo, structure, data) do
     %{num_rows: _, rows: _} =
-      Ecto.Adapters.SQL.query!(
+      SQL.query!(
         repo,
         "CREATE TEMP TABLE " <> @temp_table <> " (table_id INT, fkey_value INT)",
         []
@@ -177,14 +178,14 @@ defmodule Arrow.DBStructure do
 
         {_num_inserted, _return} = repo.insert_all(@temp_table, temp_rows)
 
-        from(t in table.name,
-          join: j in @temp_table,
-          on: t.id == j.table_id,
-          update: [
-            set: [{^fkey_column, field(j, :fkey_value)}]
-          ]
+        repo.update_all(
+          from(t in table.name,
+            join: j in @temp_table,
+            on: t.id == j.table_id,
+            update: [set: [{^fkey_column, field(j, :fkey_value)}]]
+          ),
+          []
         )
-        |> repo.update_all([])
 
         @temp_table |> from() |> repo.delete_all()
       end)
@@ -194,7 +195,7 @@ defmodule Arrow.DBStructure do
   defp reset_sequences(repo, structure) do
     Enum.each(structure, fn table ->
       Enum.each(table.sequences, fn {seq_col, seq_name} ->
-        max_id = from(t in table.name, select: max(field(t, ^seq_col))) |> repo.one()
+        max_id = repo.one(from(t in table.name, select: max(field(t, ^seq_col))))
         reset_sequence(repo, seq_name, max_id)
       end)
     end)
@@ -205,7 +206,7 @@ defmodule Arrow.DBStructure do
   end
 
   defp reset_sequence(repo, seq_name, max_id) do
-    Ecto.Adapters.SQL.query!(
+    SQL.query!(
       repo,
       "ALTER SEQUENCE #{seq_name} RESTART WITH #{max_id + 1}",
       []

@@ -1,13 +1,16 @@
 defmodule Arrow.AdjustmentFetcherTest do
   use Arrow.DataCase
 
-  alias Arrow.{Adjustment, AdjustmentFetcher, HTTPMock, Repo}
-
   import Arrow.Factory
   import ExUnit.CaptureLog
   import Mox
 
-  @test_json [%{id: "foo", attributes: %{route_id: "bar"}}] |> Jason.encode!()
+  alias Arrow.Adjustment
+  alias Arrow.AdjustmentFetcher
+  alias Arrow.HTTPMock
+  alias Arrow.Repo
+
+  @test_json Jason.encode!([%{id: "foo", attributes: %{route_id: "bar"}}])
 
   setup :verify_on_exit!
 
@@ -46,7 +49,7 @@ defmodule Arrow.AdjustmentFetcherTest do
 
   describe "fetch/0" do
     defp setup_successful_request do
-      HTTPMock |> expect(:get, fn _url -> {:ok, %{status_code: 200, body: @test_json}} end)
+      expect(HTTPMock, :get, fn _url -> {:ok, %{status_code: 200, body: @test_json}} end)
     end
 
     test "inserts data" do
@@ -98,21 +101,18 @@ defmodule Arrow.AdjustmentFetcherTest do
     end
 
     test "handles a failure to fetch the adjustments" do
-      HTTPMock |> expect(:get, fn _url -> {:ok, %{status_code: 403, body: "forbid"}} end)
-
+      expect(HTTPMock, :get, fn _url -> {:ok, %{status_code: 403, body: "forbid"}} end)
       assert {:error, %{status_code: 403}} = AdjustmentFetcher.fetch()
     end
 
     test "handles a failure to decode the adjustments" do
-      HTTPMock |> expect(:get, fn _url -> {:ok, %{status_code: 200, body: "not JSON"}} end)
-
+      expect(HTTPMock, :get, fn _url -> {:ok, %{status_code: 200, body: "not JSON"}} end)
       assert {:error, %Jason.DecodeError{}} = AdjustmentFetcher.fetch()
     end
 
     test "leaves existing adjustments intact on failure" do
       Repo.insert!(%Adjustment{source: "gtfs_creator", source_label: "foo", route_id: "bar"})
-      HTTPMock |> expect(:get, fn _url -> {:error, "oops"} end)
-
+      expect(HTTPMock, :get, fn _url -> {:error, "oops"} end)
       AdjustmentFetcher.fetch()
 
       assert [%Adjustment{source_label: "foo", source: "gtfs_creator"}] = Repo.all(Adjustment)
