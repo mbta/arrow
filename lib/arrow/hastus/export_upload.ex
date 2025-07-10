@@ -8,6 +8,7 @@ defmodule Arrow.Hastus.ExportUpload do
   require Logger
 
   alias Arrow.Hastus.TripRouteDirection
+  alias Arrow.PolytreeHelper
 
   @type t :: %__MODULE__{
           services: list(map()),
@@ -468,30 +469,31 @@ defmodule Arrow.Hastus.ExportUpload do
     unique_trip_counts = Enum.frequencies_by(trips, &trip_type/1)
 
     # Trim down the number of trips we look at to save time:
-    # - Only direction_id 0 trips
+    # - Only direction_id 1 trips
     # - Only trips of a type that occurs more than a handful of times.
     #   (We can assume the uncommon trip types are train repositionings.)
     trips =
       trips
-      |> Stream.filter(&(trp_direction_to_direction_id[&1["trp_direction"]] == 0))
+      |> Stream.filter(&(trp_direction_to_direction_id[&1["trp_direction"]] == 1))
       |> Enum.filter(&(unique_trip_counts[trip_type(&1)] >= @min_trip_type_occurrence))
 
-    canonical_stop_sequences = stop_sequences_for_routes(route_ids)
+    tree = build_polytree(route_ids)
+    natural_stop_sequences = PolytreeHelper.all_full_paths(tree)
 
-    Enum.map(services, &add_derived_limits(&1, trips, stop_times, canonical_stop_sequences))
+    Enum.map(services, &add_derived_limits(&1, trips, stop_times, natural_stop_sequences, tree))
   end
 
-  defp add_derived_limits(service, trips, stop_times, canonical_stop_sequences)
+  defp add_derived_limits(service, trips, stop_times, natural_stop_sequences, tree)
 
-  defp add_derived_limits(%{service_dates: []} = service, _, _, _) do
+  defp add_derived_limits(%{service_dates: []} = service, _, _, _, _) do
     Map.put(service, :derived_limits, [])
   end
 
-  defp add_derived_limits(service, trips, stop_times, canonical_stop_sequences) do
+  defp add_derived_limits(service, trips, stop_times, natural_stop_sequences, tree) do
     # Summary of logic:
     # Chunk trips within this service into hour windows, based on the departure time of each trip's first stop_time.
     # For each chunk, collect all trips' visited stops into a set of stop IDs.
-    # Compare these with canonical stop sequence(s) for the line, looking for "holes" of unvisited stops.
+    # Compare these with stop sequence(s) for the line, looking for "holes" of unvisited stops.
     # These "holes" are the derived limits.
     #
     # Why:
@@ -518,16 +520,19 @@ defmodule Arrow.Hastus.ExportUpload do
         fn {_trip_id, stop_times} -> MapSet.new(stop_times, & &1["stop_id"]) end
       )
       |> Map.delete(:skip)
-      |> Enum.map(fn {_hour, stop_id_sets} ->
-        Enum.reduce(stop_id_sets, &MapSet.union/2)
-      end)
+      # Sort the map keys before iterating over them to prevent undefined order in test results.
+      |> Enum.sort_by(fn {hour, _} -> hour end)
+      |> Enum.map(fn {_hour, stop_id_sets} -> Enum.reduce(stop_id_sets, &MapSet.union/2) end)
 
     derived_limits =
-      for visited_stops <- visited_stops_per_time_window,
-          seq <- canonical_stop_sequences,
-          {start_stop_id, end_stop_id} <- limits_from_sequence(seq, visited_stops) do
-        %{start_stop_id: start_stop_id, end_stop_id: end_stop_id}
-      end
+      visited_stops_per_time_window
+      |> Enum.flat_map(fn visited_stops ->
+        for seq <- natural_stop_sequences,
+            limit <- limit_slices_from_sequence(seq, visited_stops) do
+          limit
+        end
+        |> condense_limits(tree)
+      end)
       |> Enum.uniq()
 
     Map.put(service, :derived_limits, derived_limits)
@@ -545,21 +550,30 @@ defmodule Arrow.Hastus.ExportUpload do
     )
   end
 
-  # Returns a list of lists with the direction_id=0 canonical stop sequence(s) for the given routes.
-  @spec stop_sequences_for_routes([String.t()]) :: [[stop_id :: String.t()]]
-  defp stop_sequences_for_routes(route_ids) do
+  # Returns a polytree (directed acyclic graph that can have multiple roots)
+  # constructed from a line's canonical direction_id=1 stop sequences.
+  #
+  # Nodes of the tree use platform stop IDs as their IDs,
+  # and contain corresponding parent station IDs as their values.
+  @spec build_polytree([String.t()]) :: UnrootedPolytree.t()
+  defp build_polytree(route_ids) do
     Arrow.Repo.all(
       from t in Arrow.Gtfs.Trip,
-        where: t.direction_id == 0,
+        where: t.direction_id == 1,
         where: t.service_id == "canonical",
         where: t.route_id in ^route_ids,
         join: st in Arrow.Gtfs.StopTime,
         on: t.id == st.trip_id,
+        join: s in Arrow.Gtfs.Stop,
+        on: st.stop_id == s.id,
+        join: ps in Arrow.Gtfs.Stop,
+        on: ps.id == s.parent_station_id,
         order_by: [t.id, st.stop_sequence],
-        select: %{trip_id: t.id, stop_id: st.stop_id}
+        select: %{trip_id: t.id, stop_id: st.stop_id, parent_id: ps.id}
     )
     |> Stream.chunk_by(& &1.trip_id)
-    |> Enum.map(fn stops -> Enum.map(stops, & &1.stop_id) end)
+    |> Enum.map(fn stops -> Enum.map(stops, &{&1.stop_id, &1.parent_id}) end)
+    |> UnrootedPolytree.from_lists()
   end
 
   # Maps HASTUS all_trips.txt `trp_direction` values
@@ -580,61 +594,81 @@ defmodule Arrow.Hastus.ExportUpload do
     |> Map.new()
   end
 
-  @typep limit :: {start_stop_id :: stop_id, end_stop_id :: stop_id}
+  @typep limit :: %{start_stop_id: stop_id, end_stop_id: stop_id}
   @typep stop_id :: String.t()
 
-  @spec limits_from_sequence([stop_id], MapSet.t(stop_id)) :: [limit]
-  defp limits_from_sequence(stop_sequence, visited_stops)
+  @spec limit_slices_from_sequence([stop_id], MapSet.t(stop_id)) :: [[stop_id]]
+  defp limit_slices_from_sequence(stop_sequence, visited_stops)
 
-  defp limits_from_sequence([], _visited_stops), do: []
+  defp limit_slices_from_sequence([], _visited_stops), do: []
 
-  defp limits_from_sequence([first_stop | stops] = stop_sequence, visited_stops) do
-    # Regardless of whether it was visited, the first stop in the sequence
-    # is the potential first stop of a limit.
-    acc = {first_stop, first_stop in visited_stops}
-
+  defp limit_slices_from_sequence([first_stop | stops], visited_stops) do
     Enum.chunk_while(
       stops,
-      acc,
-      &chunk_limits(&1, &2, &1 in visited_stops),
-      &chunk_limits(&1, stop_sequence)
+      [first_stop],
+      &chunk_limits(&1, &2, visited_stops),
+      &chunk_limits(&1, visited_stops)
     )
   end
 
-  # The acc records:
-  # 1. the potential first stop of a limit, and
-  # 2. whether the previous stop in the sequence was visited by any trip in the time window.
-  @typep limits_acc :: {potential_first_stop_of_limit :: stop_id, prev_stop_visited? :: boolean}
+  @typep limit_acc :: nonempty_list(stop_id)
 
   # chunk fun
-  @spec chunk_limits(stop_id, limits_acc, boolean) ::
-          {:cont, limit, limits_acc} | {:cont, limits_acc}
-  defp chunk_limits(stop, acc, stop_visited?)
+  @spec chunk_limits(stop_id, limit_acc, MapSet.t(stop_id)) ::
+          {:cont, [stop_id], limit_acc} | {:cont, limit_acc}
+  defp chunk_limits(stop, limit_stops, visited_stops)
 
-  defp chunk_limits(stop, {first_stop, prev_stop_visited?}, stop_visited?) do
+  defp chunk_limits(stop, limit_stops, visited_stops) do
+    prev_stop_visited? = hd(limit_stops) in visited_stops
+    stop_visited? = stop in visited_stops
+
     cond do
       # This stop was not visited.
-      # Potential start of limit remains where it was.
-      not stop_visited? -> {:cont, {first_stop, stop_visited?}}
+      # Add it to the in-progress limit.
+      not stop_visited? -> {:cont, [stop | limit_stops]}
       # Prev stop was visited, this stop was visited.
       # Potential start of limit moves to this stop.
-      prev_stop_visited? -> {:cont, {stop, stop_visited?}}
+      prev_stop_visited? -> {:cont, [stop]}
       # Prev stop was not visited, this stop was visited.
-      # This is the end of a limit--emit it and form a new limit starting at this stop.
-      not prev_stop_visited? -> {:cont, {first_stop, stop}, {stop, stop_visited?}}
+      # This is the end of a limit--emit it and begin a new limit starting at this stop.
+      not prev_stop_visited? -> {:cont, Enum.reverse([stop | limit_stops]), [stop]}
     end
   end
 
   # after fun
-  @spec chunk_limits(limits_acc, [stop_id]) :: {:cont, term} | {:cont, limit, term}
-  defp chunk_limits(acc, sequence)
+  @spec chunk_limits(limit_acc, MapSet.t(stop_id)) :: {:cont, term} | {:cont, [stop_id], term}
+  defp chunk_limits(limit_stops, visited_stops) do
+    # If the last stop in the sequence was not visited, emit a limit that ends with it.
+    if hd(limit_stops) in visited_stops,
+      do: {:cont, nil},
+      else: {:cont, Enum.reverse(limit_stops), nil}
+  end
 
-  # The last stop in the sequence was visited.
-  defp chunk_limits({_, true}, _), do: {:cont, nil}
+  # Merges all limit slices (sequences of stop IDs) produced from an hour window
+  # into a final, minimal list of limits.
+  @spec condense_limits([[stop_id]], UnrootedPolytree.t()) :: [limit]
+  defp condense_limits(limit_slices, tree) do
+    # Convert slices to parent station IDs to avoid unwanted duplicates of
+    # limits that include e.g. Kenmore, which has multiple eastbound platform stop IDs.
+    limits_tree =
+      limit_slices
+      |> Enum.map(fn slice ->
+        Enum.map(slice, fn stop_id ->
+          {:ok, tree_node} = UnrootedPolytree.node_for_id(tree, stop_id)
+          parent_id = tree_node.value
+          {parent_id, stop_id}
+        end)
+      end)
+      |> UnrootedPolytree.from_lists()
 
-  # The last stop in the sequence was not visited. Emit a limit that ends with it.
-  defp chunk_limits({first_stop, false}, sequence) do
-    {:cont, {first_stop, List.last(sequence)}, nil}
+    limits_tree
+    |> PolytreeHelper.all_full_paths()
+    # Convert parent IDs in these paths back to their child IDs
+    |> Enum.map(fn path ->
+      {:ok, start_node} = UnrootedPolytree.node_for_id(limits_tree, hd(path))
+      {:ok, end_node} = UnrootedPolytree.node_for_id(limits_tree, List.last(path))
+      %{start_stop_id: start_node.value, end_stop_id: end_node.value}
+    end)
   end
 
   defp chunk_dates(date, {start_date, last_date}, service, exceptions) do
