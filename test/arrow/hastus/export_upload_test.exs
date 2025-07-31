@@ -1,6 +1,7 @@
 defmodule Arrow.Hastus.ExportUploadTest do
   @moduledoc false
   use Arrow.DataCase, async: true
+  import Test.Support.Helpers
 
   alias Arrow.Hastus.ExportUpload
 
@@ -654,5 +655,39 @@ defmodule Arrow.Hastus.ExportUploadTest do
         }
       ]
     }
+  end
+
+  describe "upload_to_s3/3" do
+    setup do
+      reassign_env(:hastus_export_storage_enabled?, true)
+      :ok
+    end
+
+    test "prepends timestamp and appends disruption_id to filename" do
+      result = ExportUpload.upload_to_s3("file content", "export.zip", "12345")
+
+      assert {:ok, path} = result
+
+      assert path =~
+               ~r/s3:\/\/mbta-arrow\/hastus-export-uploads\/\d+_export_disruption_12345\.zip/
+    end
+
+    test "handles filenames without extensions" do
+      result = ExportUpload.upload_to_s3("file content", "exportfile", "12345")
+
+      assert {:ok, path} = result
+
+      assert path =~
+               ~r/s3:\/\/mbta-arrow\/hastus-export-uploads\/\d+_exportfile_disruption_12345$/
+    end
+
+    test "handles filenames with multiple dots" do
+      result = ExportUpload.upload_to_s3("file content", "export.v2.final.zip", "12345")
+
+      assert {:ok, path} = result
+
+      assert path =~
+               ~r/s3:\/\/mbta-arrow\/hastus-export-uploads\/\d+_export\.v2\.final_disruption_12345\.zip/
+    end
   end
 end

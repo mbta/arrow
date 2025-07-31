@@ -90,11 +90,15 @@ defmodule Arrow.Hastus.ExportUpload do
       {:ok, {:error, "Could not parse zip."}}
   end
 
-  @spec upload_to_s3(binary(), String.t()) ::
+  @spec upload_to_s3(binary(), String.t(), String.t() | integer()) ::
           {:ok, :disabled} | {:ok, String.t()} | {:error, term()}
-  def upload_to_s3(file_data, filename) do
+  def upload_to_s3(file_data, filename, disruption_id) do
     if Application.fetch_env!(:arrow, :hastus_export_storage_enabled?) do
-      do_upload(file_data, filename)
+      timestamp = System.system_time(:second)
+      basename = Path.basename(filename, Path.extname(filename))
+      ext = Path.extname(filename)
+      modified_filename = "#{timestamp}_#{basename}_disruption_#{disruption_id}#{ext}"
+      do_upload(file_data, modified_filename)
     else
       {:ok, "disabled"}
     end
@@ -207,7 +211,11 @@ defmodule Arrow.Hastus.ExportUpload do
     s3_bucket = Application.fetch_env!(:arrow, :hastus_export_storage_bucket)
     path = get_upload_path(filename)
 
-    upload_op = ExAws.S3.put_object(s3_bucket, path, file_data, content_type: "application/zip")
+    upload_op =
+      ExAws.S3.put_object(s3_bucket, path, file_data,
+        content_type: "application/zip",
+        if_none_match: "*"
+      )
 
     {mod, fun} = Application.fetch_env!(:arrow, :hastus_export_storage_request_fn)
 
