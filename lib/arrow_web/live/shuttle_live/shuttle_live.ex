@@ -1,9 +1,13 @@
 defmodule ArrowWeb.ShuttleViewLive do
+  @moduledoc false
   use ArrowWeb, :live_view
+
   import Phoenix.HTML.Form
 
   alias Arrow.Shuttles
-  alias Arrow.Shuttles.{DefinitionUpload, Shuttle}
+  alias Arrow.Shuttles.DefinitionUpload
+  alias Arrow.Shuttles.RouteStop
+  alias Arrow.Shuttles.Shuttle
   alias ArrowWeb.ShapeView
 
   embed_templates "shuttle_live/*"
@@ -376,7 +380,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
     shapes =
       Shuttles.list_shapes()
-      |> Enum.filter(&(String.downcase(&1.name) |> String.contains?(String.downcase(text))))
+      |> Enum.filter(&(&1.name |> String.downcase() |> String.contains?(String.downcase(text))))
       |> Enum.map(&shape_option_mapper/1)
 
     send_update(LiveSelect.Component, id: live_select_id, options: shapes)
@@ -404,15 +408,7 @@ defmodule ArrowWeb.ShuttleViewLive do
     {:noreply, socket}
   end
 
-  def handle_event(
-        "reorder_stops",
-        %{
-          "direction_id" => direction_id,
-          "old" => old,
-          "new" => new
-        },
-        socket
-      ) do
+  def handle_event("reorder_stops", %{"direction_id" => direction_id, "old" => old, "new" => new}, socket) do
     direction_id = String.to_existing_atom(direction_id)
 
     changeset = socket.assigns.form.source
@@ -466,8 +462,7 @@ defmodule ArrowWeb.ShuttleViewLive do
 
       {:error, error} ->
         {:noreply,
-         socket
-         |> update(:errors, fn errors ->
+         update(socket, :errors, fn errors ->
            put_in(errors, [:route_stops, Access.key(direction_id_string)], error)
          end)}
     end
@@ -476,10 +471,10 @@ defmodule ArrowWeb.ShuttleViewLive do
   @spec get_stop_travel_times(list({:ok, any()})) ::
           {:ok, list(number())} | {:error, any()}
   defp get_stop_travel_times(stop_coordinates) do
-    stop_coordinates = stop_coordinates |> Enum.map(fn {:ok, c} -> c end)
+    stop_coordinates = Enum.map(stop_coordinates, fn {:ok, c} -> c end)
 
     if length(stop_coordinates) > 1 do
-      stop_coordinates |> Shuttles.get_travel_times()
+      Shuttles.get_travel_times(stop_coordinates)
     else
       {:error, "Incomplete stop data, please provide more than one stop"}
     end
@@ -527,7 +522,7 @@ defmodule ArrowWeb.ShuttleViewLive do
       max_stop_sequence =
         existing_stops |> Enum.map(& &1.stop_sequence) |> Enum.max(fn -> 0 end)
 
-      new_route_stop = %Arrow.Shuttles.RouteStop{
+      new_route_stop = %RouteStop{
         direction_id: direction_id,
         stop_sequence: max_stop_sequence + 1
       }
@@ -554,8 +549,7 @@ defmodule ArrowWeb.ShuttleViewLive do
         |> List.insert_at(new, moved_route_stop)
         |> Enum.reduce({[], 1}, fn route_stop, {route_stop_changes, stop_sequence} ->
           {route_stop_changes ++
-             [Arrow.Shuttles.RouteStop.changeset(route_stop, %{stop_sequence: stop_sequence})],
-           stop_sequence + 1}
+             [RouteStop.changeset(route_stop, %{stop_sequence: stop_sequence})], stop_sequence + 1}
         end)
 
       Ecto.Changeset.put_assoc(
@@ -603,8 +597,8 @@ defmodule ArrowWeb.ShuttleViewLive do
       stop_ids
       |> Enum.with_index(1)
       |> Enum.map(fn {stop_id, i} ->
-        Arrow.Shuttles.RouteStop.changeset(
-          %Arrow.Shuttles.RouteStop{},
+        RouteStop.changeset(
+          %RouteStop{},
           %{
             direction_id: direction_id,
             stop_sequence: i,
@@ -642,10 +636,10 @@ defmodule ArrowWeb.ShuttleViewLive do
       end)
       |> case do
         {valid_route_stops, []} ->
-          {:ok, valid_route_stops |> Enum.flat_map(&elem(&1, 1))}
+          {:ok, Enum.flat_map(valid_route_stops, &elem(&1, 1))}
 
         {_, errors} ->
-          {:error, errors |> Enum.flat_map(&elem(&1, 1))}
+          {:error, Enum.flat_map(errors, &elem(&1, 1))}
       end
 
     case new_route_stops do
@@ -655,8 +649,7 @@ defmodule ArrowWeb.ShuttleViewLive do
             direction_id = Ecto.Changeset.get_field(route_changeset, :direction_id)
 
             direction_new_route_stops =
-              route_stops
-              |> Enum.filter(&(Ecto.Changeset.get_field(&1, :direction_id) == direction_id))
+              Enum.filter(route_stops, &(Ecto.Changeset.get_field(&1, :direction_id) == direction_id))
 
             Ecto.Changeset.put_assoc(
               route_changeset,
@@ -682,14 +675,7 @@ defmodule ArrowWeb.ShuttleViewLive do
         end
 
       {:error, errors} ->
-        socket
-        |> put_flash(
-          :errors,
-          {
-            "Failed to upload definition: ",
-            errors |> Enum.map(&translate_error/1)
-          }
-        )
+        put_flash(socket, :errors, {"Failed to upload definition: ", Enum.map(errors, &translate_error/1)})
     end
   end
 end

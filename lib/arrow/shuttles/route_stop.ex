@@ -1,11 +1,13 @@
 defmodule Arrow.Shuttles.RouteStop do
   @moduledoc "schema for a shuttle route stop for the db"
   use Ecto.Schema
+
   import Ecto.Changeset
 
   alias Arrow.Gtfs.Stop, as: GtfsStop
   alias Arrow.Shuttles
   alias Arrow.Shuttles.Stop
+  alias Ecto.Association.NotLoaded
 
   @type t :: %__MODULE__{
           direction_id: :"0" | :"1",
@@ -15,9 +17,9 @@ defmodule Arrow.Shuttles.RouteStop do
           display_stop: Arrow.Shuttles.Stop.t() | Arrow.Gtfs.Stop.t() | nil,
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil,
-          shuttle_route: Arrow.Gtfs.Level.t() | Ecto.Association.NotLoaded.t() | nil,
-          stop: Arrow.Shuttles.Stop.t() | Ecto.Association.NotLoaded.t() | nil,
-          gtfs_stop: Arrow.Gtfs.Stop.t() | Ecto.Association.NotLoaded.t() | nil,
+          shuttle_route: Arrow.Gtfs.Level.t() | NotLoaded.t() | nil,
+          stop: Arrow.Shuttles.Stop.t() | NotLoaded.t() | nil,
+          gtfs_stop: Arrow.Gtfs.Stop.t() | NotLoaded.t() | nil,
           gtfs_stop_id: String.t() | nil
         }
 
@@ -39,8 +41,7 @@ defmodule Arrow.Shuttles.RouteStop do
   @doc false
   def changeset(route_stop, attrs, coordinates \\ nil) do
     change =
-      route_stop
-      |> cast(attrs, [
+      cast(route_stop, attrs, [
         :direction_id,
         :stop_id,
         :gtfs_stop_id,
@@ -89,9 +90,8 @@ defmodule Arrow.Shuttles.RouteStop do
   @spec maybe_validate_stop_distance(Ecto.Changeset.t(), [[float()]] | nil) :: Ecto.Changeset.t()
   defp maybe_validate_stop_distance(changeset, nil), do: changeset
 
-  defp maybe_validate_stop_distance(changeset, _shape_coordinates)
-       when changeset.action in [:replace, :delete],
-       do: changeset
+  defp maybe_validate_stop_distance(changeset, _shape_coordinates) when changeset.action in [:replace, :delete],
+    do: changeset
 
   defp maybe_validate_stop_distance(changeset, shape_coordinates) do
     stop =

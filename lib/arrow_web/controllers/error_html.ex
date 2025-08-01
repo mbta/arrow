@@ -1,5 +1,6 @@
 defmodule ArrowWeb.ErrorView do
   use ArrowWeb, :html
+
   alias JaSerializer.ErrorSerializer
 
   # If you want to customize your error pages,

@@ -1,16 +1,19 @@
 defmodule Arrow.Shuttles.ShapesUpload do
   @moduledoc "schema for shapes upload"
   use Ecto.Schema
+
   import Ecto.Changeset
+
+  alias Arrow.Shuttles.ShapeUpload
 
   @type t :: %__MODULE__{
           filename: String.t(),
-          shapes: list(Arrow.Shuttles.ShapeUpload.t())
+          shapes: list(ShapeUpload.t())
         }
 
   embedded_schema do
     field :filename, :string
-    embeds_many :shapes, Arrow.Shuttles.ShapeUpload
+    embeds_many :shapes, ShapeUpload
   end
 
   @doc false
@@ -29,9 +32,7 @@ defmodule Arrow.Shuttles.ShapesUpload do
       {:ok, shapes}
     else
       {:error, reason} ->
-        {:error,
-         {"Failed to upload shapes from #{filename} because the provided xml was invalid",
-          [reason]}}
+        {:error, {"Failed to upload shapes from #{filename} because the provided xml was invalid", [reason]}}
     end
   end
 
@@ -66,7 +67,7 @@ defmodule Arrow.Shuttles.ShapesUpload do
   @doc """
   Parses one or many Shapes from a map of the KML/XML
   """
-  @spec shapes_from_kml(map) :: {:ok, list(Arrow.Shuttles.ShapeUpload.t())} | {:error, any}
+  @spec shapes_from_kml(map) :: {:ok, list(ShapeUpload.t())} | {:error, any}
   def shapes_from_kml(saxy_shapes) do
     placemarks = saxy_shapes["kml"]["Folder"]["Placemark"]
 
@@ -77,8 +78,7 @@ defmodule Arrow.Shuttles.ShapesUpload do
 
       %{"LineString" => %{"coordinates" => nil}, "name" => _name} ->
         error =
-          {"Failed to parse shape from kml, no coordinates were found. Check your whitespace.",
-           [inspect(placemarks)]}
+          {"Failed to parse shape from kml, no coordinates were found. Check your whitespace.", [inspect(placemarks)]}
 
         {:error, error}
 

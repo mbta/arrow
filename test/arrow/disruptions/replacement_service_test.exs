@@ -230,7 +230,8 @@ defmodule Arrow.Disruptions.ReplacementServiceTest do
   end
 
   defp first_stop_time_of_last_trip(replacement_service, schedule_service_type, direction_id) do
-    get_in(replacement_service.timetable, [
+    replacement_service.timetable
+    |> get_in([
       schedule_service_type,
       direction_id,
       Access.at(-1),

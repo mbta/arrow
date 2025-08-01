@@ -366,11 +366,7 @@ defmodule ArrowWeb.EditHastusExportForm do
     {:noreply, socket}
   end
 
-  def handle_event(
-        "delete_service_date",
-        %{"service_index" => service_index, "date_index" => date_index},
-        socket
-      ) do
+  def handle_event("delete_service_date", %{"service_index" => service_index, "date_index" => date_index}, socket) do
     {service_index, _} = Integer.parse(service_index)
     {date_index, _} = Integer.parse(date_index)
 
@@ -491,11 +487,7 @@ defmodule ArrowWeb.EditHastusExportForm do
     {:noreply, socket}
   end
 
-  defp handle_progress(
-         :hastus_export,
-         %UploadEntry{client_name: client_name} = entry,
-         socket
-       ) do
+  defp handle_progress(:hastus_export, %UploadEntry{client_name: client_name} = entry, socket) do
     socket = socket |> clear_flash() |> assign(error: nil)
 
     case consume_uploaded_entry(
@@ -558,8 +550,7 @@ defmodule ArrowWeb.EditHastusExportForm do
     not MapSet.subset?(active_day_of_weeks, relevant_day_of_weeks)
   end
 
-  defp get_service_date_warning(_service_id, start_date, end_date)
-       when start_date == "" or end_date == "" do
+  defp get_service_date_warning(_service_id, start_date, end_date) when start_date == "" or end_date == "" do
     ""
   end
 
@@ -588,14 +579,11 @@ defmodule ArrowWeb.EditHastusExportForm do
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
   defp error_to_string(_), do: "Upload failed. Please try again or contact an engineer"
 
-  defp get_invalid_trips_file_name(:trips_with_invalid_shapes),
-    do: "trips_with_invalid_shapes.txt"
+  defp get_invalid_trips_file_name(:trips_with_invalid_shapes), do: "trips_with_invalid_shapes.txt"
 
-  defp get_invalid_trips_file_name(:trips_with_invalid_blocks),
-    do: "trips_with_invalid_blocks.txt"
+  defp get_invalid_trips_file_name(:trips_with_invalid_blocks), do: "trips_with_invalid_blocks.txt"
 
-  defp get_invalid_trips_error_message({:trips_with_invalid_shapes, _}),
-    do: "Some trips have invalid or missing shapes."
+  defp get_invalid_trips_error_message({:trips_with_invalid_shapes, _}), do: "Some trips have invalid or missing shapes."
 
   defp get_invalid_trips_error_message({:trips_with_invalid_blocks, _}),
     do: "Some trips have invalid or missing block IDs."

@@ -1,8 +1,12 @@
 defmodule ArrowWeb.ShapeView do
   use ArrowWeb, :html
+
   alias Arrow.Gtfs.Stop, as: GtfsStop
   alias Arrow.Shuttles
-  alias Arrow.Shuttles.{Route, RouteStop, Shape, ShapesUpload}
+  alias Arrow.Shuttles.Route
+  alias Arrow.Shuttles.RouteStop
+  alias Arrow.Shuttles.Shape
+  alias Arrow.Shuttles.ShapesUpload
   alias Arrow.Shuttles.Stop, as: ArrowStop
   alias Phoenix.Controller
 
@@ -77,8 +81,7 @@ defmodule ArrowWeb.ShapeView do
     end
   end
 
-  defp render_route_stop(%RouteStop{gtfs_stop_id: gtfs_stop_id} = route_stop)
-       when not is_nil(gtfs_stop_id) do
+  defp render_route_stop(%RouteStop{gtfs_stop_id: gtfs_stop_id} = route_stop) when not is_nil(gtfs_stop_id) do
     gtfs_stop = Arrow.Repo.get(GtfsStop, gtfs_stop_id)
 
     if gtfs_stop do

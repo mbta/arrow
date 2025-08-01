@@ -21,8 +21,12 @@ defmodule ArrowWeb.CoreComponents do
     endpoint: ArrowWeb.Endpoint,
     statics: ArrowWeb.static_paths()
 
-  alias Phoenix.LiveView.JS
   use Gettext, backend: ArrowWeb.Gettext
+
+  alias Phoenix.HTML.Form
+  alias Phoenix.HTML.FormField
+  alias Phoenix.LiveView.JS
+  alias Phoenix.LiveView.Socket
 
   @doc """
   Renders a modal.
@@ -286,8 +290,7 @@ defmodule ArrowWeb.CoreComponents do
     values: ~w(checkbox color date datetime-local email file month number password
                range search select tel text textarea time url week hidden)
 
-  attr :field, Phoenix.HTML.FormField,
-    doc: "a form field struct retrieved from the form, for example: @form[:email]"
+  attr :field, FormField, doc: "a form field struct retrieved from the form, for example: @form[:email]"
 
   attr :errors, :list, default: []
   attr :checked, :boolean, doc: "the checked flag for checkbox inputs"
@@ -296,13 +299,12 @@ defmodule ArrowWeb.CoreComponents do
   attr :multiple, :boolean, default: false, doc: "the multiple flag for select inputs"
   attr :class, :string, default: nil
 
-  attr :rest, :global,
-    include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
+  attr :rest, :global, include: ~w(accept autocomplete capture cols disabled form list max maxlength min minlength
                 multiple pattern placeholder readonly required rows size step)
 
   slot :inner_block
 
-  def input(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+  def input(%{field: %FormField{} = field} = assigns) do
     errors = if Phoenix.Component.used_input?(field), do: field.errors, else: []
 
     assigns
@@ -316,7 +318,7 @@ defmodule ArrowWeb.CoreComponents do
   def input(%{type: "checkbox"} = assigns) do
     assigns =
       assign_new(assigns, :checked, fn ->
-        Phoenix.HTML.Form.normalize_value("checkbox", assigns[:value])
+        Form.normalize_value("checkbox", assigns[:value])
       end)
 
     ~H"""
@@ -408,18 +410,17 @@ defmodule ArrowWeb.CoreComponents do
 
   def custom_normalize_value("text", value) when is_map(value) do
     iodata = Jason.encode_to_iodata!(value)
-    Phoenix.HTML.Form.normalize_value("text", iodata)
+    Form.normalize_value("text", iodata)
   end
 
   def custom_normalize_value(type, value) do
-    Phoenix.HTML.Form.normalize_value(type, value)
+    Form.normalize_value(type, value)
   end
 
   @doc """
     LiveSelect with styling
   """
-  attr :field, Phoenix.HTML.FormField,
-    doc: "a form field struct retrieved from the form, for example: @form[:email]"
+  attr :field, FormField, doc: "a form field struct retrieved from the form, for example: @form[:email]"
 
   attr :class, :string, default: nil
   attr :label, :string, default: nil
@@ -431,7 +432,7 @@ defmodule ArrowWeb.CoreComponents do
   attr :target, :any, default: nil
   attr :update_min_len, :integer
 
-  def live_select(%{field: %Phoenix.HTML.FormField{} = field} = assigns) do
+  def live_select(%{field: %FormField{} = field} = assigns) do
     assigns =
       assigns
       |> assign(:errors, Enum.map(field.errors, &translate_error(&1)))
@@ -818,8 +819,7 @@ defmodule ArrowWeb.CoreComponents do
     JS.show(js,
       to: selector,
       transition:
-        {"transition-all transform ease-out duration-300",
-         "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95",
+        {"transition-all transform ease-out duration-300", "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95",
          "opacity-100 translate-y-0 sm:scale-100"}
     )
   end
@@ -829,8 +829,7 @@ defmodule ArrowWeb.CoreComponents do
       to: selector,
       time: 200,
       transition:
-        {"transition-all transform ease-in duration-200",
-         "opacity-100 translate-y-0 sm:scale-100",
+        {"transition-all transform ease-in duration-200", "opacity-100 translate-y-0 sm:scale-100",
          "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"}
     )
   end
@@ -902,16 +901,16 @@ defmodule ArrowWeb.CoreComponents do
   See the `phx:download-file` event in `app.tsx` for the client-side implementation.
   """
   @spec send_download(
-          Phoenix.LiveView.Socket.t(),
+          Socket.t(),
           filename :: String.t(),
           data :: String.t() | {:binary, binary()}
-        ) :: Phoenix.LiveView.Socket.t()
+        ) :: Socket.t()
   @spec send_download(
-          Phoenix.LiveView.Socket.t(),
+          Socket.t(),
           filename :: String.t(),
           data :: String.t() | {:binary, binary()},
           opts :: Keyword.t()
-        ) :: Phoenix.LiveView.Socket.t()
+        ) :: Socket.t()
   def send_download(socket, filename, data, opts \\ []) do
     content_type =
       case {Keyword.fetch(opts, :content_type), data} do

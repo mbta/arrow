@@ -25,7 +25,7 @@ defmodule ArrowWeb.API.StopsView do
     stop
     |> Map.from_struct()
     |> Enum.reject(fn {_, v} -> is_nil(v) end)
-    |> Enum.into(%{})
+    |> Map.new()
     |> Map.take(@fields)
   end
 

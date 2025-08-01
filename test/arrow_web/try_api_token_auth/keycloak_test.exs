@@ -1,12 +1,12 @@
 defmodule ArrowWeb.TryApiTokenAuth.KeycloakTest do
   use ArrowWeb.ConnCase
+
   import ExUnit.CaptureLog
+  import Mox
   import Test.Support.Helpers
 
   alias Arrow.HTTPMock
   alias ArrowWeb.TryApiTokenAuth.Keycloak
-
-  import Mox
 
   setup :verify_on_exit!
 

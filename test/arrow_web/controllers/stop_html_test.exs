@@ -1,6 +1,7 @@
 defmodule ArrowWeb.StopViewTest do
   @moduledoc false
   use ExUnit.Case
+
   alias ArrowWeb.StopView
 
   describe "format_timestamp" do

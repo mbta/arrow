@@ -1,9 +1,9 @@
 defmodule Arrow.Shuttles.RouteStopTest do
   use Arrow.DataCase
 
-  alias Arrow.Shuttles.RouteStop
-
   import Arrow.Factory
+
+  alias Arrow.Shuttles.RouteStop
 
   describe "changeset/2" do
     test "handles GTFS stop" do
@@ -45,8 +45,7 @@ defmodule Arrow.Shuttles.RouteStopTest do
       assert %Ecto.Changeset{
                valid?: false,
                errors: [
-                 display_stop_id:
-                   {"not a valid stop ID '%{display_stop_id}'", [display_stop_id: "invalid_id"]}
+                 display_stop_id: {"not a valid stop ID '%{display_stop_id}'", [display_stop_id: "invalid_id"]}
                ]
              } = changeset
     end
