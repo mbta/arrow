@@ -79,16 +79,11 @@ config :esbuild,
       --external:/fonts/*
       --external:/images/*
       --external:/css/*
+      --alias:@=.
       #{if(Mix.env() == :test, do: "--define:__REACT_DEVTOOLS_GLOBAL_HOOK__={'isDisabled':true}")}
     ),
     cd: Path.expand("../assets", __DIR__),
-    env: %{
-      "NODE_PATH" =>
-        Enum.join(
-          [Path.expand("../deps", __DIR__)],
-          ":"
-        )
-    }
+    env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
   ]
 
 # Configure tailwind (the version is required)
