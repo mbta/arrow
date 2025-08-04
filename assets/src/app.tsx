@@ -16,7 +16,7 @@ import ShapeStopViewMap from "./components/ShapeStopViewMap"
 
 declare global {
   interface Window {
-    liveSocket: LiveSocket
+    liveSocket: typeof LiveSocket
     Components: {
       [name: string]: (props: any) => JSX.Element
     }
