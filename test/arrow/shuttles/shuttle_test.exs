@@ -319,15 +319,18 @@ defmodule Arrow.Shuttles.ShuttleTest do
         |> Shuttle.changeset(%{status: :active})
         |> Arrow.Repo.update()
 
-      insert(:replacement_service, shuttle: shuttle)
+      disruption = insert(:disruption_v2)
+      insert(:replacement_service, shuttle: shuttle, disruption: disruption)
 
       changeset = Shuttle.changeset(shuttle, %{status: :draft})
+
+      expected_error_msg =
+        ~s|can't deactivate: shuttle is in use by approved disruption(s) that have current or upcoming replacement services: "#{disruption.title}"|
 
       assert %Ecto.Changeset{
                valid?: false,
                errors: [
-                 status:
-                   {"cannot set to a non-active status while in use as a replacement service", []}
+                 status: {^expected_error_msg, []}
                ]
              } = changeset
     end
