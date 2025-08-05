@@ -27,7 +27,7 @@ defmodule ArrowWeb.ShuttleInput do
           |> filter_only_approved(assigns.only_approved?)
           |> Enum.map(&option_for_shuttle/1)
         else
-          [option_for_shuttle(assigns.shuttle)]
+          [option_for_shuttle(assigns.shuttle, assigns.only_approved?)]
         end
       )
 
@@ -85,9 +85,19 @@ defmodule ArrowWeb.ShuttleInput do
     end
   end
 
-  @spec option_for_shuttle(Shuttle.t()) :: {String.t(), integer()}
-  defp option_for_shuttle(%Shuttle{id: id, shuttle_name: shuttle_name}) do
-    {shuttle_name, id}
+  @spec option_for_shuttle(Shuttle.t()) :: map
+  defp option_for_shuttle(%Shuttle{} = shuttle) do
+    %{label: shuttle.shuttle_name, value: shuttle.id}
+  end
+
+  defp option_for_shuttle(%Shuttle{} = shuttle, only_approved?) do
+    if only_approved? and shuttle.status != :active do
+      # The selected shuttle was changed to a non-active status while it was associated with no active disruptions.
+      # We still want to show it, but shouldn't allow selecting it.
+      %{label: shuttle.shuttle_name, value: shuttle.id, disabled: true}
+    else
+      %{label: shuttle.shuttle_name, value: shuttle.id}
+    end
   end
 
   @spec filter_only_approved([Shuttle.t()], boolean()) :: [Shuttle.t()]

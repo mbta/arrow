@@ -3,6 +3,7 @@ defmodule Arrow.Shuttles do
   The Shuttles context.
   """
 
+  alias Ecto.Multi
   import Ecto.Query, warn: false
 
   alias Arrow.OpenRouteServiceAPI
@@ -11,6 +12,7 @@ defmodule Arrow.Shuttles do
   alias Arrow.Repo
   alias ArrowWeb.ErrorHelpers
 
+  alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Gtfs.Route, as: GtfsRoute
   alias Arrow.Gtfs.Stop, as: GtfsStop
   alias Arrow.Shuttles.KML
@@ -19,6 +21,8 @@ defmodule Arrow.Shuttles do
   alias Arrow.Shuttles.ShapesUpload
   alias Arrow.Shuttles.ShapeUpload
   alias Arrow.Shuttles.Stop
+
+  require Logger
 
   @preloads [routes: [:shape, route_stops: [:stop, :gtfs_stop]]]
 
@@ -360,25 +364,84 @@ defmodule Arrow.Shuttles do
   @doc """
   Updates a shuttle.
 
+  ## Special behavior for non-active status
+
+  If the shuttle is set to a non-active status, the outcome depends on
+  properties of the disruptions using the shuttle.
+
+  For each disruption that uses this deactivated shuttle in a replacement
+  service:
+
+  | Disruption status | Disruption's Replacement Services contain... | Outcome                                           |
+  | ----------------- | -------------------------------------------- | ------------------------------------------------- |
+  | inactive          | any                                          | Shuttle update continues.                         |
+  | active            | only with past timeframes                    | Shuttle update continues; disruption deactivates. |
+  | active            | 1 or more with current/future timeframe(s)   | Shuttle update aborts.                            |
+
+  The shuttle update and any necessary disruption deactivations are performed in
+  a transaction.
+
+  On success, returns a tuple containing the updated shuttle and the disruptions
+  that were deactivated, if any.
+
   ## Examples
 
       iex> update_shuttle(shuttle, %{field: new_value})
-      {:ok, %Shuttle{}}
+      {:ok, %Shuttle{}, [%DisruptionV2{}, ...]}
 
       iex> update_shuttle(shuttle, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_shuttle(%Shuttle{} = shuttle, attrs) do
-    updated_shuttle =
-      shuttle
-      |> Shuttle.changeset(attrs)
-      |> Repo.update()
+  def update_shuttle(%Shuttle{} = shuttle, attrs, today \\ nil) do
+    today =
+      today ||
+        DateTime.utc_now() |> DateTime.shift_zone!("America/New_York") |> DateTime.to_date()
 
-    case updated_shuttle do
-      {:ok, shuttle} -> {:ok, shuttle |> Repo.preload(@preloads) |> populate_display_stop_ids()}
-      err -> err
+    Multi.new()
+    |> Multi.update(:shuttle, Shuttle.changeset(shuttle, attrs, today))
+    |> Multi.run(:deactivate_past_disruptions, fn
+      _repo, %{shuttle: %Shuttle{status: :active}} -> {:ok, []}
+      _repo, %{shuttle: shuttle} -> deactivate_past_disruptions(shuttle)
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{shuttle: shuttle, deactivate_past_disruptions: disruptions}} ->
+        shuttle = shuttle |> Repo.preload(@preloads) |> populate_display_stop_ids()
+        {:ok, shuttle, disruptions}
+
+      {:error, :shuttle, changeset, _} ->
+        {:error, changeset}
     end
+  end
+
+  @spec deactivate_past_disruptions(Shuttle.t()) :: {:ok, [DisruptionV2.t()]}
+  defp deactivate_past_disruptions(%Shuttle{id: shuttle_id, status: status})
+       when status != :active do
+    # Since this code will be reached only if the shuttle changeset passed validations,
+    # we know that any active disruptions associated with this shuttle do not have
+    # any current or upcoming replacement service timeframes, and can be safely deactivated.
+    {_, deactivated_disruptions} =
+      from(
+        d in DisruptionV2,
+        as: :disruption,
+        join: s in assoc(d, :shuttles),
+        where: s.id == ^shuttle_id,
+        where: d.is_active,
+        select: d
+      )
+      |> Repo.update_all(set: [is_active: false, updated_at: DateTime.utc_now()])
+
+    if deactivated_disruptions != [] do
+      disruption_ids = Enum.map_join(deactivated_disruptions, ",", & &1.id)
+
+      Logger.info(
+        "deactivated_past_disruptions_while_deactivating_shuttle " <>
+          "shuttle_id=#{shuttle_id} disruption_ids=#{disruption_ids}"
+      )
+    end
+
+    {:ok, deactivated_disruptions}
   end
 
   @doc """
