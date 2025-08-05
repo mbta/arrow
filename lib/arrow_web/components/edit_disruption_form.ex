@@ -42,32 +42,51 @@ defmodule ArrowWeb.EditDisruptionForm do
           </fieldset>
           <%= if @disruption.id do %>
             <fieldset class="w-50 ml-20">
+              <% approved? = normalize_value("checkbox", input_value(@form, :is_active)) %>
               <legend>Approval Status</legend>
               <div class="form-check">
                 <input
                   name={@form[:is_active].name}
                   id="status-approved"
-                  class="form-check-input"
+                  class={[
+                    "form-check-input",
+                    approved? && @form[:is_active].errors != [] && "is-invalid"
+                  ]}
                   type="radio"
-                  checked={normalize_value("checkbox", input_value(@form, :is_active))}
+                  checked={approved?}
                   value="true"
                 />
                 <label for="status-approved" class="form-check-label">
                   Approved
                 </label>
+                <.error
+                  :for={error <- @form[:is_active].errors}
+                  :if={approved? && Phoenix.Component.used_input?(@form[:is_active])}
+                >
+                  {translate_error(error)}
+                </.error>
               </div>
               <div class="form-check">
                 <input
                   name={@form[:is_active].name}
                   id="status-pending"
-                  class="form-check-input"
+                  class={[
+                    "form-check-input",
+                    !approved? && @form[:is_active].errors != [] && "is-invalid"
+                  ]}
                   type="radio"
-                  checked={!normalize_value("checkbox", input_value(@form, :is_active))}
+                  checked={!approved?}
                   value="false"
                 />
                 <label for="status-pending" class="form-check-label">
                   Pending
                 </label>
+                <.error
+                  :for={error <- @form[:is_active].errors}
+                  :if={!approved? && Phoenix.Component.used_input?(@form[:is_active])}
+                >
+                  {translate_error(error)}
+                </.error>
               </div>
             </fieldset>
           <% end %>
