@@ -271,68 +271,175 @@ defmodule Arrow.Shuttles.ShuttleTest do
       assert %Ecto.Changeset{valid?: true} = changeset
     end
 
-    test "cannot mark a shuttle as inactive when in use by a replacement service" do
-      shuttle = shuttle_fixture()
-      [route0, route1] = shuttle.routes
+    test "cannot mark a shuttle as inactive when in use by an active disruption with a replacement service that's current or upcoming" do
+      today = ~D[2025-06-01]
 
-      [stop1, stop2, stop3, stop4] = insert_list(4, :gtfs_stop)
+      shuttle = shuttle_fixture(%{status: :active}, true, true)
+      other_shuttle = shuttle_fixture(%{status: :active}, true, true)
 
-      route0
-      |> Arrow.Shuttles.Route.changeset(%{
-        "route_stops" => [
-          %{
-            "direction_id" => "0",
-            "stop_sequence" => "1",
-            "display_stop_id" => stop1.id,
-            "time_to_next_stop" => 30.0
-          },
-          %{
-            "direction_id" => "0",
-            "stop_sequence" => "2",
-            "display_stop_id" => stop2.id
-          }
-        ]
-      })
-      |> Arrow.Repo.update()
+      # Disruption uses *this shuttle* in a replacement service with a current or upcoming timeframe
+      bad_disruption1 =
+        insert(:disruption_v2, is_active: true)
+        |> tap(fn d ->
+          insert(:replacement_service,
+            shuttle: shuttle,
+            disruption: d,
+            end_date: today
+          )
 
-      route1
-      |> Arrow.Shuttles.Route.changeset(%{
-        "route_stops" => [
-          %{
-            "direction_id" => "1",
-            "stop_sequence" => "1",
-            "display_stop_id" => stop3.id,
-            "time_to_next_stop" => 30.0
-          },
-          %{
-            "direction_id" => "0",
-            "stop_sequence" => "2",
-            "display_stop_id" => stop4.id
-          }
-        ]
-      })
-      |> Arrow.Repo.update()
+          insert(:replacement_service,
+            shuttle: other_shuttle,
+            disruption: d,
+            end_date: Date.add(today, -1)
+          )
+        end)
 
-      {:ok, shuttle} =
-        shuttle.id
-        |> Arrow.Shuttles.get_shuttle!()
-        |> Shuttle.changeset(%{status: :active})
-        |> Arrow.Repo.update()
+      # Disruption uses *a different shuttle* in a replacement service with a current timeframe
+      bad_disruption2 =
+        insert(:disruption_v2, is_active: true)
+        |> tap(fn d ->
+          insert(:replacement_service,
+            shuttle: shuttle,
+            disruption: d,
+            end_date: Date.add(today, -1)
+          )
 
-      disruption = insert(:disruption_v2)
-      insert(:replacement_service, shuttle: shuttle, disruption: disruption)
+          insert(:replacement_service,
+            shuttle: other_shuttle,
+            disruption: d,
+            end_date: today
+          )
+        end)
 
-      changeset = Shuttle.changeset(shuttle, %{status: :draft})
+      # Disruption uses *a different shuttle* in a replacement service with an upcoming timeframe
+      bad_disruption3 =
+        insert(:disruption_v2, is_active: true)
+        |> tap(fn d ->
+          insert(:replacement_service,
+            shuttle: shuttle,
+            disruption: d,
+            end_date: Date.add(today, -1)
+          )
 
-      expected_error_msg =
-        ~s|can't deactivate: shuttle is in use by approved disruption(s) that have current or upcoming replacement services: "#{disruption.title}"|
+          insert(:replacement_service,
+            shuttle: other_shuttle,
+            disruption: d,
+            start_date: Date.add(today, 1),
+            end_date: Date.add(today, 5)
+          )
+        end)
 
-      assert %Ecto.Changeset{
-               valid?: false,
-               errors: [
-                 status: {^expected_error_msg, []}
-               ]
-             } = changeset
+      # Disruption uses this shuttle and another one in replacement services with past timeframes
+      ok_disruption1 =
+        insert(:disruption_v2, is_active: true)
+        |> tap(fn d ->
+          insert(:replacement_service,
+            shuttle: shuttle,
+            disruption: d,
+            end_date: Date.add(today, -1)
+          )
+
+          insert(:replacement_service,
+            shuttle: other_shuttle,
+            disruption: d,
+            end_date: Date.add(today, -10)
+          )
+        end)
+
+      # Disruption uses this shuttle and another one in replacement services with future timeframes, but is inactive
+      ok_disruption2 =
+        insert(:disruption_v2, is_active: false)
+        |> tap(fn d ->
+          insert(:replacement_service,
+            shuttle: shuttle,
+            disruption: d,
+            end_date: today
+          )
+
+          insert(:replacement_service,
+            shuttle: other_shuttle,
+            disruption: d,
+            end_date: Date.add(today, 5)
+          )
+        end)
+
+      # Disruption does not use this shuttle, so it is not affected by this operation
+      ok_disruption3 =
+        insert(:disruption_v2, is_active: true)
+        |> tap(fn d ->
+          insert(:replacement_service,
+            shuttle: other_shuttle,
+            disruption: d,
+            end_date: today
+          )
+        end)
+
+      changeset = Shuttle.changeset(shuttle, %{status: :draft}, today)
+
+      assert %Ecto.Changeset{valid?: false, errors: [status: {error_msg, []}]} = changeset
+
+      assert error_msg =~
+               "can't deactivate: shuttle is in use by approved disruption(s) that have current or upcoming replacement services:"
+
+      assert error_msg =~ bad_disruption1.title
+      assert error_msg =~ bad_disruption2.title
+      assert error_msg =~ bad_disruption3.title
+
+      refute error_msg =~ ok_disruption1.title
+      refute error_msg =~ ok_disruption2.title
+      refute error_msg =~ ok_disruption3.title
+    end
+
+    test "can mark a shuttle as inactive when in use only by active disruptions with past replacement services and inactive disruptions" do
+      today = ~D[2025-06-01]
+
+      shuttle = shuttle_fixture(%{status: :active}, true, true)
+      other_shuttle = shuttle_fixture(%{status: :active}, true, true)
+
+      # Disruption uses this shuttle and another one in replacement services with past timeframes
+      insert(:disruption_v2, is_active: true)
+      |> tap(fn d ->
+        insert(:replacement_service,
+          shuttle: shuttle,
+          disruption: d,
+          end_date: Date.add(today, -1)
+        )
+
+        insert(:replacement_service,
+          shuttle: other_shuttle,
+          disruption: d,
+          end_date: Date.add(today, -10)
+        )
+      end)
+
+      # Disruption uses this shuttle and another one in replacement services with future timeframes, but is inactive
+      insert(:disruption_v2, is_active: false)
+      |> tap(fn d ->
+        insert(:replacement_service,
+          shuttle: shuttle,
+          disruption: d,
+          end_date: today
+        )
+
+        insert(:replacement_service,
+          shuttle: other_shuttle,
+          disruption: d,
+          end_date: Date.add(today, 5)
+        )
+      end)
+
+      # Disruption does not use this shuttle, so it is not affected by this operation
+      insert(:disruption_v2, is_active: true)
+      |> tap(fn d ->
+        insert(:replacement_service,
+          shuttle: other_shuttle,
+          disruption: d,
+          end_date: today
+        )
+      end)
+
+      changeset = Shuttle.changeset(shuttle, %{status: :inactive}, today)
+      assert %{valid?: true, changes: %{status: :inactive}} = changeset
     end
 
     test "can mark a shuttle as inactive when not in use by a replacement service" do
