@@ -399,7 +399,7 @@ defmodule Arrow.Shuttles do
         DateTime.utc_now() |> DateTime.shift_zone!("America/New_York") |> DateTime.to_date()
 
     Multi.new()
-    |> Multi.update(:shuttle, Shuttle.changeset(shuttle, attrs, today))
+    |> Multi.update(:shuttle, fn _ -> Shuttle.changeset(shuttle, attrs, today) end)
     |> Multi.run(:deactivate_past_disruptions, fn
       _repo, %{shuttle: %Shuttle{status: :active}} -> {:ok, []}
       _repo, %{shuttle: shuttle} -> deactivate_past_disruptions(shuttle)
@@ -418,9 +418,10 @@ defmodule Arrow.Shuttles do
   @spec deactivate_past_disruptions(Shuttle.t()) :: {:ok, [DisruptionV2.t()]}
   defp deactivate_past_disruptions(%Shuttle{id: shuttle_id, status: status})
        when status != :active do
-    # Since this code will be reached only if the shuttle changeset passed validations,
-    # we know that any active disruptions associated with this shuttle do not have
-    # any current or upcoming replacement service timeframes, and can be safely deactivated.
+    # Since this code runs inside a transaction and is reached only if the
+    # shuttle changeset passed validations, we know that any active disruptions
+    # associated with this shuttle do not have any current or upcoming
+    # replacement service timeframes, and can be safely deactivated.
     {_, deactivated_disruptions} =
       from(
         d in DisruptionV2,
