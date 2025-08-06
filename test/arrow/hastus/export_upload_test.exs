@@ -13,7 +13,11 @@ defmodule Arrow.Hastus.ExportUploadTest do
     @tag build_gtfs_line: "line-Blue"
     @tag export: "valid_export.zip"
     test "extracts data from export", %{export: export} do
-      data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
+      data =
+        ExportUpload.extract_data_from_upload(
+          %{path: "#{@export_dir}/#{export}"},
+          "uid-#{System.unique_integer([:positive])}"
+        )
 
       expected_services = [
         %{
@@ -56,7 +60,11 @@ defmodule Arrow.Hastus.ExportUploadTest do
     @tag :skip_build_gtfs
     @tag export: "trips_no_shapes.zip"
     test "gives validation errors for invalid exports", %{export: export} do
-      data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
+      data =
+        ExportUpload.extract_data_from_upload(
+          %{path: "#{@export_dir}/#{export}"},
+          "uid-#{System.unique_integer([:positive])}"
+        )
 
       assert {:ok,
               {:error, {:trips_with_invalid_shapes, ["67307092-LRV42024-hlb44uf1-Weekday-01"]}}} =
@@ -66,7 +74,11 @@ defmodule Arrow.Hastus.ExportUploadTest do
     @tag export: "gl_known_variant.zip"
     @tag build_gtfs_line: "line-Green"
     test "handles a GL export with a known variant", %{export: export} do
-      data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
+      data =
+        ExportUpload.extract_data_from_upload(
+          %{path: "#{@export_dir}/#{export}"},
+          "uid-#{System.unique_integer([:positive])}"
+        )
 
       assert {:ok,
               {:ok,
@@ -94,7 +106,11 @@ defmodule Arrow.Hastus.ExportUploadTest do
     @tag export: "gl_unambiguous_branch.zip"
     @tag build_gtfs_line: "line-Green"
     test "handles a GL export with unknown variant but unambiguous branch", %{export: export} do
-      data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
+      data =
+        ExportUpload.extract_data_from_upload(
+          %{path: "#{@export_dir}/#{export}"},
+          "uid-#{System.unique_integer([:positive])}"
+        )
 
       assert {:ok,
               {:ok,
@@ -116,7 +132,11 @@ defmodule Arrow.Hastus.ExportUploadTest do
     @tag export: "gl_trips_ambiguous_branch.zip"
     @tag build_gtfs_line: "line-Green"
     test "gives validation errors for GL export with ambiguous branches", %{export: export} do
-      data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
+      data =
+        ExportUpload.extract_data_from_upload(
+          %{path: "#{@export_dir}/#{export}"},
+          "uid-#{System.unique_integer([:positive])}"
+        )
 
       assert {:ok,
               {:error,
@@ -150,7 +170,11 @@ defmodule Arrow.Hastus.ExportUploadTest do
         stop: insert(:gtfs_stop, id: "70504")
       )
 
-      data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
+      data =
+        ExportUpload.extract_data_from_upload(
+          %{path: "#{@export_dir}/#{export}"},
+          "uid-#{System.unique_integer([:positive])}"
+        )
 
       assert {:ok, {:error, errors}} = data
 
@@ -183,7 +207,10 @@ defmodule Arrow.Hastus.ExportUploadTest do
                  trip_route_directions: [],
                  dup_service_ids_amended?: false
                }}} =
-               ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
+               ExportUpload.extract_data_from_upload(
+                 %{path: "#{@export_dir}/#{export}"},
+                 "uid-#{System.unique_integer([:positive])}"
+               )
     end
 
     @tag export: "valid_export.zip"
@@ -193,7 +220,11 @@ defmodule Arrow.Hastus.ExportUploadTest do
       %{name: service_id1} = insert(:hastus_service, name: "RTL12025-hmb15016-Saturday-01")
       %{name: service_id2} = insert(:hastus_service, name: "RTL12025-hmb15017-Sunday-01")
 
-      data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
+      data =
+        ExportUpload.extract_data_from_upload(
+          %{path: "#{@export_dir}/#{export}"},
+          "uid-#{System.unique_integer([:positive])}"
+        )
 
       assert {:ok,
               {:ok,
@@ -229,7 +260,11 @@ defmodule Arrow.Hastus.ExportUploadTest do
     test "extracts multiple derived limits when exported service implies multiple limits", %{
       export: export
     } do
-      data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
+      data =
+        ExportUpload.extract_data_from_upload(
+          %{path: "#{@export_dir}/#{export}"},
+          "uid-#{System.unique_integer([:positive])}"
+        )
 
       expected_services = [
         %{
@@ -267,7 +302,11 @@ defmodule Arrow.Hastus.ExportUploadTest do
     @tag export: "2025-Spring-vehicle-OLNorthStationOakGrove-v3.zip"
     @tag build_gtfs_line: "line-Orange"
     test "OL export", %{export: export} do
-      data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
+      data =
+        ExportUpload.extract_data_from_upload(
+          %{path: "#{@export_dir}/#{export}"},
+          "uid-#{System.unique_integer([:positive])}"
+        )
 
       expected_services = [
         %{
@@ -311,7 +350,20 @@ defmodule Arrow.Hastus.ExportUploadTest do
     @tag export: "2025-AprilGLX-vehicle-v1.zip"
     @tag build_gtfs_line: "line-Green"
     test "a complex GL export", %{export: export} do
-      data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
+      {:ok, {:ok, %ExportUpload{} = result}} =
+        ExportUpload.extract_data_from_upload(
+          %{path: "#{@export_dir}/#{export}"},
+          "uid-#{System.unique_integer([:positive])}"
+        )
+
+      actual_services =
+        Enum.map(result.services, fn service ->
+          Map.update!(
+            service,
+            :derived_limits,
+            &Enum.sort_by(&1, fn limit -> {limit.start_stop_id, limit.end_stop_id} end)
+          )
+        end)
 
       expected_services = [
         %{
@@ -332,57 +384,68 @@ defmodule Arrow.Hastus.ExportUploadTest do
         }
       ]
 
-      assert {:ok,
-              {:ok,
-               %ExportUpload{
-                 services: ^expected_services,
-                 line_id: "line-Green",
-                 trip_route_directions: [
-                   %{
-                     route_id: "Green-B",
-                     hastus_route_id: "800-1440",
-                     via_variant: "B",
-                     avi_code: "813"
-                   },
-                   %{
-                     route_id: "Green-C",
-                     hastus_route_id: "800-1440",
-                     via_variant: "C",
-                     avi_code: "833"
-                   },
-                   %{
-                     route_id: "Green-D",
-                     hastus_route_id: "800-1440",
-                     via_variant: "D",
-                     avi_code: "842"
-                   },
-                   %{
-                     route_id: "Green-D",
-                     hastus_route_id: "800-1440",
-                     via_variant: "D",
-                     avi_code: "852"
-                   },
-                   %{
-                     route_id: "Green-E",
-                     hastus_route_id: "800-1440",
-                     via_variant: "E",
-                     avi_code: "872"
-                   },
-                   %{
-                     route_id: "Green-E",
-                     hastus_route_id: "800-1440",
-                     via_variant: "E",
-                     avi_code: "882"
-                   }
-                 ],
-                 dup_service_ids_amended?: false
-               }}} = data
+      expected_trip_route_directions = [
+        %{
+          route_id: "Green-B",
+          hastus_route_id: "800-1440",
+          via_variant: "B",
+          avi_code: "813"
+        },
+        %{
+          route_id: "Green-C",
+          hastus_route_id: "800-1440",
+          via_variant: "C",
+          avi_code: "833"
+        },
+        %{
+          route_id: "Green-D",
+          hastus_route_id: "800-1440",
+          via_variant: "D",
+          avi_code: "842"
+        },
+        %{
+          route_id: "Green-D",
+          hastus_route_id: "800-1440",
+          via_variant: "D",
+          avi_code: "852"
+        },
+        %{
+          route_id: "Green-E",
+          hastus_route_id: "800-1440",
+          via_variant: "E",
+          avi_code: "872"
+        },
+        %{
+          route_id: "Green-E",
+          hastus_route_id: "800-1440",
+          via_variant: "E",
+          avi_code: "882"
+        }
+      ]
+
+      assert actual_services == expected_services
+      assert result.line_id == "line-Green"
+      assert result.trip_route_directions == expected_trip_route_directions
+      assert result.dup_service_ids_amended? == false
     end
 
     @tag export: "2025-spring-GLBabcockNorthStation-v2.zip"
     @tag build_gtfs_line: "line-Green"
     test "an especially complex GL export", %{export: export} do
-      data = ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"}, "uid")
+      {:ok, {:ok, %ExportUpload{} = result}} =
+        ExportUpload.extract_data_from_upload(
+          %{path: "#{@export_dir}/#{export}"},
+          "uid-#{System.unique_integer([:positive])}"
+        )
+
+      actual_services =
+        Enum.map(result.services, fn service ->
+          Map.update!(
+            service,
+            :derived_limits,
+            &Enum.sort_by(&1, fn limit -> {limit.start_stop_id, limit.end_stop_id} end)
+          )
+        end)
 
       expected_services = [
         %{
@@ -392,22 +455,26 @@ defmodule Arrow.Hastus.ExportUploadTest do
           # we expect, but there's a lot of overlap.
           # We'll try to make some followup tweaks to improve this, but it's
           # acceptable for now.
-          derived_limits: [
-            # North Station to Gov Ctr - from ?
-            %{start_stop_id: "70206", end_stop_id: "70202"},
-            # Gov Ctr to Boylston - from ?
-            %{start_stop_id: "70202", end_stop_id: "70159"},
-            # Copley to Heath St - from Green-E
-            %{start_stop_id: "70155", end_stop_id: "70260"},
-            # Gov Ctr to Babcock - from Green-B
-            %{start_stop_id: "70202", end_stop_id: "170137"},
-            # Gov Ctr to Kenmore - from Green-C
-            %{start_stop_id: "70202", end_stop_id: "70151"},
-            # North Station to Kenmore - from Green-D
-            %{start_stop_id: "70206", end_stop_id: "70151"},
-            # North Station to Heath St - from Green-E
-            %{start_stop_id: "70206", end_stop_id: "70260"}
-          ]
+          derived_limits:
+            Enum.sort_by(
+              [
+                # North Station to Gov Ctr - from ?
+                %{start_stop_id: "70206", end_stop_id: "70202"},
+                # Gov Ctr to Boylston - from ?
+                %{start_stop_id: "70202", end_stop_id: "70159"},
+                # Copley to Heath St - from Green-E
+                %{start_stop_id: "70155", end_stop_id: "70260"},
+                # Gov Ctr to Babcock - from Green-B
+                %{start_stop_id: "70202", end_stop_id: "170137"},
+                # Gov Ctr to Kenmore - from Green-C
+                %{start_stop_id: "70202", end_stop_id: "70151"},
+                # North Station to Kenmore - from Green-D
+                %{start_stop_id: "70206", end_stop_id: "70151"},
+                # North Station to Heath St - from Green-E
+                %{start_stop_id: "70206", end_stop_id: "70260"}
+              ],
+              &{&1.start_stop_id, &1.end_stop_id}
+            )
         },
         %{
           name: "LRV22025-hlb25gn6-Saturday-01",
@@ -474,14 +541,10 @@ defmodule Arrow.Hastus.ExportUploadTest do
         %{route_id: "Green-D", hastus_route_id: "800-1464", via_variant: "U", avi_code: "85"}
       ]
 
-      assert {:ok,
-              {:ok,
-               %ExportUpload{
-                 services: ^expected_services,
-                 line_id: "line-Green",
-                 trip_route_directions: ^expected_trip_route_directions,
-                 dup_service_ids_amended?: false
-               }}} = data
+      assert actual_services == expected_services
+      assert result.line_id == "line-Green"
+      assert result.trip_route_directions == expected_trip_route_directions
+      assert result.dup_service_ids_amended? == false
     end
   end
 
