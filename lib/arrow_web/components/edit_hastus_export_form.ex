@@ -440,7 +440,8 @@ defmodule ArrowWeb.EditHastusExportForm do
       with {:ok, s3_path} <-
              ExportUpload.upload_to_s3(
                socket.assigns.uploaded_file_data,
-               socket.assigns.uploaded_file_name
+               socket.assigns.uploaded_file_name,
+               socket.assigns.disruption.id
              ),
            {:ok, _} <-
              Hastus.create_export(%{
