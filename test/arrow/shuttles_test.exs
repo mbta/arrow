@@ -320,7 +320,7 @@ defmodule Arrow.ShuttlesTest do
                Shuttles.update_shuttle(shuttle, update_attrs, today)
 
       expected_error_msg =
-        "can't deactivate: shuttle is in use by approved disruption(s) that have current or upcoming replacement services: \"#{disruption.title}\""
+        "can't deactivate: shuttle is in use by approved disruption(s) that are in effect now or in the future: \"#{disruption.title}\""
 
       assert %{errors: [status: {^expected_error_msg, []}]} = changeset
 
@@ -355,7 +355,7 @@ defmodule Arrow.ShuttlesTest do
                Shuttles.update_shuttle(shuttle, update_attrs, today)
 
       expected_error_msg =
-        "can't deactivate: shuttle is in use by approved disruption(s) that have current or upcoming replacement services: \"#{disruption.title}\""
+        "can't deactivate: shuttle is in use by approved disruption(s) that are in effect now or in the future: \"#{disruption.title}\""
 
       assert %{errors: [status: {^expected_error_msg, []}]} = changeset
 

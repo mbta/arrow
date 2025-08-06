@@ -4,6 +4,7 @@ defmodule Arrow.Shuttles.Shuttle do
   import Ecto.Changeset
   import Ecto.Query
 
+  alias Arrow.Disruptions
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Disruptions.ReplacementService
   alias Arrow.Repo
@@ -92,41 +93,41 @@ defmodule Arrow.Shuttles.Shuttle do
   defp validate_for_inactive_status(changeset, today) do
     shuttle_id = get_field(changeset, :id)
 
-    active_parent_disruptions_with_active_replacement_services =
+    active_parent_disruptions_with_present_future_end_date =
       if is_nil(shuttle_id) do
         []
       else
+        # If any of an associated active disruption's
+        # - replacement services (even those not using this shuttle),
+        # - limits, or
+        # - hastus services
+        # have current or upcoming timeframes, then we can't safely deactivate the disruption.
         from(
           d in DisruptionV2,
-          as: :disruption,
           join: s in assoc(d, :shuttles),
           where: s.id == ^shuttle_id,
           where: d.is_active,
-          # If any of an associated active disruption's replacement services (even those not using this shuttle)
-          # have current or upcoming timeframes, then we can't safely deactivate the disruption.
-          where:
-            exists(
-              from r in ReplacementService,
-                where: r.disruption_id == parent_as(:disruption).id,
-                where: r.end_date >= ^today
-            ),
-          select: d
+          preload: [:limits, :replacement_services, hastus_exports: [services: [:service_dates]]]
         )
         |> Repo.all()
+        |> Enum.filter(fn d ->
+          {_, end_date} = Disruptions.start_end_dates(d)
+          end_date && Date.compare(end_date, today) in [:gt, :eq]
+        end)
       end
 
-    if active_parent_disruptions_with_active_replacement_services == [] do
+    if active_parent_disruptions_with_present_future_end_date == [] do
       changeset
     else
       disruptions =
-        active_parent_disruptions_with_active_replacement_services
+        active_parent_disruptions_with_present_future_end_date
         |> Enum.map_join(", ", &inspect(&1.title))
 
       add_error(
         changeset,
         :status,
-        "can't deactivate: shuttle is in use by approved disruption(s) that have " <>
-          "current or upcoming replacement services: #{disruptions}"
+        "can't deactivate: shuttle is in use by approved disruption(s) that are in effect now " <>
+          "or in the future: #{disruptions}"
       )
     end
   end

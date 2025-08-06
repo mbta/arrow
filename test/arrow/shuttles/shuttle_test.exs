@@ -379,7 +379,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       assert %Ecto.Changeset{valid?: false, errors: [status: {error_msg, []}]} = changeset
 
       assert error_msg =~
-               "can't deactivate: shuttle is in use by approved disruption(s) that have current or upcoming replacement services:"
+               "can't deactivate: shuttle is in use by approved disruption(s) that are in effect now or in the future:"
 
       assert error_msg =~ bad_disruption1.title
       assert error_msg =~ bad_disruption2.title
