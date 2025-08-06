@@ -4,6 +4,7 @@ defmodule Arrow.Disruption.Note do
   """
 
   use Ecto.Schema
+
   import Ecto.Changeset
 
   alias Arrow.Disruption

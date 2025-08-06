@@ -1,11 +1,13 @@
 defmodule Arrow.Shuttles.Shuttle do
   @moduledoc "schema for a shuttle for the db"
   use Ecto.Schema
+
   import Ecto.Changeset
   import Ecto.Query
 
   alias Arrow.Disruptions.ReplacementService
   alias Arrow.Repo
+  alias Arrow.Shuttles.Route
 
   @type id :: integer
   @type t :: %__MODULE__{
@@ -22,7 +24,7 @@ defmodule Arrow.Shuttles.Shuttle do
     field :disrupted_route_id, :string
     field :suffix, :string
 
-    has_many :routes, Arrow.Shuttles.Route, preload_order: [asc: :direction_id]
+    has_many :routes, Route, preload_order: [asc: :direction_id]
 
     timestamps(type: :utc_datetime)
   end
@@ -32,9 +34,7 @@ defmodule Arrow.Shuttles.Shuttle do
     shuttle
     |> cast(attrs, [:shuttle_name, :disrupted_route_id, :status, :suffix])
     |> then(fn changeset ->
-      cast_assoc(changeset, :routes,
-        with: &Arrow.Shuttles.Route.changeset(&1, &2, get_field(changeset, :status) == :active)
-      )
+      cast_assoc(changeset, :routes, with: &Route.changeset(&1, &2, get_field(changeset, :status) == :active))
     end)
     |> validate_required([:shuttle_name, :status])
     |> validate_required_for(:status)
@@ -64,8 +64,7 @@ defmodule Arrow.Shuttles.Shuttle do
               "all stops except the last in each direction must have a time to next stop"
             )
 
-          routes
-          |> Enum.any?(fn route -> is_nil(route.data.shape) end) ->
+          Enum.any?(routes, fn route -> is_nil(route.data.shape) end) ->
             add_error(
               changeset,
               :status,

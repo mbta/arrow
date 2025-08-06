@@ -19,6 +19,8 @@ defmodule Arrow.Gtfs.ValidationWorker do
       states: Oban.Job.states() -- [:completed, :discarded, :cancelled]
     ]
 
+  alias Arrow.Gtfs.JobHelper
+
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"s3_uri" => s3_uri, "archive_version" => new_version}} = job) do
     with {:ok, unzip} <- Arrow.Gtfs.Archive.to_unzip_struct(s3_uri) do
@@ -32,10 +34,10 @@ defmodule Arrow.Gtfs.ValidationWorker do
   # unresponsive for even longer.
   # Validation jobs generally take around 2-3 minutes.
   @impl Oban.Worker
-  def timeout(_job), do: :timer.minutes(10)
+  def timeout(_job), do: to_timeout(minute: 10)
 
-  @spec check_jobs(Arrow.Gtfs.JobHelper.status_filter()) :: list(map)
+  @spec check_jobs(JobHelper.status_filter()) :: list(map)
   def check_jobs(status_filter) do
-    Arrow.Gtfs.JobHelper.check_jobs(__MODULE__, status_filter)
+    JobHelper.check_jobs(__MODULE__, status_filter)
   end
 end

@@ -63,14 +63,7 @@ defmodule Arrow.OpenRouteServiceAPI do
     {:ok,
      %DirectionsResponse{
        coordinates: Enum.map(coordinates, fn [lon, lat] -> %{"lat" => lat, "lon" => lon} end),
-       segments:
-         segments
-         |> Enum.map(
-           &%{
-             distance: &1["distance"],
-             duration: &1["duration"]
-           }
-         ),
+       segments: Enum.map(segments, &%{distance: &1["distance"], duration: &1["duration"]}),
        summary:
          summary
          |> List.wrap()

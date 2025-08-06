@@ -1,12 +1,14 @@
 defmodule Arrow.Ueberauth.Strategy.FakeTest do
   use ExUnit.Case
-  import Plug.Test
+
   import Arrow.Ueberauth.Strategy.Fake
+  import Plug.Test
 
   describe "implements all the callbacks" do
     test "handle_request!/1" do
       conn =
-        conn(:get, "/auth/keycloak")
+        :get
+        |> conn("/auth/keycloak")
         |> init_test_session(%{})
         |> handle_request!()
 

@@ -9,13 +9,14 @@ defmodule Arrow.Hastus.Export do
   alias Arrow.Gtfs.Line
   alias Arrow.Hastus.Service
   alias Arrow.Hastus.TripRouteDirection
+  alias Ecto.Association.NotLoaded
 
   @type t :: %__MODULE__{
           s3_path: String.t(),
-          services: list(Service.t()) | Ecto.Association.NotLoaded.t(),
-          trip_route_directions: list(TripRouteDirection.t()) | Ecto.Association.NotLoaded.t(),
-          line: Line.t() | Ecto.Association.NotLoaded.t(),
-          disruption: DisruptionV2.t() | Ecto.Association.NotLoaded.t()
+          services: list(Service.t()) | NotLoaded.t(),
+          trip_route_directions: list(TripRouteDirection.t()) | NotLoaded.t(),
+          line: Line.t() | NotLoaded.t(),
+          disruption: DisruptionV2.t() | NotLoaded.t()
         }
 
   schema "hastus_exports" do

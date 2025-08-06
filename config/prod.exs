@@ -10,23 +10,22 @@ import Config
 # which you should run after static files are built and
 # before starting your production server.
 
-config :arrow,
-  shape_storage_enabled?: true,
-  gtfs_archive_storage_enabled?: true,
-  hastus_export_storage_enabled?: true
-
+config :arrow, Arrow.Repo, ssl: true
 config :arrow, ArrowWeb.AuthManager, secret_key: {System, :get_env, ["ARROW_AUTH_SECRET"]}
-
-# Do not print debug messages in production
-config :logger,
-  backends: [:console, Sentry.LoggerBackend],
-  level: :info
 
 config :arrow,
   run_migrations_at_startup?: true,
   ex_aws_requester: {ExAws, :request}
 
-config :arrow, Arrow.Repo, ssl: true
+config :arrow,
+  shape_storage_enabled?: true,
+  gtfs_archive_storage_enabled?: true,
+  hastus_export_storage_enabled?: true
+
+# Do not print debug messages in production
+config :logger,
+  backends: [:console, Sentry.LoggerBackend],
+  level: :info
 
 # ## SSL Support
 #

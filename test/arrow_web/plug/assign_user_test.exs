@@ -1,5 +1,6 @@
 defmodule ArrowWeb.Plug.AssignUserTest do
   use ArrowWeb.ConnCase
+
   alias Arrow.Accounts.User
   alias ArrowWeb.Plug.AssignUser
 

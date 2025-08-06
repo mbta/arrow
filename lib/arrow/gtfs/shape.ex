@@ -8,17 +8,23 @@ defmodule Arrow.Gtfs.Shape do
   table contents should be considered read-only otherwise.
   """
   use Arrow.Gtfs.Schema
+
   import Ecto.Changeset
+
+  alias Arrow.Gtfs.Importable
+  alias Arrow.Gtfs.ShapePoint
+  alias Arrow.Gtfs.Trip
+  alias Ecto.Association.NotLoaded
 
   @type t :: %__MODULE__{
           id: String.t(),
-          points: list(Arrow.Gtfs.ShapePoint.t()) | Ecto.Association.NotLoaded.t(),
-          trips: list(Arrow.Gtfs.Trip.t()) | Ecto.Association.NotLoaded.t()
+          points: list(ShapePoint.t()) | NotLoaded.t(),
+          trips: list(Trip.t()) | NotLoaded.t()
         }
 
   schema "gtfs_shapes" do
-    has_many :points, Arrow.Gtfs.ShapePoint
-    has_many :trips, Arrow.Gtfs.Trip
+    has_many :points, ShapePoint
+    has_many :trips, Trip
   end
 
   # This shape's points should be put in a separate list and imported
@@ -31,16 +37,16 @@ defmodule Arrow.Gtfs.Shape do
     |> validate_required(~w[id]a)
   end
 
-  @impl Arrow.Gtfs.Importable
+  @impl Importable
   def filenames, do: ["shapes.txt"]
 
-  @impl Arrow.Gtfs.Importable
+  @impl Importable
   def import(unzip) do
     [filename] = filenames()
 
     unzip
     |> Arrow.Gtfs.ImportHelper.stream_csv_rows(filename)
     |> Stream.uniq_by(& &1["shape_id"])
-    |> Arrow.Gtfs.Importable.cast_and_insert(__MODULE__)
+    |> Importable.cast_and_insert(__MODULE__)
   end
 end

@@ -3,7 +3,9 @@ defmodule Arrow.Repo.ForeignKeyConstraint do
   Schema allowing Arrow to introspect its DB's foreign key constraints.
   """
   use Ecto.Schema
+
   import Ecto.Query
+
   alias Arrow.Repo
 
   @type t :: %__MODULE__{
@@ -45,11 +47,7 @@ defmodule Arrow.Repo.ForeignKeyConstraint do
   """
   @spec external_constraints_referencing_tables(list(String.t() | atom)) :: list(t())
   def external_constraints_referencing_tables(tables) when is_list(tables) do
-    from(fk in __MODULE__,
-      where: fk.referenced_table in ^tables,
-      where: fk.origin_table not in ^tables
-    )
-    |> Repo.all()
+    Repo.all(from(fk in __MODULE__, where: fk.referenced_table in ^tables, where: fk.origin_table not in ^tables))
   end
 
   @doc """

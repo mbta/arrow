@@ -204,7 +204,7 @@ defmodule ArrowWeb.EditReplacementServiceForm do
   end
 
   defp get_shuttle_map_props(shuttle_id) do
-    %{layers: Shuttles.get_shuttle!(shuttle_id).routes |> ShapeView.routes_to_layers()}
+    %{layers: ShapeView.routes_to_layers(Shuttles.get_shuttle!(shuttle_id).routes)}
   end
 
   defp empty_input_value?("") do

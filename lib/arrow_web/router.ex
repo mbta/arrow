@@ -1,7 +1,12 @@
 defmodule ArrowWeb.Router do
-  alias ArrowWeb.API.GtfsImportController
   use ArrowWeb, :router
+
   import Phoenix.LiveDashboard.Router
+
+  alias ArrowWeb.API.GtfsImportController
+  alias ArrowWeb.AuthManager.Pipeline
+  alias ArrowWeb.Plug.AssignUser
+  alias Guardian.Plug.EnsureAuthenticated
 
   pipeline :browser do
     plug(:accepts, ["html"])
@@ -29,16 +34,16 @@ defmodule ArrowWeb.Router do
   end
 
   pipeline :authenticate do
-    plug(ArrowWeb.AuthManager.Pipeline)
-    plug(Guardian.Plug.EnsureAuthenticated)
-    plug(ArrowWeb.Plug.AssignUser)
+    plug(Pipeline)
+    plug(EnsureAuthenticated)
+    plug(AssignUser)
   end
 
   pipeline :authenticate_api do
-    plug(ArrowWeb.AuthManager.Pipeline)
+    plug(Pipeline)
     plug(ArrowWeb.TryApiTokenAuth)
-    plug(Guardian.Plug.EnsureAuthenticated)
-    plug(ArrowWeb.Plug.AssignUser)
+    plug(EnsureAuthenticated)
+    plug(AssignUser)
   end
 
   scope "/", ArrowWeb do

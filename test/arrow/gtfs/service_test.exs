@@ -1,5 +1,6 @@
 defmodule Arrow.Gtfs.ServiceTest do
   use Arrow.DataCase
+
   alias Arrow.Gtfs.Calendar
   alias Arrow.Gtfs.CalendarDate
   alias Arrow.Gtfs.Service

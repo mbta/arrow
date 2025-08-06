@@ -1,5 +1,6 @@
 defmodule Arrow.GeoTest do
   use ExUnit.Case
+
   alias Arrow.Geo
 
   describe "haversine_distance/2" do

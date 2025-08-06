@@ -2,18 +2,20 @@ defmodule Arrow.Hastus.DerivedLimit do
   @moduledoc "schema for a disruption limit derived from a HASTUS export"
 
   use Ecto.Schema
+
   import Ecto.Changeset
 
   alias Arrow.Gtfs.Stop
   alias Arrow.Hastus.Service
+  alias Ecto.Association.NotLoaded
 
   @type t :: %__MODULE__{
           id: integer,
-          service: Service.t() | Ecto.Association.NotLoaded.t(),
+          service: Service.t() | NotLoaded.t(),
           service_id: integer,
-          start_stop: Stop.t() | Ecto.Association.NotLoaded.t(),
+          start_stop: Stop.t() | NotLoaded.t(),
           start_stop_id: String.t(),
-          end_stop: Stop.t() | Ecto.Association.NotLoaded.t(),
+          end_stop: Stop.t() | NotLoaded.t(),
           end_stop_id: String.t()
         }
 

@@ -24,8 +24,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Index do
   @empty_set MapSet.new()
 
   @spec all(Filters.t() | nil) :: [DisruptionV2.t()]
-  def all(filters),
-    do: apply_to_disruptions(Disruptions.list_disruptionsv2(), filters)
+  def all(filters), do: apply_to_disruptions(Disruptions.list_disruptionsv2(), filters)
 
   @spec apply_to_disruptions([DisruptionV2.t()], Filters.t()) :: [DisruptionV2.t()]
   def apply_to_disruptions(disruptions, filters) do
@@ -67,8 +66,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Index do
     )
   end
 
-  defp apply_kinds_filter(_disruption, %Filters{kinds: kinds}) when kinds == @empty_set,
-    do: true
+  defp apply_kinds_filter(_disruption, %Filters{kinds: kinds}) when kinds == @empty_set, do: true
 
   defp apply_kinds_filter(disruption, %Filters{kinds: kinds}) do
     kind_routes = kinds |> Enum.map(&@disruption_kind_routes[&1]) |> List.flatten()
@@ -76,14 +74,12 @@ defmodule ArrowWeb.DisruptionV2Controller.Index do
     Enum.any?(disruption.limits, fn limit -> limit.route.id in kind_routes end)
   end
 
-  defp apply_only_approved_filter(disruption, %Filters{only_approved?: true}),
-    do: disruption.is_active
+  defp apply_only_approved_filter(disruption, %Filters{only_approved?: true}), do: disruption.is_active
 
-  defp apply_only_approved_filter(_disruption, %Filters{only_approved?: false}),
-    do: true
+  defp apply_only_approved_filter(_disruption, %Filters{only_approved?: false}), do: true
 
   defp apply_past_filter(disruption, %Filters{view: %Table{include_past?: false}}) do
-    cutoff = Date.utc_today() |> Date.add(-7)
+    cutoff = Date.add(Date.utc_today(), -7)
 
     {_start_date, end_date} = Disruptions.start_end_dates(disruption)
 
@@ -111,10 +107,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Index do
     end)
   end
 
-  defp replacement_services_contains?(
-         %DisruptionV2{replacement_services: replacement_services},
-         search
-       ) do
+  defp replacement_services_contains?(%DisruptionV2{replacement_services: replacement_services}, search) do
     Enum.any?(replacement_services, fn replacement_service ->
       string_contains?(replacement_service.shuttle.shuttle_name, search)
     end)

@@ -1,8 +1,9 @@
 defmodule ArrowWeb.DisruptionView.Form do
   @moduledoc "An interface between Ecto structs and the `DisruptionForm` React component."
 
-  alias Arrow.{Adjustment, DisruptionRevision}
+  alias Arrow.Adjustment
   alias Arrow.Disruption.DayOfWeek
+  alias Arrow.DisruptionRevision
   alias ArrowWeb.DisruptionView
   alias ArrowWeb.Router.Helpers, as: Routes
   alias Ecto.Changeset
@@ -35,9 +36,9 @@ defmodule ArrowWeb.DisruptionView.Form do
         "rowApproved" => row_approved,
         "adjustmentKind" => adjustment_kind,
         "adjustments" => Enum.map(adjustments, &encode_adjustment/1),
-        "daysOfWeek" => days_of_week |> Enum.map(&encode_day_of_week/1) |> Enum.into(%{}),
+        "daysOfWeek" => Map.new(days_of_week, &encode_day_of_week/1),
         "exceptions" => Enum.map(exceptions, & &1.excluded_date),
-        "tripShortNames" => trip_short_names |> Enum.map_join(",", & &1.trip_short_name),
+        "tripShortNames" => Enum.map_join(trip_short_names, ",", & &1.trip_short_name),
         "title" => title
       },
       "iconPaths" => icon_paths(conn),
@@ -53,18 +54,13 @@ defmodule ArrowWeb.DisruptionView.Form do
     }
   end
 
-  defp encode_day_of_week(%DayOfWeek{
-         day_name: day_name,
-         start_time: start_time,
-         end_time: end_time
-       }) do
+  defp encode_day_of_week(%DayOfWeek{day_name: day_name, start_time: start_time, end_time: end_time}) do
     {day_name, %{"start" => start_time, "end" => end_time}}
   end
 
   defp icon_paths(conn) do
     Adjustment.kinds()
-    |> Enum.map(&{&1, DisruptionView.adjustment_kind_icon_path(conn, &1)})
-    |> Enum.into(%{})
+    |> Map.new(&{&1, DisruptionView.adjustment_kind_icon_path(conn, &1)})
     |> Map.put(:subway, Routes.static_path(conn, "/images/icon-mode-subway-small.svg"))
   end
 end

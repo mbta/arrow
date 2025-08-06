@@ -1,10 +1,11 @@
 defmodule ArrowWeb.ShapeControllerTest do
   use ArrowWeb.ConnCase, async: true
-  alias Arrow.Repo
-  alias Arrow.Shuttles.Shape
 
   import Arrow.ShuttlesFixtures
   import Test.Support.Helpers
+
+  alias Arrow.Repo
+  alias Arrow.Shuttles.Shape
 
   @upload_attrs %{
     name: "some name-S",

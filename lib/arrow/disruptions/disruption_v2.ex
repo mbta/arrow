@@ -5,10 +5,13 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   See: https://github.com/mbta/gtfs_creator/blob/ab5aac52561027aa13888e4c4067a8de177659f6/gtfs_creator2/disruptions/disruption.py
   """
   use Ecto.Schema
+
   import Ecto.Changeset
 
   alias Arrow.Disruptions
+  alias Arrow.Disruptions.Limit
   alias Arrow.Hastus.Export
+  alias Ecto.Association.NotLoaded
 
   @type t :: %__MODULE__{
           title: String.t() | nil,
@@ -17,10 +20,9 @@ defmodule Arrow.Disruptions.DisruptionV2 do
           description: String.t() | nil,
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil,
-          limits: [Arrow.Disruptions.Limit.t()] | Ecto.Association.NotLoaded.t(),
-          replacement_services:
-            [Disruptions.ReplacementService.t()] | Ecto.Association.NotLoaded.t(),
-          hastus_exports: [Arrow.Hastus.Export.t()] | Ecto.Association.NotLoaded.t()
+          limits: [Limit.t()] | NotLoaded.t(),
+          replacement_services: [Disruptions.ReplacementService.t()] | NotLoaded.t(),
+          hastus_exports: [Arrow.Hastus.Export.t()] | NotLoaded.t()
         }
 
   schema "disruptionsv2" do
@@ -29,7 +31,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
     field :is_active, :boolean
     field :description, :string
 
-    has_many :limits, Arrow.Disruptions.Limit,
+    has_many :limits, Limit,
       foreign_key: :disruption_id,
       on_replace: :delete
 
@@ -49,14 +51,13 @@ defmodule Arrow.Disruptions.DisruptionV2 do
     disruption_v2
     |> cast(attrs, [:title, :is_active, :description])
     |> cast(attrs, [:mode], force_changes: true)
-    |> cast_assoc(:limits, with: &Arrow.Disruptions.Limit.changeset/2)
+    |> cast_assoc(:limits, with: &Limit.changeset/2)
     |> cast_assoc(:replacement_services, with: &Disruptions.ReplacementService.changeset/2)
     |> validate_required([:title, :mode, :is_active])
   end
 
   def new(attrs \\ %{}) do
-    %__MODULE__{limits: [], replacement_services: [], mode: :subway}
-    |> struct!(attrs)
+    struct!(%__MODULE__{limits: [], replacement_services: [], mode: :subway}, attrs)
   end
 
   @doc """

@@ -1,7 +1,9 @@
 defmodule ArrowWeb.DisruptionV2View.Calendar do
   @moduledoc "An interface between Ecto structs and the `DisruptionCalendar` React component."
 
-  alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
+  alias Arrow.Disruptions.DisruptionV2
+  alias Arrow.Disruptions.Limit
+  alias Arrow.Disruptions.ReplacementService
   alias Arrow.Limits.LimitDayOfWeek
   alias Arrow.Shuttles.Shuttle
   alias ArrowWeb.Endpoint
@@ -33,12 +35,7 @@ defmodule ArrowWeb.DisruptionV2View.Calendar do
 
   defp events(
          disruption_id,
-         %Limit{
-           start_date: start_date,
-           end_date: end_date,
-           limit_day_of_weeks: day_of_weeks,
-           route_id: route_id
-         },
+         %Limit{start_date: start_date, end_date: end_date, limit_day_of_weeks: day_of_weeks, route_id: route_id},
          event_title,
          is_active
        ) do
@@ -47,7 +44,8 @@ defmodule ArrowWeb.DisruptionV2View.Calendar do
       |> Enum.filter(& &1.active?)
       |> MapSet.new(&LimitDayOfWeek.day_number/1)
 
-    Date.range(start_date, end_date)
+    start_date
+    |> Date.range(end_date)
     |> Enum.filter(&(Date.day_of_week(&1) in day_numbers))
     |> Enum.chunk_while([], &chunk_dates/2, &chunk_dates/1)
     |> Enum.map(&{List.last(&1), List.first(&1)})
@@ -72,15 +70,12 @@ defmodule ArrowWeb.DisruptionV2View.Calendar do
 
   defp events(
          disruption_id,
-         %ReplacementService{
-           start_date: start_date,
-           end_date: end_date,
-           shuttle: %Shuttle{disrupted_route_id: route_id}
-         },
+         %ReplacementService{start_date: start_date, end_date: end_date, shuttle: %Shuttle{disrupted_route_id: route_id}},
          event_title,
          is_active
        ) do
-    Date.range(start_date, end_date)
+    start_date
+    |> Date.range(end_date)
     |> Enum.chunk_while([], &chunk_dates/2, &chunk_dates/1)
     |> Enum.map(&{List.last(&1), List.first(&1)})
     |> Enum.map(fn
@@ -116,8 +111,7 @@ defmodule ArrowWeb.DisruptionV2View.Calendar do
 
   defp route_class(nil), do: "none"
 
-  defp route_class(route_id),
-    do: route_id |> DisruptionV2.route() |> to_string() |> String.replace("_", "-")
+  defp route_class(route_id), do: route_id |> DisruptionV2.route() |> to_string() |> String.replace("_", "-")
 
   defp status_class(true), do: "approved"
   defp status_class(false), do: "pending"

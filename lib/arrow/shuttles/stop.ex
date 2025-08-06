@@ -1,10 +1,11 @@
 defmodule Arrow.Shuttles.Stop do
   @moduledoc false
 
-  @derive {Phoenix.Param, key: :stop_id}
-
   use Ecto.Schema
+
   import Ecto.Changeset
+
+  @derive {Phoenix.Param, key: :stop_id}
 
   @derive {Jason.Encoder, only: [:stop_name, :stop_desc, :stop_lat, :stop_lon, :stop_id]}
 

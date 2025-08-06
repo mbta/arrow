@@ -1,11 +1,11 @@
 defmodule ArrowWeb.DisruptionComponents do
   @moduledoc false
-  alias Arrow.Disruptions.ReplacementService
   use ArrowWeb, :live_component
 
   alias Arrow.Adjustment
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Disruptions.Limit
+  alias Arrow.Disruptions.ReplacementService
   alias Arrow.Hastus.Export
   alias Arrow.Hastus.Service
   alias Arrow.Limits.LimitDayOfWeek

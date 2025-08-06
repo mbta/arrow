@@ -7,18 +7,21 @@ defmodule Arrow.Disruption do
   - Trip short names (Commuter Rail only)
   """
   use Ecto.Schema
+
   import Ecto.Query
 
   alias Arrow.Disruption.Note
-  alias Arrow.{DisruptionRevision, Repo}
+  alias Arrow.DisruptionRevision
+  alias Arrow.Repo
+  alias Ecto.Association.NotLoaded
   alias Ecto.Changeset
   alias Ecto.Multi
 
   @type id :: integer
   @type t :: %__MODULE__{
           id: id,
-          published_revision: DisruptionRevision.t() | Ecto.Association.NotLoaded.t(),
-          notes: [Note.t()] | Ecto.Association.NotLoaded.t(),
+          published_revision: DisruptionRevision.t() | NotLoaded.t(),
+          notes: [Note.t()] | NotLoaded.t(),
           last_published_at: DateTime.t() | nil,
           inserted_at: DateTime.t(),
           updated_at: DateTime.t()
@@ -64,7 +67,8 @@ defmodule Arrow.Disruption do
     Multi.new()
     |> Multi.insert(:disruption, %__MODULE__{})
     |> Multi.insert(:revision, fn %{disruption: %{id: id}} ->
-      DisruptionRevision.new(disruption_id: id)
+      [disruption_id: id]
+      |> DisruptionRevision.new()
       |> DisruptionRevision.changeset(attrs)
     end)
     |> maybe_add_note(author_id, note_params(attrs))
@@ -119,12 +123,7 @@ defmodule Arrow.Disruption do
 
   @spec latest_revision_id(id) :: DisruptionRevision.id()
   def latest_revision_id(id) do
-    from(r in DisruptionRevision,
-      where: r.disruption_id == ^id,
-      select: max(r.id),
-      group_by: r.disruption_id
-    )
-    |> Repo.one!()
+    Repo.one!(from(r in DisruptionRevision, where: r.disruption_id == ^id, select: max(r.id), group_by: r.disruption_id))
   end
 
   @doc """
@@ -166,14 +165,15 @@ defmodule Arrow.Disruption do
   """
   @spec latest_vs_published() :: {[t()], [t()]}
   def latest_vs_published do
-    from([disruptions: d, latest_ids: l] in with_latest_revision_ids(),
-      join: r in assoc(d, :revisions),
-      on: r.disruption_id == d.id,
-      where: is_nil(d.published_revision_id) or d.published_revision_id != l.latest_revision_id,
-      where: r.id == d.published_revision_id or r.id == l.latest_revision_id,
-      preload: [revisions: {r, ^DisruptionRevision.associations()}]
+    Arrow.Repo.all(
+      from([disruptions: d, latest_ids: l] in with_latest_revision_ids(),
+        join: r in assoc(d, :revisions),
+        on: r.disruption_id == d.id,
+        where: is_nil(d.published_revision_id) or d.published_revision_id != l.latest_revision_id,
+        where: r.id == d.published_revision_id or r.id == l.latest_revision_id,
+        preload: [revisions: {r, ^DisruptionRevision.associations()}]
+      )
     )
-    |> Arrow.Repo.all()
   end
 
   @doc """

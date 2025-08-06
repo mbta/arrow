@@ -1,14 +1,14 @@
 defmodule Arrow.DisruptionsTest do
-  alias Arrow.DisruptionsFixtures
-  alias Arrow.ShuttlesFixtures
   use Arrow.DataCase
 
   alias Arrow.Disruptions
+  alias Arrow.DisruptionsFixtures
+  alias Arrow.ShuttlesFixtures
 
   describe "disruptionsv2" do
-    alias Arrow.Disruptions.DisruptionV2
-
     import Arrow.DisruptionsFixtures
+
+    alias Arrow.Disruptions.DisruptionV2
 
     @invalid_attrs %{title: "foobar", description: "barfoo", mode: nil, is_active: true}
 
@@ -84,9 +84,9 @@ defmodule Arrow.DisruptionsTest do
   end
 
   describe "replacement_services" do
-    alias Arrow.Disruptions.ReplacementService
-
     import Arrow.DisruptionsFixtures
+
+    alias Arrow.Disruptions.ReplacementService
 
     @invalid_attrs %{
       reason: nil,

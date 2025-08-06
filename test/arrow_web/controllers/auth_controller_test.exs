@@ -1,6 +1,9 @@
 defmodule ArrowWeb.Controllers.AuthControllerTest do
   use ArrowWeb.ConnCase
 
+  alias ArrowWeb.Router.Helpers
+  alias Ueberauth.Auth.Credentials
+
   describe "callback" do
     test "handles missing roles (keycloak)", %{conn: conn} do
       current_time = System.system_time(:second)
@@ -8,7 +11,7 @@ defmodule ArrowWeb.Controllers.AuthControllerTest do
       auth = %Ueberauth.Auth{
         uid: "foo@mbta.com",
         provider: :keycloak,
-        credentials: %Ueberauth.Auth.Credentials{
+        credentials: %Credentials{
           expires_at: current_time + 1_000,
           other: %{id_token: "id_token"}
         },
@@ -49,7 +52,7 @@ defmodule ArrowWeb.Controllers.AuthControllerTest do
       auth = %Ueberauth.Auth{
         uid: "foo@mbta.com",
         provider: :keycloak,
-        credentials: %Ueberauth.Auth.Credentials{
+        credentials: %Credentials{
           expires_at: current_time + 1_000,
           other: %{id_token: "id_token"}
         },
@@ -67,10 +70,10 @@ defmodule ArrowWeb.Controllers.AuthControllerTest do
       conn =
         conn
         |> assign(:ueberauth_auth, auth)
-        |> get(ArrowWeb.Router.Helpers.auth_path(conn, :callback, "keycloak"))
+        |> get(Helpers.auth_path(conn, :callback, "keycloak"))
 
       assert Guardian.Plug.authenticated?(conn)
-      conn = get(conn, ArrowWeb.Router.Helpers.auth_path(conn, :logout, "keycloak"))
+      conn = get(conn, Helpers.auth_path(conn, :logout, "keycloak"))
 
       refute Guardian.Plug.authenticated?(conn)
     end
@@ -83,7 +86,7 @@ defmodule ArrowWeb.Controllers.AuthControllerTest do
     auth = %Ueberauth.Auth{
       uid: "foo@mbta.com",
       provider: :keycloak,
-      credentials: %Ueberauth.Auth.Credentials{
+      credentials: %Credentials{
         expires_at: current_time + 1_000,
         other: %{id_token: "id_token"}
       },
@@ -109,7 +112,7 @@ defmodule ArrowWeb.Controllers.AuthControllerTest do
     auth = %Ueberauth.Auth{
       uid: "foo@mbta.com",
       provider: :keycloak,
-      credentials: %Ueberauth.Auth.Credentials{
+      credentials: %Credentials{
         expires_at: current_time + 1_000,
         other: %{id_token: "id_token"}
       },

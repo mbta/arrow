@@ -4,6 +4,7 @@ defmodule Arrow.Limits do
   """
 
   alias Arrow.Disruptions.Limit
+  alias Arrow.Limits.LimitDayOfWeek
   alias Arrow.Repo
 
   @preloads [:route, :start_stop, :end_stop, :limit_day_of_weeks]
@@ -101,8 +102,6 @@ defmodule Arrow.Limits do
   def change_limit(%Limit{} = limit, attrs \\ %{}) do
     Limit.changeset(limit, attrs)
   end
-
-  alias Arrow.Limits.LimitDayOfWeek
 
   @doc """
   Returns the list of limit_day_of_weeks.

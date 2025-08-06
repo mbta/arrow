@@ -6,8 +6,10 @@ defmodule Arrow.Adjustment do
   """
 
   use Ecto.Schema
+
   import Ecto.Changeset
   import Ecto.Query
+
   alias Arrow.Repo
 
   @type t :: %__MODULE__{

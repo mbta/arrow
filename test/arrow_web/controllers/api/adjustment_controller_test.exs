@@ -1,6 +1,8 @@
 defmodule ArrowWeb.API.AdjustmentControllerTest do
   use ArrowWeb.ConnCase
-  alias Arrow.{Adjustment, Repo}
+
+  alias Arrow.Adjustment
+  alias Arrow.Repo
 
   describe "index/2" do
     @tag :authenticated

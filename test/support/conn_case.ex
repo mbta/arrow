@@ -16,27 +16,31 @@ defmodule ArrowWeb.ConnCase do
   """
 
   use ExUnit.CaseTemplate
+
   import Plug.Test
+
+  alias Ecto.Adapters.SQL.Sandbox
 
   using do
     quote do
+      use ArrowWeb, :verified_routes
+
+      import Phoenix.ConnTest
+      import Plug.Conn
+
+      alias ArrowWeb.Router.Helpers, as: Routes
       # The default endpoint for testing
       @endpoint ArrowWeb.Endpoint
 
-      use ArrowWeb, :verified_routes
-
       # Import conveniences for testing with connections
-      import Plug.Conn
-      import Phoenix.ConnTest
-      alias ArrowWeb.Router.Helpers, as: Routes
     end
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Arrow.Repo)
+    :ok = Sandbox.checkout(Arrow.Repo)
 
     if !tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Arrow.Repo, {:shared, self()})
+      Sandbox.mode(Arrow.Repo, {:shared, self()})
     end
 
     cond do
@@ -50,10 +54,7 @@ defmodule ArrowWeb.ConnCase do
         {:ok, conn: build_conn("test_user", [])}
 
       true ->
-        {:ok,
-         conn:
-           Phoenix.ConnTest.build_conn()
-           |> Plug.Conn.put_req_header("x-forwarded-proto", "https")}
+        {:ok, conn: Plug.Conn.put_req_header(Phoenix.ConnTest.build_conn(), "x-forwarded-proto", "https")}
     end
   end
 

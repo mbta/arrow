@@ -1,8 +1,11 @@
 defmodule ArrowWeb.DisruptionView.CalendarTest do
   use ExUnit.Case, async: true
 
-  alias Arrow.{Adjustment, Disruption, DisruptionRevision}
-  alias Arrow.Disruption.{DayOfWeek, Exception}
+  alias Arrow.Adjustment
+  alias Arrow.Disruption
+  alias Arrow.Disruption.DayOfWeek
+  alias Arrow.Disruption.Exception
+  alias Arrow.DisruptionRevision
   alias ArrowWeb.DisruptionView.Calendar, as: DCalendar
 
   describe "props/1" do

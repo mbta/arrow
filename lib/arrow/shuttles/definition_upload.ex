@@ -43,10 +43,7 @@ defmodule Arrow.Shuttles.DefinitionUpload do
     end
   end
 
-  defp parse_direction_tabs(%{
-         @direction_0_tab_name => direction_0_tab_tid,
-         @direction_1_tab_name => direction_1_tab_tid
-       }) do
+  defp parse_direction_tabs(%{@direction_0_tab_name => direction_0_tab_tid, @direction_1_tab_name => direction_1_tab_tid}) do
     case {parse_direction_tab(direction_0_tab_tid, @direction_0_tab_name),
           parse_direction_tab(direction_1_tab_tid, @direction_1_tab_name)} do
       {{:errors, errors0}, {:errors, errors1}} -> {:errors, errors0 ++ errors1}
@@ -82,7 +79,7 @@ defmodule Arrow.Shuttles.DefinitionUpload do
         |> Enum.reverse()
 
       if Enum.empty?(errors) do
-        {:ok, stop_ids |> Enum.map(&Integer.to_string(&1))}
+        {:ok, Enum.map(stop_ids, &Integer.to_string(&1))}
       else
         {:errors, errors}
       end

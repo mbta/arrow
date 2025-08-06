@@ -6,10 +6,13 @@ defmodule Arrow.Gtfs.CalendarDate do
   table contents should be considered read-only otherwise.
   """
   use Arrow.Gtfs.Schema
+
   import Ecto.Changeset
 
+  alias Arrow.Gtfs.Service
+
   @type t :: %__MODULE__{
-          service: Arrow.Gtfs.Service.t() | Ecto.Association.NotLoaded.t(),
+          service: Service.t() | Ecto.Association.NotLoaded.t(),
           date: Date.t(),
           exception_type: atom,
           holiday_name: String.t() | nil
@@ -18,7 +21,7 @@ defmodule Arrow.Gtfs.CalendarDate do
   @primary_key false
 
   schema "gtfs_calendar_dates" do
-    belongs_to :service, Arrow.Gtfs.Service, primary_key: true
+    belongs_to :service, Service, primary_key: true
     field :date, :date, primary_key: true
     field :exception_type, Ecto.Enum, values: [added: 1, removed: 2]
     field :holiday_name, :string

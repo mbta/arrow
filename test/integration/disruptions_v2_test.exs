@@ -1,9 +1,11 @@
 defmodule Arrow.Integration.DisruptionsV2Test do
   use ExUnit.Case
   use Wallaby.Feature
+
+  import Arrow.DisruptionsFixtures
+  import Arrow.LimitsFixtures
   import Wallaby.Browser, except: [text: 1]
   import Wallaby.Query
-  import Arrow.{DisruptionsFixtures, LimitsFixtures}
 
   @moduletag :integration
 
@@ -47,9 +49,7 @@ defmodule Arrow.Integration.DisruptionsV2Test do
     day_of_week = limit_day_of_week_fixture(limit_id: limit.id)
 
     replacement_service =
-      replacement_service_fixture(
-        Map.put_new(replacement_service_attrs, :disruption_id, disruption_v2.id)
-      )
+      replacement_service_fixture(Map.put_new(replacement_service_attrs, :disruption_id, disruption_v2.id))
 
     struct(disruption_v2,
       limits: [struct(limit, limit_day_of_weeks: [day_of_week])],

@@ -4,16 +4,15 @@ defmodule Arrow.ShuttlesFixtures do
   entities via the `Arrow.Shuttles` context.
   """
 
+  import Arrow.Factory
+
   alias Arrow.Repo
   alias Arrow.Shuttles.Shape
-
-  import Arrow.Factory
 
   @doc """
   Generate valid coords
   """
-  def coords,
-    do: ["-71.14163,42.39551", "-71.14209,42.39643", "-71.14285,42.39624", "-71.14292,42.39623"]
+  def coords, do: ["-71.14163,42.39551", "-71.14209,42.39643", "-71.14285,42.39624", "-71.14292,42.39623"]
 
   @doc """
   Generate a unique shape name.
@@ -66,8 +65,7 @@ defmodule Arrow.ShuttlesFixtures do
   @doc """
   Generate a unique shuttle route destination.
   """
-  def unique_shuttle_route_destination,
-    do: "some shuttle_route_destination#{System.unique_integer([:positive])}"
+  def unique_shuttle_route_destination, do: "some shuttle_route_destination#{System.unique_integer([:positive])}"
 
   defp shuttle_route_stops(include_times_to_next_stop) do
     [stop1, stop2, stop3, stop4] = insert_list(4, :gtfs_stop)

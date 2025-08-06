@@ -1,15 +1,16 @@
 defmodule Arrow.OpenRouteServiceAPITest do
-  alias Arrow.OpenRouteServiceAPI.DirectionsRequest
-  alias Arrow.OpenRouteServiceAPI.DirectionsResponse
   use ExUnit.Case, async: false
 
+  import Arrow.Factory
   import Mox
 
-  import Arrow.Factory
+  alias Arrow.OpenRouteServiceAPI.DirectionsRequest
+  alias Arrow.OpenRouteServiceAPI.DirectionsResponse
+  alias Arrow.OpenRouteServiceAPI.MockClient
 
   setup do
     stub(
-      Arrow.OpenRouteServiceAPI.MockClient,
+      MockClient,
       :get_directions,
       fn
         %DirectionsRequest{
@@ -67,7 +68,7 @@ defmodule Arrow.OpenRouteServiceAPITest do
 
   test "parses directions" do
     expect(
-      Arrow.OpenRouteServiceAPI.MockClient,
+      MockClient,
       :get_directions,
       fn _ ->
         {:ok,
@@ -107,7 +108,7 @@ defmodule Arrow.OpenRouteServiceAPITest do
 
   test "unknown errors from ORS return `type: :unknown`" do
     expect(
-      Arrow.OpenRouteServiceAPI.MockClient,
+      MockClient,
       :get_directions,
       fn _ ->
         {:error, %{"code" => -1}}
@@ -123,7 +124,7 @@ defmodule Arrow.OpenRouteServiceAPITest do
 
   test "point not found errors from ORS return `type: :no_route`" do
     expect(
-      Arrow.OpenRouteServiceAPI.MockClient,
+      MockClient,
       :get_directions,
       fn _ ->
         {:error, %{"code" => 2010}}
@@ -139,7 +140,7 @@ defmodule Arrow.OpenRouteServiceAPITest do
 
   test "route not found errors from ORS return `type: :no_route`" do
     expect(
-      Arrow.OpenRouteServiceAPI.MockClient,
+      MockClient,
       :get_directions,
       fn _ ->
         {:error, %{"code" => 2009}}

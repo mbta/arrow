@@ -7,16 +7,22 @@ defmodule Arrow.Gtfs.Service do
   table contents should be considered read-only otherwise.
   """
   use Arrow.Gtfs.Schema
+
   import Ecto.Changeset
 
+  alias Arrow.Gtfs.Calendar
+  alias Arrow.Gtfs.CalendarDate
+  alias Arrow.Gtfs.Importable
+  alias Ecto.Association.NotLoaded
+
   @type t :: %__MODULE__{
-          calendar: Arrow.Gtfs.Calendar.t() | Ecto.Association.NotLoaded.t(),
-          calendar_dates: list(Arrow.Gtfs.CalendarDate.t()) | Ecto.Association.NotLoaded.t()
+          calendar: Calendar.t() | NotLoaded.t(),
+          calendar_dates: list(CalendarDate.t()) | NotLoaded.t()
         }
 
   schema "gtfs_services" do
-    has_one :calendar, Arrow.Gtfs.Calendar
-    has_many :calendar_dates, Arrow.Gtfs.CalendarDate
+    has_one :calendar, Calendar
+    has_many :calendar_dates, CalendarDate
 
     has_many :trips, Arrow.Gtfs.Trip
   end
@@ -27,10 +33,10 @@ defmodule Arrow.Gtfs.Service do
     |> validate_required(~w[id]a)
   end
 
-  @impl Arrow.Gtfs.Importable
+  @impl Importable
   def filenames, do: ["calendar.txt", "calendar_dates.txt"]
 
-  @impl Arrow.Gtfs.Importable
+  @impl Importable
   def import(unzip) do
     # This table's IDs are the union of those found in
     # calendar.txt and calendar_dates.txt.
@@ -41,6 +47,6 @@ defmodule Arrow.Gtfs.Service do
       |> Stream.uniq_by(& &1["service_id"])
       |> Stream.map(&%{"id" => Map.fetch!(&1, "service_id")})
 
-    Arrow.Gtfs.Importable.cast_and_insert(service_rows, __MODULE__)
+    Importable.cast_and_insert(service_rows, __MODULE__)
   end
 end

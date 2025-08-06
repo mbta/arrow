@@ -3,6 +3,7 @@ defmodule ArrowWeb.Plug.AssignUser do
   Associates a connection with an `Arrow.Account.User`.
   """
   import Plug.Conn
+
   alias Arrow.Accounts.User
 
   @spec init(Plug.opts()) :: Plug.opts()

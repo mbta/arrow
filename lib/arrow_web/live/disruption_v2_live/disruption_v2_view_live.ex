@@ -1,10 +1,15 @@
 defmodule ArrowWeb.DisruptionV2ViewLive do
+  @moduledoc false
   use ArrowWeb, :live_view
 
-  alias Arrow.{Adjustment, Disruptions, Limits}
-  alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
+  alias Arrow.Adjustment
+  alias Arrow.Disruptions
+  alias Arrow.Disruptions.DisruptionV2
+  alias Arrow.Disruptions.Limit
+  alias Arrow.Disruptions.ReplacementService
   alias Arrow.Hastus
   alias Arrow.Hastus.Export
+  alias Arrow.Limits
   alias ArrowWeb.DisruptionComponents
 
   @impl true
@@ -92,7 +97,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
          |> put_flash(:info, "Limit deleted successfully")}
 
       {:error, %Ecto.Changeset{} = _changeset} ->
-        {:noreply, socket |> put_flash(:error, "Error when deleting limit!")}
+        {:noreply, put_flash(socket, :error, "Error when deleting limit!")}
     end
   end
 
@@ -104,8 +109,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       {:ok, _} ->
         disruption = %{
           socket.assigns.disruption
-          | hastus_exports:
-              Enum.reject(socket.assigns.disruption.hastus_exports, &(&1.id == parsed_id))
+          | hastus_exports: Enum.reject(socket.assigns.disruption.hastus_exports, &(&1.id == parsed_id))
         }
 
         {:noreply,
@@ -118,11 +122,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     end
   end
 
-  def handle_event(
-        "delete_replacement_service",
-        %{"replacement_service" => replacement_service_id},
-        socket
-      ) do
+  def handle_event("delete_replacement_service", %{"replacement_service" => replacement_service_id}, socket) do
     {parsed_id, _} = Integer.parse(replacement_service_id)
     replacement_service = Disruptions.get_replacement_service!(parsed_id)
 
@@ -130,8 +130,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       {:ok, _} ->
         disruption = %{
           socket.assigns.disruption
-          | replacement_services:
-              Enum.reject(socket.assigns.disruption.replacement_services, &(&1.id == parsed_id))
+          | replacement_services: Enum.reject(socket.assigns.disruption.replacement_services, &(&1.id == parsed_id))
         }
 
         {:noreply,
@@ -168,8 +167,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   defp icon_paths(socket) do
     Adjustment.kinds()
-    |> Enum.map(&{&1, adjustment_kind_icon_path(socket, &1)})
-    |> Enum.into(%{})
+    |> Map.new(&{&1, adjustment_kind_icon_path(socket, &1)})
     |> Map.put(
       :subway,
       Phoenix.VerifiedRoutes.static_path(socket, "/images/icon-mode-subway-small.svg")
@@ -231,7 +229,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   defp apply_action(socket, :duplicate_limit, %{"id" => id, "limit_id" => limit_id}) do
     disruption = Disruptions.get_disruption_v2!(id)
-    limit = Limits.get_limit!(limit_id) |> Map.put(:id, nil)
+    limit = limit_id |> Limits.get_limit!() |> Map.put(:id, nil)
 
     socket
     |> assign(:title, "edit disruption")
@@ -273,10 +271,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     |> assign(:editing, replacement_service)
   end
 
-  defp apply_action(socket, :edit_replacement_service, %{
-         "id" => id,
-         "replacement_service_id" => replacement_service_id
-       }) do
+  defp apply_action(socket, :edit_replacement_service, %{"id" => id, "replacement_service_id" => replacement_service_id}) do
     disruption = Disruptions.get_disruption_v2!(id)
     replacement_service = Disruptions.get_replacement_service!(replacement_service_id)
 

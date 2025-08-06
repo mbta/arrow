@@ -4,6 +4,7 @@ defmodule Arrow.Disruption.DayOfWeek do
   """
 
   use Ecto.Schema
+
   import Ecto.Changeset
 
   @type t :: %__MODULE__{
@@ -51,7 +52,7 @@ defmodule Arrow.Disruption.DayOfWeek do
       is_nil(start_time) or is_nil(end_time) ->
         changeset
 
-      not (Time.compare(start_time, end_time) == :lt) ->
+      not Time.before?(start_time, end_time) ->
         add_error(changeset, :days_of_week, "start time should be before end time")
 
       true ->

@@ -1,5 +1,6 @@
 defmodule Arrow.Gtfs.AgencyTest do
   use Arrow.DataCase
+
   alias Arrow.Gtfs.Agency
 
   describe "database" do

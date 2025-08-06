@@ -6,12 +6,15 @@ defmodule Arrow.Gtfs.Calendar do
   table contents should be considered read-only otherwise.
   """
   use Arrow.Gtfs.Schema
+
   import Ecto.Changeset
+
+  alias Arrow.Gtfs.Service
 
   @primary_key false
 
   @type t :: %__MODULE__{
-          service: Arrow.Gtfs.Service.t() | Ecto.Association.NotLoaded.t(),
+          service: Service.t() | Ecto.Association.NotLoaded.t(),
           monday: boolean,
           tuesday: boolean,
           wednesday: boolean,
@@ -24,7 +27,7 @@ defmodule Arrow.Gtfs.Calendar do
         }
 
   schema "gtfs_calendars" do
-    belongs_to :service, Arrow.Gtfs.Service, primary_key: true
+    belongs_to :service, Service, primary_key: true
 
     for day <- ~w[monday tuesday wednesday thursday friday saturday sunday]a do
       field day, :boolean
@@ -42,9 +45,7 @@ defmodule Arrow.Gtfs.Calendar do
       attrs,
       ~w[service_id monday tuesday wednesday thursday friday saturday sunday start_date end_date]a
     )
-    |> validate_required(
-      ~w[service_id monday tuesday wednesday thursday friday saturday sunday start_date end_date]a
-    )
+    |> validate_required(~w[service_id monday tuesday wednesday thursday friday saturday sunday start_date end_date]a)
     |> assoc_constraint(:service)
     |> validate_start_date_not_after_end_date()
   end

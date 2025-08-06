@@ -3,6 +3,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
   use Arrow.DataCase, async: true
   import Test.Support.Helpers
 
+  alias Arrow.Gtfs.Stop
   alias Arrow.Hastus.ExportUpload
 
   @export_dir "test/support/fixtures/hastus"
@@ -66,8 +67,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
           "uid-#{System.unique_integer([:positive])}"
         )
 
-      assert {:ok,
-              {:error, {:trips_with_invalid_shapes, ["67307092-LRV42024-hlb44uf1-Weekday-01"]}}} =
+      assert {:ok, {:error, {:trips_with_invalid_shapes, ["67307092-LRV42024-hlb44uf1-Weekday-01"]}}} =
                data
     end
 
@@ -563,12 +563,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
     |> Enum.each(&insert_canonical(&1, line, service, context.direction_descs))
   end
 
-  defp insert_canonical(
-         {route_id, {stop_sequence0, stop_sequence1}},
-         line,
-         service,
-         {dir_desc0, dir_desc1}
-       ) do
+  defp insert_canonical({route_id, {stop_sequence0, stop_sequence1}}, line, service, {dir_desc0, dir_desc1}) do
     route = insert(:gtfs_route, id: route_id, line: line)
 
     direction0 = insert(:gtfs_direction, direction_id: 0, route: route, desc: dir_desc0)
@@ -614,7 +609,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
     stop_sequence0
     |> Enum.with_index(1)
     |> Enum.each(fn {stop_id, stop_sequence} ->
-      stop = maybe_insert(:gtfs_stop, [id: stop_id], Arrow.Gtfs.Stop)
+      stop = maybe_insert(:gtfs_stop, [id: stop_id], Stop)
 
       insert(:gtfs_stop_time,
         trip: trip0,
@@ -626,7 +621,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
     stop_sequence1
     |> Enum.with_index(1)
     |> Enum.each(fn {stop_id, stop_sequence} ->
-      stop = maybe_insert(:gtfs_stop, [id: stop_id], Arrow.Gtfs.Stop)
+      stop = maybe_insert(:gtfs_stop, [id: stop_id], Stop)
 
       insert(:gtfs_stop_time,
         trip: trip1,

@@ -3,10 +3,10 @@ defmodule ArrowWeb.AuthManager.ErrorHandler do
   Plug to handle if user is not authenticated.
   """
 
+  @behaviour Guardian.Plug.ErrorHandler
+
   alias ArrowWeb.Router.Helpers, as: Routes
   alias Phoenix.Controller
-
-  @behaviour Guardian.Plug.ErrorHandler
 
   @impl Guardian.Plug.ErrorHandler
   def auth_error(conn, error, _opts) do

@@ -1,7 +1,9 @@
 defmodule Arrow.Gtfs.StopTest do
   use Arrow.DataCase
-  alias Arrow.Gtfs.Stop
+
   import Arrow.Factory
+
+  alias Arrow.Gtfs.Stop
 
   test "get_stops_within_mile/2 returns stops roughly within one mile of a stop" do
     harvard_lat = 42.3744

@@ -1,12 +1,13 @@
 defmodule Mix.Tasks.CopyDb do
+  @shortdoc "Copies database"
   @moduledoc """
   Mix task to clone the Arrow database (dev or prod) in AWS locally.
   """
 
   use Mix.Task
+
   require Logger
 
-  @shortdoc "Copies database"
   @impl Mix.Task
   def run(_args) do
     # Load the DBStructure module now, so that relevant atoms like :route_id are

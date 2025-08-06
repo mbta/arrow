@@ -1,8 +1,11 @@
 defmodule ArrowWeb.DisruptionController do
   use ArrowWeb, :controller
 
-  alias __MODULE__.{Filters, Index}
-  alias Arrow.{Adjustment, Disruption, DisruptionRevision}
+  alias __MODULE__.Filters
+  alias __MODULE__.Index
+  alias Arrow.Adjustment
+  alias Arrow.Disruption
+  alias Arrow.DisruptionRevision
   alias ArrowWeb.ErrorHelpers
   alias ArrowWeb.Plug.Authorize
   alias Ecto.Changeset
@@ -14,10 +17,7 @@ defmodule ArrowWeb.DisruptionController do
   plug(Authorize, :delete_disruption when action in [:delete])
 
   @spec update_row_status(Conn.t(), Conn.params()) :: Conn.t()
-  def update_row_status(%{assigns: %{current_user: user}} = conn, %{
-        "id" => id,
-        "revision" => attrs
-      }) do
+  def update_row_status(%{assigns: %{current_user: user}} = conn, %{"id" => id, "revision" => attrs}) do
     {:ok, _} = Disruption.update(id, user.id, attrs)
 
     conn
@@ -40,7 +40,7 @@ defmodule ArrowWeb.DisruptionController do
 
   @spec new(Conn.t(), Conn.params()) :: Conn.t()
   def new(conn, _params) do
-    changeset = DisruptionRevision.new() |> Changeset.change()
+    changeset = Changeset.change(DisruptionRevision.new())
     render(conn, "new.html", adjustments: Adjustment.all(), changeset: changeset, note_body: "")
   end
 

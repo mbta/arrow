@@ -4,10 +4,16 @@ defmodule Arrow.DisruptionRevision do
   """
 
   use Ecto.Schema
+
   import Ecto.Query
 
-  alias Arrow.{Adjustment, Disruption, Repo}
-  alias Arrow.Disruption.{DayOfWeek, Exception, TripShortName}
+  alias Arrow.Adjustment
+  alias Arrow.Disruption
+  alias Arrow.Disruption.DayOfWeek
+  alias Arrow.Disruption.Exception
+  alias Arrow.Disruption.TripShortName
+  alias Arrow.Repo
+  alias Ecto.Association.NotLoaded
   alias Ecto.Changeset
 
   @type id :: integer
@@ -20,11 +26,11 @@ defmodule Arrow.DisruptionRevision do
           description: String.t(),
           adjustment_kind: atom() | nil,
           note_body: String.t() | nil,
-          disruption: Disruption.t() | Ecto.Association.NotLoaded.t(),
-          days_of_week: [DayOfWeek.t()] | Ecto.Association.NotLoaded.t(),
-          exceptions: [Exception.t()] | Ecto.Association.NotLoaded.t(),
-          trip_short_names: [TripShortName.t()] | Ecto.Association.NotLoaded.t(),
-          adjustments: [Adjustment.t()] | Ecto.Association.NotLoaded.t(),
+          disruption: Disruption.t() | NotLoaded.t(),
+          days_of_week: [DayOfWeek.t()] | NotLoaded.t(),
+          exceptions: [Exception.t()] | NotLoaded.t(),
+          trip_short_names: [TripShortName.t()] | NotLoaded.t(),
+          adjustments: [Adjustment.t()] | NotLoaded.t(),
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil,
           title: String.t()
@@ -106,11 +112,11 @@ defmodule Arrow.DisruptionRevision do
       %__MODULE__{},
       revision
       |> clone_fields()
-      |> Map.merge(%{adjustments: adjustments})
+      |> Map.put(:adjustments, adjustments)
       |> Map.merge(
-        ~w(days_of_week exceptions trip_short_names)a
-        |> Enum.map(fn assoc -> {assoc, Enum.map(Map.get(revision, assoc), &clone_fields/1)} end)
-        |> Enum.into(%{})
+        Map.new(~w(days_of_week exceptions trip_short_names)a, fn assoc ->
+          {assoc, Enum.map(Map.get(revision, assoc), &clone_fields/1)}
+        end)
       )
     )
   end
@@ -122,21 +128,22 @@ defmodule Arrow.DisruptionRevision do
   """
   @spec new(Enum.t()) :: t()
   def new(attrs \\ %{}) do
-    %__MODULE__{adjustments: [], days_of_week: [], exceptions: [], trip_short_names: []}
-    |> struct!(attrs)
+    struct!(%__MODULE__{adjustments: [], days_of_week: [], exceptions: [], trip_short_names: []}, attrs)
   end
 
   @spec publish!([integer()]) :: :ok
   def publish!(ids) do
     Repo.transaction(fn ->
       # Update disruptions only where the published revision is changing
-      from(d in Disruption,
-        join: dr in assoc(d, :revisions),
-        where: dr.id in ^ids,
-        where: dr.id != d.published_revision_id or is_nil(d.published_revision_id),
-        update: [set: [published_revision_id: dr.id, last_published_at: fragment("now()")]]
+      Repo.update_all(
+        from(d in Disruption,
+          join: dr in assoc(d, :revisions),
+          where: dr.id in ^ids,
+          where: dr.id != d.published_revision_id or is_nil(d.published_revision_id),
+          update: [set: [published_revision_id: dr.id, last_published_at: fragment("now()")]]
+        ),
+        []
       )
-      |> Repo.update_all([])
 
       # since GTFS creator doesn't know about deleted disruptions, consider any currently
       # deleted disruptions part of this publishing notice.
@@ -166,13 +173,14 @@ defmodule Arrow.DisruptionRevision do
 
   @spec publish_deleted!() :: :ok
   defp publish_deleted! do
-    from(
-      [disruptions: d, revisions: r] in Disruption.with_latest_revisions(),
-      where: r.is_active == false,
-      where: is_nil(d.published_revision_id) or d.published_revision_id != r.id,
-      update: [set: [published_revision_id: r.id, last_published_at: fragment("now()")]]
+    Repo.update_all(
+      from([disruptions: d, revisions: r] in Disruption.with_latest_revisions(),
+        where: r.is_active == false,
+        where: is_nil(d.published_revision_id) or d.published_revision_id != r.id,
+        update: [set: [published_revision_id: r.id, last_published_at: fragment("now()")]]
+      ),
+      []
     )
-    |> Repo.update_all([])
 
     :ok
   end
@@ -183,9 +191,7 @@ defmodule Arrow.DisruptionRevision do
 
     cond do
       adjustments == [] ->
-        Changeset.validate_required(changeset, :adjustment_kind,
-          message: "is required without adjustments"
-        )
+        Changeset.validate_required(changeset, :adjustment_kind, message: "is required without adjustments")
 
       adjustments != [] and kind not in [nil, ""] ->
         Changeset.add_error(changeset, :adjustment_kind, "cannot be set with adjustments")
@@ -278,7 +284,7 @@ defmodule Arrow.DisruptionRevision do
       is_nil(start_date) or is_nil(end_date) ->
         changeset
 
-      Date.compare(start_date, end_date) == :gt ->
+      Date.after?(start_date, end_date) ->
         Changeset.add_error(changeset, :start_date, "can't be after end date")
 
       true ->
@@ -287,7 +293,7 @@ defmodule Arrow.DisruptionRevision do
   end
 
   defp date_range(start_date, end_date) do
-    if Date.compare(start_date, end_date) == :gt do
+    if Date.after?(start_date, end_date) do
       Date.range(start_date, end_date, -1)
     else
       Date.range(start_date, end_date)

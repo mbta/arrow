@@ -6,9 +6,15 @@ defmodule Arrow.Gtfs.Stop do
   table contents should be considered read-only otherwise.
   """
   use Arrow.Gtfs.Schema
+
   import Ecto.Changeset
   import Ecto.Query
+
+  alias Arrow.Gtfs.Level
+  alias Arrow.Gtfs.Stop
+  alias Arrow.Gtfs.StopTime
   alias Arrow.Repo
+  alias Ecto.Association.NotLoaded
 
   @derive {Jason.Encoder, only: [:name, :desc, :lat, :lon, :id]}
 
@@ -24,24 +30,20 @@ defmodule Arrow.Gtfs.Stop do
           zone_id: String.t() | nil,
           address: String.t() | nil,
           url: String.t() | nil,
-          level: Arrow.Gtfs.Level.t() | Ecto.Association.NotLoaded.t() | nil,
+          level: Level.t() | NotLoaded.t() | nil,
           location_type: atom,
-          parent_station: t() | Ecto.Association.NotLoaded.t() | nil,
+          parent_station: t() | NotLoaded.t() | nil,
           wheelchair_boarding: atom,
           municipality: String.t() | nil,
           on_street: String.t() | nil,
           at_street: String.t() | nil,
           vehicle_type: atom,
-          times: list(Arrow.Gtfs.StopTime.t()) | Ecto.Association.NotLoaded.t()
+          times: list(StopTime.t()) | NotLoaded.t()
         }
 
-  @location_type_values Enum.with_index(
-                          ~w[stop_platform parent_station entrance_exit generic_node boarding_area]a
-                        )
+  @location_type_values Enum.with_index(~w[stop_platform parent_station entrance_exit generic_node boarding_area]a)
 
-  @wheelchair_boarding_values Enum.with_index(
-                                ~w[no_info_inherit_from_parent accessible not_accessible]a
-                              )
+  @wheelchair_boarding_values Enum.with_index(~w[no_info_inherit_from_parent accessible not_accessible]a)
 
   @vehicle_type_values Enum.with_index(~w[light_rail heavy_rail commuter_rail bus ferry]a)
 
@@ -56,15 +58,15 @@ defmodule Arrow.Gtfs.Stop do
     field :zone_id, :string
     field :address, :string
     field :url, :string
-    belongs_to :level, Arrow.Gtfs.Level
+    belongs_to :level, Level
     field :location_type, Ecto.Enum, values: @location_type_values
-    belongs_to :parent_station, Arrow.Gtfs.Stop
+    belongs_to :parent_station, Stop
     field :wheelchair_boarding, Ecto.Enum, values: @wheelchair_boarding_values
     field :municipality, :string
     field :on_street, :string
     field :at_street, :string
     field :vehicle_type, Ecto.Enum, values: @vehicle_type_values
-    has_many :times, Arrow.Gtfs.StopTime
+    has_many :times, StopTime
   end
 
   def changeset(stop, attrs) do
@@ -99,7 +101,7 @@ defmodule Arrow.Gtfs.Stop do
       iex> Arrow.Gtfs.Stop.get_stops_within_mile(nil, {42.3774, -72.1189})
       [%Arrow.Gtfs.Stop, ...]
   """
-  @spec get_stops_within_mile(String.t() | nil, {float(), float()}) :: list(Arrow.Gtfs.Stop.t())
+  @spec get_stops_within_mile(String.t() | nil, {float(), float()}) :: list(Stop.t())
   def get_stops_within_mile(arrow_stop_id, {lat, lon}) do
     conditions =
       dynamic(
@@ -119,7 +121,7 @@ defmodule Arrow.Gtfs.Stop do
       end
 
     query =
-      from(s in Arrow.Gtfs.Stop,
+      from(s in Stop,
         where: ^conditions
       )
 

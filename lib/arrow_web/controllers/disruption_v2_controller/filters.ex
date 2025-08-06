@@ -5,20 +5,14 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
   index (including e.g. sorting, in the table view) are considered filters.
   """
 
-  alias __MODULE__.{Calendar, Table}
+  @behaviour ArrowWeb.DisruptionV2Controller.Filters.Behaviour
+
   import __MODULE__.Helpers
 
+  alias __MODULE__.Calendar
+  alias __MODULE__.Table
+
   @empty_set MapSet.new()
-
-  defmodule Behaviour do
-    @moduledoc "Required behaviour for `Filters` sub-modules."
-    @callback from_params(Plug.Conn.params()) :: struct
-    @callback resettable?(struct) :: boolean
-    @callback reset(struct) :: struct
-    @callback to_params(struct) :: Plug.Conn.params()
-  end
-
-  @behaviour Behaviour
 
   @type t :: %__MODULE__{
           kinds: MapSet.t(atom()),
@@ -47,8 +41,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
         else: params["search"]
 
     %__MODULE__{
-      kinds:
-        params |> Map.get("kinds", []) |> Enum.map(&String.to_existing_atom/1) |> MapSet.new(),
+      kinds: params |> Map.get("kinds", []) |> MapSet.new(&String.to_existing_atom/1),
       only_approved?: not is_nil(params["only_approved"]),
       search: search,
       view: view_mod.from_params(params)
@@ -73,7 +66,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
 
   @spec toggle_only_approved(t()) :: t()
   def toggle_only_approved(%__MODULE__{only_approved?: only_approved} = filters) do
-    %__MODULE__{filters | only_approved?: !only_approved}
+    %{filters | only_approved?: !only_approved}
   end
 
   @spec toggle_view(%__MODULE__{}) :: %__MODULE__{}

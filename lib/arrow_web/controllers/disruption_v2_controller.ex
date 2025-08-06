@@ -1,7 +1,8 @@
 defmodule ArrowWeb.DisruptionV2Controller do
   use ArrowWeb, :controller
 
-  alias ArrowWeb.DisruptionV2Controller.{Filters, Index}
+  alias ArrowWeb.DisruptionV2Controller.Filters
+  alias ArrowWeb.DisruptionV2Controller.Index
   alias ArrowWeb.Plug.Authorize
   alias Plug.Conn
 

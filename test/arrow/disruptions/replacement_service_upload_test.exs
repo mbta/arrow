@@ -2,8 +2,8 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
   @moduledoc false
   use Arrow.DataCase
 
-  import ExUnit.CaptureLog
   import Arrow.Disruptions.ReplacementServiceUpload
+  import ExUnit.CaptureLog
 
   @xlsx_dir "test/support/fixtures/xlsx/disruption_v2_live"
 
