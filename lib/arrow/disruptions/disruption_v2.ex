@@ -107,7 +107,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
       if non_active_activated_shuttles == [] do
         changeset
       else
-        shuttles = Enum.map_join(non_active_activated_shuttles, ", ", &inspect(&1.shuttle_name))
+        shuttles = Enum.map_join(non_active_activated_shuttles, ", ", & &1.shuttle_name)
 
         add_error(
           changeset,
