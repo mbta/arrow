@@ -8,7 +8,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   import Ecto.Changeset
   import Ecto.Query
 
-  alias Arrow.Disruptions
+  alias Arrow.Disruptions.Limit
   alias Arrow.Disruptions.ReplacementService
   alias Arrow.Hastus.Export
   alias Arrow.Repo
@@ -21,9 +21,9 @@ defmodule Arrow.Disruptions.DisruptionV2 do
           description: String.t() | nil,
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil,
-          limits: [Arrow.Disruptions.Limit.t()] | Ecto.Association.NotLoaded.t(),
+          limits: [Limit.t()] | Ecto.Association.NotLoaded.t(),
           replacement_services: [ReplacementService.t()] | Ecto.Association.NotLoaded.t(),
-          hastus_exports: [Arrow.Hastus.Export.t()] | Ecto.Association.NotLoaded.t(),
+          hastus_exports: [Export.t()] | Ecto.Association.NotLoaded.t(),
           shuttles: [Shuttle.t()] | Ecto.Association.NotLoaded.t()
         }
 
@@ -33,7 +33,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
     field :is_active, :boolean
     field :description, :string
 
-    has_many :limits, Arrow.Disruptions.Limit,
+    has_many :limits, Limit,
       foreign_key: :disruption_id,
       on_replace: :delete
 
@@ -57,8 +57,8 @@ defmodule Arrow.Disruptions.DisruptionV2 do
     disruption_v2
     |> cast(attrs, [:title, :is_active, :description])
     |> cast(attrs, [:mode], force_changes: true)
-    |> cast_assoc(:limits, with: &Arrow.Disruptions.Limit.changeset/2)
-    |> cast_assoc(:replacement_services, with: &Disruptions.ReplacementService.changeset/2)
+    |> cast_assoc(:limits, with: &Limit.changeset/2)
+    |> cast_assoc(:replacement_services, with: &ReplacementService.changeset/2)
     |> validate_required([:title, :mode, :is_active])
     |> validate_required_for(:is_active)
   end
