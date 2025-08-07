@@ -409,7 +409,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
           limits: [
             build(:limit,
               end_date: today,
-              route: build(:gtfs_route, id: "Blue"),
+              route: build(:gtfs_route),
               disruption: nil
             )
           ],
@@ -492,13 +492,14 @@ defmodule Arrow.Shuttles.ShuttleTest do
       shuttle = shuttle_fixture(%{status: :active}, true, true)
       other_shuttle = shuttle_fixture(%{status: :active}, true, true)
 
-      # Disruption uses this shuttle and has only past timeframes + a non-imported HASTUS service with current or future timeframe
+      # Disruption uses this shuttle and has only past timeframes + a
+      # non-imported HASTUS service with current or future timeframe
       insert(:disruption_v2,
         is_active: true,
         limits: [
           build(:limit,
             end_date: Date.add(today, -1),
-            route: build(:gtfs_route, id: "Blue"),
+            route: build(:gtfs_route),
             disruption: nil
           )
         ],
@@ -540,7 +541,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
         limits: [
           build(:limit,
             end_date: today,
-            route: build(:gtfs_route, id: "Blue"),
+            route: build(:gtfs_route),
             disruption: nil
           )
         ],
