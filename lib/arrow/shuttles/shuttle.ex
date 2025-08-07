@@ -6,7 +6,6 @@ defmodule Arrow.Shuttles.Shuttle do
 
   alias Arrow.Disruptions
   alias Arrow.Disruptions.DisruptionV2
-  alias Arrow.Disruptions.ReplacementService
   alias Arrow.Repo
 
   @type id :: integer
@@ -14,24 +13,17 @@ defmodule Arrow.Shuttles.Shuttle do
           id: id,
           status: :draft | :active | :inactive,
           shuttle_name: String.t(),
-          suffix: String.t(),
-          routes: [Arrow.Shuttles.Route.t()] | Ecto.Association.NotLoaded.t(),
           disrupted_route_id: String.t(),
-          disrupted_route: Arrow.Gtfs.Route.t() | Ecto.Association.NotLoaded.t()
+          suffix: String.t()
         }
 
   schema "shuttles" do
     field :status, Ecto.Enum, values: [:draft, :active, :inactive]
     field :shuttle_name, :string
+    field :disrupted_route_id, :string
     field :suffix, :string
 
     has_many :routes, Arrow.Shuttles.Route, preload_order: [asc: :direction_id]
-    has_many :replacement_services, ReplacementService
-    belongs_to :disrupted_route, Arrow.Gtfs.Route, type: :string
-
-    many_to_many :disruptions, DisruptionV2,
-      join_through: ReplacementService,
-      join_keys: [shuttle_id: :id, disruption_id: :id]
 
     timestamps(type: :utc_datetime)
   end
