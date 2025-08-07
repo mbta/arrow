@@ -297,6 +297,16 @@ defmodule Arrow.Factory do
     }
   end
 
+  def hastus_export_factory do
+    %Arrow.Hastus.Export{
+      s3_path: sequence(:export_s3_path, &"s3://hastus-export-#{&1}"),
+      line: build(:gtfs_line),
+      services: [],
+      trip_route_directions: [],
+      disruption: not_loaded(Arrow.Hastus.Export, :disruption)
+    }
+  end
+
   def hastus_service_factory do
     %Arrow.Hastus.Service{
       name: sequence(:service_id, &"hastus-service-#{&1}"),
@@ -304,6 +314,14 @@ defmodule Arrow.Factory do
       derived_limits: [],
       import?: true,
       export: not_loaded(Arrow.Hastus.Service, :export)
+    }
+  end
+
+  def hastus_service_date_factory do
+    %Arrow.Hastus.ServiceDate{
+      start_date: ~D[2025-01-01],
+      end_date: ~D[2025-12-31],
+      service: not_loaded(Arrow.Hastus.ServiceDate, :service)
     }
   end
 
