@@ -24,7 +24,7 @@ defmodule Arrow.Hastus.Service do
 
     has_many :derived_limits, DerivedLimit, on_replace: :delete, foreign_key: :service_id
 
-    belongs_to :export, Arrow.Hastus.Export
+    belongs_to :export, Export
 
     timestamps(type: :utc_datetime)
   end

@@ -4,7 +4,8 @@ defmodule Arrow.Shuttles.Shuttle do
   import Ecto.Changeset
   import Ecto.Query
 
-  alias Arrow.Disruptions.ReplacementService
+  alias Arrow.Disruptions
+  alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Repo
 
   @type id :: integer
@@ -28,7 +29,11 @@ defmodule Arrow.Shuttles.Shuttle do
   end
 
   @doc false
-  def changeset(shuttle, attrs) do
+  def changeset(shuttle, attrs, today \\ nil) do
+    today =
+      today ||
+        DateTime.utc_now() |> DateTime.shift_zone!("America/New_York") |> DateTime.to_date()
+
     shuttle
     |> cast(attrs, [:shuttle_name, :disrupted_route_id, :status, :suffix])
     |> then(fn changeset ->
@@ -37,64 +42,85 @@ defmodule Arrow.Shuttles.Shuttle do
       )
     end)
     |> validate_required([:shuttle_name, :status])
-    |> validate_required_for(:status)
+    |> validate_required_for(:status, today)
     |> foreign_key_constraint(:disrupted_route_id)
     |> unique_constraint(:shuttle_name)
   end
 
-  defp validate_required_for(changeset, :status) do
-    # Placeholder validation until form is complete
-    status = get_field(changeset, :status)
-    # Set error on status field for now
+  defp validate_required_for(changeset, :status, today) do
+    if get_field(changeset, :status) == :active,
+      do: validate_for_active_status(changeset),
+      else: validate_for_inactive_status(changeset, today)
+  end
 
-    case status do
-      :active ->
-        routes = get_assoc(changeset, :routes)
+  defp validate_for_active_status(changeset) do
+    routes = get_assoc(changeset, :routes)
 
-        cond do
-          routes |> Enum.map(&get_assoc(&1, :route_stops)) |> Enum.any?(&(length(&1) < 2)) ->
-            add_error(changeset, :status, "must have at least two stops in each direction")
+    cond do
+      routes |> Enum.map(&get_assoc(&1, :route_stops)) |> Enum.any?(&(length(&1) < 2)) ->
+        add_error(changeset, :status, "must have at least two stops in each direction")
 
-          routes
-          |> Enum.map(&get_assoc(&1, :route_stops))
-          |> Enum.any?(&route_stops_missing_time_to_next_stop?/1) ->
-            add_error(
-              changeset,
-              :status,
-              "all stops except the last in each direction must have a time to next stop"
-            )
+      routes
+      |> Enum.map(&get_assoc(&1, :route_stops))
+      |> Enum.any?(&route_stops_missing_time_to_next_stop?/1) ->
+        add_error(
+          changeset,
+          :status,
+          "all stops except the last in each direction must have a time to next stop"
+        )
 
-          routes
-          |> Enum.any?(fn route -> is_nil(route.data.shape) end) ->
-            add_error(
-              changeset,
-              :status,
-              "all routes must have an associated shape"
-            )
+      routes
+      |> Enum.any?(fn route -> is_nil(route.data.shape) end) ->
+        add_error(
+          changeset,
+          :status,
+          "all routes must have an associated shape"
+        )
 
-          true ->
-            changeset
-        end
+      true ->
+        changeset
+    end
+  end
 
-      _ ->
-        id = get_field(changeset, :id)
+  defp validate_for_inactive_status(changeset, today) do
+    shuttle_id = get_field(changeset, :id)
 
-        replacement_services =
-          if is_nil(id) do
-            []
-          else
-            Repo.all(from r in ReplacementService, where: r.shuttle_id == ^id)
-          end
+    active_parent_disruptions_with_present_future_end_date =
+      if is_nil(shuttle_id) do
+        []
+      else
+        # If any of an associated active disruption's
+        # - replacement services (even those not using this shuttle),
+        # - limits, or
+        # - hastus services
+        # have current or upcoming timeframes, then we can't safely deactivate the disruption.
+        from(
+          d in DisruptionV2,
+          join: s in assoc(d, :shuttles),
+          where: s.id == ^shuttle_id,
+          where: d.is_active,
+          preload: [:limits, :replacement_services, hastus_exports: [services: [:service_dates]]]
+        )
+        |> Repo.all()
+        |> Enum.filter(fn d ->
+          {_, end_date} = Disruptions.start_end_dates(d)
+          end_date && Date.compare(end_date, today) in [:gt, :eq]
+        end)
+      end
 
-        if length(replacement_services) > 0 do
-          add_error(
-            changeset,
-            :status,
-            "cannot set to a non-active status while in use as a replacement service"
-          )
-        else
-          changeset
-        end
+    if active_parent_disruptions_with_present_future_end_date == [] do
+      changeset
+    else
+      disruptions =
+        active_parent_disruptions_with_present_future_end_date
+        |> Enum.map_join(", ", &inspect(&1.title))
+
+      add_error(
+        changeset,
+        :status,
+        "can't deactivate: shuttle is in use by approved disruption(s) that are in effect now " <>
+          "or in the future: #{disruptions}"
+      )
     end
   end
 

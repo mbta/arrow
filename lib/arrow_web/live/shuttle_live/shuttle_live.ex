@@ -349,10 +349,20 @@ defmodule ArrowWeb.ShuttleViewLive do
     shuttle = Shuttles.get_shuttle!(socket.assigns.shuttle.id)
 
     case Shuttles.update_shuttle(shuttle, shuttle_params) do
-      {:ok, _shuttle} ->
+      {:ok, _shuttle, deactivated_disruptions} ->
+        flash = "Shuttle updated successfully."
+
+        flash =
+          if deactivated_disruptions == [] do
+            flash
+          else
+            disruptions = Enum.map_join(deactivated_disruptions, ", ", &inspect(&1.title))
+            flash <> " Also deactivated past disruption(s) using the shuttle: #{disruptions}"
+          end
+
         {:noreply,
          socket
-         |> put_flash(:info, "Shuttle updated successfully")
+         |> put_flash(:info, flash)
          |> redirect(to: ~p"/shuttles")}
 
       {:error, changeset} ->
