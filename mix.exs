@@ -30,7 +30,7 @@ defmodule Arrow.MixProject do
   def application do
     [
       mod: {Arrow.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :tls_certificate_check]
     ]
   end
 
@@ -53,7 +53,7 @@ defmodule Arrow.MixProject do
       {:ex_aws_secretsmanager, "~> 2.0"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.1"},
-      {:floki, ">= 0.30.0", only: :test},
+      {:floki, "~> 0.37.1", only: :test},
       {:sweet_xml, "~> 0.7.4"},
       {:ex_machina, "~> 2.3", only: :test},
       {:gettext, "~> 0.11"},
@@ -66,6 +66,7 @@ defmodule Arrow.MixProject do
       {:lcov_ex, "~> 0.2", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.2", only: :test},
       {:oban, "~> 2.18"},
+      {:bandit, "~> 1.0"},
       {:phoenix_ecto, "~> 4.0"},
       {:phoenix_live_reload, "~> 1.5", only: :dev},
       {:phoenix_html, "~> 4.0"},
@@ -75,7 +76,6 @@ defmodule Arrow.MixProject do
       {:phoenix_live_dashboard, "~> 0.7"},
       {:phoenix_pubsub, "~> 2.0"},
       {:phoenix, "~> 1.7.12"},
-      {:plug_cowboy, "~> 2.1"},
       {:telemetry, "~> 1.2", override: true},
       {:telemetry_poller, "~> 1.1"},
       {:telemetry_metrics, "~> 1.0"},
@@ -86,7 +86,16 @@ defmodule Arrow.MixProject do
       {:ueberauth_oidcc, "~> 0.4.0"},
       {:ueberauth, "~> 0.10"},
       {:wallaby, "~> 0.30", runtime: false, only: :test},
-      {:sentry, "~> 10.7"},
+      {:sentry, "~> 11.0"},
+      {:opentelemetry, "~> 1.5"},
+      {:opentelemetry_api, "~> 1.4"},
+      {:opentelemetry_exporter, "~> 1.0"},
+      # https://github.com/open-telemetry/opentelemetry-erlang-contrib/issues/428
+      {:opentelemetry_semantic_conventions, "~> 1.27", override: true},
+      {:opentelemetry_phoenix, "~> 2.0"},
+      {:opentelemetry_ecto, "~> 1.2"},
+      {:opentelemetry_bandit, "~> 0.2.0"},
+      {:opentelemetry_oban, "~> 1.1"},
       {:tailwind, "~> 0.2", runtime: Mix.env() == :dev},
       {:heroicons,
        github: "tailwindlabs/heroicons",
