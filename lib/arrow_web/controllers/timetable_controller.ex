@@ -53,6 +53,7 @@ defmodule ArrowWeb.TimetableController do
       Enum.map(available_days_of_week, fn day_of_week ->
         case day_of_week do
           :weekday -> {:weekday, "Weekday"}
+          :friday -> {:friday, "Friday"}
           :saturday -> {:saturday, "Saturday"}
           :sunday -> {:sunday, "Sunday"}
         end
