@@ -13,6 +13,7 @@
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.0",
     "@fullcalendar/react": "^6.1.0",
+    "@types/react-dom": "^18.3.0",
     "leaflet": "^1.9.4",
     "live_select": "file:../deps/live_select",
     "phoenix_html": "file:../deps/phoenix_html",
