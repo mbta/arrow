@@ -56,7 +56,7 @@
     "ts-jest": "^29.1.4",
     "typescript": "^5.4.5",
     "typescript-language-server": "^4.3.3",
-    "phoenix": "1.7.21",
+    "phoenix": "1.7.21"
   },
   "jest": {
     "testEnvironment": "jsdom",
