@@ -4,7 +4,11 @@ import LiveReact from "./LiveReactPhoenix"
 import live_select from "live_select"
 // Establish Phoenix Socket and LiveView configuration.
 import { Socket } from "phoenix"
-import { LiveSocket, LiveSocketInstanceInterface, ViewHook } from "phoenix_live_view"
+import {
+  LiveSocket,
+  LiveSocketInstanceInterface,
+  ViewHook,
+} from "phoenix_live_view"
 import Sortable from "sortablejs"
 
 import ReactPhoenix from "./ReactPhoenix"
@@ -71,7 +75,7 @@ const sortable = {
             ...e.item.dataset,
             ...this.el.dataset,
           }
-          this.pushEventTo(this.el, "reorder_stops", params)
+          void this.pushEventTo(this.el, "reorder_stops", params)
         }
       },
     })
