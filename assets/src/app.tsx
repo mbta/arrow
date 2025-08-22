@@ -4,7 +4,7 @@ import LiveReact from "./LiveReactPhoenix"
 import live_select from "live_select"
 // Establish Phoenix Socket and LiveView configuration.
 import { Socket } from "phoenix"
-import { LiveSocketInstanceInterface, ViewHook } from "phoenix_live_view"
+import { LiveSocket, LiveSocketInstanceInterface, ViewHook } from "phoenix_live_view"
 import Sortable from "sortablejs"
 
 import ReactPhoenix from "./ReactPhoenix"
@@ -16,7 +16,7 @@ import ShapeStopViewMap from "./components/ShapeStopViewMap"
 
 declare global {
   interface Window {
-    liveSocket: typeof LiveSocketInstanceInterface
+    liveSocket: LiveSocketInstanceInterface
     Components: {
       [name: string]: (props: any) => JSX.Element
     }
