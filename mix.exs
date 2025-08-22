@@ -55,7 +55,7 @@ defmodule Arrow.MixProject do
       {:ex_aws_s3, "~> 2.1"},
       {:floki, ">= 0.30.0", only: :test},
       {:sweet_xml, "~> 0.7.4"},
-      {:ex_machina, "~> 2.3", only: :test},
+      {:ex_machina, "~> 2.8", only: :test},
       {:gettext, "~> 0.11"},
       {:guardian, "~> 2.0"},
       {:hackney, "~> 1.21"},
