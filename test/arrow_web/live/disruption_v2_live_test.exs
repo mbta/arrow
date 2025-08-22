@@ -125,9 +125,11 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
         })
         |> LazyHTML.from_fragment()
         |> LazyHTML.query("#shuttle-view-map-disruptionsv2-container")
+        |> LazyHTML.to_tree()
 
-      # make sure the shuttle map container is displayed when we have entered a new shuttle
-      assert [_shuttle_map_div] = stop_map_container
+      assert [
+               {"div", [{"id", "shuttle-view-map-disruptionsv2-container"}, _], _}
+             ] = stop_map_container
     end
 
     @tag :authenticated_admin
@@ -299,6 +301,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
             disruption_id: disruption_v2.id
           }
         })
+        |> LazyHTML.from_fragment()
 
       assert updated_shuttle_input_html
              |> LazyHTML.query(replacement_service_shuttle_id_input)
@@ -322,9 +325,13 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     } do
       {:ok, live, _html} = live(conn, ~p"/disruptions/#{disruption.id}")
 
-      html = live |> element("#duplicate-limit-#{limit.id}") |> render_click()
+      html =
+        live
+        |> element("#duplicate-limit-#{limit.id}")
+        |> render_click()
+        |> LazyHTML.from_fragment()
 
-      assert html =~ "add new disruption limit"
+      assert LazyHTML.text(html) =~ "add new disruption limit"
 
       assert html
              |> LazyHTML.query("#limit_start_date")

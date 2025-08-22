@@ -381,10 +381,10 @@ defmodule ArrowWeb.ShuttleLiveTest do
            })}
       end)
 
-      {:ok, edit_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
+      {:ok, edit_live, html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
 
       refute edit_live
-             |> element(~s{#shuttle_routes_0_route_stops_1_time_to_next_stop"})
+             |> element("#shuttle_routes_0_route_stops_1_time_to_next_stop")
              |> render() =~ "value"
 
       edit_live
@@ -392,7 +392,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       |> render_click()
 
       assert edit_live
-             |> element(~s{#shuttle_routes_0_route_stops_1_time_to_next_stop"})
+             |> element("#shuttle_routes_0_route_stops_1_time_to_next_stop")
              |> render() =~ "value=\"300\""
     end
   end
@@ -471,7 +471,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
 
       html =
         definition
-        |> render_upload(definition, "valid.xlsx")
+        |> render_upload("valid.xlsx")
         |> LazyHTML.from_fragment()
 
       direction_0_stop_rows = LazyHTML.query(html, "#stops-dir-0 > .row")
@@ -481,7 +481,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
         [stop] =
           direction_0_stop_rows
           |> LazyHTML.query(
-            "[data-stop_sequence=#{index}] > div > div.form-group > div > div > div > input[type=text]"
+            "[data-stop_sequence|=\"#{index}\"] > div > div.form-group > div > div > div > input[type=text]"
           )
           |> LazyHTML.attribute("value")
 
@@ -492,7 +492,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
         [stop] =
           direction_1_stop_rows
           |> LazyHTML.query(
-            "[data-stop_sequence=#{index}] > div > div.form-group > div > div > div > input[type=text]"
+            "[data-stop_sequence|=\"#{index}\"] > div > div.form-group > div > div > div > input[type=text]"
           )
           |> LazyHTML.attribute("value")
 
@@ -520,9 +520,11 @@ defmodule ArrowWeb.ShuttleLiveTest do
         |> render_upload("valid.xlsx")
         |> LazyHTML.from_fragment()
 
-      assert html =~ "Failed to upload definition:"
-      assert html =~ "not a valid stop ID &#39;9328"
-      assert html =~ "not a valid stop ID &#39;5072"
+      text = LazyHTML.text(html)
+
+      assert text =~ "Failed to upload definition:"
+      assert text =~ "not a valid stop ID '9328'"
+      assert text =~ "not a valid stop ID '5072'"
 
       direction_0_stop_rows = LazyHTML.query(html, "#stops-dir-0 > .row")
       direction_1_stop_rows = LazyHTML.query(html, "#stops-dir-1 > .row")
@@ -531,7 +533,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
         assert [] =
                  direction_0_stop_rows
                  |> LazyHTML.query(
-                   "[data-stop_sequence=#{index}] > div > div.form-group > div > div > div > input[type=text]"
+                   "[data-stop_sequence|=\"#{index}\"] > div > div.form-group > div > div > div > input[type=text]"
                  )
                  |> LazyHTML.attribute("value")
       end
@@ -540,7 +542,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
         assert [] =
                  direction_1_stop_rows
                  |> LazyHTML.query(
-                   "[data-stop_sequence=#{index}] > div > div.form-group > div > div > div > input[type=text]"
+                   "[data-stop_sequence|=\"#{index}\"] > div > div.form-group > div > div > div > input[type=text]"
                  )
                  |> LazyHTML.attribute("value")
       end
