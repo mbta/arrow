@@ -53,7 +53,6 @@ defmodule Arrow.MixProject do
       {:ex_aws_secretsmanager, "~> 2.0"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.1"},
-      {:floki, ">= 0.30.0", only: :test},
       {:sweet_xml, "~> 0.7.4"},
       {:ex_machina, "~> 2.8", only: :test},
       {:gettext, "~> 0.11"},
