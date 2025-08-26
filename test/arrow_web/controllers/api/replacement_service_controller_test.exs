@@ -66,6 +66,7 @@ defmodule ArrowWeb.API.ReplacementServiceControllerTest do
                      "timetable" => %{
                        "saturday" => %{"0" => _, "1" => _},
                        "sunday" => nil,
+                       "friday" => nil,
                        "weekday" => %{
                          "0" => [
                            [

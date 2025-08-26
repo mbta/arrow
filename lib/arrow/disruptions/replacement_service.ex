@@ -32,6 +32,7 @@ defmodule Arrow.Disruptions.ReplacementService do
 
   @service_type_to_workbook_abbreviation %{
     :weekday => "WKDY",
+    :friday => "FRI",
     :sunday => "SUN",
     :saturday => "SAT"
   }
@@ -125,7 +126,7 @@ defmodule Arrow.Disruptions.ReplacementService do
   end
 
   @spec schedule_service_types :: list(atom())
-  def schedule_service_types, do: [:weekday, :saturday, :sunday]
+  def schedule_service_types, do: [:weekday, :friday, :saturday, :sunday]
 
   @spec first_last_trip_times(t(), list(atom())) :: %{
           atom() => %{
