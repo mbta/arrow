@@ -114,8 +114,10 @@ defmodule Arrow.Disruptions.ReplacementService do
     |> Enum.map(&add_timetable/1)
   end
 
+  @schedule_service_types Map.keys(@service_type_to_workbook_abbreviation)
+
   @spec schedule_service_types :: list(atom())
-  def schedule_service_types, do: [:weekday, :friday, :saturday, :sunday]
+  def schedule_service_types, do: @schedule_service_types
 
   @spec first_last_trip_times(t(), list(atom())) :: %{
           atom() => %{
