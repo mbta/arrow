@@ -119,6 +119,9 @@ defmodule Arrow.Disruptions.ReplacementService do
   @spec schedule_service_types :: list(atom())
   def schedule_service_types, do: @schedule_service_types
 
+  defp service_type_to_workbook_abbreviation(schedule_service_type),
+    do: Map.get(@service_type_to_workbook_abbreviation, schedule_service_type)
+
   @spec first_last_trip_times(t(), list(atom())) :: %{
           atom() => %{
             first_trips: %{0 => String.t(), 1 => String.t()},
@@ -131,7 +134,7 @@ defmodule Arrow.Disruptions.ReplacementService do
       ) do
     schedule_service_types
     |> Enum.map(fn service_type ->
-      service_type_abbreviation = Map.get(@service_type_to_workbook_abbreviation, service_type)
+      service_type_abbreviation = service_type_to_workbook_abbreviation(service_type)
 
       day_of_week_data =
         Map.get(
@@ -154,7 +157,7 @@ defmodule Arrow.Disruptions.ReplacementService do
          %__MODULE__{source_workbook_data: workbook_data} = replacement_service,
          service_type_atom
        ) do
-    service_type_abbreviation = Map.get(@service_type_to_workbook_abbreviation, service_type_atom)
+    service_type_abbreviation = service_type_to_workbook_abbreviation(service_type_atom)
 
     if day_of_week_data =
          Map.get(workbook_data, workbook_column_from_day_of_week(service_type_abbreviation)) do
