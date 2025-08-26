@@ -14,6 +14,7 @@ defmodule ArrowWeb.TimetableController do
     available_days_of_week =
       ReplacementService.schedule_service_types()
       |> Enum.reject(&is_nil(replacement_service.timetable[&1]))
+      |> Enum.sort_by(&schedule_service_order/1)
 
     day_of_week =
       if day_of_week = Map.get(params, "day_of_week") do
@@ -81,4 +82,9 @@ defmodule ArrowWeb.TimetableController do
       last_stop: last_stop
     )
   end
+
+  defp schedule_service_order(:weekday), do: 1
+  defp schedule_service_order(:friday), do: 2
+  defp schedule_service_order(:saturday), do: 3
+  defp schedule_service_order(:sunday), do: 4
 end
