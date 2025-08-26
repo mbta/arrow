@@ -30,13 +30,6 @@ defmodule Arrow.Disruptions.ReplacementService do
           timetable: %{weekday: timetable(), saturday: timetable(), sunday: timetable()} | nil
         }
 
-  @service_type_to_workbook_abbreviation %{
-    :weekday => "WKDY",
-    :friday => "FRI",
-    :sunday => "SUN",
-    :saturday => "SAT"
-  }
-
   schema "replacement_services" do
     field :reason, :string
     field :start_date, :date
@@ -125,7 +118,14 @@ defmodule Arrow.Disruptions.ReplacementService do
     |> Enum.map(&add_timetable/1)
   end
 
-  @schedule_service_types Map.keys(@service_type_to_workbook_abbreviation)
+  @service_type_to_workbook_abbreviation [
+    weekday: "WKDY",
+    friday: "FRI",
+    sunday: "SUN",
+    saturday: "SAT"
+  ]
+
+  @schedule_service_types Keyword.keys(@service_type_to_workbook_abbreviation)
 
   @spec schedule_service_types :: list(atom())
   def schedule_service_types, do: @schedule_service_types
