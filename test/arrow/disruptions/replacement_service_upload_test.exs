@@ -59,7 +59,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUploadTest do
                 [
                   """
                   none found for: \
-                  WKDY headways and runtimes, SAT headways and runtimes, SUN headways and runtimes\
+                  WKDY headways and runtimes, FRI headways and runtimes, SAT headways and runtimes, SUN headways and runtimes\
                   """
                 ]}
              ] =

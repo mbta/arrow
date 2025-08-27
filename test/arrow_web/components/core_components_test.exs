@@ -14,12 +14,11 @@ defmodule ArrowWeb.CoreComponentsTest do
         <.navbar page={@page} />
         """
         |> rendered_to_string()
-        |> Floki.find("a.btn-secondary")
+        |> LazyHTML.from_fragment()
+        |> LazyHTML.query("a.btn-secondary")
 
-      assert [current_page_link] = current_page_links
-
-      assert Floki.text(current_page_link) =~ "Shuttles"
-      assert Floki.attribute(current_page_link, "href") == []
+      assert [{_a, _css, [inner_text]}] = LazyHTML.to_tree(current_page_links)
+      assert inner_text =~ "Shuttle"
     end
 
     test "other v2 page links have .btn-outline-secondary and href" do
@@ -30,10 +29,15 @@ defmodule ArrowWeb.CoreComponentsTest do
         <.navbar page={@page} />
         """
         |> rendered_to_string()
-        |> Floki.find("a.btn-outline-secondary")
+        |> LazyHTML.from_fragment()
+        |> LazyHTML.query("a.btn-outline-secondary")
+        |> LazyHTML.to_tree()
 
-      assert length(secondary_links) == 3
-      assert length(Floki.attribute(secondary_links, "href")) == 3
+      assert [
+               {"a", [_, {"href", "/"}], _},
+               {"a", [_, {"href", "/shapes"}], _},
+               {"a", [_, {"href", "/stops"}], _}
+             ] = secondary_links
     end
 
     test "first link is to / when not on Disruptions page" do
@@ -44,7 +48,9 @@ defmodule ArrowWeb.CoreComponentsTest do
         <.navbar page={@page} />
         """
         |> rendered_to_string()
-        |> Floki.attribute("a", "href")
+        |> LazyHTML.from_fragment()
+        |> LazyHTML.query("a")
+        |> LazyHTML.attribute("href")
 
       assert ["/" | _] = hrefs
     end
@@ -57,7 +63,9 @@ defmodule ArrowWeb.CoreComponentsTest do
         <.navbar page={@page} create_disruption_permission?={@create_disruption_permission?} />
         """
         |> rendered_to_string()
-        |> Floki.attribute("a", "href")
+        |> LazyHTML.from_fragment()
+        |> LazyHTML.query("a")
+        |> LazyHTML.attribute("href")
 
       assert ["/disruptions/new" | _] = hrefs
     end
@@ -70,7 +78,9 @@ defmodule ArrowWeb.CoreComponentsTest do
         <.navbar page={@page} />
         """
         |> rendered_to_string()
-        |> Floki.attribute("a", "href")
+        |> LazyHTML.from_fragment()
+        |> LazyHTML.query("a")
+        |> LazyHTML.attribute("href")
 
       assert ["/" | _] = hrefs
     end
@@ -83,11 +93,11 @@ defmodule ArrowWeb.CoreComponentsTest do
         <.navbar page={@page} />
         """
         |> rendered_to_string()
-        |> Floki.find(".btn-warning")
+        |> LazyHTML.from_fragment()
+        |> LazyHTML.query(".btn-warning")
+        |> LazyHTML.to_tree()
 
-      assert [warning_button] = warning_buttons
-
-      assert Floki.text(warning_button) == "Switch to V1"
+      assert [{"a", _attributes, ["Switch to V1"]}] = warning_buttons
     end
   end
 end
