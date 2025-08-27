@@ -43,6 +43,7 @@ defmodule Arrow.MixProject do
   # Type `mix help deps` for examples and options.
   def deps do
     [
+      {:typed_ecto_schema, "~> 0.4.3"},
       {:ex_doc, "~> 0.38.3", only: :dev, runtime: false, warn_if_outdated: true},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:csv, "~> 3.2"},
