@@ -11,6 +11,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
   @version 1
 
   @weekday_tab_name "WKDY headways and runtimes"
+  @friday_tab_name "FRI headways and runtimes"
   @saturday_tab_name "SAT headways and runtimes"
   @sunday_tab_name "SUN headways and runtimes"
 
@@ -110,7 +111,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
 
   @spec get_xlsx_tab_tids(any()) :: {:error, list(String.t())} | {:ok, map()}
   def get_xlsx_tab_tids(tab_tids) do
-    all_tabs = [@weekday_tab_name, @saturday_tab_name, @sunday_tab_name]
+    all_tabs = [@weekday_tab_name, @friday_tab_name, @saturday_tab_name, @sunday_tab_name]
 
     tab_map =
       Enum.reduce(tab_tids, %{}, fn {:ok, tid}, acc ->
