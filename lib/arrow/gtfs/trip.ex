@@ -8,35 +8,13 @@ defmodule Arrow.Gtfs.Trip do
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          id: String.t(),
-          route: Arrow.Gtfs.Route.t() | Ecto.Association.NotLoaded.t(),
-          service: Arrow.Gtfs.Service.t() | Ecto.Association.NotLoaded.t(),
-          headsign: String.t(),
-          short_name: String.t() | nil,
-          direction_id: 0 | 1,
-          directions: list(Arrow.Gtfs.Direction.t()) | Ecto.Association.NotLoaded.t(),
-          block_id: String.t() | nil,
-          shape: Arrow.Gtfs.Shape.t() | Ecto.Association.NotLoaded.t() | nil,
-          shape_points: list(Arrow.Gtfs.ShapePoint.t()) | Ecto.Association.NotLoaded.t() | nil,
-          wheelchair_accessible: atom,
-          route_type: atom | nil,
-          # The RoutePattern that this Trip follows.
-          route_pattern: Arrow.Gtfs.RoutePattern.t() | Ecto.Association.NotLoaded.t(),
-          # The RoutePattern, if any, for which this is the *representative* Trip.
-          representing_route_pattern:
-            Arrow.Gtfs.RoutePattern.t() | Ecto.Association.NotLoaded.t() | nil,
-          bikes_allowed: atom,
-          stop_times: list(Arrow.Gtfs.StopTime.t()) | Ecto.Association.NotLoaded.t()
-        }
-
   @wheelchair_accessibility_values Enum.with_index(
                                      ~w[no_information_inherit_from_parent accessible not_accessible]a
                                    )
   @route_type_values Enum.with_index(~w[light_rail heavy_rail commuter_rail bus ferry]a)
   @bike_boarding_values Enum.with_index(~w[no_information bikes_allowed bikes_not_allowed]a)
 
-  schema "gtfs_trips" do
+  typed_schema "gtfs_trips" do
     belongs_to :route, Arrow.Gtfs.Route
     belongs_to :service, Arrow.Gtfs.Service
     field :headsign, :string

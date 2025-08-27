@@ -8,16 +8,9 @@ defmodule Arrow.Gtfs.Direction do
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          route: Arrow.Gtfs.Route.t() | Ecto.Association.NotLoaded.t(),
-          direction_id: 0 | 1,
-          desc: String.t(),
-          destination: String.t()
-        }
-
   @primary_key false
 
-  schema "gtfs_directions" do
+  typed_schema "gtfs_directions" do
     belongs_to :route, Arrow.Gtfs.Route, primary_key: true
     field :direction_id, :integer, primary_key: true
     field :desc, :string

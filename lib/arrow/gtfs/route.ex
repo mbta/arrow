@@ -8,27 +8,9 @@ defmodule Arrow.Gtfs.Route do
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          id: String.t(),
-          agency: Arrow.Gtfs.Agency.t() | Ecto.Association.NotLoaded.t(),
-          short_name: String.t() | nil,
-          long_name: String.t() | nil,
-          desc: String.t(),
-          type: atom,
-          url: String.t() | nil,
-          color: String.t() | nil,
-          text_color: String.t() | nil,
-          sort_order: integer,
-          fare_class: String.t(),
-          line: Arrow.Gtfs.Line.t() | Ecto.Association.NotLoaded.t(),
-          listed_route: atom,
-          network_id: String.t(),
-          route_patterns: list(Arrow.Gtfs.RoutePattern.t()) | Ecto.Association.NotLoaded.t()
-        }
-
   @route_type_values Enum.with_index(~w[light_rail heavy_rail commuter_rail bus ferry]a)
 
-  schema "gtfs_routes" do
+  typed_schema "gtfs_routes" do
     belongs_to :agency, Arrow.Gtfs.Agency
     field :short_name, :string
     field :long_name, :string

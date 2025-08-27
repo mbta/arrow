@@ -8,22 +8,6 @@ defmodule Arrow.Gtfs.RoutePattern do
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          id: String.t(),
-          route: Arrow.Gtfs.Route.t() | Ecto.Association.NotLoaded.t(),
-          direction_id: 0 | 1,
-          directions: list(Arrow.Gtfs.Direction.t()) | Ecto.Association.NotLoaded.t(),
-          name: String.t(),
-          time_desc: String.t() | nil,
-          typicality: atom,
-          sort_order: integer,
-          # The Trip that exemplifies this RoutePattern.
-          representative_trip: Arrow.Gtfs.Trip.t() | Ecto.Association.NotLoaded.t(),
-          # All the Trips that use this RoutePattern.
-          trips: list(Arrow.Gtfs.Trip.t()) | Ecto.Association.NotLoaded.t(),
-          canonical: atom
-        }
-
   @typicality_values Enum.with_index(
                        ~w[not_defined typical deviation atypical diversion typical_but_unscheduled]a
                      )
@@ -32,7 +16,7 @@ defmodule Arrow.Gtfs.RoutePattern do
                          ~w[no_canonical_patterns_defined_for_route canonical not_canonical]a
                        )
 
-  schema "gtfs_route_patterns" do
+  typed_schema "gtfs_route_patterns" do
     belongs_to :route, Arrow.Gtfs.Route, type: :string
     field :direction_id, :integer
     # I couldn't find a way to directly associate the specific Direction

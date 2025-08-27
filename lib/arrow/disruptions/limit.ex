@@ -1,11 +1,9 @@
 defmodule Arrow.Disruptions.Limit do
   @moduledoc "schema for a limit for the db"
 
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
 
-  alias Arrow.Disruptions.DisruptionV2
-  alias Arrow.Gtfs.{Route, Stop}
   alias Arrow.Limits.LimitDayOfWeek
 
   @default_day_of_weeks_list [
@@ -18,17 +16,7 @@ defmodule Arrow.Disruptions.Limit do
     %LimitDayOfWeek{day_name: :sunday}
   ]
 
-  @type t :: %__MODULE__{
-          start_date: Date.t() | nil,
-          end_date: Date.t() | nil,
-          disruption: DisruptionV2.t() | Ecto.Association.NotLoaded.t(),
-          route: Route.t() | Ecto.Association.NotLoaded.t(),
-          start_stop: Stop.t() | Ecto.Association.NotLoaded.t(),
-          end_stop: Stop.t() | Ecto.Association.NotLoaded.t(),
-          limit_day_of_weeks: [LimitDayOfWeek.t()] | Ecto.Association.NotLoaded.t()
-        }
-
-  schema "limits" do
+  typed_schema "limits" do
     field :start_date, :date
     field :end_date, :date
     field :check_for_overlap, :boolean, default: true

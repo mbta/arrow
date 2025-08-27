@@ -5,20 +5,13 @@ defmodule Arrow.Adjustment do
   or a re-routed bus route).
   """
 
-  use Ecto.Schema
+  use Arrow.Schema
+
   import Ecto.Changeset
   import Ecto.Query
   alias Arrow.Repo
 
-  @type t :: %__MODULE__{
-          route_id: String.t() | nil,
-          source: String.t() | nil,
-          source_label: String.t() | nil,
-          inserted_at: DateTime.t() | nil,
-          updated_at: DateTime.t() | nil
-        }
-
-  schema "adjustments" do
+  typed_schema "adjustments" do
     field :route_id, :string
     field :source, :string
     field :source_label, :string

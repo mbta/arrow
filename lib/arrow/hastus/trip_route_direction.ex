@@ -1,18 +1,11 @@
 defmodule Arrow.Hastus.TripRouteDirection do
   @moduledoc "schema for the trip_route_directions entries"
 
-  use Ecto.Schema
+  use Arrow.Schema
 
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          hastus_route_id: String.t(),
-          via_variant: String.t(),
-          avi_code: String.t(),
-          route_id: String.t()
-        }
-
-  schema "hastus_trip_route_directions" do
+  typed_schema "hastus_trip_route_directions" do
     field :hastus_route_id, :string
     field :via_variant, :string
     field :avi_code, :string

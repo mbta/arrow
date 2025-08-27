@@ -1,6 +1,6 @@
 defmodule Arrow.Shuttles.Route do
   @moduledoc "schema for a shuttle route for the db"
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
 
   alias Arrow.Repo
@@ -18,17 +18,7 @@ defmodule Arrow.Shuttles.Route do
   def direction_desc_values(direction_id) when direction_id in [:"1", "1"],
     do: @direction_1_desc_values
 
-  @type t :: %__MODULE__{
-          destination: String.t(),
-          direction_id: :"0" | :"1",
-          direction_desc: :Inbound | :Outbound | :North | :South | :East | :West,
-          waypoint: String.t(),
-          shuttle: Shuttles.Shuttle.t() | Ecto.Association.NotLoaded.t() | nil,
-          shape: Shuttles.Shape.t() | Ecto.Association.NotLoaded.t() | nil,
-          route_stops: [Shuttles.RouteStop.t()] | Ecto.Association.NotLoaded.t() | nil
-        }
-
-  schema "shuttle_routes" do
+  typed_schema "shuttle_routes" do
     field :destination, :string
     field :direction_id, Ecto.Enum, values: [:"0", :"1"]
     field :direction_desc, Ecto.Enum, values: @direction_0_desc_values ++ @direction_1_desc_values
