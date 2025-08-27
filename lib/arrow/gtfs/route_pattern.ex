@@ -29,7 +29,10 @@ defmodule Arrow.Gtfs.RoutePattern do
     field :time_desc, :string
     field :typicality, Ecto.Enum, values: @typicality_values
     field :sort_order, :integer
+
+    # The Trip that exemplifies this RoutePattern
     belongs_to :representative_trip, Arrow.Gtfs.Trip
+    # All the Trips that use this RoutePattern.
     has_many :trips, Arrow.Gtfs.Trip
     field :canonical, Ecto.Enum, values: @canonicality_values
   end
