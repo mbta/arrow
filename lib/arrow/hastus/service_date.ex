@@ -1,18 +1,10 @@
 defmodule Arrow.Hastus.ServiceDate do
   @moduledoc "schema for a HASTUS service date for the db"
 
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
 
-  alias Arrow.Hastus.Service
-
-  @type t :: %__MODULE__{
-          start_date: Date.t(),
-          end_date: Date.t(),
-          service: Service.t() | Ecto.Association.NotLoaded.t()
-        }
-
-  schema "hastus_service_dates" do
+  typed_schema "hastus_service_dates" do
     field :start_date, :date
     field :end_date, :date
     belongs_to :service, Arrow.Hastus.Service, on_replace: :delete

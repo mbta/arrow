@@ -6,7 +6,7 @@ defmodule Arrow.Disruption do
   - Dates and times
   - Trip short names (Commuter Rail only)
   """
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Query
 
   alias Arrow.Disruption.Note
@@ -14,17 +14,9 @@ defmodule Arrow.Disruption do
   alias Ecto.Changeset
   alias Ecto.Multi
 
-  @type id :: integer
-  @type t :: %__MODULE__{
-          id: id,
-          published_revision: DisruptionRevision.t() | Ecto.Association.NotLoaded.t(),
-          notes: [Note.t()] | Ecto.Association.NotLoaded.t(),
-          last_published_at: DateTime.t() | nil,
-          inserted_at: DateTime.t(),
-          updated_at: DateTime.t()
-        }
+  @type id :: integer()
 
-  schema "disruptions" do
+  typed_schema "disruptions" do
     belongs_to :published_revision, DisruptionRevision
     has_many :revisions, DisruptionRevision
     has_many :notes, Note

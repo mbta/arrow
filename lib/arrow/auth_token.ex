@@ -4,15 +4,10 @@ defmodule Arrow.AuthToken do
 
   Primarily used by gtfs_creator to fetch disruption information.
   """
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          username: String.t(),
-          token: String.t()
-        }
-
-  schema "auth_tokens" do
+  typed_schema "auth_tokens" do
     field :username, :string
     field :token, :string
   end

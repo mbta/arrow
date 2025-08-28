@@ -9,12 +9,7 @@ defmodule Arrow.Gtfs.Service do
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          calendar: Arrow.Gtfs.Calendar.t() | Ecto.Association.NotLoaded.t(),
-          calendar_dates: list(Arrow.Gtfs.CalendarDate.t()) | Ecto.Association.NotLoaded.t()
-        }
-
-  schema "gtfs_services" do
+  typed_schema "gtfs_services" do
     has_one :calendar, Arrow.Gtfs.Calendar
     has_many :calendar_dates, Arrow.Gtfs.CalendarDate
 

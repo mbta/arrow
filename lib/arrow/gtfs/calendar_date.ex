@@ -8,16 +8,9 @@ defmodule Arrow.Gtfs.CalendarDate do
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          service: Arrow.Gtfs.Service.t() | Ecto.Association.NotLoaded.t(),
-          date: Date.t(),
-          exception_type: atom,
-          holiday_name: String.t() | nil
-        }
-
   @primary_key false
 
-  schema "gtfs_calendar_dates" do
+  typed_schema "gtfs_calendar_dates" do
     belongs_to :service, Arrow.Gtfs.Service, primary_key: true
     field :date, :date, primary_key: true
     field :exception_type, Ecto.Enum, values: [added: 1, removed: 2]
