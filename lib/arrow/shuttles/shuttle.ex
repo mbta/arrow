@@ -1,6 +1,6 @@
 defmodule Arrow.Shuttles.Shuttle do
   @moduledoc "schema for a shuttle for the db"
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
   import Ecto.Query
 
@@ -9,15 +9,8 @@ defmodule Arrow.Shuttles.Shuttle do
   alias Arrow.Repo
 
   @type id :: integer
-  @type t :: %__MODULE__{
-          id: id,
-          status: :draft | :active | :inactive,
-          shuttle_name: String.t(),
-          disrupted_route_id: String.t(),
-          suffix: String.t()
-        }
 
-  schema "shuttles" do
+  typed_schema "shuttles" do
     field :status, Ecto.Enum, values: [:draft, :active, :inactive]
     field :shuttle_name, :string
     field :disrupted_route_id, :string

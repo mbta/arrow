@@ -4,17 +4,10 @@ defmodule Arrow.Disruption.TripShortName do
   Commuter Rail train numbers.
   """
 
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          trip_short_name: String.t() | nil,
-          disruption_revision: Arrow.DisruptionRevision | Ecto.Association.NotLoaded.t(),
-          inserted_at: DateTime.t() | nil,
-          updated_at: DateTime.t() | nil
-        }
-
-  schema "disruption_trip_short_names" do
+  typed_schema "disruption_trip_short_names" do
     field(:trip_short_name, :string)
     belongs_to(:disruption_revision, Arrow.DisruptionRevision)
 

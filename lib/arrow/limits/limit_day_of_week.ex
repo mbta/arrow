@@ -1,10 +1,8 @@
 defmodule Arrow.Limits.LimitDayOfWeek do
   @moduledoc "schema for a limit day of week for the db"
 
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
-
-  alias Arrow.Disruptions.Limit
 
   @type day_name :: :monday | :tuesday | :wednesday | :thursday | :friday | :saturday | :sunday
 
@@ -13,16 +11,7 @@ defmodule Arrow.Limits.LimitDayOfWeek do
                      1
                    )
 
-  @type t :: %__MODULE__{
-          day_name: day_name(),
-          start_time: String.t() | nil,
-          end_time: String.t() | nil,
-          active?: boolean(),
-          all_day?: boolean(),
-          limit: Limit.t() | Ecto.Association.NotLoaded.t()
-        }
-
-  schema "limit_day_of_weeks" do
+  typed_schema "limit_day_of_weeks" do
     field :day_name, Ecto.Enum, values: @day_name_values
     field :start_time, :string
     field :end_time, :string

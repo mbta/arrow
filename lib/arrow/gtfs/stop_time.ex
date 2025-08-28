@@ -8,21 +8,6 @@ defmodule Arrow.Gtfs.StopTime do
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          trip: Arrow.Gtfs.Trip.t() | Ecto.Association.NotLoaded.t(),
-          stop_sequence: integer,
-          arrival_time: String.t(),
-          departure_time: String.t(),
-          stop: Arrow.Gtfs.Stop.t() | Ecto.Association.NotLoaded.t(),
-          stop_headsign: String.t() | nil,
-          pickup_type: atom,
-          drop_off_type: atom,
-          timepoint: atom | nil,
-          checkpoint: Arrow.Gtfs.Checkpoint.t() | Ecto.Association.NotLoaded.t() | nil,
-          continuous_pickup: atom | nil,
-          continuous_drop_off: atom | nil
-        }
-
   @pickup_drop_off_types Enum.with_index([
                            :regularly_scheduled,
                            :not_available,
@@ -39,7 +24,7 @@ defmodule Arrow.Gtfs.StopTime do
 
   @primary_key false
 
-  schema "gtfs_stop_times" do
+  typed_schema "gtfs_stop_times" do
     belongs_to :trip, Arrow.Gtfs.Trip, primary_key: true
     field :stop_sequence, :integer, primary_key: true
 

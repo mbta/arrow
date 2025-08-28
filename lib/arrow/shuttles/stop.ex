@@ -3,33 +3,14 @@ defmodule Arrow.Shuttles.Stop do
 
   @derive {Phoenix.Param, key: :stop_id}
 
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
 
   @derive {Jason.Encoder, only: [:stop_name, :stop_desc, :stop_lat, :stop_lon, :stop_id]}
 
   @type id :: integer
-  @type t :: %__MODULE__{
-          id: id,
-          stop_id: String.t(),
-          stop_name: String.t(),
-          stop_desc: String.t(),
-          platform_code: String.t(),
-          platform_name: String.t(),
-          stop_lat: float(),
-          stop_lon: float(),
-          stop_address: String.t(),
-          zone_id: String.t(),
-          level_id: String.t(),
-          parent_station: String.t(),
-          municipality: String.t(),
-          on_street: String.t(),
-          at_street: String.t(),
-          inserted_at: DateTime.t(),
-          updated_at: DateTime.t()
-        }
 
-  schema "stops" do
+  typed_schema "stops" do
     field(:stop_id, :string)
     field(:stop_name, :string)
     field(:stop_desc, :string)

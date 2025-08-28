@@ -8,16 +8,7 @@ defmodule Arrow.Gtfs.Agency do
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          id: String.t(),
-          name: String.t(),
-          url: String.t(),
-          timezone: String.t(),
-          lang: String.t() | nil,
-          phone: String.t() | nil
-        }
-
-  schema "gtfs_agencies" do
+  typed_schema "gtfs_agencies" do
     field :name, :string
     field :url, :string
     field :timezone, :string

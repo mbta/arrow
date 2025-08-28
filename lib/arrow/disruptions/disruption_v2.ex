@@ -4,7 +4,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
 
   See: https://github.com/mbta/gtfs_creator/blob/ab5aac52561027aa13888e4c4067a8de177659f6/gtfs_creator2/disruptions/disruption.py
   """
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
   import Ecto.Query
 
@@ -14,20 +14,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   alias Arrow.Repo
   alias Arrow.Shuttles.Shuttle
 
-  @type t :: %__MODULE__{
-          title: String.t() | nil,
-          mode: atom() | nil,
-          is_active: boolean(),
-          description: String.t() | nil,
-          inserted_at: DateTime.t() | nil,
-          updated_at: DateTime.t() | nil,
-          limits: [Limit.t()] | Ecto.Association.NotLoaded.t(),
-          replacement_services: [ReplacementService.t()] | Ecto.Association.NotLoaded.t(),
-          hastus_exports: [Export.t()] | Ecto.Association.NotLoaded.t(),
-          shuttles: [Shuttle.t()] | Ecto.Association.NotLoaded.t()
-        }
-
-  schema "disruptionsv2" do
+  typed_schema "disruptionsv2" do
     field :title, :string
     field :mode, Ecto.Enum, values: [:subway, :commuter_rail, :silver_line, :bus]
     field :is_active, :boolean

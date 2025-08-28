@@ -8,18 +8,7 @@ defmodule Arrow.Gtfs.Line do
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          id: String.t(),
-          short_name: String.t(),
-          long_name: String.t(),
-          desc: String.t(),
-          url: String.t() | nil,
-          color: String.t(),
-          text_color: String.t(),
-          sort_order: integer
-        }
-
-  schema "gtfs_lines" do
+  typed_schema "gtfs_lines" do
     field :short_name, :string
     field :long_name, :string
     field :desc, :string

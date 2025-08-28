@@ -3,20 +3,14 @@ defmodule Arrow.Shuttles.Shape do
 
   @derive {Phoenix.Param, key: :name}
 
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
 
   @derive {Jason.Encoder, only: [:id, :name, :inserted_at, :updated_at]}
 
   @type id :: integer
-  @type t :: %__MODULE__{
-          id: id,
-          name: String.t(),
-          inserted_at: DateTime.t(),
-          updated_at: DateTime.t()
-        }
 
-  schema "shapes" do
+  typed_schema "shapes" do
     field :name, :string
     field :bucket, :string
     field :path, :string

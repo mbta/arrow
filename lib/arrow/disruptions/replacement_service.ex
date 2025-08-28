@@ -4,7 +4,7 @@ defmodule Arrow.Disruptions.ReplacementService do
 
   See related: https://github.com/mbta/gtfs_creator/blob/ab5aac52561027aa13888e4c4067a8de177659f6/gtfs_creator2/disruptions/activated_shuttles.py
   """
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
   import Ecto.Query, only: [from: 2]
 
@@ -19,17 +19,6 @@ defmodule Arrow.Disruptions.ReplacementService do
   @type timetable ::
           %{direction_id() => list(stop_time()), direction_id() => list(stop_time())} | nil
 
-  @type t :: %__MODULE__{
-          reason: String.t() | nil,
-          start_date: Date.t() | nil,
-          end_date: Date.t() | nil,
-          source_workbook_data: map(),
-          source_workbook_filename: String.t(),
-          disruption: DisruptionV2.t() | Ecto.Association.NotLoaded.t(),
-          shuttle: Shuttle.t() | Ecto.Association.NotLoaded.t(),
-          timetable: %{weekday: timetable(), saturday: timetable(), sunday: timetable()} | nil
-        }
-
   @service_type_to_workbook_abbreviation %{
     :weekday => "WKDY",
     :friday => "FRI",
@@ -37,7 +26,7 @@ defmodule Arrow.Disruptions.ReplacementService do
     :saturday => "SAT"
   }
 
-  schema "replacement_services" do
+  typed_schema "replacement_services" do
     field :reason, :string
     field :start_date, :date
     field :end_date, :date

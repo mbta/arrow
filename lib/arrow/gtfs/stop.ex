@@ -12,29 +12,6 @@ defmodule Arrow.Gtfs.Stop do
 
   @derive {Jason.Encoder, only: [:name, :desc, :lat, :lon, :id]}
 
-  @type t :: %__MODULE__{
-          id: String.t(),
-          code: String.t() | nil,
-          name: String.t(),
-          desc: String.t() | nil,
-          platform_code: String.t() | nil,
-          platform_name: String.t() | nil,
-          lat: float,
-          lon: float,
-          zone_id: String.t() | nil,
-          address: String.t() | nil,
-          url: String.t() | nil,
-          level: Arrow.Gtfs.Level.t() | Ecto.Association.NotLoaded.t() | nil,
-          location_type: atom,
-          parent_station: t() | Ecto.Association.NotLoaded.t() | nil,
-          wheelchair_boarding: atom,
-          municipality: String.t() | nil,
-          on_street: String.t() | nil,
-          at_street: String.t() | nil,
-          vehicle_type: atom,
-          times: list(Arrow.Gtfs.StopTime.t()) | Ecto.Association.NotLoaded.t()
-        }
-
   @location_type_values Enum.with_index(
                           ~w[stop_platform parent_station entrance_exit generic_node boarding_area]a
                         )
@@ -45,7 +22,7 @@ defmodule Arrow.Gtfs.Stop do
 
   @vehicle_type_values Enum.with_index(~w[light_rail heavy_rail commuter_rail bus ferry]a)
 
-  schema "gtfs_stops" do
+  typed_schema "gtfs_stops" do
     field :code, :string
     field :name, :string
     field :desc, :string
