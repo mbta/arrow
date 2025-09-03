@@ -19,13 +19,6 @@ defmodule Arrow.Disruptions.ReplacementService do
   @type timetable ::
           %{direction_id() => list(stop_time()), direction_id() => list(stop_time())} | nil
 
-  @service_type_to_workbook_abbreviation %{
-    :weekday => "WKDY",
-    :friday => "FRI",
-    :sunday => "SUN",
-    :saturday => "SAT"
-  }
-
   typed_schema "replacement_services" do
     field :reason, :string
     field :start_date, :date
@@ -114,8 +107,20 @@ defmodule Arrow.Disruptions.ReplacementService do
     |> Enum.map(&add_timetable/1)
   end
 
+  @service_type_to_workbook_abbreviation [
+    weekday: "WKDY",
+    friday: "FRI",
+    sunday: "SUN",
+    saturday: "SAT"
+  ]
+
+  @schedule_service_types Keyword.keys(@service_type_to_workbook_abbreviation)
+
   @spec schedule_service_types :: list(atom())
-  def schedule_service_types, do: [:weekday, :friday, :saturday, :sunday]
+  def schedule_service_types, do: @schedule_service_types
+
+  defp service_type_to_workbook_abbreviation(schedule_service_type),
+    do: Keyword.get(@service_type_to_workbook_abbreviation, schedule_service_type)
 
   @spec first_last_trip_times(t(), list(atom())) :: %{
           atom() => %{
@@ -129,7 +134,7 @@ defmodule Arrow.Disruptions.ReplacementService do
       ) do
     schedule_service_types
     |> Enum.map(fn service_type ->
-      service_type_abbreviation = Map.get(@service_type_to_workbook_abbreviation, service_type)
+      service_type_abbreviation = service_type_to_workbook_abbreviation(service_type)
 
       day_of_week_data =
         Map.get(
@@ -152,7 +157,7 @@ defmodule Arrow.Disruptions.ReplacementService do
          %__MODULE__{source_workbook_data: workbook_data} = replacement_service,
          service_type_atom
        ) do
-    service_type_abbreviation = Map.get(@service_type_to_workbook_abbreviation, service_type_atom)
+    service_type_abbreviation = service_type_to_workbook_abbreviation(service_type_atom)
 
     if day_of_week_data =
          Map.get(workbook_data, workbook_column_from_day_of_week(service_type_abbreviation)) do
