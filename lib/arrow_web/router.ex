@@ -9,6 +9,7 @@ defmodule ArrowWeb.Router do
     plug(:fetch_live_flash)
     plug(:put_format, "html")
     plug(:put_root_layout, html: {ArrowWeb.LayoutView, :root})
+    plug(:put_layout, html: {ArrowWeb.LayoutView, :app})
     plug(:protect_from_forgery)
     plug(:put_secure_browser_headers)
   end
