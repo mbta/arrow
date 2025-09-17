@@ -7,6 +7,7 @@ defmodule ArrowWeb.Router do
     plug(:accepts, ["html"])
     plug(:fetch_session)
     plug(:fetch_live_flash)
+    plug(:put_format, "html")
     plug(:put_root_layout, html: {ArrowWeb.LayoutView, :root})
     plug(:protect_from_forgery)
     plug(:put_secure_browser_headers)
@@ -15,10 +16,12 @@ defmodule ArrowWeb.Router do
   pipeline :json_api do
     plug(:fetch_session)
     plug(:accepts, ["json-api"])
+    plug(:put_format, "json-api")
     plug(JaSerializer.ContentTypeNegotiation)
   end
 
   pipeline :api do
+    plug(:put_format, "json")
     plug(:fetch_session)
   end
 

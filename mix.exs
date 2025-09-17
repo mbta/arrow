@@ -20,7 +20,8 @@ defmodule Arrow.MixProject do
         ]
       ],
       preferred_cli_env: ["test.integration": :test],
-      test_coverage: [tool: LcovEx, ignore_paths: ["deps/"]]
+      test_coverage: [tool: LcovEx, ignore_paths: ["deps/"]],
+      listeners: [Phoenix.CodeReloader]
     ]
   end
 
