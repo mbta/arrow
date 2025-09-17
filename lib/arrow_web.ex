@@ -38,7 +38,7 @@ defmodule ArrowWeb do
 
   def controller do
     quote do
-      use Phoenix.Controller, namespace: ArrowWeb
+      use Phoenix.Controller, formats: [html: "View", json: "View", "json-api": "View"]
 
       import Plug.Conn
       use Gettext, backend: ArrowWeb.Gettext
