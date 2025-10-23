@@ -144,6 +144,37 @@ defmodule Arrow.Hastus.ExportUploadTest do
                data
     end
 
+    @tag export: "gl_union_heath_trip.zip"
+    @tag subway_line: "line-Green"
+    test "does not give validation errors for GL export with otherwise-ambiguous Union Square to Heath Street trip",
+         %{export: export} do
+      data =
+        ExportUpload.extract_data_from_upload(
+          %{path: "#{@export_dir}/#{export}"},
+          "uid-#{System.unique_integer([:positive])}"
+        )
+
+      assert {:ok,
+              {:ok,
+               %ExportUpload{
+                 services: [
+                   %{name: "LRV42025-hlb45ng1-Weekday-01"},
+                   %{name: "LRV42025-hlb45ng6-Saturday-01"},
+                   %{name: "LRV42025-hlb45ng7-Sunday-01"}
+                 ],
+                 line_id: "line-Green",
+                 trip_route_directions: trip_route_directions,
+                 dup_service_ids_amended?: false
+               }}} = data
+
+      assert %{
+               route_id: "Green-E",
+               hastus_route_id: "800-1482",
+               via_variant: "U",
+               avi_code: "885"
+             } in trip_route_directions
+    end
+
     @tag skip_insert_subway_line: true
     @tag export: "gl_trips_ambiguous_branch_real_world.zip"
     test "handles GL export with variant suffixes (e.g. BE, CE, DE)", %{export: export} do

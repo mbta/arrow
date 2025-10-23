@@ -373,11 +373,17 @@ defmodule Arrow.Hastus.ExportUpload do
         branch when branch in ["B", "C", "D", "E"] ->
           "Green-#{branch}"
 
-        _ ->
-          find_branch_based_on_stop_times(
-            canonical_stops_by_branch,
-            Enum.map(stop_times_by_trip_id[trip["trip_id"]], & &1["stop_id"])
-          )
+        branch ->
+          stop_ids_for_trip = Enum.map(stop_times_by_trip_id[trip["trip_id"]], & &1["stop_id"])
+
+          if branch == "U" and "70504" in stop_ids_for_trip and "70260" in stop_ids_for_trip do
+            "Green-E"
+          else
+            find_branch_based_on_stop_times(
+              canonical_stops_by_branch,
+              stop_ids_for_trip
+            )
+          end
       end
 
     if is_nil(new_route_id) do
