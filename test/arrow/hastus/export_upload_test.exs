@@ -140,7 +140,7 @@ defmodule Arrow.Hastus.ExportUploadTest do
 
       assert {:ok,
               {:error,
-               "Unable to infer the Green Line branch for 800-1428, West, U, 800. Please request the via_variant be updated to the branch name and provide an updated export"}} =
+               "Unable to infer the Green Line branch for 800-1428, West, X, 800. Please request the via_variant be updated to the branch name and provide an updated export"}} =
                data
     end
 
