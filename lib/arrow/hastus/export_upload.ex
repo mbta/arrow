@@ -376,14 +376,11 @@ defmodule Arrow.Hastus.ExportUpload do
         branch ->
           stop_ids_for_trip = Enum.map(stop_times_by_trip_id[trip["trip_id"]], & &1["stop_id"])
 
-          if branch == "U" and "70504" in stop_ids_for_trip and "70260" in stop_ids_for_trip do
-            "Green-E"
-          else
-            find_branch_based_on_stop_times(
-              canonical_stops_by_branch,
-              stop_ids_for_trip
-            )
-          end
+          find_branch_based_on_stop_times(
+            canonical_stops_by_branch,
+            stop_ids_for_trip,
+            branch
+          )
       end
 
     if is_nil(new_route_id) do
@@ -399,16 +396,20 @@ defmodule Arrow.Hastus.ExportUpload do
     end
   end
 
-  defp find_branch_based_on_stop_times(canonical_stops_by_branch, stop_ids_for_trip) do
-    case Enum.filter(canonical_stops_by_branch, fn {_route_id, canonical_stops} ->
-           Enum.all?(
-             stop_ids_for_trip,
-             &(&1 in Enum.map(canonical_stops, fn canonical_stop -> canonical_stop.stop_id end))
-           )
-         end) do
-      [] -> nil
-      [{route_id, _canonical_stops}] -> route_id
-      [_ | _] -> nil
+  defp find_branch_based_on_stop_times(canonical_stops_by_branch, stop_ids_for_trip, branch) do
+    if branch == "U" and "70504" in stop_ids_for_trip and "70260" in stop_ids_for_trip do
+      "Green-E"
+    else
+      case Enum.filter(canonical_stops_by_branch, fn {_route_id, canonical_stops} ->
+             Enum.all?(
+               stop_ids_for_trip,
+               &(&1 in Enum.map(canonical_stops, fn canonical_stop -> canonical_stop.stop_id end))
+             )
+           end) do
+        [] -> nil
+        [{route_id, _canonical_stops}] -> route_id
+        [_ | _] -> nil
+      end
     end
   end
 
