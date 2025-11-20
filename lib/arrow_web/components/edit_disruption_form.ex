@@ -154,12 +154,18 @@ defmodule ArrowWeb.EditDisruptionForm do
   end
 
   def update(assigns, socket) do
+    # if the disruption lacks a mode (in which case it's a new disruption), default to subway,
+    # otherwise leave the value unchanged
+    changeset =
+      if assigns[:disruption].mode do
+        Disruptions.change_disruption_v2(assigns[:disruption])
+      else
+        Disruptions.change_disruption_v2(assigns[:disruption], %{mode: :subway})
+      end
+
     socket =
       assign(socket,
-        form:
-          assigns[:disruption]
-          |> Disruptions.change_disruption_v2(%{mode: :subway})
-          |> to_form(),
+        form: to_form(changeset),
         icon_paths: assigns[:icon_paths],
         disruption: assigns[:disruption]
       )
