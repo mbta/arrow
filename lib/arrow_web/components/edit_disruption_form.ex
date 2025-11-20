@@ -100,7 +100,7 @@ defmodule ArrowWeb.EditDisruptionForm do
               class="form-check-input"
               type="radio"
               checked={input_value(@form, :mode) == value}
-              disabled={value != :subway}
+              disabled={value not in [:subway, :commuter_rail]}
               value={value}
             />
             <label for={"#{@form[:mode].id}-#{idx}"} class="form-check-label">
