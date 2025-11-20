@@ -61,11 +61,13 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         />
       <% end %>
 
-      <DisruptionComponents.view_replacement_services
-        disruption={@disruption}
-        icon_paths={@icon_paths}
-        editing={@editing}
-      />
+      <%= if @disruption.mode != :commuter_rail do %>
+        <DisruptionComponents.view_replacement_services
+          disruption={@disruption}
+          icon_paths={@icon_paths}
+          editing={@editing}
+        />
+      <% end %>
     <% end %>
     """
   end

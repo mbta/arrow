@@ -74,6 +74,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
       assert html =~ "Disruption created successfully"
       refute html =~ "Limits"
       assert html =~ "Trainsformer Service Schedules"
+      refute html =~ "Replacement Service"
     end
 
     @tag :authenticated_admin
