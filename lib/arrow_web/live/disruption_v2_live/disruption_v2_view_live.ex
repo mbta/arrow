@@ -47,12 +47,19 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         />
       <% end %>
 
-      <DisruptionComponents.view_hastus_service_schedules
-        disruption={@disruption}
-        icon_paths={@icon_paths}
-        editing={@editing}
-        user_id={@user_id}
-      />
+      <%= if @disruption.mode == :commuter_rail do %>
+        <DisruptionComponents.view_trainsformer_service_schedules
+          disruption={@disruption}
+          editing={@editing}
+        />
+      <% else %>
+        <DisruptionComponents.view_hastus_service_schedules
+          disruption={@disruption}
+          icon_paths={@icon_paths}
+          editing={@editing}
+          user_id={@user_id}
+        />
+      <% end %>
 
       <DisruptionComponents.view_replacement_services
         disruption={@disruption}
