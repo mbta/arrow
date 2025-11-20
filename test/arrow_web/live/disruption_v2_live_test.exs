@@ -72,6 +72,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
 
       html = render(index_live)
       assert html =~ "Disruption created successfully"
+      refute html =~ "Limits"
     end
 
     @tag :authenticated_admin
