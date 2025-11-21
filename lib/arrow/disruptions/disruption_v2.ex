@@ -48,6 +48,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
     |> cast_assoc(:replacement_services, with: &ReplacementService.changeset/2)
     |> validate_required([:title, :mode, :is_active])
     |> validate_required_for(:is_active)
+    |> validate_no_mode_change()
   end
 
   def new(attrs \\ %{}) do
@@ -102,6 +103,14 @@ defmodule Arrow.Disruptions.DisruptionV2 do
           "the following shuttle(s) used by this disruption must be set as 'active' first: #{shuttles}"
         )
       end
+    else
+      changeset
+    end
+  end
+
+  defp validate_no_mode_change(changeset) do
+    if !is_nil(changeset.data.mode) and get_field(changeset, :mode) != changeset.data.mode do
+      add_error(changeset, :mode, "cannot update mode on an existing disruption")
     else
       changeset
     end

@@ -93,7 +93,13 @@ defmodule ArrowWeb.EditDisruptionForm do
         </div>
         <fieldset>
           <legend>Mode</legend>
-          <div :for={{{value, mode}, idx} <- Enum.with_index(mode_labels())} class="form-check">
+          <div
+            :for={{{value, mode}, idx} <- Enum.with_index(mode_labels())}
+            class={[
+              "form-check",
+              input_value(@form, :mode) == value && @form[:mode].errors != [] && "is-invalid"
+            ]}
+          >
             <input
               name={@form[:mode].name}
               id={"#{@form[:mode].id}-#{idx}"}
@@ -112,6 +118,9 @@ defmodule ArrowWeb.EditDisruptionForm do
               {mode}
             </label>
           </div>
+          <.error :for={error <- @form[:mode].errors}>
+            {translate_error(error)}
+          </.error>
         </fieldset>
         <fieldset>
           <legend>Description</legend>
