@@ -109,7 +109,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   end
 
   defp validate_no_mode_change(changeset) do
-    if Changeset.changed?(changeset, :mode) and not Changeset.changed?(changeset, :mode, from: nil) do
+    if changed?(changeset, :mode) and not changed?(changeset, :mode, from: nil) do
       add_error(changeset, :mode, "cannot update mode on an existing disruption")
     else
       changeset
