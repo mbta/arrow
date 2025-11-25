@@ -93,14 +93,20 @@ defmodule ArrowWeb.EditDisruptionForm do
         </div>
         <fieldset>
           <legend>Mode</legend>
-          <div :for={{{value, mode}, idx} <- Enum.with_index(mode_labels())} class="form-check">
+          <div
+            :for={{{value, mode}, idx} <- Enum.with_index(mode_labels())}
+            class={[
+              "form-check",
+              input_value(@form, :mode) == value && @form[:mode].errors != [] && "is-invalid"
+            ]}
+          >
             <input
               name={@form[:mode].name}
               id={"#{@form[:mode].id}-#{idx}"}
               class="form-check-input"
               type="radio"
               checked={input_value(@form, :mode) == value}
-              disabled={value != :subway}
+              disabled={value not in [:subway, :commuter_rail]}
               value={value}
             />
             <label for={"#{@form[:mode].id}-#{idx}"} class="form-check-label">
@@ -112,6 +118,9 @@ defmodule ArrowWeb.EditDisruptionForm do
               {mode}
             </label>
           </div>
+          <.error :for={error <- @form[:mode].errors}>
+            {translate_error(error)}
+          </.error>
         </fieldset>
         <fieldset>
           <legend>Description</legend>
@@ -154,12 +163,18 @@ defmodule ArrowWeb.EditDisruptionForm do
   end
 
   def update(assigns, socket) do
+    # if the disruption lacks a mode (in which case it's a new disruption), default to subway,
+    # otherwise leave the value unchanged
+    changeset =
+      if assigns[:disruption].mode do
+        Disruptions.change_disruption_v2(assigns[:disruption])
+      else
+        Disruptions.change_disruption_v2(assigns[:disruption], %{mode: :subway})
+      end
+
     socket =
       assign(socket,
-        form:
-          assigns[:disruption]
-          |> Disruptions.change_disruption_v2(%{mode: :subway})
-          |> to_form(),
+        form: to_form(changeset),
         icon_paths: assigns[:icon_paths],
         disruption: assigns[:disruption]
       )

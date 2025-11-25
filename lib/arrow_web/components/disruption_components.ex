@@ -392,6 +392,17 @@ defmodule ArrowWeb.DisruptionComponents do
 
   attr :disruption, DisruptionV2, required: true
   attr :editing, :any, required: true
+
+  def view_trainsformer_service_schedules(assigns) do
+    ~H"""
+    <section id="trainsformer_service_schedules" class="py-4 my-4">
+      <h3>Trainsformer Service Schedules</h3>
+    </section>
+    """
+  end
+
+  attr :disruption, DisruptionV2, required: true
+  attr :editing, :any, required: true
   attr :icon_paths, :map, required: true
 
   def view_replacement_services(assigns) do

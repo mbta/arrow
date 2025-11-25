@@ -39,24 +39,35 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     </div>
 
     <%= if !@editing || !is_struct(@editing, DisruptionV2) || @editing.id do %>
-      <DisruptionComponents.view_limits
-        disruption={@disruption}
-        icon_paths={@icon_paths}
-        editing={@editing}
-      />
+      <%= if @disruption.mode != :commuter_rail do %>
+        <DisruptionComponents.view_limits
+          disruption={@disruption}
+          icon_paths={@icon_paths}
+          editing={@editing}
+        />
+      <% end %>
 
-      <DisruptionComponents.view_hastus_service_schedules
-        disruption={@disruption}
-        icon_paths={@icon_paths}
-        editing={@editing}
-        user_id={@user_id}
-      />
+      <%= if @disruption.mode == :commuter_rail do %>
+        <DisruptionComponents.view_trainsformer_service_schedules
+          disruption={@disruption}
+          editing={@editing}
+        />
+      <% else %>
+        <DisruptionComponents.view_hastus_service_schedules
+          disruption={@disruption}
+          icon_paths={@icon_paths}
+          editing={@editing}
+          user_id={@user_id}
+        />
+      <% end %>
 
-      <DisruptionComponents.view_replacement_services
-        disruption={@disruption}
-        icon_paths={@icon_paths}
-        editing={@editing}
-      />
+      <%= if @disruption.mode != :commuter_rail do %>
+        <DisruptionComponents.view_replacement_services
+          disruption={@disruption}
+          icon_paths={@icon_paths}
+          editing={@editing}
+        />
+      <% end %>
     <% end %>
     """
   end
