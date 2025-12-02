@@ -10,9 +10,10 @@ defmodule Arrow.Disruptions.DisruptionV2 do
 
   alias Arrow.Disruptions.Limit
   alias Arrow.Disruptions.ReplacementService
-  alias Arrow.Hastus.Export
+  alias Arrow.Hastus.Export, as: HastusExport
   alias Arrow.Repo
   alias Arrow.Shuttles.Shuttle
+  alias Arrow.Trainsformer.Export, as: TrainsformerExport
 
   typed_schema "disruptionsv2" do
     field :title, :string
@@ -28,7 +29,11 @@ defmodule Arrow.Disruptions.DisruptionV2 do
       foreign_key: :disruption_id,
       on_replace: :delete
 
-    has_many :hastus_exports, Export,
+    has_many :hastus_exports, HastusExport,
+      foreign_key: :disruption_id,
+      on_replace: :delete
+
+    has_many :trainsformer_exports, TrainsformerExport,
       foreign_key: :disruption_id,
       on_replace: :delete
 
@@ -64,7 +69,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
     disruption_v2 = Repo.preload(disruption_v2, [:limits, :hastus_exports])
 
     not Enum.empty?(disruption_v2.limits) or
-      Enum.any?(disruption_v2.hastus_exports, &Export.has_derived_limits?/1)
+      Enum.any?(disruption_v2.hastus_exports, &HastusExport.has_derived_limits?/1)
   end
 
   @spec route(String.t()) :: atom() | nil
