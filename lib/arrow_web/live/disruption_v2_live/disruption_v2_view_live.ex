@@ -4,7 +4,8 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   alias Arrow.{Adjustment, Disruptions, Limits}
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
   alias Arrow.Hastus
-  alias Arrow.Hastus.Export
+  alias Arrow.Hastus.Export, as: HastusExport
+  alias Arrow.Trainsformer.Export, as: TrainsformerExport
   alias ArrowWeb.DisruptionComponents
 
   @impl true
@@ -253,7 +254,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   defp apply_action(socket, :new_hastus_export, %{"id" => id}) do
     disruption = Disruptions.get_disruption_v2!(id)
-    hastus_export = %Export{services: []}
+    hastus_export = %HastusExport{services: []}
 
     socket
     |> assign(:title, "edit disruption")
@@ -271,6 +272,17 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     |> assign(:page_title, "Edit Disruption v2")
     |> assign(:disruption, disruption)
     |> assign(:editing, hastus_export)
+  end
+
+  defp apply_action(socket, :new_trainsformer_export, %{"id" => id}) do
+    disruption = Disruptions.get_disruption_v2!(id)
+    trainsformer_export = %TrainsformerExport{}
+
+    socket
+    |> assign(:title, "edit disruption")
+    |> assign(:page_title, "Edit Disruption v2")
+    |> assign(:disruption, disruption)
+    |> assign(:editing, trainsformer_export)
   end
 
   defp apply_action(socket, :new_replacement_service, %{"id" => id}) do

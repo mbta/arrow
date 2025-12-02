@@ -6,12 +6,13 @@ defmodule ArrowWeb.DisruptionComponents do
   alias Arrow.Adjustment
   alias Arrow.Disruptions.DisruptionV2
   alias Arrow.Disruptions.Limit
-  alias Arrow.Hastus.Export
+  alias Arrow.Hastus.Export, as: HastusExport
   alias Arrow.Hastus.Service
   alias Arrow.Limits.LimitDayOfWeek
   alias ArrowWeb.EditHastusExportForm
   alias ArrowWeb.EditLimitForm
   alias ArrowWeb.EditReplacementServiceForm
+  alias ArrowWeb.EditTrainsformerExportForm
 
   attr :disruption, DisruptionV2, required: true
   attr :icon_paths, :map, required: true
@@ -233,7 +234,7 @@ defmodule ArrowWeb.DisruptionComponents do
                   </div>
                   <%= if idx == 0 do %>
                     <div class="col-[actions] flex flex-row items-center">
-                      <% export_el_id = "export-table-#{export.id}" %>
+                      <% export_el_id = "export-table-hastus-#{export.id}" %>
                       <.link
                         class="font-italic max-sm:invisible max-md:max-w-[11rem] md:visible md:max-w-xs truncate pr-1"
                         title="Jump to source HASTUS export of this derived limit"
@@ -289,7 +290,7 @@ defmodule ArrowWeb.DisruptionComponents do
       <%= if Ecto.assoc_loaded?(@disruption.hastus_exports) and Enum.any?(@disruption.hastus_exports) do %>
         <div
           :for={export <- @disruption.hastus_exports}
-          id={"export-table-#{export.id}"}
+          id={"export-table-hastus-#{export.id}"}
           class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3"
         >
           <% imported_services = Enum.filter(export.services, & &1.import?) %>
@@ -349,7 +350,7 @@ defmodule ArrowWeb.DisruptionComponents do
                   </div>
                 </td>
               </tr>
-              <%= if @editing && is_struct(@editing, Export) && @editing.id == export.id do %>
+              <%= if @editing && is_struct(@editing, Arrow.Hastus.Export) && @editing.id == export.id do %>
                 <tr>
                   <td colspan="4">
                     <.live_component
@@ -376,7 +377,7 @@ defmodule ArrowWeb.DisruptionComponents do
         <span>Upload HASTUS export</span>
       </.link>
 
-      <%= if is_struct(@editing, Export) and !@editing.id do %>
+      <%= if is_struct(@editing, Arrow.Hastus.Export) and !@editing.id do %>
         <.live_component
           module={EditHastusExportForm}
           id="hastus-export-edit-form"
@@ -397,6 +398,33 @@ defmodule ArrowWeb.DisruptionComponents do
     ~H"""
     <section id="trainsformer_service_schedules" class="py-4 my-4">
       <h3>Trainsformer Service Schedules</h3>
+      <%= if Ecto.assoc_loaded?(@disruption.trainsformer_exports) and Enum.any?(@disruption.trainsformer_exports) do %>
+        <div
+          :for={export <- @disruption.trainsformer_exports}
+          id={"export-table-hastus-#{export.id}"}
+          class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3"
+        >
+          Export information goes here.
+        </div>
+      <% end %>
+
+      <.link
+        :if={!@editing}
+        patch={~p"/disruptions/#{@disruption.id}/trainsformer_export/new"}
+        id="upload-hastus-export-component"
+      >
+        <.icon name="hero-plus" />
+        <span>Upload Trainsformer export</span>
+      </.link>
+
+      <%= if is_struct(@editing, Arrow.Trainsformer.Export) and !@editing.id do %>
+        <.live_component
+          module={EditTrainsformerExportForm}
+          id="trainsformer-export-edit-form"
+          disruption={@disruption}
+          export={@editing}
+        />
+      <% end %>
     </section>
     """
   end
@@ -533,7 +561,7 @@ defmodule ArrowWeb.DisruptionComponents do
   defp icon_for_line("line-Mattapan"), do: :mattapan_line
   defp icon_for_line("line-Green"), do: :green_line
 
-  @spec imported_derived_limits(Export.t()) :: [map]
+  @spec imported_derived_limits(HastusExport.t()) :: [map]
   defp imported_derived_limits(export) do
     for %{import?: true} = service <- export.services,
         limit <- service.derived_limits do
