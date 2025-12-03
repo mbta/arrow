@@ -18,4 +18,14 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> click(text("Upload Trainsformer export"))
     |> assert_text("Upload Trainsformer .zip")
   end
+
+  feature "can cancel uploading a Trainsformer export", %{session: session} do
+    disruption = disruption_v2_fixture(%{mode: :commuter_rail})
+
+    session
+    |> visit("/disruptions/#{disruption.id}")
+    |> click(text("Upload Trainsformer export"))
+    |> click(text("Cancel"))
+    |> assert_text("Upload Trainsformer export")
+  end
 end
