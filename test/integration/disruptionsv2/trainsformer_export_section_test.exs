@@ -17,6 +17,10 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> visit("/disruptions/#{disruption.id}")
     |> click(text("Upload Trainsformer export"))
     |> assert_text("Upload Trainsformer .zip")
+    |> attach_file(file_field("trainsformer_export", visible: false),
+      path: "test/support/fixtures/trainsformer/valid_export.zip"
+    )
+    |> assert_text("Successfully imported export valid_export.zip!")
   end
 
   feature "can cancel uploading a Trainsformer export", %{session: session} do

@@ -3,10 +3,14 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
   use ArrowWeb, :live_component
 
   alias Arrow.Disruptions.DisruptionV2
+  alias Arrow.Trainsformer
   alias Arrow.Trainsformer.Export
+  alias Arrow.Trainsformer.ExportUpload
+  alias Phoenix.LiveView.UploadEntry
 
   attr :disruption, DisruptionV2, required: true
   attr :export, Export, required: true
+  attr :user_id, :string, required: true
 
   @impl true
   def render(assigns) do
@@ -65,6 +69,23 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
           </div>
         </div>
       </.simple_form>
+
+      <.simple_form
+        :if={@show_service_import_form}
+        for={@form}
+        id="service-import-form"
+        phx-submit="save"
+        phx-change="validate"
+        phx-target={@myself}
+      >
+        <div class="container-fluid border-2 border-dashed border-primary p-3">
+          <div class="text-success mb-3">
+            <strong>
+              <i>Successfully imported export {@uploaded_file_name}!</i>
+            </strong>
+          </div>
+        </div>
+      </.simple_form>
     </div>
     """
   end
@@ -75,9 +96,55 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
       socket
       |> assign(assigns)
       |> assign(:show_upload_form, true)
+      |> assign(:show_service_import_form, false)
       |> assign(:form, nil)
-      |> allow_upload(:trainsformer_export, accept: ~w(.zip), auto_upload: true)
+      |> allow_upload(:trainsformer_export,
+        accept: ~w(.zip),
+        progress: &handle_progress/3,
+        auto_upload: true
+      )
 
     {:ok, socket}
+  end
+
+  @impl true
+  def handle_event("validate", _params, socket) do
+    {:noreply, socket}
+  end
+
+  defp handle_progress(:trainsformer_export, %UploadEntry{done?: false}, socket) do
+    {:noreply, socket}
+  end
+
+  defp handle_progress(
+         :trainsformer_export,
+         %UploadEntry{client_name: client_name} = entry,
+         socket
+       ) do
+    socket = socket |> clear_flash() |> assign(error: nil)
+
+    case consume_uploaded_entry(
+           socket,
+           entry,
+           &ExportUpload.extract_data_from_upload(&1, socket.assigns.user_id)
+         ) do
+      {:ok, export_data} ->
+        form =
+          socket.assigns.export
+          |> Trainsformer.change_export(%{
+            "s3_path" => client_name,
+            "disruption_id" => socket.assigns.disruption.id
+          })
+          |> to_form(action: :validate)
+
+        {:noreply,
+         assign(socket,
+           form: form,
+           show_upload_form: false,
+           show_service_import_form: true,
+           uploaded_file_name: client_name,
+           uploaded_file_data: export_data.zip_binary
+         )}
+    end
   end
 end
