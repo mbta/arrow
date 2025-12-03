@@ -1,0 +1,21 @@
+defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
+  use ExUnit.Case
+  use Wallaby.Feature
+  import Wallaby.Browser, except: [text: 1]
+  import Wallaby.Query
+  import Arrow.DisruptionsFixtures
+
+  @moduletag :integration
+
+  feature "can upload a Trainsformer export", %{session: session} do
+    # For now, just test that we can click the upload link and see the
+    # button to upload
+
+    disruption = disruption_v2_fixture(%{mode: :commuter_rail})
+
+    session
+    |> visit("/disruptions/#{disruption.id}")
+    |> click(text("Upload Trainsformer export"))
+    |> assert_text("Upload Trainsformer .zip")
+  end
+end
