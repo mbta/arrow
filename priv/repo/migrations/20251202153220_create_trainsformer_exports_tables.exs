@@ -3,7 +3,7 @@ defmodule Arrow.Repo.Migrations.CreateTrainsformerExportsTables do
 
   def change do
     create table(:trainsformer_exports) do
-      add :s3_path, :string
+      add :s3_path, :text
       add :disruption_id, references(:disruptionsv2, on_delete: :nothing)
 
       timestamps(type: :timestamptz)
