@@ -2,8 +2,10 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.10 (Postgres.app)
--- Dumped by pg_dump version 15.10 (Postgres.app)
+\restrict 2U5xctdYZPzR7MiFLT6ex6uTDnp2eF7UGFIpPgaVW1X1NJYXsQ9bDXJi8zrFfC9
+
+-- Dumped from database version 15.14 (Postgres.app)
+-- Dumped by pg_dump version 15.14 (Postgres.app)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -28,20 +30,6 @@ CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA public;
 --
 
 COMMENT ON EXTENSION btree_gist IS 'support for indexing common datatypes in GiST';
-
-
---
--- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
---
-
-CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
-
-
---
--- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON EXTENSION postgis IS 'PostGIS geometry and geography spatial types and functions';
 
 
 --
@@ -742,6 +730,39 @@ CREATE TABLE public.gtfs_trips (
 
 
 --
+-- Name: hastus_derived_limits; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.hastus_derived_limits (
+    id bigint NOT NULL,
+    service_id bigint NOT NULL,
+    start_stop_id character varying(255) NOT NULL,
+    end_stop_id character varying(255) NOT NULL,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: hastus_derived_limits_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.hastus_derived_limits_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: hastus_derived_limits_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.hastus_derived_limits_id_seq OWNED BY public.hastus_derived_limits.id;
+
+
+--
 -- Name: hastus_exports; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1248,6 +1269,38 @@ ALTER SEQUENCE public.stops_id_seq OWNED BY public.stops.id;
 
 
 --
+-- Name: trainsformer_exports; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.trainsformer_exports (
+    id bigint NOT NULL,
+    s3_path text,
+    disruption_id bigint,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: trainsformer_exports_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.trainsformer_exports_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: trainsformer_exports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.trainsformer_exports_id_seq OWNED BY public.trainsformer_exports.id;
+
+
+--
 -- Name: adjustments id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1315,6 +1368,13 @@ ALTER TABLE ONLY public.disruptions ALTER COLUMN id SET DEFAULT nextval('public.
 --
 
 ALTER TABLE ONLY public.disruptionsv2 ALTER COLUMN id SET DEFAULT nextval('public.disruptionsv2_id_seq'::regclass);
+
+
+--
+-- Name: hastus_derived_limits id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_derived_limits ALTER COLUMN id SET DEFAULT nextval('public.hastus_derived_limits_id_seq'::regclass);
 
 
 --
@@ -1406,6 +1466,13 @@ ALTER TABLE ONLY public.shuttles ALTER COLUMN id SET DEFAULT nextval('public.shu
 --
 
 ALTER TABLE ONLY public.stops ALTER COLUMN id SET DEFAULT nextval('public.stops_id_seq'::regclass);
+
+
+--
+-- Name: trainsformer_exports id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_exports ALTER COLUMN id SET DEFAULT nextval('public.trainsformer_exports_id_seq'::regclass);
 
 
 --
@@ -1617,6 +1684,14 @@ ALTER TABLE ONLY public.gtfs_trips
 
 
 --
+-- Name: hastus_derived_limits hastus_derived_limits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_derived_limits
+    ADD CONSTRAINT hastus_derived_limits_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: hastus_exports hastus_exports_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1750,6 +1825,14 @@ ALTER TABLE ONLY public.shuttles
 
 ALTER TABLE ONLY public.stops
     ADD CONSTRAINT stops_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: trainsformer_exports trainsformer_exports_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_exports
+    ADD CONSTRAINT trainsformer_exports_pkey PRIMARY KEY (id);
 
 
 --
@@ -1991,6 +2074,13 @@ CREATE INDEX stops_stop_lat_stop_lon_stop_id_index ON public.stops USING btree (
 
 
 --
+-- Name: trainsformer_exports_disruption_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX trainsformer_exports_disruption_id_index ON public.trainsformer_exports USING btree (disruption_id);
+
+
+--
 -- Name: unique_disruption_weekday; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2221,6 +2311,30 @@ ALTER TABLE ONLY public.gtfs_trips
 
 
 --
+-- Name: hastus_derived_limits hastus_derived_limits_end_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_derived_limits
+    ADD CONSTRAINT hastus_derived_limits_end_stop_id_fkey FOREIGN KEY (end_stop_id) REFERENCES public.gtfs_stops(id);
+
+
+--
+-- Name: hastus_derived_limits hastus_derived_limits_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_derived_limits
+    ADD CONSTRAINT hastus_derived_limits_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.hastus_services(id) ON DELETE CASCADE;
+
+
+--
+-- Name: hastus_derived_limits hastus_derived_limits_start_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.hastus_derived_limits
+    ADD CONSTRAINT hastus_derived_limits_start_stop_id_fkey FOREIGN KEY (start_stop_id) REFERENCES public.gtfs_stops(id);
+
+
+--
 -- Name: hastus_exports hastus_exports_disruption_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2373,8 +2487,18 @@ ALTER TABLE ONLY public.shuttles
 
 
 --
+-- Name: trainsformer_exports trainsformer_exports_disruption_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_exports
+    ADD CONSTRAINT trainsformer_exports_disruption_id_fkey FOREIGN KEY (disruption_id) REFERENCES public.disruptionsv2(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
+
+\unrestrict 2U5xctdYZPzR7MiFLT6ex6uTDnp2eF7UGFIpPgaVW1X1NJYXsQ9bDXJi8zrFfC9
 
 INSERT INTO public."schema_migrations" (version) VALUES (20191223181419);
 INSERT INTO public."schema_migrations" (version) VALUES (20191223181443);
@@ -2435,4 +2559,6 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250402181804);
 INSERT INTO public."schema_migrations" (version) VALUES (20250403191728);
 INSERT INTO public."schema_migrations" (version) VALUES (20250410180228);
 INSERT INTO public."schema_migrations" (version) VALUES (20250501125059);
+INSERT INTO public."schema_migrations" (version) VALUES (20250601120000);
 INSERT INTO public."schema_migrations" (version) VALUES (20250602151911);
+INSERT INTO public."schema_migrations" (version) VALUES (20251202153220);

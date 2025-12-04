@@ -66,6 +66,12 @@ defmodule ArrowWeb.Router do
     live("/disruptions/:id/hastus_export/new", DisruptionV2ViewLive, :new_hastus_export)
 
     live(
+      "/disruptions/:id/trainsformer_export/new",
+      DisruptionV2ViewLive,
+      :new_trainsformer_export
+    )
+
+    live(
       "/disruptions/:id/hastus_export/:export_id/edit",
       DisruptionV2ViewLive,
       :edit_hastus_export
