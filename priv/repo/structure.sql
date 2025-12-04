@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict AdaIgvKVh7PUe5yfbOCELtvvCqbmvMZ4wJPejR0gyY5fSuudcHxstgNZ9DKgeaF
+\restrict 2U5xctdYZPzR7MiFLT6ex6uTDnp2eF7UGFIpPgaVW1X1NJYXsQ9bDXJi8zrFfC9
 
 -- Dumped from database version 15.14 (Postgres.app)
 -- Dumped by pg_dump version 15.14 (Postgres.app)
@@ -1274,7 +1274,7 @@ ALTER SEQUENCE public.stops_id_seq OWNED BY public.stops.id;
 
 CREATE TABLE public.trainsformer_exports (
     id bigint NOT NULL,
-    s3_path character varying(255),
+    s3_path text,
     disruption_id bigint,
     inserted_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL
@@ -2498,7 +2498,7 @@ ALTER TABLE ONLY public.trainsformer_exports
 -- PostgreSQL database dump complete
 --
 
-\unrestrict AdaIgvKVh7PUe5yfbOCELtvvCqbmvMZ4wJPejR0gyY5fSuudcHxstgNZ9DKgeaF
+\unrestrict 2U5xctdYZPzR7MiFLT6ex6uTDnp2eF7UGFIpPgaVW1X1NJYXsQ9bDXJi8zrFfC9
 
 INSERT INTO public."schema_migrations" (version) VALUES (20191223181419);
 INSERT INTO public."schema_migrations" (version) VALUES (20191223181443);
