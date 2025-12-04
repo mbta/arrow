@@ -10,6 +10,8 @@ defmodule Arrow.Trainsformer.Export do
     field :s3_path, :string
 
     belongs_to :disruption, DisruptionV2
+
+    timestamps(type: :utc_datetime)
   end
 
   @doc false
