@@ -17,4 +17,10 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
       assert {:ok, {:ok, %ExportUpload{zip_binary: _binary}}} = data
     end
   end
+
+  describe "upload_to_s3/3" do
+    test "upload is disabled" do
+      assert {:ok, "disabled"} = ExportUpload.upload_to_s3("data", "filename", 1)
+    end
+  end
 end

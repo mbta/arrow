@@ -40,4 +40,10 @@ defmodule Arrow.Trainsformer.ExportUpload do
         {:ok, {:error, error}}
     end
   end
+
+  @spec upload_to_s3(binary(), String.t(), String.t() | integer()) ::
+          {:ok, String.t()} | {:error, term()}
+  def upload_to_s3(_file_data, _filename, _disruption_id) do
+    {:ok, "disabled"}
+  end
 end
