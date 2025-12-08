@@ -393,6 +393,7 @@ defmodule ArrowWeb.DisruptionComponents do
 
   attr :disruption, DisruptionV2, required: true
   attr :editing, :any, required: true
+  attr :user_id, :string, required: true
 
   def view_trainsformer_service_schedules(assigns) do
     ~H"""
@@ -423,6 +424,7 @@ defmodule ArrowWeb.DisruptionComponents do
           id="trainsformer-export-edit-form"
           disruption={@disruption}
           export={@editing}
+          user_id={@user_id}
         />
       <% end %>
     </section>

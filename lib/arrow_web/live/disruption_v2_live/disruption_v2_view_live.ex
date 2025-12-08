@@ -52,6 +52,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         <DisruptionComponents.view_trainsformer_service_schedules
           disruption={@disruption}
           editing={@editing}
+          user_id={@user_id}
         />
       <% else %>
         <DisruptionComponents.view_hastus_service_schedules
