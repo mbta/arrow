@@ -20,7 +20,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
   @doc """
   Parses a Trainsformer export and returns extracted data
   """
-  @spec extract_data_from_upload(%{:path => binary()}, String.t()) ::
+  @spec extract_data_from_upload(%{path: binary()}, String.t()) ::
           {:ok, {:ok, t()} | {:error, String.t()}}
   def extract_data_from_upload(%{path: zip_path}, user_id) do
     tmp_dir = ~c"tmp/trainsformer/#{user_id}"
