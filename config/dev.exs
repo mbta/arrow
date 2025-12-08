@@ -82,6 +82,8 @@ config :arrow,
   gtfs_archive_storage_prefix_env: "dev/local/",
   hastus_export_storage_enabled?: true,
   hastus_export_storage_prefix_env: "dev/local/",
+  trainsformer_export_storage_enabled?: true,
+  trainsformer_export_storage_prefix_env: "dev/local/",
   use_username_prefix?: true
 
 # Do not include metadata nor timestamps in development logs
