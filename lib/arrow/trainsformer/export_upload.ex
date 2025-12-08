@@ -18,8 +18,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
   ]
 
   @doc """
-  Parses a Trainsformer export and returns a list of data
-  Includes a rescue clause to catch errors while parsing user-provided data
+  Parses a Trainsformer export and returns extracted data
   """
   @spec extract_data_from_upload(%{:path => binary()}, String.t()) ::
           {:ok, {:ok, t()} | {:error, String.t()}}
