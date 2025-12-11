@@ -79,10 +79,40 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
         phx-target={@myself}
       >
         <div class="container-fluid border-2 border-dashed border-primary p-3">
+          <div :if={not is_nil(@error)} class="text-danger">
+            {@error}
+          </div>
+
+          <.input field={@form[:s3_path]} type="text" class="hidden" />
+          <.input field={@form[:disruption_id]} type="text" class="hidden" />
+
           <div class="text-success mb-3">
             <strong>
               <i>Successfully imported export {@uploaded_file_name}!</i>
             </strong>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-4">
+              <.button
+                id="save-export-button"
+                type="submit"
+                class="btn btn-primary btn-sm w-100"
+                phx-target={@myself}
+              >
+                Save
+              </.button>
+            </div>
+            <div class="col-lg-3">
+              <.link
+                id="cancel_add_trainsformer_export_button"
+                class="btn btn-outline-primary btn-sm w-100"
+                data-confirm="Are you sure you want to cancel? All changes to this Trainsformer export will be lost!"
+                patch={~p"/disruptions/#{@disruption.id}"}
+              >
+                Cancel
+              </.link>
+            </div>
           </div>
         </div>
       </.simple_form>
@@ -110,6 +140,15 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
   @impl true
   def handle_event("validate", _params, socket) do
     {:noreply, socket}
+  end
+
+  def handle_event("save", %{"export" => export_params}, socket) do
+    if socket.assigns.export.id do
+      # Update to be implemented
+      {:noreply, socket}
+    else
+      create_export(export_params, socket)
+    end
   end
 
   defp handle_progress(:trainsformer_export, %UploadEntry{done?: false}, socket) do
@@ -145,6 +184,27 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
            uploaded_file_name: client_name,
            uploaded_file_data: export_data.zip_binary
          )}
+    end
+  end
+
+  defp create_export(export_params, socket) do
+    with {:ok, s3_path} <-
+           ExportUpload.upload_to_s3(
+             socket.assigns.uploaded_file_data,
+             socket.assigns.uploaded_file_name,
+             socket.assigns.disruption.id
+           ),
+         {:ok, _} <- Trainsformer.create_export(%{export_params | "s3_path" => s3_path}) do
+      {:noreply,
+       socket
+       |> push_patch(to: "/disruptions/#{socket.assigns.disruption.id}")
+       |> put_flash(:info, "Trainsformer service schedules imported successfully!")}
+    else
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+
+      {:error, _} ->
+        {:noreply, assign(socket, error: "Failed to upload export to S3")}
     end
   end
 end

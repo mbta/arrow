@@ -46,6 +46,7 @@ defmodule Arrow.MixProject do
     [
       {:typed_ecto_schema, "~> 0.4.3"},
       {:ex_doc, "~> 0.38.3", only: :dev, runtime: false, warn_if_outdated: true},
+      {:configparser_ex, "~> 5.0", only: :dev},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:csv, "~> 3.2"},
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
