@@ -45,7 +45,8 @@ defmodule Arrow.Hastus.ExportUpload do
   def extract_data_from_upload(%{path: zip_path}, user_id) do
     tmp_dir = ~c"tmp/hastus/#{user_id}"
 
-    with {:ok, zip_bin, file_map} <- Arrow.Util.read_zip(zip_path, @filenames, tmp_dir),
+    with {:ok, zip_bin, file_map} <-
+           Arrow.Util.Arrow.Util.read_zip(zip_path, @filenames, @filenames, tmp_dir),
          {:ok, zip_bin, file_map, amended?} <- amend_service_ids(zip_bin, file_map, tmp_dir),
          revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
          :ok <- validate_trip_shapes(revenue_trips, file_map["all_shapes.txt"]),
