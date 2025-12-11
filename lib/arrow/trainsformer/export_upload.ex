@@ -25,8 +25,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
   def extract_data_from_upload(%{path: zip_path}, user_id) do
     tmp_dir = ~c"tmp/trainsformer/#{user_id}"
 
-    with {:ok, zip_bin} <- File.read(zip_path),
-         {:ok, _unzipped_file_list} <- :zip.unzip(zip_bin, file_list: @filenames, cwd: tmp_dir) do
+    with {:ok, zip_bin, _file_map} <- Arrow.Util.read_zip(zip_path, @filenames, tmp_dir) do
       _ = File.rm_rf!(tmp_dir)
 
       export_data = %__MODULE__{
