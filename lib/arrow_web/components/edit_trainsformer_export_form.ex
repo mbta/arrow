@@ -39,6 +39,17 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
             add a new service schedule
           </h4>
           <h5>Upload a new Trainsformer export</h5>
+          <div :if={not is_nil(@invalid_export_stops)} class="d-inline-block p-20 alert alert-danger">
+            Some stops are not present in GTFS!
+            <.button
+              type="button"
+              class="alert-info d-block"
+              phx-click="download_invalid_export_stops"
+              phx-target={@myself}
+            >
+              Download list of invalid stops
+            </.button>
+          </div>
           <div :for={entry <- @uploads.trainsformer_export.entries}>
             <progress value={entry.progress} max="100">
               {entry.progress}%
@@ -128,6 +139,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
       |> assign(:show_upload_form, true)
       |> assign(:show_service_import_form, false)
       |> assign(:form, nil)
+      |> assign(:invalid_export_stops, nil)
       |> allow_upload(:trainsformer_export,
         accept: ~w(.zip),
         progress: &handle_progress/3,
@@ -149,6 +161,22 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     else
       create_export(export_params, socket)
     end
+  end
+
+  def handle_event(
+        "download_invalid_export_stops",
+        _params,
+        %{assigns: %{invalid_export_stops: stops}} = socket
+      ) do
+    socket =
+      send_download(
+        socket,
+        "trips_with_stops_not_in_gtfs.txt",
+        Enum.join(stops, "\n"),
+        content_type: "text/plain"
+      )
+
+    {:noreply, socket}
   end
 
   defp handle_progress(:trainsformer_export, %UploadEntry{done?: false}, socket) do
@@ -184,6 +212,9 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
            uploaded_file_name: client_name,
            uploaded_file_data: export_data.zip_binary
          )}
+
+      {:invalid_export_stops, stops} ->
+        {:noreply, assign(socket, invalid_export_stops: stops)}
     end
   end
 

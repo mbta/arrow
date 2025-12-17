@@ -1,4 +1,7 @@
 defmodule Arrow.Trainsformer.ExportUpload do
+  alias Arrow.Gtfs.Stop, as: GtfsStop
+  import Ecto.Query, only: [from: 2]
+
   @moduledoc """
   Functions for validating, parsing, and saving Trainsformer export uploads.
   """
@@ -21,23 +24,44 @@ defmodule Arrow.Trainsformer.ExportUpload do
   Parses a Trainsformer export and returns extracted data
   """
   @spec extract_data_from_upload(%{path: binary()}, String.t()) ::
-          {:ok, {:ok, t()} | {:error, String.t()}}
+          {:ok, {:ok, t()} | {:error, String.t()} | {:invalid_export_stops, [String.t()]}}
   def extract_data_from_upload(%{path: zip_path}, user_id) do
     tmp_dir = ~c"tmp/trainsformer/#{user_id}"
+    unzip = Unzip.LocalFile.open(zip_path)
 
-    with {:ok, zip_bin} <- File.read(zip_path),
-         {:ok, _unzipped_file_list} <- :zip.unzip(zip_bin, file_list: @filenames, cwd: tmp_dir) do
-      _ = File.rm_rf!(tmp_dir)
-
+    with {:ok, unzip} <- Unzip.new(unzip),
+         :ok <-
+           validate_stop_times_in_gtfs(unzip) do
       export_data = %__MODULE__{
-        zip_binary: zip_bin
+        zip_binary: unzip
       }
 
       {:ok, {:ok, export_data}}
     else
-      {:error, error} ->
+      error ->
         _ = File.rm_rf!(tmp_dir)
-        {:ok, {:error, error}}
+        {:ok, error}
+    end
+  end
+
+  defp validate_stop_times_in_gtfs(unzip) do
+    [%Unzip.Entry{file_name: stop_times_file}] =
+      unzip
+      |> Unzip.list_entries()
+      |> Enum.filter(&String.contains?(&1.file_name, "stop_times.txt"))
+
+    stops =
+      Arrow.Gtfs.ImportHelper.stream_csv_rows(unzip, stop_times_file)
+      |> Stream.uniq_by(fn row -> Map.get(row, "stop_id") end)
+      |> Enum.map(fn row -> Map.get(row, "stop_id") end)
+
+    stops_missing_from_gtfs =
+      Enum.filter(stops, fn stop -> Arrow.Repo.get(GtfsStop, stop) == nil end)
+
+    if Enum.any?(stops_missing_from_gtfs) do
+      {:invalid_export_stops, stops_missing_from_gtfs}
+    else
+      :ok
     end
   end
 
