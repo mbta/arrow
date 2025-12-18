@@ -2,9 +2,6 @@ defmodule Arrow.Hastus.ExportUpload do
   @moduledoc """
   Functions for validating and parsing HASTUS exports
   """
-
-  import Ecto.Query, only: [from: 2]
-
   require Logger
 
   alias Arrow.Hastus.TripRouteDirection
