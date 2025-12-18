@@ -1,6 +1,5 @@
 defmodule Arrow.Trainsformer.ExportUpload do
   alias Arrow.Gtfs.Stop, as: GtfsStop
-  import Ecto.Query, only: [from: 2]
 
   @moduledoc """
   Functions for validating, parsing, and saving Trainsformer export uploads.
