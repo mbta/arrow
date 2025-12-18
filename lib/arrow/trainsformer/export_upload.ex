@@ -13,13 +13,6 @@ defmodule Arrow.Trainsformer.ExportUpload do
   @enforce_keys [:zip_binary]
   defstruct @enforce_keys
 
-  @filenames [
-    ~c"multi_route_trips.txt",
-    ~c"stop_times.txt",
-    ~c"transfers.txt",
-    ~c"trips.txt"
-  ]
-
   @doc """
   Parses a Trainsformer export and returns extracted data
   """
@@ -44,19 +37,24 @@ defmodule Arrow.Trainsformer.ExportUpload do
     end
   end
 
-  defp validate_stop_times_in_gtfs(unzip) do
+  def validate_stop_times_in_gtfs(
+        unzip,
+        unzip_module \\ Unzip,
+        import_helper \\ Arrow.Gtfs.ImportHelper,
+        repo \\ Arrow.Repo
+      ) do
     [%Unzip.Entry{file_name: stop_times_file}] =
       unzip
-      |> Unzip.list_entries()
+      |> unzip_module.list_entries()
       |> Enum.filter(&String.contains?(&1.file_name, "stop_times.txt"))
 
     stops =
-      Arrow.Gtfs.ImportHelper.stream_csv_rows(unzip, stop_times_file)
+      import_helper.stream_csv_rows(unzip, stop_times_file)
       |> Stream.uniq_by(fn row -> Map.get(row, "stop_id") end)
       |> Enum.map(fn row -> Map.get(row, "stop_id") end)
 
     stops_missing_from_gtfs =
-      Enum.filter(stops, fn stop -> Arrow.Repo.get(GtfsStop, stop) == nil end)
+      Enum.filter(stops, fn stop -> repo.get(GtfsStop, stop) == nil end)
 
     if Enum.any?(stops_missing_from_gtfs) do
       {:invalid_export_stops, stops_missing_from_gtfs}
