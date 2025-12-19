@@ -213,7 +213,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
            uploaded_file_data: export_data.zip_binary
          )}
 
-      {:invalid_export_stops, stops} ->
+      {:error, {:invalid_export_stops, stops}} ->
         {:noreply, assign(socket, invalid_export_stops: stops)}
     end
   end

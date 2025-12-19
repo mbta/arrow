@@ -170,7 +170,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     end
 
     test "returns missing stop if some stops missing from GTFS" do
-      assert {:invalid_export_stops, ["morket-borket", "mcdongals", "sbubby"]} =
+      assert {:error, {:invalid_export_stops, ["morket-borket", "mcdongals", "sbubby"]}} =
                ExportUpload.validate_stop_times_in_gtfs(
                  %Unzip{},
                  FakeUnzip,

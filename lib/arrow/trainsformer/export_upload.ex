@@ -56,7 +56,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
       Enum.filter(stops, fn stop -> repo.get(GtfsStop, stop) == nil end)
 
     if Enum.any?(stops_missing_from_gtfs) do
-      {:invalid_export_stops, stops_missing_from_gtfs}
+      {:error, {:invalid_export_stops, stops_missing_from_gtfs}}
     else
       :ok
     end
