@@ -4,8 +4,21 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
   import Wallaby.Browser, except: [text: 1]
   import Wallaby.Query
   import Arrow.DisruptionsFixtures
+  import Arrow.Factory
 
   @moduletag :integration
+
+  setup do
+    insert(:gtfs_stop, id: "NEC-2287")
+    insert(:gtfs_stop, id: "NEC-2276-01")
+    insert(:gtfs_stop, id: "FB-0118-01")
+    insert(:gtfs_stop, id: "FS-0049-S")
+    insert(:gtfs_stop, id: "NEC-1851-03")
+    insert(:gtfs_stop, id: "NEC-1891-02")
+    insert(:gtfs_stop, id: "NEC-1969-04")
+    insert(:gtfs_stop, id: "NEC-2040-01")
+    insert(:gtfs_stop, id: "FS-0049-S")
+  end
 
   feature "can upload a Trainsformer export", %{session: session} do
     disruption = disruption_v2_fixture(%{mode: :commuter_rail})
