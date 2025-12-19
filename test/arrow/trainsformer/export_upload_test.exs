@@ -39,7 +39,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
   describe "validate_stop_times_in_gtfs/4" do
     defmodule FakeUnzip do
       def list_entries(_) do
-        %Unzip.Entry{file_name: "stop_times.txt"}
+        [%Unzip.Entry{file_name: "stop_times.txt"}]
       end
     end
 
@@ -50,37 +50,133 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
       def get(_, _), do: nil
     end
 
-    test "returns ok if all stops in gtfs" do
-      defmodule ImportRealStops do
-        def stream_csv_rows(_) do
-          rows = [
-            "Base-772221-5208,05:35:00,05:35:00,WR-0329-02,00,North Station via Reading,0,1,1,,0",
-            "Base-772221-5208,05:37:00,05:37:00,WR-0325-02,10,North Station via Reading,0,0,1,,0",
-            "Base-772221-5208,05:44:00,05:44:00,WR-0264-02,20,North Station via Reading,0,0,1,,0"
-          ]
+    defmodule ImportFakeStops do
+      def stream_csv_rows(_, _) do
+        rows = [
+          %{
+            "arrival_time" => "10:26:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:26:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "morket-borket",
+            "stop_sequence" => "140",
+            "timepoint" => "1",
+            "trip_id" => "ReadWKNDHeadsigns-754204-5530"
+          },
+          %{
+            "arrival_time" => "10:31:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:31:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "mcdongals",
+            "stop_sequence" => "150",
+            "timepoint" => "1",
+            "trip_id" => "ReadWKNDHeadsigns-754204-5530"
+          },
+          %{
+            "arrival_time" => "10:31:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:31:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "sbubby",
+            "stop_sequence" => "150",
+            "timepoint" => "1",
+            "trip_id" => "ReadWKNDHeadsigns-754204-5530"
+          },
+          %{
+            "arrival_time" => "10:31:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:31:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "WR-0329-02",
+            "stop_sequence" => "150",
+            "timepoint" => "1",
+            "trip_id" => "ReadWKNDHeadsigns-754204-5530"
+          }
+        ]
 
-          Stream.map(rows, & &1)
-        end
+        Stream.map(rows, & &1)
       end
-
-      assert :ok = ExportUpload.validate_stop_times_in_gtfs(%Unzip{}, FakeUnzip, ImportRealStops)
     end
 
-    test "returns missing stop times if some stops missing from GTFS" do
-      defmodule ImportFakeStops do
-        def stream_csv_rows(_) do
-          rows = [
-            "Base-772221-5208,05:35:00,05:35:00,morket-borket,00,North Station via Reading,0,1,1,,0",
-            "Base-772221-5208,05:37:00,05:37:00,sbubby,North Station via Reading,0,0,1,,0",
-            "Base-772221-5208,05:44:00,05:44:00,mcdongals,20,North Station via Reading,0,0,1,,0"
-          ]
+    defmodule ImportRealStops do
+      def stream_csv_rows(_, _) do
+        rows = [
+          %{
+            "arrival_time" => "10:26:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:26:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "WR-0329-02",
+            "stop_sequence" => "140",
+            "timepoint" => "1",
+            "trip_id" => "Base-772221-5208"
+          },
+          %{
+            "arrival_time" => "10:31:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:31:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "WR-0325-02",
+            "stop_sequence" => "150",
+            "timepoint" => "1",
+            "trip_id" => "Base-772221-5208"
+          },
+          %{
+            "arrival_time" => "10:31:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:31:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "WR-0264-02",
+            "stop_sequence" => "150",
+            "timepoint" => "1",
+            "trip_id" => "Base-772221-5208"
+          }
+        ]
 
-          Stream.map(rows, & &1)
-        end
+        Stream.map(rows, & &1)
       end
+    end
 
-      assert {:invalid_export_stops, "morket-borket", "sbubby", "mcdongals"} =
-               ExportUpload.validate_stop_times_in_gtfs(%Unzip{}, FakeUnzip, ImportRealStops)
+    test "returns ok if all stops in gtfs" do
+      assert :ok =
+               ExportUpload.validate_stop_times_in_gtfs(
+                 %Unzip{},
+                 FakeUnzip,
+                 ImportRealStops,
+                 FakeRepo
+               )
+    end
+
+    test "returns missing stop if some stops missing from GTFS" do
+      assert {:invalid_export_stops, ["morket-borket", "mcdongals", "sbubby"]} =
+               ExportUpload.validate_stop_times_in_gtfs(
+                 %Unzip{},
+                 FakeUnzip,
+                 ImportFakeStops,
+                 FakeRepo
+               )
     end
   end
 end
