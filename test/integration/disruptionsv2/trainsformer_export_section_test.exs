@@ -1,5 +1,5 @@
 defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
-  use ExUnit.Case
+  use Arrow.DataCase
   use Wallaby.Feature
   import Wallaby.Browser, except: [text: 1]
   import Wallaby.Query
@@ -22,8 +22,11 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     ]
 
     for stop <- stops do
-      insert(:gtfs_stop, id: stop, lat: 0, lon: 0, municipality: "Boston")
+      dbg()
+      insert(:gtfs_stop, id: stop, name: stop, lat: 0, lon: 0, municipality: "Boston")
     end
+
+    :ok
   end
 
   feature "can upload a Trainsformer export", %{session: session} do
