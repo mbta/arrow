@@ -1,5 +1,5 @@
 defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
-  use Arrow.DataCase
+  use ExUnit.Case
   use Wallaby.Feature
   import Wallaby.Browser, except: [text: 1]
   import Wallaby.Query
@@ -8,7 +8,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
 
   @moduletag :integration
 
-  setup_all do
+  setup do
     stops = [
       "NEC-2287",
       "NEC-2276-01",
@@ -17,12 +17,10 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       "NEC-1851-03",
       "NEC-1891-02",
       "NEC-1969-04",
-      "NEC-2040-01",
-      "FS-0049-S"
+      "NEC-2040-01"
     ]
 
     for stop <- stops do
-      dbg()
       insert(:gtfs_stop, id: stop, name: stop, lat: 0, lon: 0, municipality: "Boston")
     end
 
