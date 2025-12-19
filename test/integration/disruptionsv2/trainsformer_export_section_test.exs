@@ -8,16 +8,22 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
 
   @moduletag :integration
 
-  setup do
-    insert(:gtfs_stop, id: "NEC-2287")
-    insert(:gtfs_stop, id: "NEC-2276-01")
-    insert(:gtfs_stop, id: "FB-0118-01")
-    insert(:gtfs_stop, id: "FS-0049-S")
-    insert(:gtfs_stop, id: "NEC-1851-03")
-    insert(:gtfs_stop, id: "NEC-1891-02")
-    insert(:gtfs_stop, id: "NEC-1969-04")
-    insert(:gtfs_stop, id: "NEC-2040-01")
-    insert(:gtfs_stop, id: "FS-0049-S")
+  setup_all do
+    stops = [
+      "NEC-2287",
+      "NEC-2276-01",
+      "FB-0118-01",
+      "FS-0049-S",
+      "NEC-1851-03",
+      "NEC-1891-02",
+      "NEC-1969-04",
+      "NEC-2040-01",
+      "FS-0049-S"
+    ]
+
+    for stop <- stops do
+      insert(:gtfs_stop, id: stop, lat: 0, lon: 0, municipality: "Boston")
+    end
   end
 
   feature "can upload a Trainsformer export", %{session: session} do
@@ -33,6 +39,19 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> assert_text("Successfully imported export valid_export.zip!")
     |> click(Query.css("#save-export-button"))
     |> assert_text("Export information goes here")
+  end
+
+  feature "shows error for invalid trainsformer export", %{session: session} do
+    disruption = disruption_v2_fixture(%{mode: :commuter_rail})
+
+    session
+    |> visit("/disruptions/#{disruption.id}")
+    |> click(text("Upload Trainsformer export"))
+    |> assert_text("Upload Trainsformer .zip")
+    |> attach_file(file_field("trainsformer_export", visible: false),
+      path: "test/support/fixtures/trainsformer/invalid_export.zip"
+    )
+    |> assert_text("Some stops are not present in GTFS!")
   end
 
   feature "can cancel uploading a Trainsformer export", %{session: session} do

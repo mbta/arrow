@@ -1,10 +1,36 @@
 defmodule Arrow.Trainsformer.ExportUploadTest do
   use Arrow.DataCase, async: true
+  import Arrow.Factory
   import Test.Support.Helpers
 
   alias Arrow.Trainsformer.ExportUpload
 
   @export_dir "test/support/fixtures/trainsformer"
+
+  setup do
+    valid_stops = [
+      "NEC-2287",
+      "NEC-2276-01",
+      "FB-0118-01",
+      "FS-0049-S",
+      "NEC-1851-03",
+      "NEC-1891-02",
+      "NEC-1969-04",
+      "NEC-2040-01"
+    ]
+
+    for stop_id <- valid_stops do
+      insert(:gtfs_stop,
+        id: stop_id,
+        name: stop_id,
+        lat: 0,
+        lon: 0,
+        municipality: "Boston"
+      )
+    end
+
+    :ok
+  end
 
   describe "extract_data_from_upload/2" do
     @tag export: "valid_export.zip"
