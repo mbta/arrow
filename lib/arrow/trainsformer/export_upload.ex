@@ -49,7 +49,6 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
     stops =
       import_helper.stream_csv_rows(unzip, stop_times_file)
-      |> dbg()
       |> Stream.uniq_by(fn row -> Map.get(row, "stop_id") end)
       |> Enum.map(fn row -> Map.get(row, "stop_id") end)
 
