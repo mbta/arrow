@@ -43,6 +43,17 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
 
       assert {:ok, {:ok, %ExportUpload{zip_binary: _binary}}} = data
     end
+
+    @tag export: "invalid_csv.zip"
+    test "error on invalid csv", %{export: export} do
+      data =
+        ExportUpload.extract_data_from_upload(
+          %{path: "#{@export_dir}/#{export}"},
+          "uid-#{System.unique_integer([:positive])}"
+        )
+
+      assert {:error, "the error"} = data
+    end
   end
 
   describe "upload_to_s3/3" do

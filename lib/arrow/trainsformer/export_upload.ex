@@ -5,6 +5,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
   Functions for validating, parsing, and saving Trainsformer export uploads.
   """
 
+  require Logger
+
   @type t :: %__MODULE__{
           zip_binary: binary()
         }
@@ -69,6 +71,15 @@ defmodule Arrow.Trainsformer.ExportUpload do
     else
       :ok
     end
+  rescue
+    e ->
+      Logger.warning(
+        "Trainsformer.ExportUpload failed to parse zip, message=#{Exception.format(:error, e, __STACKTRACE__)}"
+      )
+
+      # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
+      {:ok,
+       {:error, Could not parse zip."}}
   end
 
   @spec upload_to_s3(binary(), String.t(), String.t() | integer()) ::
@@ -116,5 +127,22 @@ defmodule Arrow.Trainsformer.ExportUpload do
     [prefix_env, username_prefix, s3_prefix, filename]
     |> Enum.reject(&is_nil/1)
     |> Path.join()
+  defp validate_csvs(
+         zip_bin,
+         unzip_module \\ Unzip,
+         _import_helper \\ Arrow.Gtfs.ImportHelper
+       ) do
+    {:ok, unzip} = Unzip.new(zip_bin)
+
+    Enum.each(unzip_module.list_entries(unzip), fn entry ->
+      # like import_helper.stream_csv_rows(unzip, entry.file_name) with add'l option
+      unzip
+      |> Unzip.file_stream!(entry.file_name)
+      # Flatten iodata for compatibility with CSV.decode
+      |> Stream.flat_map(&List.flatten/1)
+      |> CSV.decode!(validate_row_length: true)
+    end)
+
+    :ok
   end
 end

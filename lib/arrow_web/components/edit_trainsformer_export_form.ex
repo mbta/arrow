@@ -195,6 +195,9 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
            entry,
            &ExportUpload.extract_data_from_upload(&1, socket.assigns.user_id)
          ) do
+      {:error, error} ->
+        {:noreply, assign(socket, error: error)}
+
       {:ok, export_data} ->
         form =
           socket.assigns.export
