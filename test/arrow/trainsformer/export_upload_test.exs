@@ -70,10 +70,9 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     end
 
     defmodule FakeRepo do
-      def get(_, "WR-0329-02"), do: %Arrow.Gtfs.Stop{}
-      def get(_, "WR-0325-02"), do: %Arrow.Gtfs.Stop{}
-      def get(_, "WR-0264-02"), do: %Arrow.Gtfs.Stop{}
-      def get(_, _), do: nil
+      def all(_) do
+        ["WR-0329-02", "WR-0325-02", "WR-0264-02"]
+      end
     end
 
     defmodule ImportFakeStops do

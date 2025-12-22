@@ -1,5 +1,5 @@
 defmodule Arrow.Trainsformer.ExportUpload do
-  alias Arrow.Gtfs.Stop, as: GtfsStop
+  import Ecto.Query, only: [from: 2]
 
   @moduledoc """
   Functions for validating, parsing, and saving Trainsformer export uploads.
@@ -47,13 +47,18 @@ defmodule Arrow.Trainsformer.ExportUpload do
       |> unzip_module.list_entries()
       |> Enum.filter(&String.contains?(&1.file_name, "stop_times.txt"))
 
-    stops =
+    trainsformer_stop_ids =
       import_helper.stream_csv_rows(unzip, stop_times_file)
       |> Stream.uniq_by(fn row -> Map.get(row, "stop_id") end)
       |> Enum.map(fn row -> Map.get(row, "stop_id") end)
 
+    gtfs_stop_ids = repo.all(from s in Arrow.Gtfs.Stop,
+      where: s.id in ^trainsformer_stop_ids,
+      select: s.id
+    ) |> MapSet.new()
+
     stops_missing_from_gtfs =
-      Enum.filter(stops, fn stop -> repo.get(GtfsStop, stop) == nil end)
+      Enum.filter(trainsformer_stop_ids, fn stop -> !MapSet.member?(gtfs_stop_ids, stop) end)
 
     if Enum.any?(stops_missing_from_gtfs) do
       {:error, {:invalid_export_stops, stops_missing_from_gtfs}}
