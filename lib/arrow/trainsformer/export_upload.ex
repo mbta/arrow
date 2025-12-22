@@ -52,10 +52,13 @@ defmodule Arrow.Trainsformer.ExportUpload do
       |> Stream.uniq_by(fn row -> Map.get(row, "stop_id") end)
       |> Enum.map(fn row -> Map.get(row, "stop_id") end)
 
-    gtfs_stop_ids = repo.all(from s in Arrow.Gtfs.Stop,
-      where: s.id in ^trainsformer_stop_ids,
-      select: s.id
-    ) |> MapSet.new()
+    gtfs_stop_ids =
+      repo.all(
+        from s in Arrow.Gtfs.Stop,
+          where: s.id in ^trainsformer_stop_ids,
+          select: s.id
+      )
+      |> MapSet.new()
 
     stops_missing_from_gtfs =
       Enum.filter(trainsformer_stop_ids, fn stop -> !MapSet.member?(gtfs_stop_ids, stop) end)
