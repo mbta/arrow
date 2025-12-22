@@ -50,7 +50,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> click(text("Upload Trainsformer export"))
     |> assert_text("Upload Trainsformer .zip")
     |> attach_file(file_field("trainsformer_export", visible: false),
-      path: "test/support/fixtures/trainsformer/invalid_export.zip"
+      path: "test/support/fixtures/trainsformer/invalid_export_stops_missing_from_gtfs.zip"
     )
     |> assert_text("Some stops are not present in GTFS!")
   end
