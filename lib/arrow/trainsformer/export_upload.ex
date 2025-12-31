@@ -74,7 +74,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
   rescue
     e ->
       Logger.warning(
-        "Trainsformer.ExportUpload failed to parse zip, message=#{Exception.format(:error, e, __STACKTRACE__)}"
+        "Trainsformer.ExportUpload failed to parse zip, message=#{Exception.format(:error, e)}"
       )
 
       # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
@@ -128,6 +128,10 @@ defmodule Arrow.Trainsformer.ExportUpload do
     |> Path.join()
   end
 
+  # returns a list of tuples for problem files:
+  #   [{:error, "filename", "the error"}, ...]
+  # or if there are no errors:
+  #   []
   defp validate_csvs(
          zip_bin,
          unzip_module \\ Unzip,
@@ -135,12 +139,18 @@ defmodule Arrow.Trainsformer.ExportUpload do
        ) do
     {:ok, unzip} = Unzip.new(zip_bin)
 
-    Enum.each(unzip_module.list_entries(unzip), fn entry ->
-      Arrow.Gtfs.ImportHelper.stream_csv_rows(unzip, entry.file_name)
-      # Need to run the stream for stream_csv_rows to call CSV.decode! for validation
-      |> Stream.run()
-    end)
+    Enum.map(unzip_module.list_entries(unzip), fn entry ->
+      try do
+        Arrow.Gtfs.ImportHelper.stream_csv_rows(unzip, entry.file_name)
+        # Need to run the stream for stream_csv_rows to call CSV.decode! for validation
+        |> Stream.run()
 
-    :ok
+        {:ok, entry.file_name, ""}
+      rescue
+        e ->
+          {:error, entry.file_name, Exception.format(:error, e)}
+      end
+    end)
+    |> Enum.filter(fn {result, _file, _error} -> result == :error end)
   end
 end

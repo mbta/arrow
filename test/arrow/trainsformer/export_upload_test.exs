@@ -52,7 +52,12 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
           "uid-#{System.unique_integer([:positive])}"
         )
 
-      assert {:error, "the error"} = data
+      assert {:ok,
+              {:error,
+               [
+                 {:error, "SPRING2025-SOUTHSS-Weekend-66/stop_times.txt",
+                  "** (CSV.RowLengthError) Row 2 has length 9 instead of expected length 11\n\nYou are seeing this error because :validate_row_length has been set to true\n"}
+               ]}} = data
     end
   end
 
