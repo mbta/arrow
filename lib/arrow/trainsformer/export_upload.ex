@@ -17,22 +17,23 @@ defmodule Arrow.Trainsformer.ExportUpload do
   @doc """
   Parses a Trainsformer export and returns extracted data
   """
-  @spec extract_data_from_upload(%{path: binary()}, String.t()) ::
+  @spec extract_data_from_upload(%{path: binary()}) ::
           {:ok, {:ok, t()} | {:error, String.t()} | {:invalid_export_stops, [String.t()]}}
-  def extract_data_from_upload(%{path: zip_path}, user_id) do
-    unzip = Unzip.LocalFile.open(zip_path)
+  def extract_data_from_upload(%{path: zip_path}) do
+    zip_bin = Unzip.LocalFile.open(zip_path)
 
-    with {:ok, unzip} <- Unzip.new(unzip),
+    with {:ok, unzip} <- Unzip.new(zip_bin),
+         [] <- validate_csvs(unzip),
          :ok <-
            validate_stop_times_in_gtfs(unzip) do
       export_data = %__MODULE__{
-        zip_binary: unzip
+        zip_binary: zip_bin
       }
 
       {:ok, {:ok, export_data}}
     else
-      error ->
-        {:ok, error}
+      errors ->
+        {:ok, errors}
     end
   end
 
@@ -131,12 +132,10 @@ defmodule Arrow.Trainsformer.ExportUpload do
   # or if there are no errors:
   #   []
   defp validate_csvs(
-         zip_bin,
+         unzip,
          unzip_module \\ Unzip,
          _import_helper \\ Arrow.Gtfs.ImportHelper
        ) do
-    {:ok, unzip} = Unzip.new(zip_bin)
-
     Enum.map(unzip_module.list_entries(unzip), fn entry ->
       try do
         Arrow.Gtfs.ImportHelper.stream_csv_rows(unzip, entry.file_name)

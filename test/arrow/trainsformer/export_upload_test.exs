@@ -32,14 +32,11 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     :ok
   end
 
-  describe "extract_data_from_upload/2" do
+  describe "extract_data_from_upload/1" do
     @tag export: "valid_export.zip"
     test "extracts data from export", %{export: export} do
       data =
-        ExportUpload.extract_data_from_upload(
-          %{path: "#{@export_dir}/#{export}"},
-          "uid-#{System.unique_integer([:positive])}"
-        )
+        ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"})
 
       assert {:ok, {:ok, %ExportUpload{zip_binary: _binary}}} = data
     end
@@ -47,17 +44,13 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     @tag export: "invalid_csv.zip"
     test "error on invalid csv", %{export: export} do
       data =
-        ExportUpload.extract_data_from_upload(
-          %{path: "#{@export_dir}/#{export}"},
-          "uid-#{System.unique_integer([:positive])}"
-        )
+        ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"})
 
       assert {:ok,
-              {:error,
-               [
-                 {:error, "SPRING2025-SOUTHSS-Weekend-66/stop_times.txt",
-                  "** (CSV.RowLengthError) Row 2 has length 9 instead of expected length 11\n\nYou are seeing this error because :validate_row_length has been set to true\n"}
-               ]}} = data
+              [
+                {:error, "SPRING2025-SOUTHSS-Weekend-66/stop_times.txt",
+                 "** (CSV.RowLengthError) Row 2 has length 9 instead of expected length 11\n\nYou are seeing this error because :validate_row_length has been set to true\n"}
+              ]} = data
     end
   end
 
