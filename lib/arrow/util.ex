@@ -7,17 +7,20 @@ defmodule Arrow.Util do
     Regex.replace(~r/([\%_])/, string, fn _, x -> "\\#{x}" end) <> "%"
   end
 
-  @spec read_zip(Path.t(), list(charlist()), Path.t()) :: {:ok, binary(), map()} | {:error, term()}
+  @spec read_zip(Path.t(), list(charlist()), Path.t()) ::
+          {:ok, binary(), map()} | {:error, term()}
   def read_zip(zip_path, required_files, tmp_dir) do
     with {:ok, zip_bin} <- File.read(zip_path),
-         {:ok, unzipped_file_list} <- :zip.unzip(zip_bin, file_list: required_files, cwd: tmp_dir),
+         {:ok, unzipped_file_list} <-
+           :zip.unzip(zip_bin, file_list: required_files, cwd: tmp_dir),
          {:ok, file_map} <- read_csvs(unzipped_file_list, required_files, tmp_dir) do
       {:ok, zip_bin, file_map}
     end
   end
 
   defp read_csvs(unzipped_files, required_files, tmp_dir) do
-    missing_files = Enum.filter(required_files, &(get_unzipped_file_path(&1, tmp_dir) not in unzipped_files))
+    missing_files =
+      Enum.filter(required_files, &(get_unzipped_file_path(&1, tmp_dir) not in unzipped_files))
 
     if Enum.any?(missing_files) do
       {:error,

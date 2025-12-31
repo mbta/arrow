@@ -142,7 +142,8 @@ defmodule Arrow.Hastus.ExportUpload do
       Enum.each(replacements, &amend_service_id(&1, tmp_dir))
 
       with {:ok, zip_path} <- write_amended_zip(tmp_dir),
-           {:ok, amended_zip_bin, amended_file_map} <- Arrow.Util.read_zip(zip_path, @filenames, tmp_dir) do
+           {:ok, amended_zip_bin, amended_file_map} <-
+             Arrow.Util.read_zip(zip_path, @filenames, tmp_dir) do
         {:ok, amended_zip_bin, amended_file_map, true}
       end
     end
