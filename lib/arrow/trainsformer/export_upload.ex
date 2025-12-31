@@ -20,7 +20,6 @@ defmodule Arrow.Trainsformer.ExportUpload do
   @spec extract_data_from_upload(%{path: binary()}, String.t()) ::
           {:ok, {:ok, t()} | {:error, String.t()} | {:invalid_export_stops, [String.t()]}}
   def extract_data_from_upload(%{path: zip_path}, user_id) do
-    tmp_dir = ~c"tmp/trainsformer/#{user_id}"
     unzip = Unzip.LocalFile.open(zip_path)
 
     with {:ok, unzip} <- Unzip.new(unzip),
@@ -33,7 +32,6 @@ defmodule Arrow.Trainsformer.ExportUpload do
       {:ok, {:ok, export_data}}
     else
       error ->
-        _ = File.rm_rf!(tmp_dir)
         {:ok, error}
     end
   end
