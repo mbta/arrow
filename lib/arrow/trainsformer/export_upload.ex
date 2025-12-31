@@ -1,4 +1,6 @@
 defmodule Arrow.Trainsformer.ExportUpload do
+  import Ecto.Query, only: [from: 2]
+
   @moduledoc """
   Functions for validating, parsing, and saving Trainsformer export uploads.
   """
@@ -10,34 +12,62 @@ defmodule Arrow.Trainsformer.ExportUpload do
   @enforce_keys [:zip_binary]
   defstruct @enforce_keys
 
-  @filenames [
-    ~c"multi_route_trips.txt",
-    ~c"stop_times.txt",
-    ~c"transfers.txt",
-    ~c"trips.txt"
-  ]
-
   @doc """
   Parses a Trainsformer export and returns extracted data
   """
   @spec extract_data_from_upload(%{path: binary()}, String.t()) ::
-          {:ok, {:ok, t()} | {:error, String.t()}}
+          {:ok, {:ok, t()} | {:error, String.t()} | {:invalid_export_stops, [String.t()]}}
   def extract_data_from_upload(%{path: zip_path}, user_id) do
     tmp_dir = ~c"tmp/trainsformer/#{user_id}"
+    unzip = Unzip.LocalFile.open(zip_path)
 
-    with {:ok, zip_bin} <- File.read(zip_path),
-         {:ok, _unzipped_file_list} <- :zip.unzip(zip_bin, file_list: @filenames, cwd: tmp_dir) do
-      _ = File.rm_rf!(tmp_dir)
-
+    with {:ok, unzip} <- Unzip.new(unzip),
+         :ok <-
+           validate_stop_times_in_gtfs(unzip) do
       export_data = %__MODULE__{
-        zip_binary: zip_bin
+        zip_binary: unzip
       }
 
       {:ok, {:ok, export_data}}
     else
-      {:error, error} ->
+      error ->
         _ = File.rm_rf!(tmp_dir)
-        {:ok, {:error, error}}
+        {:ok, error}
+    end
+  end
+
+  def validate_stop_times_in_gtfs(
+        unzip,
+        unzip_module \\ Unzip,
+        import_helper \\ Arrow.Gtfs.ImportHelper,
+        repo \\ Arrow.Repo
+      ) do
+    [%Unzip.Entry{file_name: stop_times_file}] =
+      unzip
+      |> unzip_module.list_entries()
+      |> Enum.filter(&String.contains?(&1.file_name, "stop_times.txt"))
+
+    trainsformer_stop_ids =
+      import_helper.stream_csv_rows(unzip, stop_times_file)
+      |> Stream.uniq_by(fn row -> Map.get(row, "stop_id") end)
+      |> Enum.map(fn row -> Map.get(row, "stop_id") end)
+
+    gtfs_stop_ids =
+      MapSet.new(
+        repo.all(
+          from s in Arrow.Gtfs.Stop,
+            where: s.id in ^trainsformer_stop_ids,
+            select: s.id
+        )
+      )
+
+    stops_missing_from_gtfs =
+      Enum.filter(trainsformer_stop_ids, fn stop -> !MapSet.member?(gtfs_stop_ids, stop) end)
+
+    if Enum.any?(stops_missing_from_gtfs) do
+      {:error, {:invalid_export_stops, stops_missing_from_gtfs}}
+    else
+      :ok
     end
   end
 
