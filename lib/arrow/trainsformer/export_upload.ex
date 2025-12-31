@@ -53,11 +53,13 @@ defmodule Arrow.Trainsformer.ExportUpload do
       |> Enum.map(fn row -> Map.get(row, "stop_id") end)
 
     gtfs_stop_ids =
-      MapSet.new(repo.all(
-        from s in Arrow.Gtfs.Stop,
-          where: s.id in ^trainsformer_stop_ids,
-          select: s.id
-      ))
+      MapSet.new(
+        repo.all(
+          from s in Arrow.Gtfs.Stop,
+            where: s.id in ^trainsformer_stop_ids,
+            select: s.id
+        )
+      )
 
     stops_missing_from_gtfs =
       Enum.filter(trainsformer_stop_ids, fn stop -> !MapSet.member?(gtfs_stop_ids, stop) end)
