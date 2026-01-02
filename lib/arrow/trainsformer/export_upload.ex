@@ -35,6 +35,10 @@ defmodule Arrow.Trainsformer.ExportUpload do
       errors ->
         {:ok, errors}
     end
+  rescue
+    e ->
+      # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
+      {:ok, {:error, "Could not parse zip, message=#{Exception.format(:error, e)}"}}
   end
 
   def validate_stop_times_in_gtfs(
@@ -70,14 +74,6 @@ defmodule Arrow.Trainsformer.ExportUpload do
     else
       :ok
     end
-  rescue
-    e ->
-      Logger.warning(
-        "Trainsformer.ExportUpload failed to parse zip, message=#{Exception.format(:error, e)}"
-      )
-
-      # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
-      {:ok, {:error, "Could not parse zip."}}
   end
 
   @spec upload_to_s3(binary(), String.t(), String.t() | integer()) ::
@@ -136,7 +132,9 @@ defmodule Arrow.Trainsformer.ExportUpload do
          unzip_module \\ Unzip,
          _import_helper \\ Arrow.Gtfs.ImportHelper
        ) do
-    Enum.map(unzip_module.list_entries(unzip), fn entry ->
+    unzip
+    |> unzip_module.list_entries()
+    |> Enum.map(fn entry ->
       try do
         Arrow.Gtfs.ImportHelper.stream_csv_rows(unzip, entry.file_name)
         # Need to run the stream for stream_csv_rows to call CSV.decode! for validation
