@@ -22,7 +22,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
            {:ok, t()}
            | {:error, String.t()}
            | {:invalid_export_stops, [String.t()]}
-           | {:invalid_stop_order, [String.t()]}}
+           | {:invalid_stop_order,
+              [%{trip_id: String.t(), stop_id: String.t(), stop_sequence: String.t()}]}}
   def extract_data_from_upload(%{path: zip_path}) do
     zip_bin = Unzip.LocalFile.open(zip_path)
 
@@ -85,16 +86,17 @@ defmodule Arrow.Trainsformer.ExportUpload do
       ) do
     stop_times_file = extract_stop_times(unzip, unzip_module)
 
+    # find trips in stop_times.txt
     trainsformer_trips =
       import_helper.stream_csv_rows(unzip, stop_times_file)
       |> Enum.group_by(fn row -> Map.get(row, "trip_id") end)
 
     invalid_stop_times =
-      trainsformer_trips
-      |> Enum.reduce([], fn {_trip_id, stop_times}, stop_times_acc ->
+      Enum.reduce(trainsformer_trips, [], fn {_trip_id, stop_times}, stop_times_acc ->
         invalid_stop_times_for_trip =
           stop_times
           |> Enum.sort_by(& &1[:stop_sequence])
+          # compare two stop_times at a time
           |> Enum.chunk_every(2, 1)
           |> Enum.reduce([], fn chunk, acc ->
             case chunk do
@@ -112,14 +114,37 @@ defmodule Arrow.Trainsformer.ExportUpload do
                   parse_gtfs_time_to_sec(Map.get(stop_time2, "departure_time"))
 
                 cond do
+                  # if the second stop_time has an arrival time before the previous departure, mark as invalid
                   compare_durations(stop_time1_departure_dur, stop_time2_arrival_dur) == :gt ->
-                    [stop_time1 | acc]
+                    [
+                      %{
+                        trip_id: Map.get(stop_time2, "trip_id"),
+                        stop_id: Map.get(stop_time2, "stop_id"),
+                        stop_sequence: Map.get(stop_time2, "stop_sequence")
+                      }
+                      | acc
+                    ]
 
+                  # for either stop, if arrival and departure times are out of order, mark as invalid
                   compare_durations(stop_time1_arrival_dur, stop_time1_departure_dur) == :gt ->
-                    [stop_time1 | acc]
+                    [
+                      %{
+                        trip_id: Map.get(stop_time1, "trip_id"),
+                        stop_id: Map.get(stop_time1, "stop_id"),
+                        stop_sequence: Map.get(stop_time1, "stop_sequence")
+                      }
+                      | acc
+                    ]
 
                   compare_durations(stop_time2_arrival_dur, stop_time2_departure_dur) == :gt ->
-                    [stop_time2 | acc]
+                    [
+                      %{
+                        trip_id: Map.get(stop_time2, "trip_id"),
+                        stop_id: Map.get(stop_time2, "stop_id"),
+                        stop_sequence: Map.get(stop_time2, "stop_sequence")
+                      }
+                      | acc
+                    ]
 
                   true ->
                     acc
@@ -130,7 +155,14 @@ defmodule Arrow.Trainsformer.ExportUpload do
                 departure_dur = parse_gtfs_time_to_sec(Map.get(stop_time, "departure_time"))
 
                 if compare_durations(arrival_dur, departure_dur) == :gt do
-                  [stop_time | acc]
+                  [
+                    %{
+                      trip_id: Map.get(stop_time, "trip_id"),
+                      stop_id: Map.get(stop_time, "stop_id"),
+                      stop_sequence: Map.get(stop_time, "stop_sequence")
+                    }
+                    | acc
+                  ]
                 else
                   acc
                 end
