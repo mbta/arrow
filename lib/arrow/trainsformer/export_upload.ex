@@ -5,6 +5,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
   Functions for validating, parsing, and saving Trainsformer export uploads.
   """
 
+  require Logger
+
   @type t :: %__MODULE__{
           zip_binary: binary()
         }
@@ -15,25 +17,28 @@ defmodule Arrow.Trainsformer.ExportUpload do
   @doc """
   Parses a Trainsformer export and returns extracted data
   """
-  @spec extract_data_from_upload(%{path: binary()}, String.t()) ::
+  @spec extract_data_from_upload(%{path: binary()}) ::
           {:ok, {:ok, t()} | {:error, String.t()} | {:invalid_export_stops, [String.t()]}}
-  def extract_data_from_upload(%{path: zip_path}, user_id) do
-    tmp_dir = ~c"tmp/trainsformer/#{user_id}"
-    unzip = Unzip.LocalFile.open(zip_path)
+  def extract_data_from_upload(%{path: zip_path}) do
+    zip_bin = Unzip.LocalFile.open(zip_path)
 
-    with {:ok, unzip} <- Unzip.new(unzip),
+    with {:ok, unzip} <- Unzip.new(zip_bin),
+         [] <- validate_csvs(unzip),
          :ok <-
            validate_stop_times_in_gtfs(unzip) do
       export_data = %__MODULE__{
-        zip_binary: unzip
+        zip_binary: zip_bin
       }
 
       {:ok, {:ok, export_data}}
     else
-      error ->
-        _ = File.rm_rf!(tmp_dir)
-        {:ok, error}
+      errors ->
+        {:ok, errors}
     end
+  rescue
+    e ->
+      # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
+      {:ok, {:error, "Could not parse zip, message=#{Exception.format(:error, e)}"}}
   end
 
   def validate_stop_times_in_gtfs(
@@ -116,5 +121,31 @@ defmodule Arrow.Trainsformer.ExportUpload do
     [prefix_env, username_prefix, s3_prefix, filename]
     |> Enum.reject(&is_nil/1)
     |> Path.join()
+  end
+
+  # returns a list of tuples for problem files:
+  #   [{:error, "filename", "the error"}, ...]
+  # or if there are no errors:
+  #   []
+  defp validate_csvs(
+         unzip,
+         unzip_module \\ Unzip,
+         _import_helper \\ Arrow.Gtfs.ImportHelper
+       ) do
+    unzip
+    |> unzip_module.list_entries()
+    |> Enum.map(fn entry ->
+      try do
+        Arrow.Gtfs.ImportHelper.stream_csv_rows(unzip, entry.file_name)
+        # Need to run the stream for stream_csv_rows to call CSV.decode! for validation
+        |> Stream.run()
+
+        {:ok, entry.file_name, ""}
+      rescue
+        e ->
+          {:error, entry.file_name, Exception.format(:error, e)}
+      end
+    end)
+    |> Enum.filter(fn {result, _file, _error} -> result == :error end)
   end
 end

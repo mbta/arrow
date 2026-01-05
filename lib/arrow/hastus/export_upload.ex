@@ -45,7 +45,7 @@ defmodule Arrow.Hastus.ExportUpload do
   def extract_data_from_upload(%{path: zip_path}, user_id) do
     tmp_dir = ~c"tmp/hastus/#{user_id}"
 
-    with {:ok, zip_bin, file_map} <- read_zip(zip_path, tmp_dir),
+    with {:ok, zip_bin, file_map} <- Arrow.Util.read_zip(zip_path, @filenames, tmp_dir),
          {:ok, zip_bin, file_map, amended?} <- amend_service_ids(zip_bin, file_map, tmp_dir),
          revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
          :ok <- validate_trip_shapes(revenue_trips, file_map["all_shapes.txt"]),
@@ -103,15 +103,6 @@ defmodule Arrow.Hastus.ExportUpload do
     end
   end
 
-  @spec read_zip(Path.t(), Path.t()) :: {:ok, binary(), map()} | {:error, term()}
-  defp read_zip(zip_path, tmp_dir) do
-    with {:ok, zip_bin} <- File.read(zip_path),
-         {:ok, unzipped_file_list} <- :zip.unzip(zip_bin, file_list: @filenames, cwd: tmp_dir),
-         {:ok, file_map} <- read_csvs(unzipped_file_list, tmp_dir) do
-      {:ok, zip_bin, file_map}
-    end
-  end
-
   # Detects service IDs in the export that are duplicates of existing
   # service IDs in hastus_services.
   # If any such service IDs exist, edits the export so that they are
@@ -151,7 +142,8 @@ defmodule Arrow.Hastus.ExportUpload do
       Enum.each(replacements, &amend_service_id(&1, tmp_dir))
 
       with {:ok, zip_path} <- write_amended_zip(tmp_dir),
-           {:ok, amended_zip_bin, amended_file_map} <- read_zip(zip_path, tmp_dir) do
+           {:ok, amended_zip_bin, amended_file_map} <-
+             Arrow.Util.read_zip(zip_path, @filenames, tmp_dir) do
         {:ok, amended_zip_bin, amended_file_map, true}
       end
     end
@@ -237,30 +229,6 @@ defmodule Arrow.Hastus.ExportUpload do
     [prefix_env, username_prefix, s3_prefix, filename]
     |> Enum.reject(&is_nil/1)
     |> Path.join()
-  end
-
-  defp read_csvs(unzip, tmp_dir) do
-    missing_files = Enum.filter(@filenames, &(get_unzipped_file_path(&1, tmp_dir) not in unzip))
-
-    if Enum.any?(missing_files) do
-      {:error,
-       "The following files are missing from the export: #{Enum.join(missing_files, ", ")}"}
-    else
-      map =
-        @filenames
-        |> Enum.map(fn filename ->
-          data =
-            filename
-            |> get_unzipped_file_path(tmp_dir)
-            |> File.stream!()
-            |> CSV.decode!(headers: true)
-
-          {to_string(filename), data}
-        end)
-        |> Map.new()
-
-      {:ok, map}
-    end
   end
 
   defp validate_trip_shapes(revenue_trips, shapes) do
@@ -415,8 +383,6 @@ defmodule Arrow.Hastus.ExportUpload do
       [_ | _] -> nil
     end
   end
-
-  defp get_unzipped_file_path(filename, tmp_dir), do: ~c"#{tmp_dir}/#{filename}"
 
   defp parse_services(%{
          "all_calendar.txt" => calendar,

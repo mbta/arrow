@@ -193,7 +193,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     case consume_uploaded_entry(
            socket,
            entry,
-           &ExportUpload.extract_data_from_upload(&1, socket.assigns.user_id)
+           &ExportUpload.extract_data_from_upload(&1)
          ) do
       {:ok, export_data} ->
         form =
@@ -215,6 +215,9 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
 
       {:error, {:invalid_export_stops, stops}} ->
         {:noreply, assign(socket, invalid_export_stops: stops)}
+
+      {:error, error} ->
+        {:noreply, assign(socket, error: error)}
     end
   end
 

@@ -177,7 +177,15 @@ defmodule Arrow.Gtfs.ImportHelper do
     unzip
     |> Unzip.file_stream!(filename)
     # Flatten iodata for compatibility with CSV.decode
-    |> Stream.flat_map(&List.flatten/1)
-    |> CSV.decode!(headers: true)
+    |> Stream.flat_map(&flatten_if_list/1)
+    |> CSV.decode!(headers: true, validate_row_length: true)
+  end
+
+  defp flatten_if_list(list) when is_list(list) do
+    List.flatten(list)
+  end
+
+  defp flatten_if_list(non_list) do
+    [non_list]
   end
 end
