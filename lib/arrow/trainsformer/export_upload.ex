@@ -26,6 +26,10 @@ defmodule Arrow.Trainsformer.ExportUpload do
            | {:invalid_export_stops, [String.t()]}
            | {:invalid_stop_times,
               [%{trip_id: String.t(), stop_id: String.t(), stop_sequence: String.t()}]}
+           | {:error, :north_and_south_stations_present}
+           | {:error, :north_and_south_stations_not_present}
+           | {:error, {:missing_routes, [String.t()]}}
+           | {:error, {:invalid_routes, [String.t()]}}
            | {:trips_missing_transfers, MapSet.t()}}
   def extract_data_from_upload(%{path: zip_path}) do
     zip_bin = Unzip.LocalFile.open(zip_path)
@@ -34,7 +38,10 @@ defmodule Arrow.Trainsformer.ExportUpload do
          [] <- validate_csvs(unzip),
          :ok <-
            validate_stop_times_in_gtfs(unzip),
-         :ok <- validate_stop_order(unzip) do
+         :ok <- validate_stop_order(unzip),
+         :ok <- validate_stop_order(unzip),
+         :ok <- validate_one_of_north_south_stations(unzip),
+         :ok <- validate_one_or_all_routes_from_one_side(unzip) do
       trips_missing_transfers =
         case validate_transfers(unzip) do
           :ok -> MapSet.new()
@@ -254,6 +261,107 @@ defmodule Arrow.Trainsformer.ExportUpload do
         trip_ids
       end
     end)
+  end
+
+  @spec validate_one_of_north_south_stations(any()) ::
+          :ok
+          | {:error, :north_and_south_stations_present}
+          | {:error, :north_and_south_stations_not_present}
+  def validate_one_of_north_south_stations(
+        unzip,
+        unzip_module \\ Unzip,
+        import_helper \\ Arrow.Gtfs.ImportHelper
+      ) do
+    stop_times_file = extract_stop_times(unzip, unzip_module)
+
+    trainsformer_stop_ids =
+      import_helper.stream_csv_rows(unzip, stop_times_file)
+      |> Stream.uniq_by(fn row -> Map.get(row, "stop_id") end)
+      |> Enum.map(fn row -> Map.get(row, "stop_id") end)
+
+    north_station_served = Enum.member?(trainsformer_stop_ids, "BNT-0000")
+    south_station_served = Enum.member?(trainsformer_stop_ids, "NEC-2287")
+
+    cond do
+      north_station_served and south_station_served ->
+        {:error, :north_and_south_stations_present}
+
+      not north_station_served and not south_station_served ->
+        {:error, :north_and_south_stations_not_present}
+
+      true ->
+        :ok
+    end
+  end
+
+  @southside_route_ids [
+    "CR-Fairmount",
+    "CR-Franklin",
+    "CR-Greenbush",
+    "CR-Kingston",
+    "CR-Needham",
+    "CR-NewBedford",
+    "CR-Providence",
+    "CR-Worcester"
+  ]
+
+  @northside_route_ids ["CR-Fitchburg", "CR-Haverhill", "CR-Lowell", "CR-Newburyport"]
+
+  # We require all of the routes from one side to be present,
+  # or a single route.
+  @spec validate_one_or_all_routes_from_one_side(any()) ::
+          :ok
+          | {:error, {:missing_routes, any()}}
+          | {:error, {:invalid_routes, any()}}
+  def validate_one_or_all_routes_from_one_side(
+        unzip,
+        unzip_module \\ Unzip,
+        import_helper \\ Arrow.Gtfs.ImportHelper
+      ) do
+    [%Unzip.Entry{file_name: trips_file}] =
+      unzip
+      |> unzip_module.list_entries()
+      |> Enum.filter(&String.contains?(&1.file_name, "trips.txt"))
+      |> Enum.reject(&String.contains?(&1.file_name, "multi_route_trips.txt"))
+
+    trainsformer_route_ids =
+      import_helper.stream_csv_rows(unzip, trips_file)
+      |> Stream.uniq_by(fn row -> Map.get(row, "route_id") end)
+      |> Enum.map(fn row -> Map.get(row, "route_id") end)
+
+    southside_routes_missing =
+      Enum.filter(@southside_route_ids, fn route ->
+        !Enum.member?(trainsformer_route_ids, route)
+      end)
+
+    num_southside_routes_missing = length(southside_routes_missing)
+
+    northside_routes_missing =
+      Enum.filter(@northside_route_ids, fn route ->
+        !Enum.member?(trainsformer_route_ids, route)
+      end)
+
+    num_northside_routes_missing = length(northside_routes_missing)
+
+    cond do
+      length(trainsformer_route_ids) == 1 ->
+        :ok
+
+      num_southside_routes_missing == 0 ->
+        :ok
+
+      num_northside_routes_missing == 0 ->
+        :ok
+
+      num_southside_routes_missing < length(@southside_route_ids) ->
+        {:error, {:missing_routes, southside_routes_missing}}
+
+      num_northside_routes_missing < length(@northside_route_ids) ->
+        {:error, {:missing_routes, northside_routes_missing}}
+
+      true ->
+        {:error, {:invalid_routes, trainsformer_route_ids}}
+    end
   end
 
   @spec upload_to_s3(binary(), String.t(), String.t() | integer()) ::

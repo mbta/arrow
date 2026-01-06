@@ -34,7 +34,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
 
   defmodule FakeUnzip do
     def list_entries(_) do
-      [%Unzip.Entry{file_name: "stop_times.txt"}]
+      [%Unzip.Entry{file_name: "stop_times.txt"}, %Unzip.Entry{file_name: "trips.txt"}]
     end
   end
 
@@ -335,6 +335,457 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                  }
                ]}} =
                ExportUpload.validate_stop_order(%Unzip{}, FakeUnzip, ImportInvalidStopTimes)
+    end
+  end
+
+  describe "validate_one_of_north_south_stations/3" do
+    defmodule ImportValidNorthsideStopTimes do
+      def stream_csv_rows(_, _) do
+        rows = [
+          %{
+            "arrival_time" => "10:26:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:26:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "BNT-0000",
+            "stop_sequence" => "140",
+            "timepoint" => "1",
+            "trip_id" => "Northside-754204-51"
+          },
+          %{
+            "arrival_time" => "10:31:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:31:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "WR-0045-S",
+            "stop_sequence" => "150",
+            "timepoint" => "1",
+            "trip_id" => "Northside-754204-51"
+          }
+        ]
+
+        Stream.map(rows, & &1)
+      end
+    end
+
+    defmodule ImportValidSouthsideStopTimes do
+      def stream_csv_rows(_, _) do
+        rows = [
+          %{
+            "arrival_time" => "10:26:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:26:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "MM-0023-S",
+            "stop_sequence" => "140",
+            "timepoint" => "1",
+            "trip_id" => "Southside-754204-60"
+          },
+          %{
+            "arrival_time" => "10:31:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:31:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "NEC-2287",
+            "stop_sequence" => "150",
+            "timepoint" => "1",
+            "trip_id" => "Southside-754204-60"
+          }
+        ]
+
+        Stream.map(rows, & &1)
+      end
+    end
+
+    defmodule ImportInvalidNorthAndSouthStationsServed do
+      def stream_csv_rows(_, _) do
+        rows = [
+          %{
+            "arrival_time" => "10:26:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:26:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "BNT-0000",
+            "stop_sequence" => "140",
+            "timepoint" => "1",
+            "trip_id" => "Northside-754204-51"
+          },
+          %{
+            "arrival_time" => "10:31:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:31:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "WR-0045-S",
+            "stop_sequence" => "150",
+            "timepoint" => "1",
+            "trip_id" => "Northside-754204-51"
+          },
+          %{
+            "arrival_time" => "10:26:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:26:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "MM-0023-S",
+            "stop_sequence" => "140",
+            "timepoint" => "1",
+            "trip_id" => "Southside-754204-60"
+          },
+          %{
+            "arrival_time" => "10:31:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:31:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "NEC-2287",
+            "stop_sequence" => "150",
+            "timepoint" => "1",
+            "trip_id" => "Southside-754204-60"
+          }
+        ]
+
+        Stream.map(rows, & &1)
+      end
+    end
+
+    defmodule ImportInvalidNeitherNorthNorSouthStationServed do
+      def stream_csv_rows(_, _) do
+        rows = [
+          %{
+            "arrival_time" => "10:26:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:26:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "WR-0045-S",
+            "stop_sequence" => "140",
+            "timepoint" => "1",
+            "trip_id" => "Northside-754204-5533"
+          },
+          %{
+            "arrival_time" => "10:31:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:31:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "WR-0053-S",
+            "stop_sequence" => "150",
+            "timepoint" => "1",
+            "trip_id" => "Northside-754204-5533"
+          }
+        ]
+
+        Stream.map(rows, & &1)
+      end
+    end
+
+    test "returns ok if North but not South Station is served" do
+      assert :ok =
+               ExportUpload.validate_one_of_north_south_stations(
+                 %Unzip{},
+                 FakeUnzip,
+                 ImportValidNorthsideStopTimes
+               )
+    end
+
+    test "returns ok if South but not North Station is served" do
+      assert :ok =
+               ExportUpload.validate_one_of_north_south_stations(
+                 %Unzip{},
+                 FakeUnzip,
+                 ImportValidSouthsideStopTimes
+               )
+    end
+
+    test "returns error if North and South Stations are both served" do
+      assert {:error, :north_and_south_stations_present} =
+               ExportUpload.validate_one_of_north_south_stations(
+                 %Unzip{},
+                 FakeUnzip,
+                 ImportInvalidNorthAndSouthStationsServed
+               )
+    end
+
+    test "returns error if neither North nor South Station is served" do
+      assert {:error, :north_and_south_stations_not_present} =
+               ExportUpload.validate_one_of_north_south_stations(
+                 %Unzip{},
+                 FakeUnzip,
+                 ImportInvalidNeitherNorthNorSouthStationServed
+               )
+    end
+  end
+
+  describe "validate_one_or_all_routes_from_one_side/3" do
+    defmodule ImportValidNorthsideTripsAllRoutes do
+      def stream_csv_rows(_, _) do
+        rows = [
+          %{
+            "bikes_allowed" => "1",
+            "direction_id" => "1",
+            "event_time" => "",
+            "route_id" => "CR-Newburyport",
+            "service_id" => "FALL 2025-SOUTHWKD-Weekday-11A",
+            "shape_id" => "9850001",
+            "trip_headsign" => "North Station",
+            "trip_id" => "Weekday-789267-102",
+            "trip_short_name" => "102"
+          },
+          %{
+            "bikes_allowed" => "1",
+            "direction_id" => "1",
+            "event_time" => "",
+            "route_id" => "CR-Haverhill",
+            "service_id" => "FALL 2025-SOUTHWKD-Weekday-11A",
+            "shape_id" => "9850002",
+            "trip_headsign" => "North Station",
+            "trip_id" => "Weekday-789267-202",
+            "trip_short_name" => "202"
+          },
+          %{
+            "bikes_allowed" => "1",
+            "direction_id" => "1",
+            "event_time" => "",
+            "route_id" => "CR-Lowell",
+            "service_id" => "FALL 2025-SOUTHWKD-Weekday-11A",
+            "shape_id" => "9850003",
+            "trip_headsign" => "North Station",
+            "trip_id" => "Weekday-789267-302",
+            "trip_short_name" => "302"
+          },
+          %{
+            "bikes_allowed" => "1",
+            "direction_id" => "1",
+            "event_time" => "",
+            "route_id" => "CR-Fitchburg",
+            "service_id" => "FALL 2025-SOUTHWKD-Weekday-11A",
+            "shape_id" => "9850004",
+            "trip_headsign" => "North Station",
+            "trip_id" => "Weekday-789267-402",
+            "trip_short_name" => "402"
+          }
+        ]
+
+        Stream.map(rows, & &1)
+      end
+    end
+
+    defmodule ImportValidNorthsideTripsOneRoute do
+      def stream_csv_rows(_, _) do
+        rows = [
+          %{
+            "bikes_allowed" => "1",
+            "direction_id" => "1",
+            "event_time" => "",
+            "route_id" => "CR-Newburyport",
+            "service_id" => "FALL 2025-SOUTHWKD-Weekday-11A",
+            "shape_id" => "9850001",
+            "trip_headsign" => "North Station",
+            "trip_id" => "Weekday-789267-102",
+            "trip_short_name" => "102"
+          },
+          %{
+            "bikes_allowed" => "1",
+            "direction_id" => "1",
+            "event_time" => "",
+            "route_id" => "CR-Newburyport",
+            "service_id" => "FALL 2025-SOUTHWKD-Weekday-11A",
+            "shape_id" => "9850001",
+            "trip_headsign" => "North Station",
+            "trip_id" => "Weekday-789267-104",
+            "trip_short_name" => "104"
+          },
+          %{
+            "bikes_allowed" => "1",
+            "direction_id" => "0",
+            "event_time" => "",
+            "route_id" => "CR-Newburyport",
+            "service_id" => "FALL 2025-SOUTHWKD-Weekday-11A",
+            "shape_id" => "9850003",
+            "trip_headsign" => "Rockport",
+            "trip_id" => "Weekday-789267-101",
+            "trip_short_name" => "101"
+          },
+          %{
+            "bikes_allowed" => "1",
+            "direction_id" => "0",
+            "event_time" => "",
+            "route_id" => "CR-Newburyport",
+            "service_id" => "FALL 2025-SOUTHWKD-Weekday-11A",
+            "shape_id" => "9850002",
+            "trip_headsign" => "Rockport",
+            "trip_id" => "Weekday-789267-103",
+            "trip_short_name" => "103"
+          }
+        ]
+
+        Stream.map(rows, & &1)
+      end
+    end
+
+    # CR-Fitchburg and CR-Lowell missing:
+    defmodule ImportInvalidNorthsideTripsMissingRoute do
+      def stream_csv_rows(_, _) do
+        rows = [
+          %{
+            "bikes_allowed" => "1",
+            "direction_id" => "1",
+            "event_time" => "",
+            "route_id" => "CR-Newburyport",
+            "service_id" => "FALL 2025-SOUTHWKD-Weekday-11A",
+            "shape_id" => "9850001",
+            "trip_headsign" => "North Station",
+            "trip_id" => "Weekday-789267-102",
+            "trip_short_name" => "102"
+          },
+          %{
+            "bikes_allowed" => "1",
+            "direction_id" => "1",
+            "event_time" => "",
+            "route_id" => "CR-Haverhill",
+            "service_id" => "FALL 2025-SOUTHWKD-Weekday-11A",
+            "shape_id" => "9850002",
+            "trip_headsign" => "North Station",
+            "trip_id" => "Weekday-789267-202",
+            "trip_short_name" => "202"
+          }
+        ]
+
+        Stream.map(rows, & &1)
+      end
+    end
+
+    defmodule ImportValidSingleRouteNeitherSide do
+      def stream_csv_rows(_, _) do
+        rows = [
+          %{
+            "bikes_allowed" => "1",
+            "direction_id" => "1",
+            "event_time" => "",
+            "route_id" => "CR-Foxboro",
+            "service_id" => "FALL 2025-SOUTHWKD-Weekday-11A",
+            "shape_id" => "9850009",
+            "trip_headsign" => "South Station via Foxboro",
+            "trip_id" => "Weekday-789267-902",
+            "trip_short_name" => "902"
+          },
+          %{
+            "bikes_allowed" => "1",
+            "direction_id" => "0",
+            "event_time" => "",
+            "route_id" => "CR-Foxboro",
+            "service_id" => "FALL 2025-SOUTHWKD-Weekday-11A",
+            "shape_id" => "9850008",
+            "trip_headsign" => "Providence via Foxboro",
+            "trip_id" => "Weekday-789267-103",
+            "trip_short_name" => "103"
+          }
+        ]
+
+        Stream.map(rows, & &1)
+      end
+    end
+
+    defmodule ImportInvalidRoutesNeitherSide do
+      def stream_csv_rows(_, _) do
+        rows = [
+          %{
+            "bikes_allowed" => "1",
+            "direction_id" => "1",
+            "event_time" => "",
+            "route_id" => "CR-Foxboro",
+            "service_id" => "FALL 2025-SOUTHWKD-Weekday-11A",
+            "shape_id" => "9850009",
+            "trip_headsign" => "South Station via Foxboro",
+            "trip_id" => "Weekday-789267-902",
+            "trip_short_name" => "902"
+          },
+          %{
+            "bikes_allowed" => "1",
+            "direction_id" => "0",
+            "event_time" => "",
+            "route_id" => "CR-Nowhere",
+            "service_id" => "FALL 2025-SOUTHWKD-Weekday-11A",
+            "shape_id" => "9850998",
+            "trip_headsign" => "Nowhere",
+            "trip_id" => "Weekday-789267-999",
+            "trip_short_name" => "999"
+          }
+        ]
+
+        Stream.map(rows, & &1)
+      end
+    end
+
+    test "returns ok if all Northside routes have a trip" do
+      assert :ok =
+               ExportUpload.validate_one_or_all_routes_from_one_side(
+                 %Unzip{},
+                 FakeUnzip,
+                 ImportValidNorthsideTripsAllRoutes
+               )
+    end
+
+    test "returns ok if exactly one Northside route has a trip" do
+      assert :ok =
+               ExportUpload.validate_one_or_all_routes_from_one_side(
+                 %Unzip{},
+                 FakeUnzip,
+                 ImportValidNorthsideTripsOneRoute
+               )
+    end
+
+    test "returns error if more than one but not all Northside routes have a trip" do
+      assert {:error, {:missing_routes, ["CR-Fitchburg", "CR-Lowell"]}} =
+               ExportUpload.validate_one_or_all_routes_from_one_side(
+                 %Unzip{},
+                 FakeUnzip,
+                 ImportInvalidNorthsideTripsMissingRoute
+               )
+    end
+
+    test "returns ok for a single route not in either side's required list" do
+      assert :ok =
+               ExportUpload.validate_one_or_all_routes_from_one_side(
+                 %Unzip{},
+                 FakeUnzip,
+                 ImportValidSingleRouteNeitherSide
+               )
+    end
+
+    test "returns error for multiple routes not in either side's required list" do
+      assert {:error, {:invalid_routes, ["CR-Foxboro", "CR-Nowhere"]}} =
+               ExportUpload.validate_one_or_all_routes_from_one_side(
+                 %Unzip{},
+                 FakeUnzip,
+                 ImportInvalidRoutesNeitherSide
+               )
     end
   end
 

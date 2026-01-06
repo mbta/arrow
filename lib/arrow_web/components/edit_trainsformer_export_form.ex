@@ -62,6 +62,24 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
               Download list of invalid stop times
             </.button>
           </div>
+          <div
+            :if={not is_nil(@north_and_south_stations_present)}
+            class="d-inline-block p-20 alert alert-danger"
+          >
+            Warning: export contains trips serving North and South Station.
+          </div>
+          <div
+            :if={not is_nil(@north_and_south_stations_not_present)}
+            class="d-inline-block p-20 alert alert-danger"
+          >
+            Warning: export does not contains trips serving North or South Station.
+          </div>
+          <div :if={not is_nil(@missing_routes)} class="d-inline-block p-20 alert alert-danger">
+            Warning: some routes are missing: {@missing_routes}
+          </div>
+          <div :if={not is_nil(@invalid_routes)} class="d-inline-block p-20 alert alert-danger">
+            Warning: multiple routes not north or southside: {@invalid_routes}
+          </div>
           <div :for={entry <- @uploads.trainsformer_export.entries}>
             <progress value={entry.progress} max="100">
               {entry.progress}%
@@ -161,6 +179,10 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
       |> assign(:invalid_export_stops, nil)
       |> assign(:invalid_stop_times, nil)
       |> assign(:trips_missing_transfers, nil)
+      |> assign(:north_and_south_stations_present, nil)
+      |> assign(:north_and_south_stations_not_present, nil)
+      |> assign(:missing_routes, nil)
+      |> assign(:invalid_routes, nil)
       |> allow_upload(:trainsformer_export,
         accept: ~w(.zip),
         progress: &handle_progress/3,
@@ -261,6 +283,18 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
 
       {:error, {:invalid_stop_times, stop_times}} ->
         {:noreply, assign(socket, invalid_stop_times: stop_times)}
+
+      {:error, {:north_and_south_stations_present}} ->
+        {:noreply, assign(socket, north_and_south_stations_present: true)}
+
+      {:error, {:north_and_south_stations_not_present}} ->
+        {:noreply, assign(socket, north_and_south_stations_not_present: true)}
+
+      {:error, {:missing_routes, routes}} ->
+        {:noreply, assign(socket, missing_routes: Enum.join(routes, " "))}
+
+      {:error, {:invalid_routes, routes}} ->
+        {:noreply, assign(socket, invalid_routes: Enum.join(routes, " "))}
 
       {:error, error} ->
         {:noreply, assign(socket, error: error)}
