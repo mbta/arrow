@@ -197,11 +197,16 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
         _params,
         %{assigns: %{invalid_stop_times: stop_times}} = socket
       ) do
+    stop_times_lines =
+      Enum.map(stop_times, fn stop_time ->
+        "trip_id: #{Map.get(stop_time, "trip_id")}, stop_id: #{Map.get(stop_time, "stop_id")}, stop_sequence: #{Map.get(stop_time, "stop_sequence")}"
+      end)
+
     socket =
       send_download(
         socket,
         "trips_with_invalid_stop_order.txt",
-        Enum.join(stop_times, "\n"),
+        Enum.join(stop_times_lines, "\n"),
         content_type: "text/plain"
       )
 
