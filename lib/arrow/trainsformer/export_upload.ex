@@ -79,6 +79,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
     end
   end
 
+  @spec validate_stop_order(any()) ::
+          :ok | {:error, {:invalid_stop_times, any()}} | {:ok, {:error, <<_::160>>}}
   def validate_stop_order(
         unzip,
         unzip_module \\ Unzip,
@@ -92,13 +94,13 @@ defmodule Arrow.Trainsformer.ExportUpload do
       |> Enum.group_by(fn row -> Map.get(row, "trip_id") end)
 
     invalid_stop_times =
-      Enum.reduce(trainsformer_trips, [], fn {_trip_id, stop_times}, stop_times_acc ->
+      Enum.flat_map(trainsformer_trips, fn {_trip_id, stop_times} ->
         invalid_stop_times_for_trip =
           stop_times
-          |> Enum.sort_by(& &1[:stop_sequence])
+          |> Enum.sort_by(& &1["stop_sequence"])
           # compare two stop_times at a time
           |> Enum.chunk_every(2, 1)
-          |> Enum.reduce([], fn chunk, acc ->
+          |> Enum.flat_map(fn chunk ->
             case chunk do
               [stop_time1, stop_time2] ->
                 stop_time1_arrival_dur =
@@ -117,37 +119,22 @@ defmodule Arrow.Trainsformer.ExportUpload do
                   # if the second stop_time has an arrival time before the previous departure, mark as invalid
                   compare_durations(stop_time1_departure_dur, stop_time2_arrival_dur) == :gt ->
                     [
-                      %{
-                        trip_id: Map.get(stop_time2, "trip_id"),
-                        stop_id: Map.get(stop_time2, "stop_id"),
-                        stop_sequence: Map.get(stop_time2, "stop_sequence")
-                      }
-                      | acc
+                      create_invalid_stop_time_info(stop_time2)
                     ]
 
                   # for either stop, if arrival and departure times are out of order, mark as invalid
                   compare_durations(stop_time1_arrival_dur, stop_time1_departure_dur) == :gt ->
                     [
-                      %{
-                        trip_id: Map.get(stop_time1, "trip_id"),
-                        stop_id: Map.get(stop_time1, "stop_id"),
-                        stop_sequence: Map.get(stop_time1, "stop_sequence")
-                      }
-                      | acc
+                      create_invalid_stop_time_info(stop_time1)
                     ]
 
                   compare_durations(stop_time2_arrival_dur, stop_time2_departure_dur) == :gt ->
                     [
-                      %{
-                        trip_id: Map.get(stop_time2, "trip_id"),
-                        stop_id: Map.get(stop_time2, "stop_id"),
-                        stop_sequence: Map.get(stop_time2, "stop_sequence")
-                      }
-                      | acc
+                      create_invalid_stop_time_info(stop_time2)
                     ]
 
                   true ->
-                    acc
+                    []
                 end
 
               [stop_time] ->
@@ -156,23 +143,18 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
                 if compare_durations(arrival_dur, departure_dur) == :gt do
                   [
-                    %{
-                      trip_id: Map.get(stop_time, "trip_id"),
-                      stop_id: Map.get(stop_time, "stop_id"),
-                      stop_sequence: Map.get(stop_time, "stop_sequence")
-                    }
-                    | acc
+                    create_invalid_stop_time_info(stop_time)
                   ]
                 else
-                  acc
+                  []
                 end
 
               _ ->
-                acc
+                []
             end
           end)
 
-        invalid_stop_times_for_trip ++ stop_times_acc
+        invalid_stop_times_for_trip
       end)
 
     if Enum.any?(invalid_stop_times) do
@@ -202,6 +184,16 @@ defmodule Arrow.Trainsformer.ExportUpload do
     else
       {:ok, "disabled"}
     end
+  end
+
+  defp create_invalid_stop_time_info(stop_time) do
+    %{
+      trip_id: stop_time["trip_id"],
+      stop_id: stop_time["stop_id"],
+      stop_sequence: stop_time["stop_sequence"],
+      arrival_time: stop_time["arrival_time"],
+      departure_time: stop_time["departure_time"]
+    }
   end
 
   defp parse_gtfs_time_to_sec(timestamp) do

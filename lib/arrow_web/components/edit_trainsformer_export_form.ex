@@ -199,7 +199,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
       ) do
     stop_times_lines =
       Enum.map(stop_times, fn stop_time ->
-        "trip_id: #{Map.get(stop_time, "trip_id")}, stop_id: #{Map.get(stop_time, "stop_id")}, stop_sequence: #{Map.get(stop_time, "stop_sequence")}"
+        "trip_id: #{stop_time[:trip_id]}, stop_id: #{stop_time[:stop_id]}, stop_sequence: #{stop_time[:stop_sequence]}, arrival_time: #{stop_time[:arrival_time]}, departure_time: #{stop_time[:departure_time]}"
       end)
 
     socket =
