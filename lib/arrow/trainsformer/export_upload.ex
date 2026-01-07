@@ -94,69 +94,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
       |> Enum.group_by(fn row -> Map.get(row, "trip_id") end)
 
     invalid_stop_times =
-      Enum.flat_map(trainsformer_trips, fn {_trip_id, stop_times} ->
-        invalid_stop_times_for_trip =
-          stop_times
-          |> Enum.sort_by(& &1["stop_sequence"])
-          # compare two stop_times at a time
-          |> Enum.chunk_every(2, 1)
-          |> Enum.flat_map(fn chunk ->
-            case chunk do
-              [stop_time1, stop_time2] ->
-                stop_time1_arrival_dur =
-                  parse_gtfs_time_to_sec(Map.get(stop_time1, "arrival_time"))
-
-                stop_time1_departure_dur =
-                  parse_gtfs_time_to_sec(Map.get(stop_time1, "departure_time"))
-
-                stop_time2_arrival_dur =
-                  parse_gtfs_time_to_sec(Map.get(stop_time2, "arrival_time"))
-
-                stop_time2_departure_dur =
-                  parse_gtfs_time_to_sec(Map.get(stop_time2, "departure_time"))
-
-                cond do
-                  # if the second stop_time has an arrival time before the previous departure, mark as invalid
-                  compare_durations(stop_time1_departure_dur, stop_time2_arrival_dur) == :gt ->
-                    [
-                      create_invalid_stop_time_info(stop_time2)
-                    ]
-
-                  # for either stop, if arrival and departure times are out of order, mark as invalid
-                  compare_durations(stop_time1_arrival_dur, stop_time1_departure_dur) == :gt ->
-                    [
-                      create_invalid_stop_time_info(stop_time1)
-                    ]
-
-                  compare_durations(stop_time2_arrival_dur, stop_time2_departure_dur) == :gt ->
-                    [
-                      create_invalid_stop_time_info(stop_time2)
-                    ]
-
-                  true ->
-                    []
-                end
-
-              [stop_time] ->
-                arrival_dur = parse_gtfs_time_to_sec(Map.get(stop_time, "arrival_time"))
-                departure_dur = parse_gtfs_time_to_sec(Map.get(stop_time, "departure_time"))
-
-                if compare_durations(arrival_dur, departure_dur) == :gt do
-                  [
-                    create_invalid_stop_time_info(stop_time)
-                  ]
-                else
-                  []
-                end
-
-              _ ->
-                []
-            end
-          end)
-          |> Enum.uniq_by(& &1[:stop_id])
-
-        invalid_stop_times_for_trip
-      end)
+      Enum.flat_map(trainsformer_trips, &validate_trip(&1))
 
     if Enum.any?(invalid_stop_times) do
       {:error, {:invalid_stop_times, invalid_stop_times}}
@@ -171,6 +109,71 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
       # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
       {:ok, {:error, "Could not parse zip."}}
+  end
+
+  defp validate_trip({_trip_id, stop_times}) do
+    invalid_stop_times_for_trip =
+      stop_times
+      |> Enum.sort_by(& &1["stop_sequence"])
+      # compare two stop_times at a time
+      |> Enum.chunk_every(2, 1)
+      |> Enum.flat_map(&process_chunk(&1))
+      |> Enum.uniq_by(& &1[:stop_id])
+
+    invalid_stop_times_for_trip
+  end
+
+  defp process_chunk([stop_time1, stop_time2]) do
+    stop_time1_arrival_dur =
+      parse_gtfs_time_to_sec(Map.get(stop_time1, "arrival_time"))
+
+    stop_time1_departure_dur =
+      parse_gtfs_time_to_sec(Map.get(stop_time1, "departure_time"))
+
+    stop_time2_arrival_dur =
+      parse_gtfs_time_to_sec(Map.get(stop_time2, "arrival_time"))
+
+    stop_time2_departure_dur =
+      parse_gtfs_time_to_sec(Map.get(stop_time2, "departure_time"))
+
+    cond do
+      # if the second stop_time has an arrival time before the previous departure, mark as invalid
+      compare_durations(stop_time1_departure_dur, stop_time2_arrival_dur) == :gt ->
+        [
+          create_invalid_stop_time_info(stop_time2)
+        ]
+
+      # for either stop, if arrival and departure times are out of order, mark as invalid
+      compare_durations(stop_time1_arrival_dur, stop_time1_departure_dur) == :gt ->
+        [
+          create_invalid_stop_time_info(stop_time1)
+        ]
+
+      compare_durations(stop_time2_arrival_dur, stop_time2_departure_dur) == :gt ->
+        [
+          create_invalid_stop_time_info(stop_time2)
+        ]
+
+      true ->
+        []
+    end
+  end
+
+  defp process_chunk([stop_time]) do
+    arrival_dur = parse_gtfs_time_to_sec(Map.get(stop_time, "arrival_time"))
+    departure_dur = parse_gtfs_time_to_sec(Map.get(stop_time, "departure_time"))
+
+    if compare_durations(arrival_dur, departure_dur) == :gt do
+      [
+        create_invalid_stop_time_info(stop_time)
+      ]
+    else
+      []
+    end
+  end
+
+  defp process_chunk(_) do
+    []
   end
 
   @spec upload_to_s3(binary(), String.t(), String.t() | integer()) ::
