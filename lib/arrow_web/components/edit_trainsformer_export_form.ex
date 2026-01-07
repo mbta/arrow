@@ -118,95 +118,20 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
             </strong>
           </div>
           <div class="row">
-            <div class="col-lg-2">
-              <b class="mb-3">Routes</b>
-              <%= for route <- @uploaded_file_routes do %>
-                <div class="row">
-                  <div class="col-lg-1">
-                    <span
-                      class="m-icon m-icon-sm mr-1"
-                      style={"background-image: url('#{Map.get(@icon_paths, :commuter_rail)}');"}
-                    />
-                  </div>
-                  <div class="col-lg-10">
-                    <p>{route["route_id"]}</p>
-                  </div>
-                </div>
-              <% end %>
+            <div class="col-lg-4">
+              <ul>
+                <%= for route <- @uploaded_file_routes do %>
+                  <li>{route}</li>
+                <% end %>
+              </ul>
             </div>
-            <div class="col-lg-10">
-              <b class="mb-3">Services</b>
-              <.inputs_for :let={f_service} field={@form[:services]}>
-                <div class="row">
-                  <div class="col-lg-4">
-                    <.input field={f_service[:name]} type="text" class="hidden" />
-                    {f_service[:name].value}
-                  </div>
-                  <div class="col-lg-6">
-                    <.inputs_for :let={f_date} field={f_service[:service_dates]}>
-                      {f_service[:start_date].value}
-                      <div class="row">
-                        <div class="col-lg-1"></div>
-                        <div class="col">
-                          <.input
-                            field={f_date[:start_date]}
-                            type="date"
-                            label={if f_date.index == 0, do: "start date", else: ""}
-                          />
-                        </div>
-                        <div class="col">
-                          <.input
-                            field={f_date[:end_date]}
-                            type="date"
-                            label={if f_date.index == 0, do: "end date", else: ""}
-                          />
-                        </div>
-                      </div>
-                      <div class="row">
-                        <div class="col-lg-4 ml-12">
-                          <span
-                            :for={
-                              dow <-
-                                Enum.map(
-                                  1..7,
-                                  &Arrow.Util.DayOfWeek.get_day_name(&1)
-                                )
-                            }
-                            class="text-gray-400"
-                          >
-                            {format_day_name_short(dow)}
-                          </span>
-                        </div>
-                        <div
-                          :if={Enum.count(f_service[:service_dates].value) > 1}
-                          class="col-auto align-self-center mt-3"
-                        >
-                          <.button
-                            type="button"
-                            phx-click="delete_service_date"
-                            phx-value-service_index={f_service.index}
-                            phx-value-date_index={f_date.index}
-                            phx-target={@myself}
-                          >
-                            <.icon name="hero-trash-solid" class="bg-primary" />
-                          </.button>
-                        </div>
-                      </div>
-                    </.inputs_for>
-                  </div>
-                  <div class="col-lg-2">
-                    <.button
-                      type="button"
-                      class="btn btn-primary ml-3 btn-sm"
-                      value={f_service.index}
-                      phx-click="add_service_date"
-                      phx-target={@myself}
-                    >
-                      Add Another Timeframe
-                    </.button>
-                  </div>
-                </div>
-              </.inputs_for>
+            <div class="col-lg-8">
+              Services
+              <ul>
+                <%= for service <- @uploaded_file_services do %>
+                  <li>{service}</li>
+                <% end %>
+              </ul>
             </div>
           </div>
 
