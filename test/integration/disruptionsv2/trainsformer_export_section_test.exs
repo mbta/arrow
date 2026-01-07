@@ -42,7 +42,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> assert_text("Export information goes here")
   end
 
-  feature "shows error for invalid trainsformer export", %{session: session} do
+  feature "shows error for invalid gtfs stops in trainsformer export", %{session: session} do
     disruption = disruption_v2_fixture(%{mode: :commuter_rail})
 
     session
@@ -53,6 +53,19 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       path: "test/support/fixtures/trainsformer/invalid_export_stops_missing_from_gtfs.zip"
     )
     |> assert_text("Some stops are not present in GTFS!")
+  end
+
+  feature "shows error for invalid stop order in trainsformer export", %{session: session} do
+    disruption = disruption_v2_fixture(%{mode: :commuter_rail})
+
+    session
+    |> visit("/disruptions/#{disruption.id}")
+    |> click(text("Upload Trainsformer export"))
+    |> assert_text("Upload Trainsformer .zip")
+    |> attach_file(file_field("trainsformer_export", visible: false),
+      path: "test/support/fixtures/trainsformer/invalid_export_stop_times_out_of_order.zip"
+    )
+    |> assert_text("Some stop times are out of order!")
   end
 
   feature "can cancel uploading a Trainsformer export", %{session: session} do

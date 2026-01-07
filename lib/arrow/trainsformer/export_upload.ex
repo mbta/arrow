@@ -153,6 +153,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
                 []
             end
           end)
+          |> Enum.uniq_by(& &1[:stop_id])
 
         invalid_stop_times_for_trip
       end)
