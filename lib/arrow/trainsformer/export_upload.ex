@@ -11,6 +11,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
   @type t :: %__MODULE__{
           zip_binary: binary(),
           one_of_north_south_stations: :ok | :both | :neither,
+          routes: [String.t()],
+          services: [String.t()],
           missing_routes: [String.t()],
           invalid_routes: [String.t()],
           trips_missing_transfers: MapSet.t()
@@ -19,6 +21,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
   @enforce_keys [
     :zip_binary,
     :one_of_north_south_stations,
+    :routes,
+    :services,
     :missing_routes,
     :invalid_routes,
     :trips_missing_transfers
@@ -34,8 +38,13 @@ defmodule Arrow.Trainsformer.ExportUpload do
            | {:error, String.t()}
            | {:invalid_export_stops, [String.t()]}
            | {:invalid_stop_times,
-              [%{trip_id: String.t(), stop_id: String.t(), stop_sequence: String.t()}]}}
-  def extract_data_from_upload(%{path: zip_path}) do
+              [%{trip_id: String.t(), stop_id: String.t(), stop_sequence: String.t()}]}
+           | {:trips_missing_transfers, MapSet.t()}}
+  def extract_data_from_upload(
+        %{path: zip_path},
+        unzip_module \\ Unzip,
+        import_helper \\ Arrow.Gtfs.ImportHelper
+      ) do
     zip_bin = Unzip.LocalFile.open(zip_path)
 
     with {:ok, unzip} <- Unzip.new(zip_bin),
@@ -52,11 +61,27 @@ defmodule Arrow.Trainsformer.ExportUpload do
           {:error, {:trips_missing_transfers, trips}} -> trips
         end
 
+      [%Unzip.Entry{file_name: trips_file}] =
+        unzip
+        |> unzip_module.list_entries()
+        |> Enum.filter(&String.ends_with?(&1.file_name, "/trips.txt"))
+
+      {routes, services} =
+        import_helper.stream_csv_rows(unzip, trips_file)
+        |> Enum.reduce(
+          {MapSet.new(), MapSet.new()},
+          fn row, {routes, services} ->
+            {MapSet.put(routes, row["route_id"]), MapSet.put(services, row["service_id"])}
+          end
+        )
+
       export_data = %__MODULE__{
         zip_binary: zip_bin,
         one_of_north_south_stations: one_of_north_south_stations,
         missing_routes: missing_routes,
         invalid_routes: invalid_routes,
+        routes: Enum.to_list(routes),
+        services: Enum.to_list(services),
         trips_missing_transfers: trips_missing_transfers
       }
 
