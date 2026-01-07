@@ -114,6 +114,23 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
               <i>Successfully imported export {@uploaded_file_name}!</i>
             </strong>
           </div>
+          <div class="row">
+            <div class="col-lg-4">
+              <ul>
+                <%= for route <- @uploaded_file_routes do %>
+                  <li>{route}</li>
+                <% end %>
+              </ul>
+            </div>
+            <div class="col-lg-8">
+              Services
+              <ul>
+                <%= for service <- @uploaded_file_services do %>
+                  <li>{service}</li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
 
           <div :if={@one_of_north_south_stations == :both} class="text-warning mb-3">
             Warning: export contains trips serving North and South Station.
@@ -281,7 +298,9 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
            one_of_north_south_stations: export_data.one_of_north_south_stations,
            missing_routes: export_data.missing_routes,
            invalid_routes: export_data.invalid_routes,
-           trips_missing_transfers: export_data.trips_missing_transfers
+           trips_missing_transfers: export_data.trips_missing_transfers,
+           uploaded_file_routes: export_data.routes,
+           uploaded_file_services: export_data.services
          )}
 
       {:error, {:invalid_export_stops, stops}} ->
