@@ -8,10 +8,12 @@ defmodule Arrow.Trainsformer.ExportUpload do
   require Logger
 
   @type t :: %__MODULE__{
-          zip_binary: binary()
+          zip_binary: binary(),
+          routes: [String.t()],
+          services: [String.t()]
         }
 
-  @enforce_keys [:zip_binary]
+  @enforce_keys [:zip_binary, :routes, :services]
   defstruct @enforce_keys
 
   @doc """
@@ -19,15 +21,37 @@ defmodule Arrow.Trainsformer.ExportUpload do
   """
   @spec extract_data_from_upload(%{path: binary()}) ::
           {:ok, {:ok, t()} | {:error, String.t()} | {:invalid_export_stops, [String.t()]}}
-  def extract_data_from_upload(%{path: zip_path}) do
+  def extract_data_from_upload(
+        %{path: zip_path},
+        unzip_module \\ Unzip,
+        import_helper \\ Arrow.Gtfs.ImportHelper
+      ) do
     zip_bin = Unzip.LocalFile.open(zip_path)
 
     with {:ok, unzip} <- Unzip.new(zip_bin),
          [] <- validate_csvs(unzip),
          :ok <-
            validate_stop_times_in_gtfs(unzip) do
+      [%Unzip.Entry{file_name: trips_file}] =
+        unzip
+        |> unzip_module.list_entries()
+        |> Enum.filter(&String.ends_with?(&1.file_name, "/trips.txt"))
+
+      {routes, services} =
+        import_helper.stream_csv_rows(unzip, trips_file)
+        |> Enum.reduce(
+          {MapSet.new(), MapSet.new()},
+          fn row, {routes, services} ->
+            {MapSet.put(routes, row["route_id"]), MapSet.put(services, row["service_id"])}
+          end
+        )
+
+      dbg()
+
       export_data = %__MODULE__{
-        zip_binary: zip_bin
+        zip_binary: zip_bin,
+        routes: Enum.to_list(routes),
+        services: Enum.to_list(services)
       }
 
       {:ok, {:ok, export_data}}

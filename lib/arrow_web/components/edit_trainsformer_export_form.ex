@@ -102,6 +102,23 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
               <i>Successfully imported export {@uploaded_file_name}!</i>
             </strong>
           </div>
+          <div class="row">
+            <div class="col-lg-4">
+              <ul>
+                <%= for route <- @uploaded_file_routes do %>
+                  <li>{route}</li>
+                <% end %>
+              </ul>
+            </div>
+            <div class="col-lg-8">
+              Services
+              <ul>
+                <%= for service <- @uploaded_file_services do %>
+                  <li>{service}</li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
 
           <div class="row">
             <div class="col-lg-4">
@@ -210,7 +227,9 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
            show_upload_form: false,
            show_service_import_form: true,
            uploaded_file_name: client_name,
-           uploaded_file_data: export_data.zip_binary
+           uploaded_file_data: export_data.zip_binary,
+           uploaded_file_routes: export_data.routes,
+           uploaded_file_services: export_data.services
          )}
 
       {:error, {:invalid_export_stops, stops}} ->
