@@ -1,5 +1,6 @@
 defmodule ArrowWeb.EditTrainsformerExportForm do
   @moduledoc false
+  require Logger
   use ArrowWeb, :live_component
 
   alias Arrow.Disruptions.DisruptionV2
@@ -48,6 +49,17 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
               phx-target={@myself}
             >
               Download list of invalid stops
+            </.button>
+          </div>
+          <div :if={not is_nil(@invalid_stop_times)} class="d-inline-block p-20 alert alert-danger">
+            Some stop times are out of order!
+            <.button
+              type="button"
+              class="alert-info d-block"
+              phx-click="download_invalid_stop_times"
+              phx-target={@myself}
+            >
+              Download list of invalid stop times
             </.button>
           </div>
           <div :for={entry <- @uploads.trainsformer_export.entries}>
@@ -140,6 +152,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
       |> assign(:show_service_import_form, false)
       |> assign(:form, nil)
       |> assign(:invalid_export_stops, nil)
+      |> assign(:invalid_stop_times, nil)
       |> allow_upload(:trainsformer_export,
         accept: ~w(.zip),
         progress: &handle_progress/3,
@@ -173,6 +186,27 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
         socket,
         "trips_with_stops_not_in_gtfs.txt",
         Enum.join(stops, "\n"),
+        content_type: "text/plain"
+      )
+
+    {:noreply, socket}
+  end
+
+  def handle_event(
+        "download_invalid_stop_times",
+        _params,
+        %{assigns: %{invalid_stop_times: stop_times}} = socket
+      ) do
+    stop_times_lines =
+      Enum.map(stop_times, fn stop_time ->
+        "trip_id: #{stop_time[:trip_id]}, stop_id: #{stop_time[:stop_id]}, stop_sequence: #{stop_time[:stop_sequence]}, arrival_time: #{stop_time[:arrival_time]}, departure_time: #{stop_time[:departure_time]}"
+      end)
+
+    socket =
+      send_download(
+        socket,
+        "trips_with_invalid_stop_order.txt",
+        Enum.join(stop_times_lines, "\n"),
         content_type: "text/plain"
       )
 
@@ -215,6 +249,9 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
 
       {:error, {:invalid_export_stops, stops}} ->
         {:noreply, assign(socket, invalid_export_stops: stops)}
+
+      {:error, {:invalid_stop_times, stop_times}} ->
+        {:noreply, assign(socket, invalid_stop_times: stop_times)}
 
       {:error, error} ->
         {:noreply, assign(socket, error: error)}

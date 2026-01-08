@@ -32,6 +32,12 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     :ok
   end
 
+  defmodule FakeUnzip do
+    def list_entries(_) do
+      [%Unzip.Entry{file_name: "stop_times.txt"}]
+    end
+  end
+
   describe "extract_data_from_upload/1" do
     @tag export: "valid_export.zip"
     test "extracts data from export", %{export: export} do
@@ -72,12 +78,6 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
   end
 
   describe "validate_stop_times_in_gtfs/4" do
-    defmodule FakeUnzip do
-      def list_entries(_) do
-        [%Unzip.Entry{file_name: "stop_times.txt"}]
-      end
-    end
-
     defmodule FakeRepo do
       def all(_) do
         ["WR-0329-02", "WR-0325-02", "WR-0264-02"]
@@ -211,6 +211,130 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                  ImportFakeStops,
                  FakeRepo
                )
+    end
+  end
+
+  describe "validate_stop_order/3" do
+    defmodule ImportValidStopTimes do
+      def stream_csv_rows(_, _) do
+        rows = [
+          %{
+            "arrival_time" => "10:31:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:31:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "FS-0049-S",
+            "stop_sequence" => "0",
+            "timepoint" => "1",
+            "trip_id" => "October26November2-781218-9733"
+          },
+          %{
+            "arrival_time" => "10:45:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:45:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "NEC-2287",
+            "stop_sequence" => "10",
+            "timepoint" => "1",
+            "trip_id" => "October26November2-781218-9733"
+          },
+          %{
+            "arrival_time" => "11:01:00",
+            "bikes_allowed" => "",
+            "departure_time" => "11:01:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "NEC-2276-01",
+            "stop_sequence" => "20",
+            "timepoint" => "1",
+            "trip_id" => "October26November2-781218-9733"
+          }
+        ]
+
+        Stream.map(rows, & &1)
+      end
+    end
+
+    defmodule ImportInvalidStopTimes do
+      def stream_csv_rows(_, _) do
+        rows = [
+          %{
+            "arrival_time" => "10:31:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:31:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "FS-0049-S",
+            "stop_sequence" => "0",
+            "timepoint" => "1",
+            "trip_id" => "October26November2-781218-9733"
+          },
+          %{
+            "arrival_time" => "10:30:00",
+            "bikes_allowed" => "",
+            "departure_time" => "10:30:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "NEC-2287",
+            "stop_sequence" => "10",
+            "timepoint" => "1",
+            "trip_id" => "October26November2-781218-9733"
+          },
+          %{
+            "arrival_time" => "11:01:00",
+            "bikes_allowed" => "",
+            "departure_time" => "11:00:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "NEC-2276-01",
+            "stop_sequence" => "20",
+            "timepoint" => "1",
+            "trip_id" => "October26November2-781218-9733"
+          }
+        ]
+
+        Stream.map(rows, & &1)
+      end
+    end
+
+    test "returns ok if stop time order is valid" do
+      assert :ok = ExportUpload.validate_stop_order(%Unzip{}, FakeUnzip, ImportValidStopTimes)
+    end
+
+    test "returns invalid stop time info if stop times ordering is invalid" do
+      assert {:error,
+              {:invalid_stop_times,
+               [
+                 %{
+                   stop_id: "NEC-2287",
+                   stop_sequence: "10",
+                   arrival_time: "10:30:00",
+                   departure_time: "10:30:00",
+                   trip_id: "October26November2-781218-9733"
+                 },
+                 %{
+                   stop_id: "NEC-2276-01",
+                   stop_sequence: "20",
+                   arrival_time: "11:01:00",
+                   departure_time: "11:00:00",
+                   trip_id: "October26November2-781218-9733"
+                 }
+               ]}} =
+               ExportUpload.validate_stop_order(%Unzip{}, FakeUnzip, ImportInvalidStopTimes)
     end
   end
 end

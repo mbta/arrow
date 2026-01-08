@@ -4,6 +4,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
   @moduledoc """
   Functions for validating, parsing, and saving Trainsformer export uploads.
   """
+  alias Arrow.Gtfs.TimeHelper
 
   require Logger
 
@@ -18,14 +19,20 @@ defmodule Arrow.Trainsformer.ExportUpload do
   Parses a Trainsformer export and returns extracted data
   """
   @spec extract_data_from_upload(%{path: binary()}) ::
-          {:ok, {:ok, t()} | {:error, String.t()} | {:invalid_export_stops, [String.t()]}}
+          {:ok,
+           {:ok, t()}
+           | {:error, String.t()}
+           | {:invalid_export_stops, [String.t()]}
+           | {:invalid_stop_times,
+              [%{trip_id: String.t(), stop_id: String.t(), stop_sequence: String.t()}]}}
   def extract_data_from_upload(%{path: zip_path}) do
     zip_bin = Unzip.LocalFile.open(zip_path)
 
     with {:ok, unzip} <- Unzip.new(zip_bin),
          [] <- validate_csvs(unzip),
          :ok <-
-           validate_stop_times_in_gtfs(unzip) do
+           validate_stop_times_in_gtfs(unzip),
+         :ok <- validate_stop_order(unzip) do
       export_data = %__MODULE__{
         zip_binary: zip_bin
       }
@@ -47,10 +54,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
         import_helper \\ Arrow.Gtfs.ImportHelper,
         repo \\ Arrow.Repo
       ) do
-    [%Unzip.Entry{file_name: stop_times_file}] =
-      unzip
-      |> unzip_module.list_entries()
-      |> Enum.filter(&String.contains?(&1.file_name, "stop_times.txt"))
+    stop_times_file = extract_stop_times(unzip, unzip_module)
 
     trainsformer_stop_ids =
       import_helper.stream_csv_rows(unzip, stop_times_file)
@@ -76,6 +80,103 @@ defmodule Arrow.Trainsformer.ExportUpload do
     end
   end
 
+  @spec validate_stop_order(any()) ::
+          :ok | {:error, {:invalid_stop_times, any()}} | {:ok, {:error, <<_::160>>}}
+  def validate_stop_order(
+        unzip,
+        unzip_module \\ Unzip,
+        import_helper \\ Arrow.Gtfs.ImportHelper
+      ) do
+    stop_times_file = extract_stop_times(unzip, unzip_module)
+
+    # find trips in stop_times.txt
+    trainsformer_trips =
+      import_helper.stream_csv_rows(unzip, stop_times_file)
+      |> Enum.group_by(fn row -> Map.get(row, "trip_id") end)
+
+    invalid_stop_times =
+      Enum.flat_map(trainsformer_trips, &validate_trip(&1))
+
+    if Enum.any?(invalid_stop_times) do
+      {:error, {:invalid_stop_times, invalid_stop_times}}
+    else
+      :ok
+    end
+  rescue
+    e ->
+      Logger.warning(
+        "Trainsformer.ExportUpload failed to parse zip, message=#{Exception.format(:error, e)}"
+      )
+
+      # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
+      {:ok, {:error, "Could not parse zip."}}
+  end
+
+  defp validate_trip({_trip_id, stop_times}) do
+    invalid_stop_times_for_trip =
+      stop_times
+      |> Enum.sort_by(& &1["stop_sequence"])
+      # compare two stop_times at a time
+      |> Enum.chunk_every(2, 1)
+      |> Enum.flat_map(&process_chunk(&1))
+      |> Enum.uniq_by(& &1[:stop_id])
+
+    invalid_stop_times_for_trip
+  end
+
+  defp process_chunk([stop_time1, stop_time2]) do
+    stop_time1_arrival_dur =
+      TimeHelper.to_seconds_after_midnight!(Map.get(stop_time1, "arrival_time"))
+
+    stop_time1_departure_dur =
+      TimeHelper.to_seconds_after_midnight!(Map.get(stop_time1, "departure_time"))
+
+    stop_time2_arrival_dur =
+      TimeHelper.to_seconds_after_midnight!(Map.get(stop_time2, "arrival_time"))
+
+    stop_time2_departure_dur =
+      TimeHelper.to_seconds_after_midnight!(Map.get(stop_time2, "departure_time"))
+
+    cond do
+      # if the second stop_time has an arrival time before the previous departure, mark as invalid
+      compare_durations(stop_time1_departure_dur, stop_time2_arrival_dur) == :gt ->
+        [
+          create_invalid_stop_time_info(stop_time2)
+        ]
+
+      # for either stop, if arrival and departure times are out of order, mark as invalid
+      compare_durations(stop_time1_arrival_dur, stop_time1_departure_dur) == :gt ->
+        [
+          create_invalid_stop_time_info(stop_time1)
+        ]
+
+      compare_durations(stop_time2_arrival_dur, stop_time2_departure_dur) == :gt ->
+        [
+          create_invalid_stop_time_info(stop_time2)
+        ]
+
+      true ->
+        []
+    end
+  end
+
+  defp process_chunk([stop_time]) do
+    arrival_dur = TimeHelper.to_seconds_after_midnight!(Map.get(stop_time, "arrival_time"))
+    departure_dur = TimeHelper.to_seconds_after_midnight!(Map.get(stop_time, "departure_time"))
+
+    if compare_durations(arrival_dur, departure_dur) == :gt do
+      [
+        create_invalid_stop_time_info(stop_time)
+      ]
+    else
+      []
+    end
+  end
+
+  defp process_chunk(_) do
+    []
+  end
+
   @spec upload_to_s3(binary(), String.t(), String.t() | integer()) ::
           {:ok, String.t()} | {:error, term()}
   def upload_to_s3(file_data, filename, disruption_id) do
@@ -88,6 +189,38 @@ defmodule Arrow.Trainsformer.ExportUpload do
     else
       {:ok, "disabled"}
     end
+  end
+
+  defp create_invalid_stop_time_info(stop_time) do
+    %{
+      trip_id: stop_time["trip_id"],
+      stop_id: stop_time["stop_id"],
+      stop_sequence: stop_time["stop_sequence"],
+      arrival_time: stop_time["arrival_time"],
+      departure_time: stop_time["departure_time"]
+    }
+  end
+
+  defp compare_durations(duration1, duration2) do
+    cond do
+      duration1 > duration2 ->
+        :gt
+
+      duration1 < duration2 ->
+        :lt
+
+      true ->
+        :eq
+    end
+  end
+
+  defp extract_stop_times(unzip, unzip_module) do
+    [%Unzip.Entry{file_name: stop_times_file}] =
+      unzip
+      |> unzip_module.list_entries()
+      |> Enum.filter(&String.contains?(&1.file_name, "stop_times.txt"))
+
+    stop_times_file
   end
 
   defp do_upload(file_data, filename) do

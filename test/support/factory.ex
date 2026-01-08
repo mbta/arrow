@@ -63,9 +63,12 @@ defmodule Arrow.Factory do
   end
 
   def limit_factory do
+    today = Date.utc_today()
+    end_date = Date.add(today, 1)
+
     %Arrow.Disruptions.Limit{
       start_date: ~D[2025-01-01],
-      end_date: ~D[2025-12-31],
+      end_date: end_date,
       disruption: build(:disruption_v2),
       route: build(:gtfs_route),
       start_stop: build(:gtfs_stop),
