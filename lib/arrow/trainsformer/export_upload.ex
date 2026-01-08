@@ -32,7 +32,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
          [] <- validate_csvs(unzip),
          :ok <-
            validate_stop_times_in_gtfs(unzip),
-         :ok <- validate_stop_order(unzip) do
+         :ok <- validate_stop_order(unzip),
+         :ok <- validate_transfers(unzip) do
       export_data = %__MODULE__{
         zip_binary: zip_bin
       }
@@ -175,6 +176,62 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
   defp process_chunk(_) do
     []
+  end
+
+  def validate_transfers(unzip, unzip_module \\ Unzip, import_helper \\ Arrow.Gtfs.ImportHelper) do
+    [%Unzip.Entry{file_name: stop_times_file}] =
+      unzip
+      |> unzip_module.list_entries()
+      |> Enum.filter(&String.contains?(&1.file_name, "stop_times.txt"))
+
+    transfers_file =
+      case unzip
+           |> unzip_module.list_entries()
+           |> Enum.filter(&String.contains?(&1.file_name, "transfers.txt")) do
+        [%Unzip.Entry{file_name: transfers_file}] -> transfers_file
+        _ -> nil
+      end
+
+    trips_needing_transfers =
+      unzip
+      |> import_helper.stream_csv_rows(stop_times_file)
+      |> Enum.group_by(fn row -> Map.get(row, "trip_id") end, fn row ->
+        Map.get(row, "stop_id")
+      end)
+      |> Enum.reduce(MapSet.new(), fn {trip_id, stop_ids}, trip_ids ->
+        if "BNT-0000" in stop_ids or "NEC-2287" in stop_ids or "FS-0049-S" in stop_ids do
+          trip_ids
+        else
+          MapSet.put(trip_ids, trip_id)
+        end
+      end)
+
+    trips_with_transfers =
+      if transfers_file do
+        unzip
+        |> import_helper.stream_csv_rows(transfers_file)
+        |> Enum.reduce(MapSet.new(), fn row, trip_ids ->
+          if Map.get(row, "transfer_type") == "1" and Map.get(row, "from_trip_id") != "" and
+               Map.get(row, "to_trip_id") != "" do
+            trip_ids
+            |> MapSet.put(Map.get(row, "from_trip_id"))
+            |> MapSet.put(Map.get(row, "to_trip_id"))
+          else
+            trip_ids
+          end
+        end)
+      else
+        MapSet.new()
+      end
+
+    trips_needing_transfers_without_transfers =
+      MapSet.difference(trips_needing_transfers, trips_with_transfers)
+
+    if Enum.empty?(trips_needing_transfers_without_transfers) do
+      :ok
+    else
+      {:error, {:trips_missing_transfers, trips_needing_transfers_without_transfers}}
+    end
   end
 
   @spec upload_to_s3(binary(), String.t(), String.t() | integer()) ::
