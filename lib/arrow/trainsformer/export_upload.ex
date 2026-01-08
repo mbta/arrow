@@ -9,10 +9,11 @@ defmodule Arrow.Trainsformer.ExportUpload do
   require Logger
 
   @type t :: %__MODULE__{
-          zip_binary: binary()
+          zip_binary: binary(),
+          trips_missing_transfers: MapSet.t()
         }
 
-  @enforce_keys [:zip_binary]
+  @enforce_keys [:zip_binary, :trips_missing_transfers]
   defstruct @enforce_keys
 
   @doc """
@@ -33,10 +34,16 @@ defmodule Arrow.Trainsformer.ExportUpload do
          [] <- validate_csvs(unzip),
          :ok <-
            validate_stop_times_in_gtfs(unzip),
-         :ok <- validate_stop_order(unzip),
-         :ok <- validate_transfers(unzip) do
+         :ok <- validate_stop_order(unzip) do
+      trips_missing_transfers =
+        case validate_transfers(unzip) do
+          :ok -> MapSet.new()
+          {:error, {:trips_missing_transfers, trips}} -> trips
+        end
+
       export_data = %__MODULE__{
-        zip_binary: zip_bin
+        zip_binary: zip_bin,
+        trips_missing_transfers: trips_missing_transfers
       }
 
       {:ok, {:ok, export_data}}
