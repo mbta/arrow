@@ -4,6 +4,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
   @moduledoc """
   Functions for validating, parsing, and saving Trainsformer export uploads.
   """
+  alias Arrow.Gtfs.TimeHelper
 
   require Logger
 
@@ -125,16 +126,16 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
   defp process_chunk([stop_time1, stop_time2]) do
     stop_time1_arrival_dur =
-      parse_gtfs_time_to_sec(Map.get(stop_time1, "arrival_time"))
+      TimeHelper.to_seconds_after_midnight!(Map.get(stop_time1, "arrival_time"))
 
     stop_time1_departure_dur =
-      parse_gtfs_time_to_sec(Map.get(stop_time1, "departure_time"))
+      TimeHelper.to_seconds_after_midnight!(Map.get(stop_time1, "departure_time"))
 
     stop_time2_arrival_dur =
-      parse_gtfs_time_to_sec(Map.get(stop_time2, "arrival_time"))
+      TimeHelper.to_seconds_after_midnight!(Map.get(stop_time2, "arrival_time"))
 
     stop_time2_departure_dur =
-      parse_gtfs_time_to_sec(Map.get(stop_time2, "departure_time"))
+      TimeHelper.to_seconds_after_midnight!(Map.get(stop_time2, "departure_time"))
 
     cond do
       # if the second stop_time has an arrival time before the previous departure, mark as invalid
@@ -160,8 +161,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
   end
 
   defp process_chunk([stop_time]) do
-    arrival_dur = parse_gtfs_time_to_sec(Map.get(stop_time, "arrival_time"))
-    departure_dur = parse_gtfs_time_to_sec(Map.get(stop_time, "departure_time"))
+    arrival_dur = TimeHelper.to_seconds_after_midnight!(Map.get(stop_time, "arrival_time"))
+    departure_dur = TimeHelper.to_seconds_after_midnight!(Map.get(stop_time, "departure_time"))
 
     if compare_durations(arrival_dur, departure_dur) == :gt do
       [
@@ -198,15 +199,6 @@ defmodule Arrow.Trainsformer.ExportUpload do
       arrival_time: stop_time["arrival_time"],
       departure_time: stop_time["departure_time"]
     }
-  end
-
-  defp parse_gtfs_time_to_sec(timestamp) do
-    [hours, minutes, seconds] = String.split(timestamp, ":")
-    {parsed_hours, _remainder} = Integer.parse(hours)
-    {parsed_minutes, _remainder} = Integer.parse(minutes)
-    {parsed_seconds, _remainder} = Integer.parse(seconds)
-
-    parsed_hours * 3600 + parsed_minutes * 60 + parsed_seconds
   end
 
   defp compare_durations(duration1, duration2) do
