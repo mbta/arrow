@@ -208,18 +208,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
     trips_with_transfers =
       if transfers_file do
-        unzip
-        |> import_helper.stream_csv_rows(transfers_file)
-        |> Enum.reduce(MapSet.new(), fn row, trip_ids ->
-          if Map.get(row, "transfer_type") == "1" and Map.get(row, "from_trip_id") != "" and
-               Map.get(row, "to_trip_id") != "" do
-            trip_ids
-            |> MapSet.put(Map.get(row, "from_trip_id"))
-            |> MapSet.put(Map.get(row, "to_trip_id"))
-          else
-            trip_ids
-          end
-        end)
+        get_trips_with_transfers_from_file(unzip, transfers_file, import_helper)
       else
         MapSet.new()
       end
@@ -232,6 +221,21 @@ defmodule Arrow.Trainsformer.ExportUpload do
     else
       {:error, {:trips_missing_transfers, trips_needing_transfers_without_transfers}}
     end
+  end
+
+  defp get_trips_with_transfers_from_file(unzip, transfers_file, import_helper) do
+    unzip
+    |> import_helper.stream_csv_rows(transfers_file)
+    |> Enum.reduce(MapSet.new(), fn row, trip_ids ->
+      if Map.get(row, "transfer_type") == "1" and Map.get(row, "from_trip_id") != "" and
+           Map.get(row, "to_trip_id") != "" do
+        trip_ids
+        |> MapSet.put(Map.get(row, "from_trip_id"))
+        |> MapSet.put(Map.get(row, "to_trip_id"))
+      else
+        trip_ids
+      end
+    end)
   end
 
   @spec upload_to_s3(binary(), String.t(), String.t() | integer()) ::
