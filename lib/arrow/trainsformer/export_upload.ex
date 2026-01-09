@@ -206,13 +206,20 @@ defmodule Arrow.Trainsformer.ExportUpload do
       |> Enum.group_by(fn row -> Map.get(row, "trip_id") end, fn row ->
         Map.get(row, "stop_id")
       end)
-      |> Enum.reduce(MapSet.new(), fn {trip_id, stop_ids}, trip_ids ->
-        if "BNT-0000" in stop_ids or "NEC-2287" in stop_ids or "FS-0049-S" in stop_ids do
-          trip_ids
-        else
-          MapSet.put(trip_ids, trip_id)
-        end
+      |> Enum.reject(fn {_trip_id, stop_ids} ->
+        Enum.any?(
+          stop_ids,
+          &Enum.member?(
+            [
+              "BNT-0000",
+              "NEC-2287",
+              "FS-0049-S"
+            ],
+            &1
+          )
+        )
       end)
+      |> MapSet.new(fn {trip_id, _stop_ids} -> trip_id end)
 
     trips_with_transfers =
       if transfers_file do
