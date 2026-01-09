@@ -136,7 +136,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                 </div>
               <% end %>
             </div>
-            <div class="col-lg-6">
+            <div class="col-lg-10">
               <b class="mb-3">Services</b>
               <.inputs_for :let={f_service} field={@form[:services]}>
                 <div class="row">
@@ -181,9 +181,15 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                     </.inputs_for>
                   </div>
                   <div class="col">
-                    <button type="button">
-                      <.icon name="hero-trash-solid" class="bg-primary" />
-                    </button>
+                    <.button
+                      type="button"
+                      class="btn btn-primary ml-3 btn-sm"
+                      value={f_service.index}
+                      phx-click="add_service_date"
+                      phx-target={@myself}
+                    >
+                      Add Another Timeframe
+                    </.button>
                   </div>
                 </div>
               </.inputs_for>
@@ -335,9 +341,8 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
             Ecto.Changeset.put_change(service, :service_dates, existing_dates ++ [%ServiceDate{}])
           end)
 
-        changeset
-        |> Ecto.Changeset.put_assoc(:services, updated_services)
-        |> to_form()
+        changeset = Ecto.Changeset.put_assoc(changeset, :services, updated_services)
+        to_form(changeset)
       end)
 
     {:noreply, socket}
@@ -363,9 +368,8 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
             Ecto.Changeset.put_change(service, :service_dates, dates)
           end)
 
-        changeset
-        |> Ecto.Changeset.put_assoc(:services, updated_services)
-        |> to_form()
+        changeset = Ecto.Changeset.put_assoc(changeset, :services, updated_services)
+        to_form(changeset)
       end)
 
     {:noreply, socket}
