@@ -394,6 +394,7 @@ defmodule ArrowWeb.DisruptionComponents do
   attr :disruption, DisruptionV2, required: true
   attr :editing, :any, required: true
   attr :user_id, :string, required: true
+  attr :icon_paths, :map, required: true
 
   def view_trainsformer_service_schedules(assigns) do
     ~H"""
@@ -405,7 +406,37 @@ defmodule ArrowWeb.DisruptionComponents do
           id={"export-table-hastus-#{export.id}"}
           class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3"
         >
-          Export information goes here.
+          Export: {export.name}
+          <table class="sm:w-full">
+            <tr>
+              <th>
+                Service
+              </th>
+              <th>
+                Start Date
+              </th>
+              <th>
+                End Date
+              </th>
+            </tr>
+            <%= for service <- export.services do %>
+              <tr>
+                <td>{service.name}</td>
+                <td>
+                  <div :for={date <- Enum.map(service.service_dates, & &1.start_date)}>
+                    <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
+                    {Calendar.strftime(date, "%m/%d/%Y")}
+                  </div>
+                </td>
+                <td>
+                  <div :for={date <- Enum.map(service.service_dates, & &1.end_date)}>
+                    <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
+                    {Calendar.strftime(date, "%m/%d/%Y")}
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </table>
         </div>
       <% end %>
 
@@ -425,6 +456,7 @@ defmodule ArrowWeb.DisruptionComponents do
           disruption={@disruption}
           export={@editing}
           user_id={@user_id}
+          icon_paths={@icon_paths}
         />
       <% end %>
     </section>
