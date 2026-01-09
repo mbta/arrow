@@ -116,10 +116,10 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
           </div>
 
           <div :if={not Enum.empty?(@trips_missing_transfers)} class="text-warning mb-3">
-            Warning: some trains that do not serve North Station, South Station, or Foxboro lack transfers. Trip IDs: {Enum.join(
-              @trips_missing_transfers,
-              ", "
-            )}
+            Warning: some train trips that do not serve North Station, South Station, or Foxboro lack transfers.
+            <ul>
+              <li :for={trip_id <- @trips_missing_transfers} }>{trip_id}</li>
+            </ul>
           </div>
 
           <div class="row">
