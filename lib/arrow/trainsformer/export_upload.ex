@@ -31,7 +31,9 @@ defmodule Arrow.Trainsformer.ExportUpload do
     with {:ok, unzip} <- Unzip.new(zip_bin),
          [] <- validate_csvs(unzip),
          :ok <-
-           validate_stop_times_in_gtfs(unzip) do
+           validate_stop_times_in_gtfs(unzip),
+         # only read file into memory once we're sure it's valid
+         {:ok, zip_bin} <- File.read(zip_path) do
       [%Unzip.Entry{file_name: trips_file}] =
         unzip
         |> unzip_module.list_entries()
@@ -46,12 +48,26 @@ defmodule Arrow.Trainsformer.ExportUpload do
           end
         )
 
-      dbg()
+      current_date_string = Date.to_iso8601(Date.utc_today())
+
+      service_objects =
+        Enum.map(services, fn service_id ->
+          %{
+            "name" => service_id,
+            "service_dates" => [
+              %{
+                "service_id" => service_id,
+                "start_date" => current_date_string,
+                "end_date" => current_date_string
+              }
+            ]
+          }
+        end)
 
       export_data = %__MODULE__{
         zip_binary: zip_bin,
         routes: Enum.to_list(routes),
-        services: Enum.to_list(services)
+        services: service_objects
       }
 
       {:ok, {:ok, export_data}}
