@@ -6,6 +6,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
   alias Arrow.Trainsformer
   alias Arrow.Trainsformer.Export
   alias Arrow.Trainsformer.ExportUpload
+  alias Arrow.Trainsformer.ServiceDate
   alias Phoenix.LiveView.UploadEntry
 
   attr :disruption, DisruptionV2, required: true
@@ -121,7 +122,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                 </div>
               <% end %>
             </div>
-            <div class="col-lg-6">
+            <div class="col-lg-10">
               <b class="mb-3">Services</b>
               <.inputs_for :let={f_service} field={@form[:services]}>
                 <div class="row">
@@ -166,9 +167,15 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                     </.inputs_for>
                   </div>
                   <div class="col">
-                    <button type="button">
-                      <.icon name="hero-trash-solid" class="bg-primary" />
-                    </button>
+                    <.button
+                      type="button"
+                      class="btn btn-primary ml-3 btn-sm"
+                      value={f_service.index}
+                      phx-click="add_service_date"
+                      phx-target={@myself}
+                    >
+                      Add Another Timeframe
+                    </.button>
                   </div>
                 </div>
               </.inputs_for>
@@ -248,6 +255,53 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
         Enum.join(stops, "\n"),
         content_type: "text/plain"
       )
+
+    {:noreply, socket}
+  end
+
+  def handle_event("add_service_date", %{"value" => index}, socket) do
+    {index, _} = Integer.parse(index)
+
+    socket =
+      update(socket, :form, fn %{source: changeset} ->
+        updated_services =
+          changeset
+          |> Ecto.Changeset.get_assoc(:services)
+          |> update_in([Access.at(index)], fn service ->
+            existing_dates = Ecto.Changeset.get_assoc(service, :service_dates)
+            Ecto.Changeset.put_change(service, :service_dates, existing_dates ++ [%ServiceDate{}])
+          end)
+
+        changeset = Ecto.Changeset.put_assoc(changeset, :services, updated_services)
+        to_form(changeset)
+      end)
+
+    {:noreply, socket}
+  end
+
+  def handle_event(
+        "delete_service_date",
+        %{"service_index" => service_index, "date_index" => date_index},
+        socket
+      ) do
+    {service_index, _} = Integer.parse(service_index)
+    {date_index, _} = Integer.parse(date_index)
+
+    socket =
+      update(socket, :form, fn %{source: changeset} ->
+        updated_services =
+          changeset
+          |> Ecto.Changeset.get_assoc(:services)
+          |> update_in([Access.at(service_index)], fn service ->
+            dates =
+              service |> Ecto.Changeset.get_assoc(:service_dates) |> List.delete_at(date_index)
+
+            Ecto.Changeset.put_change(service, :service_dates, dates)
+          end)
+
+        changeset = Ecto.Changeset.put_assoc(changeset, :services, updated_services)
+        to_form(changeset)
+      end)
 
     {:noreply, socket}
   end
