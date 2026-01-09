@@ -115,6 +115,13 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
             </strong>
           </div>
 
+          <div :if={not Enum.empty?(@trips_missing_transfers)} class="text-warning mb-3">
+            Warning: some train trips that do not serve North Station, South Station, or Foxboro lack transfers.
+            <ul>
+              <li :for={trip_id <- @trips_missing_transfers} }>{trip_id}</li>
+            </ul>
+          </div>
+
           <div class="row">
             <div class="col-lg-4">
               <.button
@@ -153,6 +160,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
       |> assign(:form, nil)
       |> assign(:invalid_export_stops, nil)
       |> assign(:invalid_stop_times, nil)
+      |> assign(:trips_missing_transfers, nil)
       |> allow_upload(:trainsformer_export,
         accept: ~w(.zip),
         progress: &handle_progress/3,
@@ -244,7 +252,8 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
            show_upload_form: false,
            show_service_import_form: true,
            uploaded_file_name: client_name,
-           uploaded_file_data: export_data.zip_binary
+           uploaded_file_data: export_data.zip_binary,
+           trips_missing_transfers: export_data.trips_missing_transfers
          )}
 
       {:error, {:invalid_export_stops, stops}} ->

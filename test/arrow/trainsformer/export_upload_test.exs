@@ -337,4 +337,164 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                ExportUpload.validate_stop_order(%Unzip{}, FakeUnzip, ImportInvalidStopTimes)
     end
   end
+
+  describe "validate_transfers/3" do
+    defmodule FakeUnzipWithTransfers do
+      def list_entries(_) do
+        [%Unzip.Entry{file_name: "stop_times.txt"}, %Unzip.Entry{file_name: "transfers.txt"}]
+      end
+    end
+
+    defmodule ImportWithTransfers do
+      def stream_csv_rows(_, "stop_times.txt") do
+        [
+          %{
+            "arrival_time" => "",
+            "bikes_allowed" => "",
+            "departure_time" => "10:00:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "BNT-0000",
+            "stop_sequence" => "10",
+            "timepoint" => "1",
+            "trip_id" => "1234"
+          },
+          %{
+            "arrival_time" => "10:30:00",
+            "bikes_allowed" => "",
+            "departure_time" => "",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "ER-0183",
+            "stop_sequence" => "20",
+            "timepoint" => "1",
+            "trip_id" => "1234"
+          },
+          %{
+            "arrival_time" => "",
+            "bikes_allowed" => "",
+            "departure_time" => "10:35:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "ER-0183",
+            "stop_sequence" => "10",
+            "timepoint" => "1",
+            "trip_id" => "5678"
+          },
+          %{
+            "arrival_time" => "11:00:00",
+            "bikes_allowed" => "",
+            "departure_time" => "",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "ER-0362",
+            "stop_sequence" => "20",
+            "timepoint" => "1",
+            "trip_id" => "5678"
+          }
+        ]
+      end
+
+      def stream_csv_rows(_, "transfers.txt") do
+        [
+          %{
+            "from_stop_id" => "ER-0183",
+            "to_stop_id" => "ER-0183",
+            "from_trip_id" => "1234",
+            "to_trip_id" => "5678",
+            "transfer_type" => "1"
+          }
+        ]
+      end
+    end
+
+    defmodule ImportMissingTransfers do
+      def stream_csv_rows(_, "stop_times.txt") do
+        [
+          %{
+            "arrival_time" => "",
+            "bikes_allowed" => "",
+            "departure_time" => "10:00:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "BNT-0000",
+            "stop_sequence" => "10",
+            "timepoint" => "1",
+            "trip_id" => "1234"
+          },
+          %{
+            "arrival_time" => "10:30:00",
+            "bikes_allowed" => "",
+            "departure_time" => "",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "ER-0183",
+            "stop_sequence" => "20",
+            "timepoint" => "1",
+            "trip_id" => "1234"
+          },
+          %{
+            "arrival_time" => "",
+            "bikes_allowed" => "",
+            "departure_time" => "10:35:00",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "ER-0183",
+            "stop_sequence" => "10",
+            "timepoint" => "1",
+            "trip_id" => "5678"
+          },
+          %{
+            "arrival_time" => "11:00:00",
+            "bikes_allowed" => "",
+            "departure_time" => "",
+            "drop_off_type" => "0",
+            "nonstandard_track" => "0",
+            "pickup_type" => "0",
+            "stop_headsign" => "",
+            "stop_id" => "ER-0362",
+            "stop_sequence" => "20",
+            "timepoint" => "1",
+            "trip_id" => "5678"
+          }
+        ]
+      end
+
+      def stream_csv_rows(_, "transfers.txt"), do: []
+    end
+
+    test "returns ok if all appopriate trips have transfers" do
+      assert :ok =
+               ExportUpload.validate_transfers(
+                 %Unzip{},
+                 FakeUnzipWithTransfers,
+                 ImportWithTransfers
+               )
+    end
+
+    test "returns an error if any transfers are missing" do
+      expected_trips_with_missing_transfers = MapSet.new(["5678"])
+
+      assert {:error, {:trips_missing_transfers, ^expected_trips_with_missing_transfers}} =
+               ExportUpload.validate_transfers(
+                 %Unzip{},
+                 FakeUnzipWithTransfers,
+                 ImportMissingTransfers
+               )
+    end
+  end
 end

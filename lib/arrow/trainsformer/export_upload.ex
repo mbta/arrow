@@ -9,10 +9,11 @@ defmodule Arrow.Trainsformer.ExportUpload do
   require Logger
 
   @type t :: %__MODULE__{
-          zip_binary: binary()
+          zip_binary: binary(),
+          trips_missing_transfers: MapSet.t()
         }
 
-  @enforce_keys [:zip_binary]
+  @enforce_keys [:zip_binary, :trips_missing_transfers]
   defstruct @enforce_keys
 
   @doc """
@@ -24,7 +25,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
            | {:error, String.t()}
            | {:invalid_export_stops, [String.t()]}
            | {:invalid_stop_times,
-              [%{trip_id: String.t(), stop_id: String.t(), stop_sequence: String.t()}]}}
+              [%{trip_id: String.t(), stop_id: String.t(), stop_sequence: String.t()}]}
+           | {:trips_missing_transfers, MapSet.t()}}
   def extract_data_from_upload(%{path: zip_path}) do
     zip_bin = Unzip.LocalFile.open(zip_path)
 
@@ -33,8 +35,15 @@ defmodule Arrow.Trainsformer.ExportUpload do
          :ok <-
            validate_stop_times_in_gtfs(unzip),
          :ok <- validate_stop_order(unzip) do
+      trips_missing_transfers =
+        case validate_transfers(unzip) do
+          :ok -> MapSet.new()
+          {:error, {:trips_missing_transfers, trips}} -> trips
+        end
+
       export_data = %__MODULE__{
-        zip_binary: zip_bin
+        zip_binary: zip_bin,
+        trips_missing_transfers: trips_missing_transfers
       }
 
       {:ok, {:ok, export_data}}
@@ -175,6 +184,76 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
   defp process_chunk(_) do
     []
+  end
+
+  def validate_transfers(unzip, unzip_module \\ Unzip, import_helper \\ Arrow.Gtfs.ImportHelper) do
+    [%Unzip.Entry{file_name: stop_times_file}] =
+      unzip
+      |> unzip_module.list_entries()
+      |> Enum.filter(&String.contains?(&1.file_name, "stop_times.txt"))
+
+    transfers_file =
+      case unzip
+           |> unzip_module.list_entries()
+           |> Enum.filter(&String.contains?(&1.file_name, "transfers.txt")) do
+        [%Unzip.Entry{file_name: transfers_file}] -> transfers_file
+        _ -> nil
+      end
+
+    trips_needing_transfers =
+      unzip
+      |> import_helper.stream_csv_rows(stop_times_file)
+      |> Enum.group_by(fn row -> Map.get(row, "trip_id") end, fn row ->
+        Map.get(row, "stop_id")
+      end)
+      |> Enum.reject(fn {_trip_id, stop_ids} ->
+        Enum.any?(
+          stop_ids,
+          &Enum.member?(
+            [
+              # North Station
+              "BNT-0000",
+              # South Station
+              "NEC-2287",
+              # Foxboro
+              "FS-0049-S"
+            ],
+            &1
+          )
+        )
+      end)
+      |> MapSet.new(fn {trip_id, _stop_ids} -> trip_id end)
+
+    trips_with_transfers =
+      if transfers_file do
+        get_trips_with_transfers_from_file(unzip, transfers_file, import_helper)
+      else
+        MapSet.new()
+      end
+
+    trips_needing_transfers_without_transfers =
+      MapSet.difference(trips_needing_transfers, trips_with_transfers)
+
+    if Enum.empty?(trips_needing_transfers_without_transfers) do
+      :ok
+    else
+      {:error, {:trips_missing_transfers, trips_needing_transfers_without_transfers}}
+    end
+  end
+
+  defp get_trips_with_transfers_from_file(unzip, transfers_file, import_helper) do
+    unzip
+    |> import_helper.stream_csv_rows(transfers_file)
+    |> Enum.reduce(MapSet.new(), fn row, trip_ids ->
+      if Map.get(row, "transfer_type") == "1" and Map.get(row, "from_trip_id") != "" and
+           Map.get(row, "to_trip_id") != "" do
+        trip_ids
+        |> MapSet.put(Map.get(row, "from_trip_id"))
+        |> MapSet.put(Map.get(row, "to_trip_id"))
+      else
+        trip_ids
+      end
+    end)
   end
 
   @spec upload_to_s3(binary(), String.t(), String.t() | integer()) ::
