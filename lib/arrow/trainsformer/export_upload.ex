@@ -211,8 +211,11 @@ defmodule Arrow.Trainsformer.ExportUpload do
           stop_ids,
           &Enum.member?(
             [
+              # North Station
               "BNT-0000",
+              # South Station
               "NEC-2287",
+              # Foxboro
               "FS-0049-S"
             ],
             &1
