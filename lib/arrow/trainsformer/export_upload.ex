@@ -69,14 +69,13 @@ defmodule Arrow.Trainsformer.ExportUpload do
     zip_bin = Unzip.LocalFile.open(zip_path)
 
     with {:ok, unzip} <- Unzip.new(zip_bin),
-         {:ok, %{trips: trips, stop_times: stop_times, transfers: transfers}} <-
-           validate_csvs(unzip, unzip_module, import_helper),
-         {:ok, stop_ids} <-
-           validate_stop_times_in_gtfs(stop_times),
-         :ok <- validate_stop_order(stop_times),
+         [] <- validate_csvs(unzip),
+         :ok <-
+           validate_stop_times_in_gtfs(unzip),
+         :ok <- validate_stop_order(unzip),
          {:ok, zip_bin} <- File.read(zip_path) do
-      one_of_north_south_stations = validate_one_of_north_south_stations(stop_ids)
-      {missing_routes, invalid_routes} = validate_one_or_all_routes_from_one_side(trips)
+      one_of_north_south_stations = validate_one_of_north_south_stations(unzip)
+      {missing_routes, invalid_routes} = validate_one_or_all_routes_from_one_side(unzip)
 
       trips_missing_transfers =
         case validate_transfers(transfers, stop_times) do
@@ -84,6 +83,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
           {:error, {:trips_missing_transfers, invalid_trips}} -> invalid_trips
         end
 
+      # only read file into memory once we're sure it's valid
       [%Unzip.Entry{file_name: trips_file}] =
         unzip
         |> unzip_module.list_entries()
@@ -98,13 +98,29 @@ defmodule Arrow.Trainsformer.ExportUpload do
           end
         )
 
+      current_date_string = Date.to_iso8601(Date.utc_today())
+
+      service_objects =
+        Enum.map(services, fn service_id ->
+          %{
+            "name" => service_id,
+            "service_dates" => [
+              %{
+                "service_id" => service_id,
+                "start_date" => current_date_string,
+                "end_date" => current_date_string
+              }
+            ]
+          }
+        end)
+
       export_data = %__MODULE__{
         zip_binary: zip_bin,
         one_of_north_south_stations: one_of_north_south_stations,
         missing_routes: missing_routes,
         invalid_routes: invalid_routes,
         routes: Enum.to_list(routes),
-        services: Enum.to_list(services),
+        services: service_objects,
         trips_missing_transfers: trips_missing_transfers
       }
 

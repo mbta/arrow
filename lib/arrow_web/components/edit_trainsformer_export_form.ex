@@ -112,26 +112,81 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
 
           <.input field={@form[:name]} type="text" class="hidden" />
 
+          <.input field={@form[:name]} type="text" class="hidden" />
+
           <div class="text-success mb-3">
             <strong>
               <i>Successfully imported export {@uploaded_file_name}!</i>
             </strong>
           </div>
           <div class="row">
-            <div class="col-lg-4">
-              <ul>
-                <%= for route <- @uploaded_file_routes do %>
-                  <li>{route}</li>
-                <% end %>
-              </ul>
+            <div class="col-lg-2">
+              <b class="mb-3">Routes</b>
+              <%= for route <- @uploaded_file_routes do %>
+                <div class="row">
+                  <div class="col-lg-1">
+                    <span
+                      class="m-icon m-icon-sm mr-1"
+                      style={"background-image: url('#{Map.get(@icon_paths, :commuter_rail)}');"}
+                    />
+                  </div>
+                  <div class="col-lg-10">
+                    <p>{route}</p>
+                  </div>
+                </div>
+              <% end %>
             </div>
-            <div class="col-lg-8">
-              Services
-              <ul>
-                <%= for service <- @uploaded_file_services do %>
-                  <li>{service}</li>
-                <% end %>
-              </ul>
+            <div class="col-lg-6">
+              <b class="mb-3">Services</b>
+              <.inputs_for :let={f_service} field={@form[:services]}>
+                <div class="row">
+                  <div class="col">
+                    <.input field={f_service[:name]} type="text" class="hidden" />
+                    {f_service[:name].value}
+                  </div>
+                  <div class="col">
+                    <.inputs_for :let={f_date} field={f_service[:service_dates]}>
+                      {f_service[:start_date].value}
+                      <div class="row">
+                        <div class="col-lg-1"></div>
+                        <div class="col">
+                          <.input
+                            field={f_date[:start_date]}
+                            type="date"
+                            label={if f_date.index == 0, do: "start date", else: ""}
+                          />
+                        </div>
+                        <div class="col">
+                          <.input
+                            field={f_date[:end_date]}
+                            type="date"
+                            label={if f_date.index == 0, do: "end date", else: ""}
+                          />
+                        </div>
+                        <div
+                          :if={Enum.count(f_service[:service_dates].value) > 1}
+                          class="col-auto align-self-center mt-3"
+                        >
+                          <.button
+                            type="button"
+                            phx-click="delete_service_date"
+                            phx-value-service_index={f_service.index}
+                            phx-value-date_index={f_date.index}
+                            phx-target={@myself}
+                          >
+                            <.icon name="hero-trash-solid" class="bg-primary" />
+                          </.button>
+                        </div>
+                      </div>
+                    </.inputs_for>
+                  </div>
+                  <div class="col">
+                    <button type="button">
+                      <.icon name="hero-trash-solid" class="bg-primary" />
+                    </button>
+                  </div>
+                </div>
+              </.inputs_for>
             </div>
           </div>
 
@@ -338,10 +393,11 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
           |> Trainsformer.change_export(%{
             "s3_path" => client_name,
             "disruption_id" => socket.assigns.disruption.id,
-            "services" => export_data.services,
-            "routes" => export_data.routes
+            "services" => export_data.services
           })
           |> to_form(action: :validate)
+
+        IO.inspect(form)
 
         {:noreply,
          assign(socket,
@@ -374,8 +430,6 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
       for {key, value} <- export_params["services"],
           into: %{},
           do: {key, value}
-
-    export_params = Map.put(export_params, "routes", socket.assigns.uploaded_file_routes)
 
     with {:ok, s3_path} <-
            ExportUpload.upload_to_s3(

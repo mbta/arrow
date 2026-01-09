@@ -15,7 +15,7 @@ defmodule Arrow.Disruptions do
     limits: [:route, :start_stop, :end_stop, :limit_day_of_weeks],
     replacement_services: [shuttle: [routes: [route_stops: [:stop]]]],
     hastus_exports: [:line, services: [:service_dates, derived_limits: [:start_stop, :end_stop]]],
-    trainsformer_exports: [:routes, services: [:service_dates]]
+    trainsformer_exports: [services: [:service_dates]]
   ]
 
   @doc """

@@ -8,10 +8,10 @@ defmodule Arrow.Trainsformer do
 
   alias Arrow.Trainsformer.Export
   alias Arrow.Trainsformer.Service
+  alias Arrow.Trainsformer.Service
 
   @preloads [
     :disruption,
-    :routes,
     services: [:service_dates]
   ]
 
@@ -105,35 +105,6 @@ defmodule Arrow.Trainsformer do
   def change_export(%Export{} = export, attrs \\ %{}) do
     Export.changeset(export, attrs)
   end
-
-  @doc """
-  Returns the list of hastus_services.
-
-  ## Examples
-
-      iex> list_hastus_services()
-      [%Service{}, ...]
-
-  """
-  def list_trainsformer_services do
-    Repo.all(Service)
-  end
-
-  @doc """
-  Gets a single service.
-
-  Raises `Ecto.NoResultsError` if the Service does not exist.
-
-  ## Examples
-
-      iex> get_service!(123)
-      %Service{}
-
-      iex> get_service!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_service!(id), do: Repo.get!(Service, id)
 
   @doc """
   Creates a service.
