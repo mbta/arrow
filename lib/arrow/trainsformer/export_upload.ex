@@ -10,10 +10,19 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
   @type t :: %__MODULE__{
           zip_binary: binary(),
+          one_of_north_south_stations: :ok | :both | :neither,
+          missing_routes: [String.t()],
+          invalid_routes: [String.t()],
           trips_missing_transfers: MapSet.t()
         }
 
-  @enforce_keys [:zip_binary, :trips_missing_transfers]
+  @enforce_keys [
+    :zip_binary,
+    :one_of_north_south_stations,
+    :missing_routes,
+    :invalid_routes,
+    :trips_missing_transfers
+  ]
   defstruct @enforce_keys
 
   @doc """
@@ -25,12 +34,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
            | {:error, String.t()}
            | {:invalid_export_stops, [String.t()]}
            | {:invalid_stop_times,
-              [%{trip_id: String.t(), stop_id: String.t(), stop_sequence: String.t()}]}
-           | {:error, :north_and_south_stations_present}
-           | {:error, :north_and_south_stations_not_present}
-           | {:error, {:missing_routes, [String.t()]}}
-           | {:error, {:invalid_routes, [String.t()]}}
-           | {:trips_missing_transfers, MapSet.t()}}
+              [%{trip_id: String.t(), stop_id: String.t(), stop_sequence: String.t()}]}}
   def extract_data_from_upload(%{path: zip_path}) do
     zip_bin = Unzip.LocalFile.open(zip_path)
 
@@ -38,10 +42,10 @@ defmodule Arrow.Trainsformer.ExportUpload do
          [] <- validate_csvs(unzip),
          :ok <-
            validate_stop_times_in_gtfs(unzip),
-         :ok <- validate_stop_order(unzip),
-         :ok <- validate_stop_order(unzip),
-         :ok <- validate_one_of_north_south_stations(unzip),
-         :ok <- validate_one_or_all_routes_from_one_side(unzip) do
+         :ok <- validate_stop_order(unzip) do
+      one_of_north_south_stations = validate_one_of_north_south_stations(unzip)
+      {missing_routes, invalid_routes} = validate_one_or_all_routes_from_one_side(unzip)
+
       trips_missing_transfers =
         case validate_transfers(unzip) do
           :ok -> MapSet.new()
@@ -50,6 +54,9 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
       export_data = %__MODULE__{
         zip_binary: zip_bin,
+        one_of_north_south_stations: one_of_north_south_stations,
+        missing_routes: missing_routes,
+        invalid_routes: invalid_routes,
         trips_missing_transfers: trips_missing_transfers
       }
 
@@ -265,8 +272,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
   @spec validate_one_of_north_south_stations(any()) ::
           :ok
-          | {:error, :north_and_south_stations_present}
-          | {:error, :north_and_south_stations_not_present}
+          | :both
+          | :neither
   def validate_one_of_north_south_stations(
         unzip,
         unzip_module \\ Unzip,
@@ -284,10 +291,10 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
     cond do
       north_station_served and south_station_served ->
-        {:error, :north_and_south_stations_present}
+        :both
 
       not north_station_served and not south_station_served ->
-        {:error, :north_and_south_stations_not_present}
+        :neither
 
       true ->
         :ok
@@ -309,10 +316,9 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
   # We require all of the routes from one side to be present,
   # or a single route.
+  # Returns {missing_routes, invalid_routes}
   @spec validate_one_or_all_routes_from_one_side(any()) ::
-          :ok
-          | {:error, {:missing_routes, any()}}
-          | {:error, {:invalid_routes, any()}}
+          {[String.t()], [String.t()]}
   def validate_one_or_all_routes_from_one_side(
         unzip,
         unzip_module \\ Unzip,
@@ -345,22 +351,23 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
     cond do
       length(trainsformer_route_ids) == 1 ->
-        :ok
+        {[], []}
 
       num_southside_routes_missing == 0 ->
-        :ok
+        {[], []}
 
       num_northside_routes_missing == 0 ->
-        :ok
+        {[], []}
 
       num_southside_routes_missing < length(@southside_route_ids) ->
-        {:error, {:missing_routes, southside_routes_missing}}
+        {southside_routes_missing, []}
 
       num_northside_routes_missing < length(@northside_route_ids) ->
-        {:error, {:missing_routes, northside_routes_missing}}
+        {northside_routes_missing, []}
 
+      # More than one route, and they all aren't in @northside_route_ids or @southside_route_ids
       true ->
-        {:error, {:invalid_routes, trainsformer_route_ids}}
+        {[], trainsformer_route_ids}
     end
   end
 

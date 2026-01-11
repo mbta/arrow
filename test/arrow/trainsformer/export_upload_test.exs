@@ -524,7 +524,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     end
 
     test "returns error if North and South Stations are both served" do
-      assert {:error, :north_and_south_stations_present} =
+      assert :both =
                ExportUpload.validate_one_of_north_south_stations(
                  %Unzip{},
                  FakeUnzip,
@@ -533,7 +533,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     end
 
     test "returns error if neither North nor South Station is served" do
-      assert {:error, :north_and_south_stations_not_present} =
+      assert :neither =
                ExportUpload.validate_one_of_north_south_stations(
                  %Unzip{},
                  FakeUnzip,
@@ -743,8 +743,8 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
       end
     end
 
-    test "returns ok if all Northside routes have a trip" do
-      assert :ok =
+    test "returns empty error route lists if all Northside routes have a trip" do
+      assert {[], []} =
                ExportUpload.validate_one_or_all_routes_from_one_side(
                  %Unzip{},
                  FakeUnzip,
@@ -752,8 +752,8 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                )
     end
 
-    test "returns ok if exactly one Northside route has a trip" do
-      assert :ok =
+    test "returns empty error route lists if exactly one Northside route has a trip" do
+      assert {[], []} =
                ExportUpload.validate_one_or_all_routes_from_one_side(
                  %Unzip{},
                  FakeUnzip,
@@ -761,8 +761,8 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                )
     end
 
-    test "returns error if more than one but not all Northside routes have a trip" do
-      assert {:error, {:missing_routes, ["CR-Fitchburg", "CR-Lowell"]}} =
+    test "returns missing routes if more than one but not all Northside routes have a trip" do
+      assert {["CR-Fitchburg", "CR-Lowell"], []} =
                ExportUpload.validate_one_or_all_routes_from_one_side(
                  %Unzip{},
                  FakeUnzip,
@@ -770,8 +770,8 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                )
     end
 
-    test "returns ok for a single route not in either side's required list" do
-      assert :ok =
+    test "returns empty error route lists for a single route not in either side's required list" do
+      assert {[], []} =
                ExportUpload.validate_one_or_all_routes_from_one_side(
                  %Unzip{},
                  FakeUnzip,
@@ -779,8 +779,8 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                )
     end
 
-    test "returns error for multiple routes not in either side's required list" do
-      assert {:error, {:invalid_routes, ["CR-Foxboro", "CR-Nowhere"]}} =
+    test "returns invalid routes for multiple routes not in either side's required list" do
+      assert {[], ["CR-Foxboro", "CR-Nowhere"]} =
                ExportUpload.validate_one_or_all_routes_from_one_side(
                  %Unzip{},
                  FakeUnzip,
