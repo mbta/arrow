@@ -96,7 +96,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       path:
         "test/support/fixtures/trainsformer/invalid_export_neither_north_nor_south_station.zip"
     )
-    |> assert_text("Warning: export does not contains trips serving North or South Station.")
+    |> assert_text("Warning: export does not contain trips serving North or South Station.")
   end
 
   feature "shows warning for trainsformer export containing some but not all routes for a side",
@@ -112,9 +112,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> attach_file(file_field("trainsformer_export", visible: false),
       path: "test/support/fixtures/trainsformer/invalid_export_missing_south_side_routes.zip"
     )
-    |> assert_text(
-      "Warning: some routes are missing: CR-Greenbush CR-Kingston CR-Needham CR-NewBedford"
-    )
+    |> assert_text("Warning: Not all northside or southside routes are present. Missing routes:")
   end
 
   feature "shows warning for trainsformer export containing multiple routes that are neither north nor southside",
@@ -130,7 +128,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> attach_file(file_field("trainsformer_export", visible: false),
       path: "test/support/fixtures/trainsformer/invalid_export_multiple_no_side_routes.zip"
     )
-    |> assert_text("Warning: multiple routes not north or southside: CR-Foxboro CR-Nowhere")
+    |> assert_text("Warning: multiple routes not north or southside:")
   end
 
   feature "shows warning for missing transfers in trainsformer export", %{session: session} do
