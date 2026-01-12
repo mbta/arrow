@@ -21,7 +21,11 @@ defmodule Arrow.TrainsformerTest do
     end
 
     test "create_export/1 with valid data creates a export" do
-      valid_attrs = %{s3_path: "foo", routes: [%{route_id: "CR-Worcester"}], services: [%{name: "test-service"}]}
+      valid_attrs = %{
+        s3_path: "foo",
+        routes: [%{route_id: "CR-Worcester"}],
+        services: [%{name: "test-service"}]
+      }
 
       assert {:ok, %Export{} = export} = Trainsformer.create_export(valid_attrs)
 
