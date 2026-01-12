@@ -406,10 +406,10 @@ defmodule ArrowWeb.DisruptionComponents do
           id={"export-table-hastus-#{export.id}"}
           class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3"
         >
-          <p>Export: {export.name}</p>
+          <p><b>Export:</b> {export.name}</p>
           <div class="row">
             <div class="col-3">
-              Routes:
+              <b>Routes</b>
               <%= for route <- export.routes do %>
                 <div class="row">
                   <div class="col-lg-1">
@@ -437,6 +437,9 @@ defmodule ArrowWeb.DisruptionComponents do
                   <th>
                     End Date
                   </th>
+                  <th>
+                    Days of Week
+                  </th>
                 </tr>
                 <%= for service <- export.services do %>
                   <tr>
@@ -452,6 +455,20 @@ defmodule ArrowWeb.DisruptionComponents do
                         <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
                         {Calendar.strftime(date, "%m/%d/%Y")}
                       </div>
+                    </td>
+                    <td>
+                          <span
+                            :for={
+                              dow <-
+                                Enum.map(
+                                  1..7,
+                                  &Arrow.Limits.LimitDayOfWeek.day_name(&1)
+                                )
+                            }
+                            class="text-gray-400"
+                          >
+                            {format_day_name_short(dow)}
+                          </span>
                     </td>
                   </tr>
                 <% end %>
