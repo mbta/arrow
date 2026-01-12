@@ -44,7 +44,13 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
       data =
         ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"})
 
-      assert {:ok, {:ok, %ExportUpload{zip_binary: _binary}}} = data
+      assert {:ok,
+              {:ok,
+               %ExportUpload{
+                 zip_binary: _binary,
+                 services: [%{"name" => "SPRING2025-SOUTHSS-Weekend-66"}],
+                 routes: [%{"route_id" => "CR-Foxboro"}]
+               }}} = data
     end
 
     @tag export: "invalid_csv.zip"
