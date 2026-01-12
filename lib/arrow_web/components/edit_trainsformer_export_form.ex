@@ -180,8 +180,8 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                           </span>
                         </div>
                         <div
-                          class="col-auto align-self-center mt-3"
                           :if={Enum.count(f_service[:service_dates].value) > 1}
+                          class="col-auto align-self-center mt-3"
                         >
                           <.button
                             type="button"

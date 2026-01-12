@@ -452,6 +452,20 @@ defmodule ArrowWeb.DisruptionComponents do
                         {Calendar.strftime(date, "%m/%d/%Y")}
                       </div>
                     </td>
+                    <td>
+                      <span
+                        :for={
+                          dow <-
+                            Enum.map(
+                              1..7,
+                              &Arrow.Limits.LimitDayOfWeek.day_name(&1)
+                            )
+                        }
+                        class="text-gray-400"
+                      >
+                        {format_day_name_short(dow)}
+                      </span>
+                    </td>
                   </tr>
                 <% end %>
               </table>
