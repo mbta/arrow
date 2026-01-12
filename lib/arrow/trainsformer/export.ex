@@ -12,7 +12,11 @@ defmodule Arrow.Trainsformer.Export do
     field :s3_path, :string
     field :name, :string
 
-    has_many :services, Service, on_replace: :delete, foreign_key: :export_id
+    has_many :services, Service,
+      foreign_key: :export_id,
+      on_replace: :delete,
+      on_delete: :delete_all
+
     has_many :routes, Route, on_replace: :delete, foreign_key: :export_id
     belongs_to :disruption, DisruptionV2
 
