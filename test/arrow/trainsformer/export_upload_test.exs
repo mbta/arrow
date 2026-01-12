@@ -83,6 +83,21 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     end
   end
 
+  describe "download_from_s3/1" do
+    test "download is disabled" do
+      assert {:error, :disabled} = ExportUpload.download_from_s3("filename")
+    end
+
+    test "retrieves file" do
+      reassign_env(:trainsformer_export_storage_enabled?, true)
+
+      result =
+        ExportUpload.download_from_s3("s3://test-bucket/trainsformer-export-uploads/export.zip")
+
+      assert {:ok, "foo"} = result
+    end
+  end
+
   describe "validate_stop_times_in_gtfs/4" do
     defmodule FakeRepo do
       def all(_) do

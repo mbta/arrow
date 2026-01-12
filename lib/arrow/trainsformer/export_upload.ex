@@ -380,6 +380,15 @@ defmodule Arrow.Trainsformer.ExportUpload do
     end
   end
 
+  @spec download_from_s3(String.t()) :: {:ok, binary()} | {:error, term()}
+  def download_from_s3(s3_path) do
+    if Application.fetch_env!(:arrow, :trainsformer_export_storage_enabled?) do
+      do_download(s3_path)
+    else
+      {:error, :disabled}
+    end
+  end
+
   defp compare_durations(duration1, duration2) do
     cond do
       duration1 > duration2 ->
@@ -407,6 +416,21 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
     case apply(mod, fun, [upload_op]) do
       {:ok, _} -> {:ok, Path.join(["s3://", s3_bucket, path])}
+      {:error, _} = error -> error
+    end
+  end
+
+  defp do_download(s3_path) do
+    {:ok, s3_uri} = URI.new(s3_path)
+    s3_bucket = s3_uri.host
+    s3_path = s3_uri.path
+
+    download_op = ExAws.S3.get_object(s3_bucket, s3_path)
+
+    {mod, fun} = Application.fetch_env!(:arrow, :trainsformer_export_storage_request_fn)
+
+    case apply(mod, fun, [download_op]) do
+      {:ok, %{body: body}} -> {:ok, body}
       {:error, _} = error -> error
     end
   end
