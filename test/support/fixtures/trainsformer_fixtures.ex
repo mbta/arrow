@@ -13,7 +13,19 @@ defmodule Arrow.TrainsformerFixtures do
     {:ok, export} =
       attrs
       |> Enum.into(%{
-        s3_path: "s3://mbta-arrow/test/trainsformer-export-uploads/export.zip"
+        s3_path: "s3://mbta-arrow/test/trainsformer-export-uploads/export.zip",
+        routes: [%{route_id: "CR-Worcester"}],
+        services: [
+          %{
+            name: "SPRING2025-SOUTHSS-Weekend-31A",
+            service_dates: [
+              %{
+                start_date: ~D[2026-01-26],
+                end_date: ~D[2026-01-26]
+              }
+            ]
+          }
+        ]
       })
       |> Arrow.Trainsformer.create_export()
 
