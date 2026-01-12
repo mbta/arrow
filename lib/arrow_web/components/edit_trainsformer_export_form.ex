@@ -131,7 +131,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                     />
                   </div>
                   <div class="col-lg-10">
-                    <p>{route}</p>
+                    <p>{route["route_id"]}</p>
                   </div>
                 </div>
               <% end %>
@@ -140,11 +140,11 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
               <b class="mb-3">Services</b>
               <.inputs_for :let={f_service} field={@form[:services]}>
                 <div class="row">
-                  <div class="col">
+                  <div class="col-lg-4">
                     <.input field={f_service[:name]} type="text" class="hidden" />
                     {f_service[:name].value}
                   </div>
-                  <div class="col">
+                  <div class="col-lg-6">
                     <.inputs_for :let={f_date} field={f_service[:service_dates]}>
                       {f_service[:start_date].value}
                       <div class="row">
@@ -163,9 +163,25 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                             label={if f_date.index == 0, do: "end date", else: ""}
                           />
                         </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-lg-4 ml-12">
+                          <span
+                            :for={
+                              dow <-
+                                Enum.map(
+                                  1..7,
+                                  &Arrow.Limits.LimitDayOfWeek.day_name(&1)
+                                )
+                            }
+                            class="text-gray-400"
+                          >
+                            {format_day_name_short(dow)}
+                          </span>
+                        </div>
                         <div
-                          :if={Enum.count(f_service[:service_dates].value) > 1}
                           class="col-auto align-self-center mt-3"
+                          :if={Enum.count(f_service[:service_dates].value) > 1}
                         >
                           <.button
                             type="button"
@@ -180,7 +196,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                       </div>
                     </.inputs_for>
                   </div>
-                  <div class="col">
+                  <div class="col-lg-2">
                     <.button
                       type="button"
                       class="btn btn-primary ml-3 btn-sm"
@@ -397,11 +413,10 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
           |> Trainsformer.change_export(%{
             "s3_path" => client_name,
             "disruption_id" => socket.assigns.disruption.id,
-            "services" => export_data.services
+            "services" => export_data.services,
+            "routes" => export_data.routes
           })
           |> to_form(action: :validate)
-
-        IO.inspect(form)
 
         {:noreply,
          assign(socket,
@@ -434,6 +449,8 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
       for {key, value} <- export_params["services"],
           into: %{},
           do: {key, value}
+
+    export_params = Map.put(export_params, "routes", socket.assigns.uploaded_file_routes)
 
     with {:ok, s3_path} <-
            ExportUpload.upload_to_s3(

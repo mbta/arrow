@@ -100,7 +100,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
       current_date_string = Date.to_iso8601(Date.utc_today())
 
-      service_objects =
+      service_maps =
         Enum.map(services, fn service_id ->
           %{
             "name" => service_id,
@@ -114,13 +114,21 @@ defmodule Arrow.Trainsformer.ExportUpload do
           }
         end)
 
+      route_maps =
+        Enum.map(routes, fn route_id -> %{"route_id" => route_id} end)
+
       export_data = %__MODULE__{
         zip_binary: zip_bin,
+<<<<<<< HEAD
         one_of_north_south_stations: one_of_north_south_stations,
         missing_routes: missing_routes,
         invalid_routes: invalid_routes,
         routes: Enum.to_list(routes),
         services: service_objects,
+=======
+        routes: route_maps,
+        services: service_maps,
+>>>>>>> 5c74bec (fixup: display routes, start working on days of week)
         trips_missing_transfers: trips_missing_transfers
       }
 
