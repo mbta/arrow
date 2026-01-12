@@ -290,12 +290,6 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
       {:error, {:invalid_stop_times, stop_times}} ->
         {:noreply, assign(socket, invalid_stop_times: stop_times)}
 
-      {:error, {:missing_routes, routes}} ->
-        {:noreply, assign(socket, missing_routes: Enum.join(routes, " "))}
-
-      {:error, {:invalid_routes, routes}} ->
-        {:noreply, assign(socket, invalid_routes: Enum.join(routes, " "))}
-
       {:error, error} ->
         {:noreply, assign(socket, error: error)}
     end

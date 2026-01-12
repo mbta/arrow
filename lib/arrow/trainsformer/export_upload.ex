@@ -80,7 +80,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
     stop_times_file = extract_stop_times(unzip, unzip_module)
 
     trainsformer_stop_ids =
-      import_helper.stream_csv_rows(unzip, stop_times_file)
+      unzip
+      |> import_helper.stream_csv_rows(stop_times_file)
       |> Stream.uniq_by(fn row -> Map.get(row, "stop_id") end)
       |> Enum.map(fn row -> Map.get(row, "stop_id") end)
 
@@ -114,7 +115,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
     # find trips in stop_times.txt
     trainsformer_trips =
-      import_helper.stream_csv_rows(unzip, stop_times_file)
+      unzip
+      |> import_helper.stream_csv_rows(stop_times_file)
       |> Enum.group_by(fn row -> Map.get(row, "trip_id") end)
 
     invalid_stop_times =
@@ -282,7 +284,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
     stop_times_file = extract_stop_times(unzip, unzip_module)
 
     trainsformer_stop_ids =
-      import_helper.stream_csv_rows(unzip, stop_times_file)
+      unzip
+      |> import_helper.stream_csv_rows(stop_times_file)
       |> Stream.uniq_by(fn row -> Map.get(row, "stop_id") end)
       |> Enum.map(fn row -> Map.get(row, "stop_id") end)
 
@@ -331,7 +334,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
       |> Enum.reject(&String.contains?(&1.file_name, "multi_route_trips.txt"))
 
     trainsformer_route_ids =
-      import_helper.stream_csv_rows(unzip, trips_file)
+      unzip
+      |> import_helper.stream_csv_rows(trips_file)
       |> Stream.uniq_by(fn row -> Map.get(row, "route_id") end)
       |> Enum.map(fn row -> Map.get(row, "route_id") end)
 
@@ -463,7 +467,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
     |> unzip_module.list_entries()
     |> Enum.map(fn entry ->
       try do
-        Arrow.Gtfs.ImportHelper.stream_csv_rows(unzip, entry.file_name)
+        unzip
+        |> Arrow.Gtfs.ImportHelper.stream_csv_rows(entry.file_name)
         # Need to run the stream for stream_csv_rows to call CSV.decode! for validation
         |> Stream.run()
 

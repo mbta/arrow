@@ -17,7 +17,9 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       "NEC-1851-03",
       "NEC-1891-02",
       "NEC-1969-04",
-      "NEC-2040-01"
+      "NEC-2040-01",
+      "BNT-0000",
+      "WR-0045-S"
     ]
 
     for stop <- stops do
