@@ -171,7 +171,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                               dow <-
                                 Enum.map(
                                   1..7,
-                                  &Arrow.Limits.LimitDayOfWeek.day_name(&1)
+                                  &Arrow.Util.DayOfWeek.get_day_name(&1)
                                 )
                             }
                             class="text-gray-400"
