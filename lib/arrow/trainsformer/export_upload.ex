@@ -453,7 +453,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
   defp get_full_file_name(unzip, file_name, unzip_module) do
     case unzip
          |> unzip_module.list_entries()
-         |> Enum.filter(&(Path.basename(&1) == file_name)) do
+         |> Enum.filter(&(Path.basename(&1.file_name) == file_name)) do
       [%Unzip.Entry{file_name: full_file_name}] -> full_file_name
       _ -> nil
     end
