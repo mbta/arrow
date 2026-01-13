@@ -389,6 +389,68 @@ defmodule Arrow.Trainsformer.ExportUpload do
     end
   end
 
+  @spec schedule_data_from_zip(binary(), module(), module()) :: %{
+          String.t() => %{
+            String.t() => [
+              %{
+                route_id: String.t(),
+                direction_id: 0 | 1,
+                short_name: String.t(),
+                stop_times: %{
+                  arrival_time: String.t(),
+                  departure_time: String.t(),
+                  stop_sequence: integer(),
+                  stop_id: String.t()
+                }
+              }
+            ]
+          }
+        }
+  def schedule_data_from_zip(
+        zip_binary,
+        unzip_module \\ Unzip,
+        import_helper \\ Arrow.Gtfs.ImportHelper
+      ) do
+    {:ok, unzip} = Unzip.new(zip_binary)
+
+    stop_times_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
+
+    trips_file = get_full_file_name(unzip, "trips.txt", unzip_module)
+
+    trips_by_service =
+      unzip
+      |> import_helper.stream_csv_rows(trips_file)
+      |> Enum.group_by(fn row -> Map.get(row, "service_id") end, fn row ->
+        {Map.get(row, "trip_id"), Map.get(row, "route_id"), Map.get(row, "direction_id"),
+         Map.get(row, "trip_short_name")}
+      end)
+
+    stop_times_by_trip =
+      unzip
+      |> import_helper.stream_csv_rows(stop_times_file)
+      |> Enum.group_by(fn row -> Map.get(row, "trip_id") end, fn row ->
+        %{
+          arrival_time: Map.get(row, "arrival_time"),
+          departure_time: Map.get(row, "departure_time"),
+          stop_sequence: row |> Map.get("stop_sequence") |> String.to_integer(),
+          stop_id: Map.get(row, "stop_id")
+        }
+      end)
+
+    Map.new(trips_by_service, fn {service_id, trips_info} ->
+      {service_id,
+       Map.new(trips_info, fn {trip_id, route_id, direction_id, short_name} ->
+         {trip_id,
+          %{
+            route_id: route_id,
+            direction_id: String.to_integer(direction_id),
+            stop_times: stop_times_by_trip[trip_id],
+            short_name: short_name
+          }}
+       end)}
+    end)
+  end
+
   defp compare_durations(duration1, duration2) do
     cond do
       duration1 > duration2 ->
@@ -525,5 +587,14 @@ defmodule Arrow.Trainsformer.ExportUpload do
       from_trip_id: transfer["from_trip_id"],
       to_trip_id: transfer["to_trip_id"]
     }
+  end
+
+  defp get_full_file_name(unzip, file_name, unzip_module) do
+    case unzip
+         |> unzip_module.list_entries()
+         |> Enum.filter(&(Path.basename(&1.file_name) == file_name)) do
+      [%Unzip.Entry{file_name: full_file_name}] -> full_file_name
+      _ -> nil
+    end
   end
 end

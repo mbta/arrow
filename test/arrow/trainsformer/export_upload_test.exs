@@ -492,4 +492,84 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                )
     end
   end
+
+  describe "schedule_data_from_zip/3" do
+    @tag export: "valid_export.zip"
+    test "extracts schedule data", %{export: export} do
+      zip_contents = File.read!("#{@export_dir}/#{export}")
+
+      assert %{
+               "SPRING2025-SOUTHSS-Weekend-66" => %{
+                 "October26November2-781218-9733" => %{
+                   direction_id: 0,
+                   route_id: "CR-Foxboro",
+                   stop_times: [
+                     %{
+                       arrival_time: "10:45:00",
+                       departure_time: "10:45:00",
+                       stop_id: "NEC-2287",
+                       stop_sequence: 0
+                     },
+                     %{
+                       arrival_time: "10:50:00",
+                       departure_time: "10:50:00",
+                       stop_id: "NEC-2276-01",
+                       stop_sequence: 10
+                     },
+                     %{
+                       arrival_time: "11:05:00",
+                       departure_time: "11:05:00",
+                       stop_id: "FB-0118-01",
+                       stop_sequence: 20
+                     },
+                     %{
+                       arrival_time: "11:50:00",
+                       departure_time: "11:50:00",
+                       stop_id: "FS-0049-S",
+                       stop_sequence: 30
+                     }
+                   ],
+                   short_name: "9733"
+                 },
+                 "October26November2-781219-9834" => %{
+                   direction_id: 1,
+                   route_id: "CR-Foxboro",
+                   stop_times: [
+                     %{
+                       arrival_time: "10:15:00",
+                       departure_time: "10:15:00",
+                       stop_id: "NEC-1851-03",
+                       stop_sequence: 0
+                     },
+                     %{
+                       arrival_time: "10:22:00",
+                       departure_time: "10:22:00",
+                       stop_id: "NEC-1891-02",
+                       stop_sequence: 10
+                     },
+                     %{
+                       arrival_time: "10:35:00",
+                       departure_time: "10:35:00",
+                       stop_id: "NEC-1969-04",
+                       stop_sequence: 20
+                     },
+                     %{
+                       arrival_time: "10:45:00",
+                       departure_time: "10:45:00",
+                       stop_id: "NEC-2040-01",
+                       stop_sequence: 30
+                     },
+                     %{
+                       arrival_time: "11:30:00",
+                       departure_time: "11:30:00",
+                       stop_id: "FS-0049-S",
+                       stop_sequence: 40
+                     }
+                   ],
+                   short_name: "9834"
+                 }
+               }
+             } == ExportUpload.schedule_data_from_zip(zip_contents)
+    end
+  end
 end
