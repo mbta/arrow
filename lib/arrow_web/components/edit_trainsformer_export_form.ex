@@ -355,8 +355,9 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
             Ecto.Changeset.put_change(service, :service_dates, existing_dates ++ [%ServiceDate{}])
           end)
 
-        changeset = Ecto.Changeset.put_assoc(changeset, :services, updated_services)
-        to_form(changeset)
+        changeset
+        |> Ecto.Changeset.put_assoc(:services, updated_services)
+        |> to_form()
       end)
 
     {:noreply, socket}
@@ -382,8 +383,9 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
             Ecto.Changeset.put_change(service, :service_dates, dates)
           end)
 
-        changeset = Ecto.Changeset.put_assoc(changeset, :services, updated_services)
-        to_form(changeset)
+        changeset
+        |> Ecto.Changeset.put_assoc(:services, updated_services)
+        |> to_form()
       end)
 
     {:noreply, socket}
