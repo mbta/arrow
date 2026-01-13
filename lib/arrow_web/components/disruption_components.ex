@@ -458,13 +458,7 @@ defmodule ArrowWeb.DisruptionComponents do
                     </td>
                     <td>
                       <span
-                        :for={
-                          dow <-
-                            Enum.map(
-                              1..7,
-                              &Arrow.Limits.LimitDayOfWeek.day_name(&1)
-                            )
-                        }
+                        :for={dow <- Arrow.Util.DayOfWeek.get_all_day_names()}
                         class="text-gray-400"
                       >
                         {format_day_name_short(dow)}
@@ -662,8 +656,8 @@ defmodule ArrowWeb.DisruptionComponents do
 
       day_of_weeks =
         Enum.map(
-          1..7,
-          &%{day_name: LimitDayOfWeek.day_name(&1), active?: &1 in active_day_of_weeks}
+          Arrow.Util.DayOfWeek.get_all_day_names(),
+          &%{day_name: &1, active?: &1 in active_day_of_weeks}
         )
 
       %{
