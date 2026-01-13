@@ -69,7 +69,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
         |> Enum.filter(&(Path.basename(&1.file_name) == "trips.txt"))
 
       {routes, services} =
-        import_helper.stream_csv_rows(unzip, trips_file)
+        unzip
+        |> import_helper.stream_csv_rows(trips_file)
         |> Enum.reduce(
           {MapSet.new(), MapSet.new()},
           fn row, {routes, services} ->
