@@ -143,6 +143,7 @@ defmodule ArrowWeb.Router do
     get("/shapes", ShapesController, :index)
 
     get "/service-schedules", ServiceScheduleController, :index
+    get "/trainsformer-service-schedules", TrainsformerServiceScheduleController, :index
   end
 
   scope "/api", ArrowWeb.API do
