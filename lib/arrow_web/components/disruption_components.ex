@@ -606,27 +606,6 @@ defmodule ArrowWeb.DisruptionComponents do
     """
   end
 
-  attr :icon_paths, :map, required: true
-  attr :routes, :list, required: true
-
-  def commuter_rail_routes_list(assigns) do
-    ~H"""
-    <%= for route <- @routes do %>
-      <div class="row">
-        <div class="col-lg-1">
-          <span
-            class="m-icon m-icon-sm mr-1"
-            style={"background-image: url('#{Map.get(@icon_paths, :commuter_rail)}');"}
-          />
-        </div>
-        <div class="col-lg-10">
-          <p>{route["route_id"]}</p>
-        </div>
-      </div>
-    <% end %>
-    """
-  end
-
   defp group_limits(limits) do
     limits
     |> Enum.group_by(&{&1.route_id, &1.start_stop_id, &1.end_stop_id})
