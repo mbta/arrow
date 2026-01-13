@@ -4,7 +4,10 @@ defmodule Arrow.TrainsformerFixtures do
   entities via the `Arrow.Trainsformer` context.
   """
 
-  @preloads [:disruption]
+  @preloads [
+    :disruption,
+    services: [:service_dates]
+  ]
 
   @doc """
   Generate a export.
