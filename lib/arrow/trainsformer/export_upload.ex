@@ -66,7 +66,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
       [%Unzip.Entry{file_name: trips_file}] =
         unzip
         |> unzip_module.list_entries()
-        |> Enum.filter(&String.ends_with?(&1.file_name, "/trips.txt"))
+        |> Enum.filter(&(Path.basename(&1.file_name) == "trips.txt"))
 
       {routes, services} =
         import_helper.stream_csv_rows(unzip, trips_file)
@@ -98,16 +98,11 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
       export_data = %__MODULE__{
         zip_binary: zip_bin,
-<<<<<<< HEAD
         one_of_north_south_stations: one_of_north_south_stations,
         missing_routes: missing_routes,
         invalid_routes: invalid_routes,
-        routes: Enum.to_list(routes),
-        services: service_objects,
-=======
         routes: route_maps,
         services: service_maps,
->>>>>>> 5c74bec (fixup: display routes, start working on days of week)
         trips_missing_transfers: trips_missing_transfers
       }
 
@@ -128,7 +123,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
         import_helper \\ Arrow.Gtfs.ImportHelper,
         repo \\ Arrow.Repo
       ) do
-    stop_times_file = extract_stop_times(unzip, unzip_module)
+    stop_times_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
 
     trainsformer_stop_ids =
       unzip
@@ -162,7 +157,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
         unzip_module \\ Unzip,
         import_helper \\ Arrow.Gtfs.ImportHelper
       ) do
-    stop_times_file = extract_stop_times(unzip, unzip_module)
+    stop_times_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
 
     # find trips in stop_times.txt
     trainsformer_trips =
@@ -254,18 +249,9 @@ defmodule Arrow.Trainsformer.ExportUpload do
   end
 
   def validate_transfers(unzip, unzip_module \\ Unzip, import_helper \\ Arrow.Gtfs.ImportHelper) do
-    [%Unzip.Entry{file_name: stop_times_file}] =
-      unzip
-      |> unzip_module.list_entries()
-      |> Enum.filter(&String.contains?(&1.file_name, "stop_times.txt"))
+    stop_times_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
 
-    transfers_file =
-      case unzip
-           |> unzip_module.list_entries()
-           |> Enum.filter(&String.contains?(&1.file_name, "transfers.txt")) do
-        [%Unzip.Entry{file_name: transfers_file}] -> transfers_file
-        _ -> nil
-      end
+    transfers_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
 
     trips_needing_transfers =
       unzip
@@ -332,7 +318,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
         unzip_module \\ Unzip,
         import_helper \\ Arrow.Gtfs.ImportHelper
       ) do
-    stop_times_file = extract_stop_times(unzip, unzip_module)
+    stop_times_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
 
     trainsformer_stop_ids =
       unzip
@@ -463,13 +449,13 @@ defmodule Arrow.Trainsformer.ExportUpload do
     end
   end
 
-  defp extract_stop_times(unzip, unzip_module) do
-    [%Unzip.Entry{file_name: stop_times_file}] =
-      unzip
-      |> unzip_module.list_entries()
-      |> Enum.filter(&String.contains?(&1.file_name, "stop_times.txt"))
-
-    stop_times_file
+  defp get_full_file_name(unzip, file_name, unzip_module) do
+    case unzip
+         |> unzip_module.list_entries()
+         |> Enum.filter(&(Path.basename(&1) == file_name)) do
+      [%Unzip.Entry{file_name: full_file_name}] -> full_file_name
+      _ -> nil
+    end
   end
 
   defp do_upload(file_data, filename) do
