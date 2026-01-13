@@ -53,6 +53,16 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                }}} = data
     end
 
+    @tag export: "valid_export.zip"
+    test "fails on previously used service ids in export", %{export: export} do
+      Arrow.Repo.insert(%Arrow.Trainsformer.Service{name: "SPRING2025-SOUTHSS-Weekend-66"})
+
+      data =
+        ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"})
+
+      assert {:ok, {:error, {:existing_service_id, ["SPRING2025-SOUTHSS-Weekend-66"]}}} = data
+    end
+
     @tag export: "invalid_csv.zip"
     test "error on invalid csv", %{export: export} do
       data =
