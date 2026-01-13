@@ -69,13 +69,14 @@ defmodule Arrow.Trainsformer.ExportUpload do
     zip_bin = Unzip.LocalFile.open(zip_path)
 
     with {:ok, unzip} <- Unzip.new(zip_bin),
-         [] <- validate_csvs(unzip),
-         :ok <-
-           validate_stop_times_in_gtfs(unzip),
-         :ok <- validate_stop_order(unzip),
+         {:ok, %{trips: trips, stop_times: stop_times, transfers: transfers}} <-
+           validate_csvs(unzip, unzip_module, import_helper),
+         {:ok, stop_ids} <-
+           validate_stop_times_in_gtfs(stop_times),
+         :ok <- validate_stop_order(stop_times),
          {:ok, zip_bin} <- File.read(zip_path) do
-      one_of_north_south_stations = validate_one_of_north_south_stations(unzip)
-      {missing_routes, invalid_routes} = validate_one_or_all_routes_from_one_side(unzip)
+      one_of_north_south_stations = validate_one_of_north_south_stations(stop_ids)
+      {missing_routes, invalid_routes} = validate_one_or_all_routes_from_one_side(trips)
 
       trips_missing_transfers =
         case validate_transfers(transfers, stop_times) do
@@ -83,7 +84,6 @@ defmodule Arrow.Trainsformer.ExportUpload do
           {:error, {:trips_missing_transfers, invalid_trips}} -> invalid_trips
         end
 
-      # only read file into memory once we're sure it's valid
       [%Unzip.Entry{file_name: trips_file}] =
         unzip
         |> unzip_module.list_entries()
@@ -142,8 +142,6 @@ defmodule Arrow.Trainsformer.ExportUpload do
         stop_times,
         repo \\ Arrow.Repo
       ) do
-    stop_times_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
-
     trainsformer_stop_ids =
       stop_times
       |> Enum.uniq_by(& &1.stop_id)
@@ -170,14 +168,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
   @spec validate_stop_order(any()) ::
           :ok | {:error, {:invalid_stop_times, any()}} | {:ok, {:error, <<_::160>>}}
-  def validate_stop_order(
-        unzip,
-        unzip_module \\ Unzip,
-        import_helper \\ Arrow.Gtfs.ImportHelper
-      ) do
-    stop_times_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
-
-    # find trips in stop_times.txt
+  def validate_stop_order(stop_times) do
     trainsformer_trips =
       Enum.group_by(stop_times, & &1.trip_id)
 
@@ -256,11 +247,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
     []
   end
 
-  def validate_transfers(unzip, unzip_module \\ Unzip, import_helper \\ Arrow.Gtfs.ImportHelper) do
-    stop_times_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
-
-    transfers_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
-
+  def validate_transfers(transfers, stop_times) do
     trips_needing_transfers =
       stop_times
       |> Enum.group_by(& &1.trip_id, & &1.stop_id)
@@ -282,7 +269,12 @@ defmodule Arrow.Trainsformer.ExportUpload do
       end)
       |> MapSet.new(fn {trip_id, _stop_ids} -> trip_id end)
 
-    trips_with_transfers = get_trips_with_transfers(transfers)
+    trips_with_transfers =
+      if transfers != [] do
+        get_trips_with_transfers_from_file(transfers)
+      else
+        MapSet.new()
+      end
 
     trips_needing_transfers_without_transfers =
       MapSet.difference(trips_needing_transfers, trips_with_transfers)
@@ -294,8 +286,9 @@ defmodule Arrow.Trainsformer.ExportUpload do
     end
   end
 
-  defp get_trips_with_transfers(transfers) do
-    Enum.reduce(transfers, MapSet.new(), fn transfer, trip_ids ->
+  defp get_trips_with_transfers_from_file(transfers) do
+    transfers
+    |> Enum.reduce(MapSet.new(), fn transfer, trip_ids ->
       if transfer.transfer_type == "1" and transfer.from_trip_id != "" and
            transfer.to_trip_id != "" do
         trip_ids
@@ -311,19 +304,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
           :ok
           | :both
           | :neither
-  def validate_one_of_north_south_stations(
-        unzip,
-        unzip_module \\ Unzip,
-        import_helper \\ Arrow.Gtfs.ImportHelper
-      ) do
-    stop_times_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
-
-    trainsformer_stop_ids =
-      unzip
-      |> import_helper.stream_csv_rows(stop_times_file)
-      |> Stream.uniq_by(fn row -> Map.get(row, "stop_id") end)
-      |> Enum.map(fn row -> Map.get(row, "stop_id") end)
-
+  def validate_one_of_north_south_stations(trainsformer_stop_ids) do
     north_station_served = Enum.member?(trainsformer_stop_ids, "BNT-0000")
     south_station_served = Enum.member?(trainsformer_stop_ids, "NEC-2287")
 
@@ -469,31 +450,41 @@ defmodule Arrow.Trainsformer.ExportUpload do
   end
 
   defp do_validate_csv(entry, errors, result, base_name, unzip, import_helper) do
-    rows =
-      unzip
-      |> import_helper.stream_csv_rows(entry.file_name)
-      # Need to run the stream for stream_csv_rows to call CSV.decode! for validation
-      |> Stream.map(&parse_row(base_name, &1))
-      |> Enum.to_list()
+    try do
+      rows =
+        unzip
+        |> import_helper.stream_csv_rows(entry.file_name)
+        # Need to run the stream for stream_csv_rows to call CSV.decode! for validation
+        |> Stream.map(&parse_row(&1, base_name))
+        |> Enum.to_list()
 
-    data_type =
-      case base_name do
-        "trips.txt" -> :trips
-        "transfers.txt" -> :transfers
-        "stop_times.txt" -> :stop_times
-      end
+      data_type =
+        case base_name do
+          "trips.txt" -> :trips
+          "transfers.txt" -> :transfers
+          "stop_times.txt" -> :stop_times
+        end
 
-    {errors, Map.put(result, data_type, rows)}
-  rescue
-    e ->
-      {[
-         {:error, entry.file_name, Exception.format(:error, e)}
-         | errors
-       ], result}
+      {errors, Map.put(result, data_type, rows)}
+    rescue
+      e ->
+        [
+          {entry.file_name, Exception.format(:error, e)}
+          | errors
+        ]
+    end
   end
 
   @files_to_parse ["trips.txt", "transfers.txt", "stop_times.txt"]
 
+  @spec validate_csvs(Unzip, module(), module()) ::
+          {:ok,
+           %{
+             trips: [trainsformer_trip()],
+             stop_times: [trainsformer_stop_time()],
+             transfers: [transfer()]
+           }}
+          | {:error, String.t()}
   defp validate_csvs(
          unzip,
          unzip_module,
@@ -502,9 +493,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
     {errors, result} =
       unzip
       |> unzip_module.list_entries()
-      |> Enum.reduce({[], %{trips: [], stop_times: [], transfers: []}}, fn entry,
-                                                                           {errors, result} ->
-        base_name = Path.basename(entry.file_name)
+      |> Enum.reduce({[], %{}}, fn entry, {errors, result} ->
+        base_name = Path.basename(entry.filename)
 
         if base_name in @files_to_parse do
           do_validate_csv(entry, errors, result, base_name, unzip, import_helper)
@@ -515,7 +505,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
     case errors do
       [] -> {:ok, result}
-      _ -> errors
+      _ -> {:error, errors}
     end
   end
 
