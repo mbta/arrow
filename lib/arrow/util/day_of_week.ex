@@ -1,8 +1,4 @@
 defmodule Arrow.Util.DayOfWeek do
-  @moduledoc """
-    Utilities for working with numeric days of the week
-  """
-
   @type day_name :: :monday | :tuesday | :wednesday | :thursday | :friday | :saturday | :sunday
 
   @day_name_atoms ~w[monday tuesday wednesday thursday friday saturday sunday]a
@@ -18,8 +14,8 @@ defmodule Arrow.Util.DayOfWeek do
   end
 
   @spec get_all_day_names() :: [day_name]
-  def get_all_day_names, do: @day_name_atoms
+  def get_all_day_names(), do: @day_name_atoms
 
-  @spec day_name_values() :: [{day_name, 1..7}]
-  def day_name_values, do: @day_name_values
+  @spec day_name_values() :: [{String.t(), pos_integer()}]
+  def day_name_values(), do: @day_name_values
 end
