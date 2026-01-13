@@ -87,7 +87,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
       [%Unzip.Entry{file_name: trips_file}] =
         unzip
         |> unzip_module.list_entries()
-        |> Enum.filter(&String.ends_with?(&1.file_name, "/trips.txt"))
+        |> Enum.filter(&(Path.basename(&1.file_name) == "trips.txt"))
 
       {routes, services} =
         import_helper.stream_csv_rows(unzip, trips_file)
@@ -119,16 +119,11 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
       export_data = %__MODULE__{
         zip_binary: zip_bin,
-<<<<<<< HEAD
         one_of_north_south_stations: one_of_north_south_stations,
         missing_routes: missing_routes,
         invalid_routes: invalid_routes,
-        routes: Enum.to_list(routes),
-        services: service_objects,
-=======
         routes: route_maps,
         services: service_maps,
->>>>>>> 5c74bec (fixup: display routes, start working on days of week)
         trips_missing_transfers: trips_missing_transfers
       }
 
@@ -147,6 +142,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
         stop_times,
         repo \\ Arrow.Repo
       ) do
+    stop_times_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
+
     trainsformer_stop_ids =
       stop_times
       |> Enum.uniq_by(& &1.stop_id)
@@ -173,7 +170,14 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
   @spec validate_stop_order(any()) ::
           :ok | {:error, {:invalid_stop_times, any()}} | {:ok, {:error, <<_::160>>}}
-  def validate_stop_order(stop_times) do
+  def validate_stop_order(
+        unzip,
+        unzip_module \\ Unzip,
+        import_helper \\ Arrow.Gtfs.ImportHelper
+      ) do
+    stop_times_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
+
+    # find trips in stop_times.txt
     trainsformer_trips =
       Enum.group_by(stop_times, & &1.trip_id)
 
@@ -252,7 +256,11 @@ defmodule Arrow.Trainsformer.ExportUpload do
     []
   end
 
-  def validate_transfers(transfers, stop_times) do
+  def validate_transfers(unzip, unzip_module \\ Unzip, import_helper \\ Arrow.Gtfs.ImportHelper) do
+    stop_times_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
+
+    transfers_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
+
     trips_needing_transfers =
       stop_times
       |> Enum.group_by(& &1.trip_id, & &1.stop_id)
@@ -303,7 +311,19 @@ defmodule Arrow.Trainsformer.ExportUpload do
           :ok
           | :both
           | :neither
-  def validate_one_of_north_south_stations(trainsformer_stop_ids) do
+  def validate_one_of_north_south_stations(
+        unzip,
+        unzip_module \\ Unzip,
+        import_helper \\ Arrow.Gtfs.ImportHelper
+      ) do
+    stop_times_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
+
+    trainsformer_stop_ids =
+      unzip
+      |> import_helper.stream_csv_rows(stop_times_file)
+      |> Stream.uniq_by(fn row -> Map.get(row, "stop_id") end)
+      |> Enum.map(fn row -> Map.get(row, "stop_id") end)
+
     north_station_served = Enum.member?(trainsformer_stop_ids, "BNT-0000")
     south_station_served = Enum.member?(trainsformer_stop_ids, "NEC-2287")
 
@@ -403,6 +423,15 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
       true ->
         :eq
+    end
+  end
+
+  defp get_full_file_name(unzip, file_name, unzip_module) do
+    case unzip
+         |> unzip_module.list_entries()
+         |> Enum.filter(&(Path.basename(&1) == file_name)) do
+      [%Unzip.Entry{file_name: full_file_name}] -> full_file_name
+      _ -> nil
     end
   end
 
