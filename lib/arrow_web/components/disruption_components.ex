@@ -8,7 +8,6 @@ defmodule ArrowWeb.DisruptionComponents do
   alias Arrow.Disruptions.Limit
   alias Arrow.Hastus.Export, as: HastusExport
   alias Arrow.Hastus.Service
-  alias Arrow.Limits.LimitDayOfWeek
   alias ArrowWeb.EditHastusExportForm
   alias ArrowWeb.EditLimitForm
   alias ArrowWeb.EditReplacementServiceForm
