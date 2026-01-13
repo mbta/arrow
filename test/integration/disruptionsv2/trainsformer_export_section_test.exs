@@ -17,7 +17,9 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       "NEC-1851-03",
       "NEC-1891-02",
       "NEC-1969-04",
-      "NEC-2040-01"
+      "NEC-2040-01",
+      "BNT-0000",
+      "WR-0045-S"
     ]
 
     for stop <- stops do
@@ -66,6 +68,69 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       path: "test/support/fixtures/trainsformer/invalid_export_stop_times_out_of_order.zip"
     )
     |> assert_text("Some stop times are out of order!")
+  end
+
+  feature "shows warning for trainsformer export containing North and South Station", %{
+    session: session
+  } do
+    disruption = disruption_v2_fixture(%{mode: :commuter_rail})
+
+    session
+    |> visit("/disruptions/#{disruption.id}")
+    |> click(text("Upload Trainsformer export"))
+    |> assert_text("Upload Trainsformer .zip")
+    |> attach_file(file_field("trainsformer_export", visible: false),
+      path: "test/support/fixtures/trainsformer/invalid_export_north_and_south_station.zip"
+    )
+    |> assert_text("Warning: export contains trips serving North and South Station.")
+  end
+
+  feature "shows warning for trainsformer export containing neither North nor South Station", %{
+    session: session
+  } do
+    disruption = disruption_v2_fixture(%{mode: :commuter_rail})
+
+    session
+    |> visit("/disruptions/#{disruption.id}")
+    |> click(text("Upload Trainsformer export"))
+    |> assert_text("Upload Trainsformer .zip")
+    |> attach_file(file_field("trainsformer_export", visible: false),
+      path:
+        "test/support/fixtures/trainsformer/invalid_export_neither_north_nor_south_station.zip"
+    )
+    |> assert_text("Warning: export does not contain trips serving North or South Station.")
+  end
+
+  feature "shows warning for trainsformer export containing some but not all routes for a side",
+          %{
+            session: session
+          } do
+    disruption = disruption_v2_fixture(%{mode: :commuter_rail})
+
+    session
+    |> visit("/disruptions/#{disruption.id}")
+    |> click(text("Upload Trainsformer export"))
+    |> assert_text("Upload Trainsformer .zip")
+    |> attach_file(file_field("trainsformer_export", visible: false),
+      path: "test/support/fixtures/trainsformer/invalid_export_missing_south_side_routes.zip"
+    )
+    |> assert_text("Warning: Not all northside or southside routes are present. Missing routes:")
+  end
+
+  feature "shows warning for trainsformer export containing multiple routes that are neither north nor southside",
+          %{
+            session: session
+          } do
+    disruption = disruption_v2_fixture(%{mode: :commuter_rail})
+
+    session
+    |> visit("/disruptions/#{disruption.id}")
+    |> click(text("Upload Trainsformer export"))
+    |> assert_text("Upload Trainsformer .zip")
+    |> attach_file(file_field("trainsformer_export", visible: false),
+      path: "test/support/fixtures/trainsformer/invalid_export_multiple_no_side_routes.zip"
+    )
+    |> assert_text("Warning: multiple routes not north or southside:")
   end
 
   feature "shows warning for missing transfers in trainsformer export", %{session: session} do
