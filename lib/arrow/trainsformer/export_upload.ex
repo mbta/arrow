@@ -173,14 +173,6 @@ defmodule Arrow.Trainsformer.ExportUpload do
     else
       :ok
     end
-  rescue
-    e ->
-      Logger.warning(
-        "Trainsformer.ExportUpload failed to parse zip, message=#{Exception.format(:error, e)}"
-      )
-
-      # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
-      {:ok, {:error, "Could not parse zip."}}
   end
 
   defp validate_trip({_trip_id, stop_times}) do
@@ -212,18 +204,18 @@ defmodule Arrow.Trainsformer.ExportUpload do
       # if the second stop_time has an arrival time before the previous departure, mark as invalid
       compare_durations(stop_time1_departure_dur, stop_time2_arrival_dur) == :gt ->
         [
-          create_invalid_stop_time_info(stop_time2)
+          stop_time2
         ]
 
       # for either stop, if arrival and departure times are out of order, mark as invalid
       compare_durations(stop_time1_arrival_dur, stop_time1_departure_dur) == :gt ->
         [
-          create_invalid_stop_time_info(stop_time1)
+          stop_time1
         ]
 
       compare_durations(stop_time2_arrival_dur, stop_time2_departure_dur) == :gt ->
         [
-          create_invalid_stop_time_info(stop_time2)
+          stop_time2
         ]
 
       true ->
@@ -232,12 +224,12 @@ defmodule Arrow.Trainsformer.ExportUpload do
   end
 
   defp process_chunk([stop_time]) do
-    arrival_dur = TimeHelper.to_seconds_after_midnight!(Map.get(stop_time, "arrival_time"))
-    departure_dur = TimeHelper.to_seconds_after_midnight!(Map.get(stop_time, "departure_time"))
+    arrival_dur = TimeHelper.to_seconds_after_midnight!(stop_time.arrival_time)
+    departure_dur = TimeHelper.to_seconds_after_midnight!(stop_time.departure_time)
 
     if compare_durations(arrival_dur, departure_dur) == :gt do
       [
-        create_invalid_stop_time_info(stop_time)
+        stop_time
       ]
     else
       []
@@ -389,16 +381,6 @@ defmodule Arrow.Trainsformer.ExportUpload do
     end
   end
 
-  defp create_invalid_stop_time_info(stop_time) do
-    %{
-      trip_id: stop_time["trip_id"],
-      stop_id: stop_time["stop_id"],
-      stop_sequence: stop_time["stop_sequence"],
-      arrival_time: stop_time["arrival_time"],
-      departure_time: stop_time["departure_time"]
-    }
-  end
-
   defp compare_durations(duration1, duration2) do
     cond do
       duration1 > duration2 ->
@@ -451,7 +433,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
         unzip
         |> import_helper.stream_csv_rows(entry.file_name)
         # Need to run the stream for stream_csv_rows to call CSV.decode! for validation
-        |> Stream.map(&parse_row(&1, base_name))
+        |> Stream.map(&parse_row(base_name, &1))
         |> Enum.to_list()
 
       data_type =
@@ -464,10 +446,10 @@ defmodule Arrow.Trainsformer.ExportUpload do
       {errors, Map.put(result, data_type, rows)}
     rescue
       e ->
-        [
-          {entry.file_name, Exception.format(:error, e)}
-          | errors
-        ]
+        {[
+           {:error, entry.file_name, Exception.format(:error, e)}
+           | errors
+         ], result}
     end
   end
 
@@ -489,8 +471,9 @@ defmodule Arrow.Trainsformer.ExportUpload do
     {errors, result} =
       unzip
       |> unzip_module.list_entries()
-      |> Enum.reduce({[], %{}}, fn entry, {errors, result} ->
-        base_name = Path.basename(entry.filename)
+      |> Enum.reduce({[], %{trips: [], stop_times: [], transfers: []}}, fn entry,
+                                                                           {errors, result} ->
+        base_name = Path.basename(entry.file_name)
 
         if base_name in @files_to_parse do
           do_validate_csv(entry, errors, result, base_name, unzip, import_helper)
@@ -501,7 +484,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
     case errors do
       [] -> {:ok, result}
-      _ -> {:error, errors}
+      _ -> errors
     end
   end
 
