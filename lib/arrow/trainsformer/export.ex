@@ -5,8 +5,8 @@ defmodule Arrow.Trainsformer.Export do
   import Ecto.Changeset
 
   alias Arrow.Disruptions.DisruptionV2
-  alias Arrow.Trainsformer.Service
   alias Arrow.Trainsformer.Route
+  alias Arrow.Trainsformer.Service
 
   typed_schema "trainsformer_exports" do
     field :s3_path, :string
