@@ -262,7 +262,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
       end)
       |> MapSet.new(fn {trip_id, _stop_ids} -> trip_id end)
 
-    trips_with_transfers = get_trips_with_transfers_from_file(transfers)
+    trips_with_transfers = get_trips_with_transfers(transfers)
 
     trips_needing_transfers_without_transfers =
       MapSet.difference(trips_needing_transfers, trips_with_transfers)
@@ -274,7 +274,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
     end
   end
 
-  defp get_trips_with_transfers_from_file(transfers) do
+  defp get_trips_with_transfers(transfers) do
     Enum.reduce(transfers, MapSet.new(), fn transfer, trip_ids ->
       if transfer.transfer_type == "1" and transfer.from_trip_id != "" and
            transfer.to_trip_id != "" do
