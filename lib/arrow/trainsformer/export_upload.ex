@@ -84,18 +84,12 @@ defmodule Arrow.Trainsformer.ExportUpload do
           {:error, {:trips_missing_transfers, trips}} -> trips
         end
 
-      [%Unzip.Entry{file_name: trips_file}] =
-        unzip
-        |> unzip_module.list_entries()
-        |> Enum.filter(&(Path.basename(&1.file_name) == "trips.txt"))
-
       {routes, services} =
-        unzip
-        |> import_helper.stream_csv_rows(trips_file)
+        trips
         |> Enum.reduce(
           {MapSet.new(), MapSet.new()},
-          fn row, {routes, services} ->
-            {MapSet.put(routes, row["route_id"]), MapSet.put(services, row["service_id"])}
+          fn trip, {routes, services} ->
+            {MapSet.put(routes, trip.route_id), MapSet.put(services, trip.service_id)}
           end
         )
 
@@ -423,15 +417,6 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
       true ->
         :eq
-    end
-  end
-
-  defp get_full_file_name(unzip, file_name, unzip_module) do
-    case unzip
-         |> unzip_module.list_entries()
-         |> Enum.filter(&(Path.basename(&1.file_name) == file_name)) do
-      [%Unzip.Entry{file_name: full_file_name}] -> full_file_name
-      _ -> nil
     end
   end
 
