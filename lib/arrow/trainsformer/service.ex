@@ -12,10 +12,9 @@ defmodule Arrow.Trainsformer.Service do
 
     has_many :service_dates, ServiceDate,
       on_replace: :delete,
-      foreign_key: :service_id,
-      on_delete: :delete_all
+      foreign_key: :service_id
 
-    belongs_to :export, Export, on_replace: :delete
+    belongs_to :export, Export
 
     timestamps(type: :utc_datetime)
   end

@@ -14,10 +14,9 @@ defmodule Arrow.Trainsformer.Export do
 
     has_many :services, Service,
       foreign_key: :export_id,
-      on_replace: :delete,
-      on_delete: :delete_all
+      on_replace: :delete
 
-    has_many :routes, Route, on_replace: :delete, foreign_key: :export_id
+    has_many :routes, Route, on_replace: :delete, foreign_key: :export_id, on_delete: :delete_all
     belongs_to :disruption, DisruptionV2
 
     timestamps(type: :utc_datetime)
