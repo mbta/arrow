@@ -58,6 +58,31 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> assert_text("Some stops are not present in GTFS!")
   end
 
+  feature "shows error for previously used service_ids in export", %{session: session} do
+    disruption = disruption_v2_fixture(%{mode: :commuter_rail})
+    disruption2 = disruption_v2_fixture(%{mode: :commuter_rail})
+
+    session =
+      session
+      |> visit("/disruptions/#{disruption.id}")
+      |> click(text("Upload Trainsformer export"))
+      |> assert_text("Upload Trainsformer .zip")
+      |> attach_file(file_field("trainsformer_export", visible: false),
+        path: "test/support/fixtures/trainsformer/valid_export.zip"
+      )
+      |> click(Query.css("#save-export-button"))
+
+    # new disruption
+    session
+    |> visit("/disruptions/#{disruption2.id}")
+    |> click(text("Upload Trainsformer export"))
+    |> assert_text("Upload Trainsformer .zip")
+    |> attach_file(file_field("trainsformer_export", visible: false),
+      path: "test/support/fixtures/trainsformer/valid_export.zip"
+    )
+    |> assert_text("Export contains previously used service ids")
+  end
+
   feature "shows error for invalid stop order in trainsformer export", %{session: session} do
     disruption = disruption_v2_fixture(%{mode: :commuter_rail})
 

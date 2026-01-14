@@ -63,6 +63,12 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
               Download list of invalid stop times
             </.button>
           </div>
+          <div :if={not is_nil(@existing_service_ids)} class="d-inline-block p-20 alert alert-danger">
+            Export contains previously used service ids
+            <ul>
+              <li :for={service_id <- @existing_service_ids}>{service_id}</li>
+            </ul>
+          </div>
           <div :for={entry <- @uploads.trainsformer_export.entries}>
             <progress value={entry.progress} max="100">
               {entry.progress}%
@@ -282,6 +288,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
       |> assign(:missing_routes, nil)
       |> assign(:invalid_routes, nil)
       |> assign(:trips_missing_transfers, nil)
+      |> assign(:existing_service_ids, nil)
       |> allow_upload(:trainsformer_export,
         accept: ~w(.zip),
         progress: &handle_progress/3,
@@ -438,6 +445,9 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
 
       {:error, {:invalid_stop_times, stop_times}} ->
         {:noreply, assign(socket, invalid_stop_times: stop_times)}
+
+      {:error, {:existing_service_id, existing_ids}} ->
+        {:noreply, assign(socket, existing_service_ids: existing_ids)}
 
       {:error, error} ->
         {:noreply, assign(socket, error: error)}
