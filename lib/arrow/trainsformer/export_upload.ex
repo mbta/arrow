@@ -459,14 +459,6 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
   @files_to_parse ["trips.txt", "transfers.txt", "stop_times.txt"]
 
-  @spec validate_csvs(Unzip, module(), module()) ::
-          {:ok,
-           %{
-             trips: [trainsformer_trip()],
-             stop_times: [trainsformer_stop_time()],
-             transfers: [transfer()]
-           }}
-          | {:error, String.t()}
   defp validate_csvs(
          unzip,
          unzip_module,
