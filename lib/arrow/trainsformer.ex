@@ -108,6 +108,35 @@ defmodule Arrow.Trainsformer do
   end
 
   @doc """
+  Returns the list of hastus_services.
+
+  ## Examples
+
+      iex> list_hastus_services()
+      [%Service{}, ...]
+
+  """
+  def list_trainsformer_services do
+    Repo.all(Service)
+  end
+
+  @doc """
+  Gets a single service.
+
+  Raises `Ecto.NoResultsError` if the Service does not exist.
+
+  ## Examples
+
+      iex> get_service!(123)
+      %Service{}
+
+      iex> get_service!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_service!(id), do: Repo.get!(Service, id)
+
+  @doc """
   Creates a service.
 
   ## Examples
