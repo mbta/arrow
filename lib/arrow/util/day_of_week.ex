@@ -20,6 +20,6 @@ defmodule Arrow.Util.DayOfWeek do
   @spec get_all_day_names() :: [day_name]
   def get_all_day_names, do: @day_name_atoms
 
-  @spec day_name_values() :: [{String.t(), pos_integer()}]
+  @spec day_name_values() :: [{day_name, 1..7}]
   def day_name_values, do: @day_name_values
 end
