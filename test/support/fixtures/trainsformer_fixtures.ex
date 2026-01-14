@@ -34,4 +34,33 @@ defmodule Arrow.TrainsformerFixtures do
 
     Arrow.Repo.preload(export, @preloads)
   end
+
+  @doc """
+  Generate a service.
+  """
+  def service_fixture(attrs \\ %{}) do
+    {:ok, service} =
+      attrs
+      |> Enum.into(%{
+        name: "some name"
+      })
+      |> Arrow.Trainsformer.create_service()
+
+    service
+  end
+
+  @doc """
+  Generate a service_date.
+  """
+  def service_date_fixture(attrs \\ %{}) do
+    {:ok, service_date} =
+      attrs
+      |> Enum.into(%{
+        end_date: ~D[2025-03-11],
+        start_date: ~D[2025-03-11]
+      })
+      |> Arrow.Trainsformer.create_service_date()
+
+    service_date
+  end
 end
