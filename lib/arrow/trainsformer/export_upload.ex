@@ -434,29 +434,27 @@ defmodule Arrow.Trainsformer.ExportUpload do
   end
 
   defp do_validate_csv(entry, errors, result, base_name, unzip, import_helper) do
-    try do
-      rows =
-        unzip
-        |> import_helper.stream_csv_rows(entry.file_name)
-        # Need to run the stream for stream_csv_rows to call CSV.decode! for validation
-        |> Stream.map(&parse_row(base_name, &1))
-        |> Enum.to_list()
+    rows =
+      unzip
+      |> import_helper.stream_csv_rows(entry.file_name)
+      # Need to run the stream for stream_csv_rows to call CSV.decode! for validation
+      |> Stream.map(&parse_row(base_name, &1))
+      |> Enum.to_list()
 
-      data_type =
-        case base_name do
-          "trips.txt" -> :trips
-          "transfers.txt" -> :transfers
-          "stop_times.txt" -> :stop_times
-        end
+    data_type =
+      case base_name do
+        "trips.txt" -> :trips
+        "transfers.txt" -> :transfers
+        "stop_times.txt" -> :stop_times
+      end
 
-      {errors, Map.put(result, data_type, rows)}
-    rescue
-      e ->
-        {[
-           {:error, entry.file_name, Exception.format(:error, e)}
-           | errors
-         ], result}
-    end
+    {errors, Map.put(result, data_type, rows)}
+  rescue
+    e ->
+      {[
+         {:error, entry.file_name, Exception.format(:error, e)}
+         | errors
+       ], result}
   end
 
   @files_to_parse ["trips.txt", "transfers.txt", "stop_times.txt"]
