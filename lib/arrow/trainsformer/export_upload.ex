@@ -389,22 +389,22 @@ defmodule Arrow.Trainsformer.ExportUpload do
     end
   end
 
+  @type stop_time_info :: %{
+          arrival_time: String.t(),
+          departure_time: String.t(),
+          stop_sequence: integer(),
+          stop_id: String.t()
+        }
+
+  @type trip_info :: %{
+          route_id: String.t(),
+          direction_id: 0 | 1,
+          short_name: String.t(),
+          stop_times: [stop_time_info()]
+        }
+
   @spec schedule_data_from_zip(binary(), module(), module()) :: %{
-          String.t() => %{
-            String.t() => [
-              %{
-                route_id: String.t(),
-                direction_id: 0 | 1,
-                short_name: String.t(),
-                stop_times: %{
-                  arrival_time: String.t(),
-                  departure_time: String.t(),
-                  stop_sequence: integer(),
-                  stop_id: String.t()
-                }
-              }
-            ]
-          }
+          String.t() => %{String.t() => [trip_info()]}
         }
   def schedule_data_from_zip(
         zip_binary,
