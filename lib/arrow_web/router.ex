@@ -110,6 +110,12 @@ defmodule ArrowWeb.Router do
       :show
     )
 
+    get(
+      "/trainsformer_exports/:trainsformer_export_id/timetable",
+      CommuterRailTimetableController,
+      :show
+    )
+
     live_dashboard "/dashboard", ecto_repos: [Arrow.Repo], metrics: ArrowWeb.Telemetry
   end
 
