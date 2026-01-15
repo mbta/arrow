@@ -1,0 +1,11 @@
+<.header>
+  View timetables: {@service_id}
+</.header>
+<div>
+  <div>
+    <div>Route:</div>
+    <ul>
+      <li :for={available_route_id <- @available_routes}>{available_route_id}</li>
+    </ul>
+  </div>
+</div>

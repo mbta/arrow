@@ -380,6 +380,77 @@ defmodule Arrow.Trainsformer.ExportUpload do
     end
   end
 
+  @spec download_from_s3(String.t()) :: {:ok, binary()} | {:error, term()}
+  def download_from_s3(s3_path) do
+    if Application.fetch_env!(:arrow, :trainsformer_export_storage_enabled?) do
+      do_download(s3_path)
+    else
+      {:error, :disabled}
+    end
+  end
+
+  @type stop_time_info :: %{
+          arrival_time: String.t(),
+          departure_time: String.t(),
+          stop_sequence: integer(),
+          stop_id: String.t()
+        }
+
+  @type trip_info :: %{
+          route_id: String.t(),
+          direction_id: 0 | 1,
+          short_name: String.t(),
+          stop_times: [stop_time_info()]
+        }
+
+  @spec schedule_data_from_zip(binary(), module(), module()) :: %{
+          String.t() => %{String.t() => [trip_info()]}
+        }
+  def schedule_data_from_zip(
+        zip_binary,
+        unzip_module \\ Unzip,
+        import_helper \\ Arrow.Gtfs.ImportHelper
+      ) do
+    {:ok, unzip} = Unzip.new(zip_binary)
+
+    stop_times_file = get_full_file_name(unzip, "stop_times.txt", unzip_module)
+
+    trips_file = get_full_file_name(unzip, "trips.txt", unzip_module)
+
+    trips_by_service =
+      unzip
+      |> import_helper.stream_csv_rows(trips_file)
+      |> Enum.group_by(fn row -> Map.get(row, "service_id") end, fn row ->
+        {Map.get(row, "trip_id"), Map.get(row, "route_id"), Map.get(row, "direction_id"),
+         Map.get(row, "trip_short_name")}
+      end)
+
+    stop_times_by_trip =
+      unzip
+      |> import_helper.stream_csv_rows(stop_times_file)
+      |> Enum.group_by(fn row -> Map.get(row, "trip_id") end, fn row ->
+        %{
+          arrival_time: Map.get(row, "arrival_time"),
+          departure_time: Map.get(row, "departure_time"),
+          stop_sequence: row |> Map.get("stop_sequence") |> String.to_integer(),
+          stop_id: Map.get(row, "stop_id")
+        }
+      end)
+
+    Map.new(trips_by_service, fn {service_id, trips_info} ->
+      {service_id,
+       Map.new(trips_info, fn {trip_id, route_id, direction_id, short_name} ->
+         {trip_id,
+          %{
+            route_id: route_id,
+            direction_id: String.to_integer(direction_id),
+            stop_times: stop_times_by_trip[trip_id],
+            short_name: short_name
+          }}
+       end)}
+    end)
+  end
+
   defp compare_durations(duration1, duration2) do
     cond do
       duration1 > duration2 ->
@@ -407,6 +478,21 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
     case apply(mod, fun, [upload_op]) do
       {:ok, _} -> {:ok, Path.join(["s3://", s3_bucket, path])}
+      {:error, _} = error -> error
+    end
+  end
+
+  defp do_download(s3_path) do
+    s3_uri = URI.parse(s3_path)
+    s3_bucket = s3_uri.host
+    s3_path = s3_uri.path
+
+    download_op = ExAws.S3.get_object(s3_bucket, s3_path)
+
+    {mod, fun} = Application.fetch_env!(:arrow, :trainsformer_export_storage_request_fn)
+
+    case apply(mod, fun, [download_op]) do
+      {:ok, %{body: body}} -> {:ok, body}
       {:error, _} = error -> error
     end
   end
@@ -501,5 +587,14 @@ defmodule Arrow.Trainsformer.ExportUpload do
       from_trip_id: transfer["from_trip_id"],
       to_trip_id: transfer["to_trip_id"]
     }
+  end
+
+  defp get_full_file_name(unzip, file_name, unzip_module) do
+    case unzip
+         |> unzip_module.list_entries()
+         |> Enum.filter(&(Path.basename(&1.file_name) == file_name)) do
+      [%Unzip.Entry{file_name: full_file_name}] -> full_file_name
+      _ -> nil
+    end
   end
 end
