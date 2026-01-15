@@ -483,7 +483,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
   end
 
   defp do_download(s3_path) do
-    {:ok, s3_uri} = URI.new(s3_path)
+    s3_uri = URI.parse(s3_path)
     s3_bucket = s3_uri.host
     s3_path = s3_uri.path
 
