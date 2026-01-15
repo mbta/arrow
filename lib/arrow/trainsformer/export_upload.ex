@@ -56,7 +56,6 @@ defmodule Arrow.Trainsformer.ExportUpload do
   @spec extract_data_from_upload(%{path: binary()}) ::
           {:ok,
            {:ok, t()}
-           | {:error, {:trips_missing_transfers, [String.t()]}}
            | {:error, {:invalid_stop_times, any()}}}
           | {:error, {:invalid_export_stops, [String.t()]}}
   def extract_data_from_upload(
