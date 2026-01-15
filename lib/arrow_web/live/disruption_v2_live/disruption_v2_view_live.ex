@@ -6,6 +6,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   alias Arrow.Hastus
   alias Arrow.Hastus.Export, as: HastusExport
   alias Arrow.Trainsformer.Export, as: TrainsformerExport
+  alias Arrow.Trainsformer
   alias ArrowWeb.DisruptionComponents
 
   @impl true
@@ -243,6 +244,17 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   defp apply_action(socket, :new_trainsformer_export, %{"id" => id}) do
     disruption = Disruptions.get_disruption_v2!(id)
     trainsformer_export = %TrainsformerExport{}
+
+    socket
+    |> assign(:title, "edit disruption")
+    |> assign(:page_title, "Edit Disruption v2")
+    |> assign(:disruption, disruption)
+    |> assign(:editing, trainsformer_export)
+  end
+
+  defp apply_action(socket, :edit_trainsformer_export, %{"id" => id, "export_id" => export_id}) do
+    disruption = Disruptions.get_disruption_v2!(id)
+    trainsformer_export = Trainsformer.get_export!(export_id)
 
     socket
     |> assign(:title, "edit disruption")

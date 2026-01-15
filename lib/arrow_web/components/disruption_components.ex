@@ -484,6 +484,17 @@ defmodule ArrowWeb.DisruptionComponents do
                 </tbody>
               </table>
             </div>
+
+            <div class="flex flex-col flex-shrink justify-end">
+              <.link
+                :if={!@editing}
+                id="edit-disruption-button"
+                class="grow-0 shrink"
+                patch={~p"/disruptions/#{@disruption.id}/trainsformer_export/#{export.id}/edit"}
+              >
+                <.icon name="hero-pencil-solid" class="bg-primary" />
+              </.link>
+            </div>
           </div>
         </div>
       <% end %>

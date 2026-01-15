@@ -298,6 +298,35 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     {:ok, socket}
   end
 
+  def update(assigns, socket) do
+    IO.inspect(socket.assigns)
+
+    form =
+      assigns.export
+      |> Trainsformer.change_export()
+      |> to_form()
+
+    socket =
+      socket
+      |> assign(assigns)
+      |> assign(:show_upload_form, true)
+      |> assign(:show_service_import_form, false)
+      |> assign(:form, form)
+      |> assign(:invalid_export_stops, nil)
+      |> assign(:invalid_stop_times, nil)
+      |> assign(:one_of_north_south_stations, :ok)
+      |> assign(:missing_routes, nil)
+      |> assign(:invalid_routes, nil)
+      |> assign(:trips_missing_transfers, nil)
+      |> allow_upload(:trainsformer_export,
+        accept: ~w(.zip),
+        progress: &handle_progress/3,
+        auto_upload: true
+      )
+
+    {:ok, socket}
+  end
+
   @impl true
   def handle_event("validate", _params, socket) do
     {:noreply, socket}
