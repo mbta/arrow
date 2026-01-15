@@ -8,7 +8,6 @@ defmodule ArrowWeb.DisruptionComponents do
   alias Arrow.Disruptions.Limit
   alias Arrow.Hastus.Export, as: HastusExport
   alias Arrow.Hastus.Service
-  alias Arrow.Limits.LimitDayOfWeek
   alias ArrowWeb.EditHastusExportForm
   alias ArrowWeb.EditLimitForm
   alias ArrowWeb.EditReplacementServiceForm
@@ -394,6 +393,7 @@ defmodule ArrowWeb.DisruptionComponents do
   attr :disruption, DisruptionV2, required: true
   attr :editing, :any, required: true
   attr :user_id, :string, required: true
+  attr :icon_paths, :map, required: true
 
   def view_trainsformer_service_schedules(assigns) do
     ~H"""
@@ -405,7 +405,69 @@ defmodule ArrowWeb.DisruptionComponents do
           id={"export-table-hastus-#{export.id}"}
           class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3"
         >
-          Export information goes here.
+          <p><b>Export:</b> {export.name}</p>
+          <div class="row">
+            <div class="col-3">
+              <b>Routes</b>
+              <%= for route <- export.routes do %>
+                <div class="row">
+                  <div class="col-lg-1">
+                    <span
+                      class="m-icon m-icon-sm mr-1"
+                      style={"background-image: url('#{Map.get(@icon_paths, :commuter_rail)}');"}
+                    />
+                  </div>
+                  <div class="col-lg-10">
+                    <p>{route.route_id}</p>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+
+            <div class="col-9">
+              <table class="sm:w-full">
+                <tr>
+                  <th>
+                    Service
+                  </th>
+                  <th>
+                    Start Date
+                  </th>
+                  <th>
+                    End Date
+                  </th>
+                  <th>
+                    Days of Week
+                  </th>
+                </tr>
+                <%= for service <- export.services do %>
+                  <tr>
+                    <td>{service.name}</td>
+                    <td>
+                      <div :for={date <- Enum.map(service.service_dates, & &1.start_date)}>
+                        <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
+                        {Calendar.strftime(date, "%m/%d/%Y")}
+                      </div>
+                    </td>
+                    <td>
+                      <div :for={date <- Enum.map(service.service_dates, & &1.end_date)}>
+                        <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
+                        {Calendar.strftime(date, "%m/%d/%Y")}
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        :for={dow <- Arrow.Util.DayOfWeek.get_all_day_names()}
+                        class="text-gray-400"
+                      >
+                        {format_day_name_short(dow)}
+                      </span>
+                    </td>
+                  </tr>
+                <% end %>
+              </table>
+            </div>
+          </div>
         </div>
       <% end %>
 
@@ -425,6 +487,7 @@ defmodule ArrowWeb.DisruptionComponents do
           disruption={@disruption}
           export={@editing}
           user_id={@user_id}
+          icon_paths={@icon_paths}
         />
       <% end %>
     </section>
@@ -571,8 +634,8 @@ defmodule ArrowWeb.DisruptionComponents do
 
       day_of_weeks =
         Enum.map(
-          1..7,
-          &%{day_name: LimitDayOfWeek.day_name(&1), active?: &1 in active_day_of_weeks}
+          Arrow.Util.DayOfWeek.get_all_day_names(),
+          &%{day_name: &1, active?: &1 in active_day_of_weeks}
         )
 
       %{

@@ -41,7 +41,8 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     )
     |> assert_text("Successfully imported export valid_export.zip!")
     |> click(Query.css("#save-export-button"))
-    |> assert_text("Export information goes here")
+    |> assert_text("CR-Foxboro")
+    |> assert_text("SPRING2025-SOUTHSS-Weekend-66")
   end
 
   feature "shows error for invalid gtfs stops in trainsformer export", %{session: session} do

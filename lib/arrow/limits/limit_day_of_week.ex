@@ -3,16 +3,12 @@ defmodule Arrow.Limits.LimitDayOfWeek do
 
   use Arrow.Schema
   import Ecto.Changeset
+  import Arrow.Util.DayOfWeek
 
-  @type day_name :: :monday | :tuesday | :wednesday | :thursday | :friday | :saturday | :sunday
-
-  @day_name_values Enum.with_index(
-                     ~w[monday tuesday wednesday thursday friday saturday sunday]a,
-                     1
-                   )
+  @type day_name :: Arrow.Util.DayOfWeek.day_name()
 
   typed_schema "limit_day_of_weeks" do
-    field :day_name, Ecto.Enum, values: @day_name_values
+    field :day_name, Ecto.Enum, values: day_name_values()
     field :start_time, :string
     field :end_time, :string
     field :active?, :boolean, source: :is_active, default: false
@@ -109,13 +105,8 @@ defmodule Arrow.Limits.LimitDayOfWeek do
   @spec day_number(t() | day_name) :: 1..7
   def day_number(%__MODULE__{} = dow), do: day_number(dow.day_name)
 
-  for {name, number} <- @day_name_values do
+  for {name, number} <- Arrow.Util.DayOfWeek.day_name_values() do
     def day_number(unquote(name)), do: unquote(number)
-  end
-
-  @spec day_name(1..7) :: day_name
-  for {name, number} <- @day_name_values do
-    def day_name(unquote(number)), do: unquote(name)
   end
 
   @spec set_all_day_default(t()) :: t()
