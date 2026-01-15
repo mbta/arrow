@@ -56,7 +56,6 @@ defmodule Arrow.Trainsformer.ExportUpload do
   @spec extract_data_from_upload(%{path: binary()}) ::
           {:ok,
            {:ok, t()}
-           | {:error, {:trips_missing_transfers, [String.t()]}}
            | {:error, {:invalid_stop_times, any()}}}
           | {:error, {:invalid_export_stops, [String.t()]}}
   def extract_data_from_upload(
@@ -262,7 +261,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
       end)
       |> MapSet.new(fn {trip_id, _stop_ids} -> trip_id end)
 
-    trips_with_transfers = get_trips_with_transfers_from_file(transfers)
+    trips_with_transfers = get_trips_with_transfers(transfers)
 
     trips_needing_transfers_without_transfers =
       MapSet.difference(trips_needing_transfers, trips_with_transfers)
@@ -274,7 +273,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
     end
   end
 
-  defp get_trips_with_transfers_from_file(transfers) do
+  defp get_trips_with_transfers(transfers) do
     Enum.reduce(transfers, MapSet.new(), fn transfer, trip_ids ->
       if transfer.transfer_type == "1" and transfer.from_trip_id != "" and
            transfer.to_trip_id != "" do
@@ -428,41 +427,31 @@ defmodule Arrow.Trainsformer.ExportUpload do
   end
 
   defp do_validate_csv(entry, errors, result, base_name, unzip, import_helper) do
-    try do
-      rows =
-        unzip
-        |> import_helper.stream_csv_rows(entry.file_name)
-        # Need to run the stream for stream_csv_rows to call CSV.decode! for validation
-        |> Stream.map(&parse_row(base_name, &1))
-        |> Enum.to_list()
+    rows =
+      unzip
+      |> import_helper.stream_csv_rows(entry.file_name)
+      # Need to run the stream for stream_csv_rows to call CSV.decode! for validation
+      |> Stream.map(&parse_row(base_name, &1))
+      |> Enum.to_list()
 
-      data_type =
-        case base_name do
-          "trips.txt" -> :trips
-          "transfers.txt" -> :transfers
-          "stop_times.txt" -> :stop_times
-        end
+    data_type =
+      case base_name do
+        "trips.txt" -> :trips
+        "transfers.txt" -> :transfers
+        "stop_times.txt" -> :stop_times
+      end
 
-      {errors, Map.put(result, data_type, rows)}
-    rescue
-      e ->
-        {[
-           {:error, entry.file_name, Exception.format(:error, e)}
-           | errors
-         ], result}
-    end
+    {errors, Map.put(result, data_type, rows)}
+  rescue
+    e ->
+      {[
+         {:error, entry.file_name, Exception.format(:error, e)}
+         | errors
+       ], result}
   end
 
   @files_to_parse ["trips.txt", "transfers.txt", "stop_times.txt"]
 
-  @spec validate_csvs(Unzip, module(), module()) ::
-          {:ok,
-           %{
-             trips: [trainsformer_trip()],
-             stop_times: [trainsformer_stop_time()],
-             transfers: [transfer()]
-           }}
-          | {:error, String.t()}
   defp validate_csvs(
          unzip,
          unzip_module,

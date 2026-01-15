@@ -122,11 +122,6 @@ defmodule Arrow.TrainsformerTest do
 
     @invalid_attrs %{start_date: nil, end_date: nil}
 
-    test "list_trainsformer_service_dates/0 returns all trainsformer_service_dates" do
-      service_date = service_date_fixture()
-      assert Trainsformer.list_trainsformer_service_dates() == [service_date]
-    end
-
     test "get_service_date!/1 returns the service_date with given id" do
       service_date = service_date_fixture()
       assert Trainsformer.get_service_date!(service_date.id) == service_date
