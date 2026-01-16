@@ -99,7 +99,8 @@ defmodule Mix.Tasks.CopyDbTest do
                  }
                }
              ] =
-               Arrow.Repo.all(from d in Arrow.Disruption, order_by: d.id)
+               from(d in Arrow.Disruption, order_by: d.id)
+               |> Arrow.Repo.all()
                |> Arrow.Repo.preload(published_revision: Arrow.DisruptionRevision.associations())
 
       assert [

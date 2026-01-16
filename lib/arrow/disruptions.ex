@@ -139,7 +139,7 @@ defmodule Arrow.Disruptions do
 
   """
   def get_replacement_service!(id),
-    do: Repo.get!(ReplacementService, id) |> Repo.preload(@preloads[:replacement_services])
+    do: ReplacementService |> Repo.get!(id) |> Repo.preload(@preloads[:replacement_services])
 
   @doc """
   Creates a replacement_service.

@@ -386,7 +386,7 @@ defmodule ArrowWeb.ShuttleViewLive do
   def handle_event("live_select_change", %{"text" => text, "id" => live_select_id}, socket) do
     shapes =
       Shuttles.list_shapes()
-      |> Enum.filter(&(String.downcase(&1.name) |> String.contains?(String.downcase(text))))
+      |> Enum.filter(&(&1.name |> String.downcase() |> String.contains?(String.downcase(text))))
       |> Enum.map(&shape_option_mapper/1)
 
     send_update(LiveSelect.Component, id: live_select_id, options: shapes)

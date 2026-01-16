@@ -316,7 +316,7 @@ defmodule Arrow.Shuttles do
 
   """
   def list_shuttles do
-    Repo.all(Shuttle) |> Repo.preload(@preloads)
+    Shuttle |> Repo.all() |> Repo.preload(@preloads)
   end
 
   @doc """
@@ -334,7 +334,7 @@ defmodule Arrow.Shuttles do
 
   """
   def get_shuttle!(id) do
-    Repo.get!(Shuttle, id) |> Repo.preload(@preloads) |> populate_display_stop_ids()
+    Shuttle |> Repo.get!(id) |> Repo.preload(@preloads) |> populate_display_stop_ids()
   end
 
   @doc """

@@ -156,6 +156,18 @@
         #
         # Controversial and experimental checks (opt-in, just replace `false` with `[]`)
         #
+        {Credo.Check.Refactor.PipeChainStart,
+         [
+           excluded_functions: [
+             # These functions read better when this rule is _not_ applied
+             # &Kernel.get_in/2,
+             "get_in",
+             # &Date.range
+             "Date.range",
+             # Ecto.Query.from
+             "from"
+           ]
+         ]},
         {Credo.Check.Consistency.MultiAliasImportRequireUse, false},
         {Credo.Check.Consistency.UnusedVariableNames, false},
         {Credo.Check.Design.DuplicatedCode, false},
@@ -173,7 +185,6 @@
         {Credo.Check.Refactor.DoubleBooleanNegation, false},
         {Credo.Check.Refactor.ModuleDependencies, false},
         {Credo.Check.Refactor.NegatedIsNil, false},
-        {Credo.Check.Refactor.PipeChainStart, false},
         {Credo.Check.Refactor.VariableRebinding, false},
         {Credo.Check.Warning.LeakyEnvironment, false},
         {Credo.Check.Warning.MapGetUnsafePass, false},
