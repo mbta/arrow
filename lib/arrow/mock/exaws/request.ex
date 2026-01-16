@@ -13,6 +13,10 @@ defmodule Arrow.Mock.ExAws.Request do
      }}
   end
 
+  def request(%{bucket: "test-bucket", path: "/trainsformer-export-uploads/export.zip"}) do
+    {:ok, %{body: "foo", headers: [], status_code: 200}}
+  end
+
   def request(_) do
     {:ok, %{body: %{contents: []}}}
   end

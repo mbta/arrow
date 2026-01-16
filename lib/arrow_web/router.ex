@@ -7,7 +7,9 @@ defmodule ArrowWeb.Router do
     plug(:accepts, ["html"])
     plug(:fetch_session)
     plug(:fetch_live_flash)
+    plug(:put_format, "html")
     plug(:put_root_layout, html: {ArrowWeb.LayoutView, :root})
+    plug(:put_layout, html: {ArrowWeb.LayoutView, :app})
     plug(:protect_from_forgery)
     plug(:put_secure_browser_headers)
   end
@@ -15,10 +17,12 @@ defmodule ArrowWeb.Router do
   pipeline :json_api do
     plug(:fetch_session)
     plug(:accepts, ["json-api"])
+    plug(:put_format, "json-api")
     plug(JaSerializer.ContentTypeNegotiation)
   end
 
   pipeline :api do
+    plug(:put_format, "json")
     plug(:fetch_session)
   end
 
@@ -62,6 +66,12 @@ defmodule ArrowWeb.Router do
     live("/disruptions/:id/hastus_export/new", DisruptionV2ViewLive, :new_hastus_export)
 
     live(
+      "/disruptions/:id/trainsformer_export/new",
+      DisruptionV2ViewLive,
+      :new_trainsformer_export
+    )
+
+    live(
       "/disruptions/:id/hastus_export/:export_id/edit",
       DisruptionV2ViewLive,
       :edit_hastus_export
@@ -93,7 +103,18 @@ defmodule ArrowWeb.Router do
     live("/shuttles/new", ShuttleViewLive, :new)
     live("/shuttles/:id/edit", ShuttleViewLive, :edit)
     get("/shuttles", ShuttleController, :index)
-    get("/replacement_services/:replacement_service_id/timetable", TimetableController, :show)
+
+    get(
+      "/replacement_services/:replacement_service_id/timetable",
+      ReplacementServiceTimetableController,
+      :show
+    )
+
+    get(
+      "/trainsformer_exports/:trainsformer_export_id/timetable",
+      CommuterRailTimetableController,
+      :show
+    )
 
     live_dashboard "/dashboard", ecto_repos: [Arrow.Repo], metrics: ArrowWeb.Telemetry
   end

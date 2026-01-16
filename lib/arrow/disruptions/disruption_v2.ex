@@ -4,30 +4,18 @@ defmodule Arrow.Disruptions.DisruptionV2 do
 
   See: https://github.com/mbta/gtfs_creator/blob/ab5aac52561027aa13888e4c4067a8de177659f6/gtfs_creator2/disruptions/disruption.py
   """
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
   import Ecto.Query
 
   alias Arrow.Disruptions.Limit
   alias Arrow.Disruptions.ReplacementService
-  alias Arrow.Hastus.Export
+  alias Arrow.Hastus.Export, as: HastusExport
   alias Arrow.Repo
   alias Arrow.Shuttles.Shuttle
+  alias Arrow.Trainsformer.Export, as: TrainsformerExport
 
-  @type t :: %__MODULE__{
-          title: String.t() | nil,
-          mode: atom() | nil,
-          is_active: boolean(),
-          description: String.t() | nil,
-          inserted_at: DateTime.t() | nil,
-          updated_at: DateTime.t() | nil,
-          limits: [Limit.t()] | Ecto.Association.NotLoaded.t(),
-          replacement_services: [ReplacementService.t()] | Ecto.Association.NotLoaded.t(),
-          hastus_exports: [Export.t()] | Ecto.Association.NotLoaded.t(),
-          shuttles: [Shuttle.t()] | Ecto.Association.NotLoaded.t()
-        }
-
-  schema "disruptionsv2" do
+  typed_schema "disruptionsv2" do
     field :title, :string
     field :mode, Ecto.Enum, values: [:subway, :commuter_rail, :silver_line, :bus]
     field :is_active, :boolean
@@ -41,7 +29,11 @@ defmodule Arrow.Disruptions.DisruptionV2 do
       foreign_key: :disruption_id,
       on_replace: :delete
 
-    has_many :hastus_exports, Export,
+    has_many :hastus_exports, HastusExport,
+      foreign_key: :disruption_id,
+      on_replace: :delete
+
+    has_many :trainsformer_exports, TrainsformerExport,
       foreign_key: :disruption_id,
       on_replace: :delete
 
@@ -61,6 +53,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
     |> cast_assoc(:replacement_services, with: &ReplacementService.changeset/2)
     |> validate_required([:title, :mode, :is_active])
     |> validate_required_for(:is_active)
+    |> validate_no_mode_change()
   end
 
   def new(attrs \\ %{}) do
@@ -76,7 +69,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
     disruption_v2 = Repo.preload(disruption_v2, [:limits, :hastus_exports])
 
     not Enum.empty?(disruption_v2.limits) or
-      Enum.any?(disruption_v2.hastus_exports, &Export.has_derived_limits?/1)
+      Enum.any?(disruption_v2.hastus_exports, &HastusExport.has_derived_limits?/1)
   end
 
   @spec route(String.t()) :: atom() | nil
@@ -115,6 +108,15 @@ defmodule Arrow.Disruptions.DisruptionV2 do
           "the following shuttle(s) used by this disruption must be set as 'active' first: #{shuttles}"
         )
       end
+    else
+      changeset
+    end
+  end
+
+  defp validate_no_mode_change(changeset) do
+    if changed?(changeset, :mode) and not changed?(changeset, :mode, from: nil) and
+         not changed?(changeset, :mode, from: get_field(changeset, :mode)) do
+      add_error(changeset, :mode, "cannot update mode on an existing disruption")
     else
       changeset
     end

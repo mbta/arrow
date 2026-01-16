@@ -8,13 +8,7 @@ defmodule Arrow.Gtfs.Level do
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          id: String.t(),
-          index: String.t(),
-          name: String.t() | nil
-        }
-
-  schema "gtfs_levels" do
+  typed_schema "gtfs_levels" do
     field :index, :float
     field :name, :string
 

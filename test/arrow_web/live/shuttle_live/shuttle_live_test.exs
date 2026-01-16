@@ -381,7 +381,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
            })}
       end)
 
-      {:ok, edit_live, html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
+      {:ok, edit_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
 
       refute edit_live
              |> element("#shuttle_routes_0_route_stops_1_time_to_next_stop")

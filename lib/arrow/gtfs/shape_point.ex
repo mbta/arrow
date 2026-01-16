@@ -10,17 +10,9 @@ defmodule Arrow.Gtfs.ShapePoint do
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          shape: Arrow.Gtfs.Shape.t() | Ecto.Association.NotLoaded.t(),
-          sequence: integer,
-          lat: float,
-          lon: float,
-          dist_traveled: float | nil
-        }
-
   @primary_key false
 
-  schema "gtfs_shape_points" do
+  typed_schema "gtfs_shape_points" do
     belongs_to :shape, Arrow.Gtfs.Shape, primary_key: true
     field :lat, :float
     field :lon, :float

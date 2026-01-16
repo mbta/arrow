@@ -10,13 +10,7 @@ defmodule Arrow.Gtfs.Shape do
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          id: String.t(),
-          points: list(Arrow.Gtfs.ShapePoint.t()) | Ecto.Association.NotLoaded.t(),
-          trips: list(Arrow.Gtfs.Trip.t()) | Ecto.Association.NotLoaded.t()
-        }
-
-  schema "gtfs_shapes" do
+  typed_schema "gtfs_shapes" do
     has_many :points, Arrow.Gtfs.ShapePoint
     has_many :trips, Arrow.Gtfs.Trip
   end

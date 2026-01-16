@@ -1,7 +1,7 @@
 defmodule Arrow.Hastus.Export do
   @moduledoc "schema for a HASTUS export for the db"
 
-  use Ecto.Schema
+  use Arrow.Schema
 
   import Ecto.Changeset
 
@@ -10,15 +10,7 @@ defmodule Arrow.Hastus.Export do
   alias Arrow.Hastus.Service
   alias Arrow.Hastus.TripRouteDirection
 
-  @type t :: %__MODULE__{
-          s3_path: String.t(),
-          services: list(Service.t()) | Ecto.Association.NotLoaded.t(),
-          trip_route_directions: list(TripRouteDirection.t()) | Ecto.Association.NotLoaded.t(),
-          line: Line.t() | Ecto.Association.NotLoaded.t(),
-          disruption: DisruptionV2.t() | Ecto.Association.NotLoaded.t()
-        }
-
-  schema "hastus_exports" do
+  typed_schema "hastus_exports" do
     field :s3_path, :string
     has_many :services, Service, on_replace: :delete, foreign_key: :export_id
 

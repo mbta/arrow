@@ -1,14 +1,9 @@
 defmodule Arrow.Shuttles.ShapesUpload do
   @moduledoc "schema for shapes upload"
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          filename: String.t(),
-          shapes: list(Arrow.Shuttles.ShapeUpload.t())
-        }
-
-  embedded_schema do
+  typed_embedded_schema do
     field :filename, :string
     embeds_many :shapes, Arrow.Shuttles.ShapeUpload
   end
