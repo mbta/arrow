@@ -199,7 +199,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
   defp validate_trip({_trip_id, stop_times}) do
     invalid_stop_times_for_trip =
       stop_times
-      |> Enum.sort_by(& &1.stop_sequence)
+      |> Enum.sort_by(&Integer.parse(&1.stop_sequence))
       # compare two stop_times at a time
       |> Enum.chunk_every(2, 1)
       |> Enum.flat_map(&process_chunk(&1))
