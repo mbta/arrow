@@ -1,6 +1,8 @@
 defmodule ArrowWeb.CommuterRailTimetableController do
   use ArrowWeb, :controller
 
+  alias Arrow.Gtfs.Stop
+  alias Arrow.Repo
   alias Arrow.Trainsformer
   alias Arrow.Trainsformer.ExportUpload
 
@@ -33,22 +35,59 @@ defmodule ArrowWeb.CommuterRailTimetableController do
         nil -> 0
       end
 
-    # Take schedule data for all trains, combine to get stop ordering
-    _all_schedules =
+    all_schedules =
       schedule_data
       |> Map.get(service_id)
       |> Enum.map(fn {_trip_id, trip_data} -> trip_data end)
       |> Enum.filter(fn trip_data ->
         trip_data.route_id == route_id and trip_data.direction_id == direction_id
       end)
+      |> Enum.map(fn trip_data ->
+        {_, new_trip_data} =
+          Map.get_and_update(trip_data, :stop_times, fn stop_times ->
+            {stop_times, Enum.sort_by(stop_times, & &1.stop_sequence)}
+          end)
 
-    # Sort trips by relevant times
+        new_trip_data
+      end)
+      |> Enum.sort_by(fn trip_data -> Enum.at(trip_data.stop_times, 0).departure_time end)
+
+    # Combine stops across different trains to get global stop ordering
+    stops_in_order =
+      Enum.reduce(all_schedules, [], fn trip_data, stop_ids ->
+        unseen_stop_ids =
+          trip_data.stop_times
+          |> Enum.map(& &1.stop_id)
+          |> Enum.filter(fn stop_id -> stop_id not in stop_ids end)
+
+        stop_ids ++ unseen_stop_ids
+      end)
+
+    train_numbers = Enum.map(all_schedules, & &1.short_name)
+
+    # Combine stop names and stop times into rows
+    stop_times_by_stop =
+      Enum.map(stops_in_order, fn stop_id ->
+        stop_name = Repo.get(Stop, stop_id).name
+
+        stop_times =
+          Enum.map(all_schedules, fn trip_data ->
+            Enum.find(trip_data.stop_times, &(&1.stop_id == stop_id))
+          end)
+
+        {stop_name, stop_times}
+      end)
+
+    num_trips = Enum.count(all_schedules)
 
     # Render
     render(conn, :show,
       service_id: service_id,
       route_id: route_id,
-      available_routes: available_routes
+      available_routes: available_routes,
+      num_trips: num_trips,
+      train_numbers: train_numbers,
+      stop_times_by_stop: stop_times_by_stop
     )
   end
 end

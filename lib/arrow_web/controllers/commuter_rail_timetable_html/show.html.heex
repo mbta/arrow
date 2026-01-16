@@ -8,4 +8,22 @@
       <li :for={available_route_id <- @available_routes}>{available_route_id}</li>
     </ul>
   </div>
+
+  <table class="overflow-scroll w-full table-fixed block p-4">
+    <thead>
+      <th class="border-2 border-black border-solid p-1">Stop</th>
+      <th
+        :for={train_number <- @train_numbers}
+        class="border-2 border-black border-solid text-center"
+      >
+        {train_number}
+      </th>
+    </thead>
+    <tr :for={{stop_name, times} <- @stop_times_by_stop}>
+      <td class="border-2 border-black border-solid p-1">{stop_name}</td>
+      <td :for={time <- times} class="border-2 border-black border-solid p-1 text-center">
+        {if is_nil(time), do: "--", else: time.departure_time || time.arrival_time}
+      </td>
+    </tr>
+  </table>
 </div>
