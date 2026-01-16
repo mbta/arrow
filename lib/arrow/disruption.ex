@@ -56,7 +56,8 @@ defmodule Arrow.Disruption do
     Multi.new()
     |> Multi.insert(:disruption, %__MODULE__{})
     |> Multi.insert(:revision, fn %{disruption: %{id: id}} ->
-      DisruptionRevision.new(disruption_id: id)
+      [disruption_id: id]
+      |> DisruptionRevision.new()
       |> DisruptionRevision.changeset(attrs)
     end)
     |> maybe_add_note(author_id, note_params(attrs))

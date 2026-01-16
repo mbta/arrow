@@ -178,7 +178,7 @@ defmodule ArrowWeb.DisruptionControllerTest do
         )
 
       params = %{
-        "revision" => string_params_for(:disruption_revision) |> Map.delete("exceptions")
+        "revision" => :disruption_revision |> string_params_for() |> Map.delete("exceptions")
       }
 
       _ =
@@ -187,7 +187,8 @@ defmodule ArrowWeb.DisruptionControllerTest do
         |> redirected_to()
 
       assert %{exceptions: []} =
-               Repo.get!(DisruptionRevision, Disruption.latest_revision_id(id))
+               DisruptionRevision
+               |> Repo.get!(Disruption.latest_revision_id(id))
                |> Repo.preload(:exceptions)
     end
 

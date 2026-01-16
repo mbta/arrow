@@ -532,16 +532,16 @@ defmodule Arrow.Hastus.ExportUpload do
   # Returns a list of lists with the direction_id=0 canonical stop sequence(s) for the given routes.
   @spec stop_sequences_for_routes([String.t()]) :: [[stop_id :: String.t()]]
   defp stop_sequences_for_routes(route_ids) do
-    Arrow.Repo.all(
-      from t in Arrow.Gtfs.Trip,
-        where: t.direction_id == 0,
-        where: t.service_id == "canonical",
-        where: t.route_id in ^route_ids,
-        join: st in Arrow.Gtfs.StopTime,
-        on: t.id == st.trip_id,
-        order_by: [t.id, st.stop_sequence],
-        select: %{trip_id: t.id, stop_id: st.stop_id}
+    from(t in Arrow.Gtfs.Trip,
+      where: t.direction_id == 0,
+      where: t.service_id == "canonical",
+      where: t.route_id in ^route_ids,
+      join: st in Arrow.Gtfs.StopTime,
+      on: t.id == st.trip_id,
+      order_by: [t.id, st.stop_sequence],
+      select: %{trip_id: t.id, stop_id: st.stop_id}
     )
+    |> Arrow.Repo.all()
     |> Stream.chunk_by(& &1.trip_id)
     |> Enum.map(fn stops -> Enum.map(stops, & &1.stop_id) end)
   end
@@ -556,11 +556,11 @@ defmodule Arrow.Hastus.ExportUpload do
           {route_id :: String.t(), trp_direction :: String.t()} => 0 | 1
         }
   defp trp_direction_to_direction_id([route_id | _]) do
-    Arrow.Repo.all(
-      from d in Arrow.Gtfs.Direction,
-        where: d.route_id == ^route_id,
-        select: {d.desc, d.direction_id}
+    from(d in Arrow.Gtfs.Direction,
+      where: d.route_id == ^route_id,
+      select: {d.desc, d.direction_id}
     )
+    |> Arrow.Repo.all()
     |> Map.new()
   end
 

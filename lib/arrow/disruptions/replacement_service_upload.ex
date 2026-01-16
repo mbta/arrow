@@ -77,7 +77,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
   end
 
   def error_to_error_message({idx, {:error, row_data}}) when is_list(row_data) do
-    row_errors = Enum.into(row_data, %{}) |> Enum.map(fn {k, v} -> "#{error_type(k)}: #{v}" end)
+    row_errors = row_data |> Enum.into(%{}) |> Enum.map(fn {k, v} -> "#{error_type(k)}: #{v}" end)
     "Row #{idx}, #{row_errors}"
   end
 
@@ -455,9 +455,14 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
 
   def truncate_seconds(time_string) when is_binary(time_string) do
     case String.split(time_string, ":") do
-      [_hr, _min, _sec] -> {:ok, String.split(time_string, ":") |> Enum.take(2) |> Enum.join(":")}
-      [_hr, _min] -> {:ok, time_string}
-      _ -> {:error, time_string}
+      [_hr, _min, _sec] ->
+        {:ok, time_string |> String.split(":") |> Enum.take(2) |> Enum.join(":")}
+
+      [_hr, _min] ->
+        {:ok, time_string}
+
+      _ ->
+        {:error, time_string}
     end
   end
 
@@ -477,7 +482,7 @@ defmodule Arrow.Disruptions.ReplacementServiceUpload do
   end
 
   def to_time_int_list(time_string) when is_binary(time_string) do
-    {:ok, String.split(time_string, ":") |> Enum.map(&String.to_integer/1) |> Enum.take(2)}
+    {:ok, time_string |> String.split(":") |> Enum.map(&String.to_integer/1) |> Enum.take(2)}
   end
 
   def to_time_int_list(time_string) do
