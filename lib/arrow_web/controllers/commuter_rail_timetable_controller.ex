@@ -34,12 +34,23 @@ defmodule ArrowWeb.CommuterRailTimetableController do
       end
 
     # Take schedule data for all trains, combine to get stop ordering
-    _all_schedules =
+    all_schedules =
       schedule_data
       |> Map.get(service_id)
       |> Enum.map(fn {_trip_id, trip_data} -> trip_data end)
       |> Enum.filter(fn trip_data ->
         trip_data.route_id == route_id and trip_data.direction_id == direction_id
+      end)
+
+    stops_in_order =
+      Enum.reduce(all_schedules, [], fn trip_data, stop_ids ->
+        unseen_stop_ids =
+          trip_data.stop_times
+          |> Enum.sort_by(& &1.stop_sequence)
+          |> Enum.map(& &1.stop_id)
+          |> Enum.filter(fn stop_id -> stop_id not in stop_ids end)
+
+        stop_ids ++ unseen_stop_ids
       end)
 
     # Sort trips by relevant times
