@@ -245,7 +245,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   defp apply_action(socket, :duplicate_limit, %{"id" => id, "limit_id" => limit_id}) do
     disruption = Disruptions.get_disruption_v2!(id)
-    limit = Limits.get_limit!(limit_id) |> Map.put(:id, nil)
+    limit = limit_id |> Limits.get_limit!() |> Map.put(:id, nil)
 
     socket
     |> assign(:title, "edit disruption")

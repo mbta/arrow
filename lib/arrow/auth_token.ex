@@ -34,7 +34,7 @@ defmodule Arrow.AuthToken do
         token
 
       nil ->
-        token = :crypto.strong_rand_bytes(16) |> Base.encode16() |> String.downcase()
+        token = 16 |> :crypto.strong_rand_bytes() |> Base.encode16() |> String.downcase()
 
         auth_token = %__MODULE__{
           username: username,

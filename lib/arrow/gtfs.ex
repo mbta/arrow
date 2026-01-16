@@ -123,7 +123,8 @@ defmodule Arrow.Gtfs do
       :ok
     else
       missing =
-        MapSet.difference(required_files(), files)
+        required_files()
+        |> MapSet.difference(files)
         |> Enum.sort()
         |> Enum.join(",")
 

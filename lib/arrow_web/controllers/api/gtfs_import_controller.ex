@@ -134,7 +134,9 @@ defmodule ArrowWeb.API.GtfsImportController do
          {:ok, s3_uri} <- upload_zip(zip_iodata) do
       changeset = worker_mod.new(%{s3_uri: s3_uri, archive_version: version})
 
-      case Oban.insert(changeset) do
+      changeset
+      |> Oban.insert()
+      |> case do
         {:ok, %Oban.Job{conflict?: true} = job} ->
           {:error,
            "tried to insert a duplicate GTFS import or validation job existing_job_id=#{job.id} archive_version=\"#{version}\" worker=#{inspect(worker_mod)}"}

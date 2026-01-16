@@ -17,7 +17,8 @@ defmodule ArrowWeb.AuthManager.ErrorHandlerTest do
       provider = Application.get_env(:arrow, :ueberauth_provider)
 
       conn =
-        build_conn(:get, "/some/path")
+        :get
+        |> build_conn("/some/path")
         |> init_test_session(%{})
         |> ArrowWeb.AuthManager.ErrorHandler.auth_error({:some_type, :reason}, [])
 
@@ -29,7 +30,8 @@ defmodule ArrowWeb.AuthManager.ErrorHandlerTest do
       provider = Application.get_env(:arrow, :ueberauth_provider)
 
       conn =
-        build_conn(:post, "/some/path")
+        :post
+        |> build_conn("/some/path")
         |> init_test_session(%{})
         |> ArrowWeb.AuthManager.ErrorHandler.auth_error({:some_type, :reason}, [])
 

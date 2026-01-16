@@ -78,7 +78,8 @@ defmodule Arrow.Shuttles.Route do
     case Shuttles.get_shapes_upload(shape) do
       {:ok, %Ecto.Changeset{} = changeset} ->
         coordinates =
-          ShapesUpload.shapes_map_view(changeset)
+          changeset
+          |> ShapesUpload.shapes_map_view()
           |> Map.get(:shapes)
           |> List.first()
           |> Map.get(:coordinates)

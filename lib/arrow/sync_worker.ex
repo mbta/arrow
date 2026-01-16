@@ -44,7 +44,8 @@ defmodule Arrow.SyncWorker do
     case fetch_prod_data("/api/shuttle-stops") do
       {:ok, %{"data" => stops_data}} ->
         existing_stop_ids =
-          Repo.all(from(s in Stop, select: s.stop_id))
+          from(s in Stop, select: s.stop_id)
+          |> Repo.all()
           |> MapSet.new()
 
         new_stops =
@@ -68,7 +69,8 @@ defmodule Arrow.SyncWorker do
     case fetch_prod_data("/api/shapes") do
       {:ok, %{"data" => shapes_data}} ->
         existing_shape_names =
-          Repo.all(from(s in Shape, select: s.name))
+          from(s in Shape, select: s.name)
+          |> Repo.all()
           |> MapSet.new()
 
         new_shapes =
