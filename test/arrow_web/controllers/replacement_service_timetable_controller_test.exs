@@ -1,4 +1,4 @@
-defmodule ArrowWeb.TimetableControllerTest do
+defmodule ArrowWeb.ReplacementServiceTimetableControllerTest do
   use ArrowWeb.ConnCase
 
   import Arrow.Factory

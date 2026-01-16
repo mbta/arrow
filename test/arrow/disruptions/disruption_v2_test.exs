@@ -64,4 +64,13 @@ defmodule Arrow.Disruptions.DisruptionV2Test do
       refute error_msg =~ shuttle3.shuttle_name
     end
   end
+
+  test "can't change mode on an existing disruption" do
+    disruption = insert(:disruption_v2, mode: :subway)
+
+    assert %Ecto.Changeset{valid?: false, errors: [mode: {error_msg, []}]} =
+             DisruptionV2.changeset(disruption, %{mode: :commuter_rail})
+
+    assert error_msg =~ "cannot update mode on an existing disruption"
+  end
 end

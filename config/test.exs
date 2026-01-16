@@ -6,7 +6,9 @@ config :arrow,
   gtfs_archive_storage_enabled?: false,
   gtfs_archive_storage_request_fn: {Arrow.Mock.ExAws.Request, :request},
   hastus_export_storage_enabled?: false,
-  hastus_export_storage_request_fn: {Arrow.Mock.ExAws.Request, :request}
+  hastus_export_storage_request_fn: {Arrow.Mock.ExAws.Request, :request},
+  trainsformer_export_storage_enabled?: false,
+  trainsformer_export_storage_request_fn: {Arrow.Mock.ExAws.Request, :request}
 
 # Configure your database
 config :arrow, Arrow.Repo,

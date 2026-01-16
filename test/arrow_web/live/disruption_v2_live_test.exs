@@ -61,6 +61,23 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     end
 
     @tag :authenticated_admin
+    test "saves new disruption_v2 for Commuter Rail", %{conn: conn} do
+      {:ok, index_live, _html} = live(conn, ~p"/disruptions/new")
+
+      assert index_live
+             |> form("#disruption_v2-form",
+               disruption_v2: %{@create_attrs | mode: "commuter_rail"}
+             )
+             |> render_submit()
+
+      html = render(index_live)
+      assert html =~ "Disruption created successfully"
+      refute html =~ "Limits"
+      assert html =~ "Trainsformer Service Schedules"
+      refute html =~ "Replacement Service"
+    end
+
+    @tag :authenticated_admin
     test "Does not show additional sections when creating new disruption", %{conn: conn} do
       {:ok, _index_live, html} = live(conn, ~p"/disruptions/new")
 

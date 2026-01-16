@@ -1,4 +1,4 @@
-defmodule ArrowWeb.TimetableController do
+defmodule ArrowWeb.ReplacementServiceTimetableController do
   use ArrowWeb, :controller
 
   alias Arrow.Disruptions

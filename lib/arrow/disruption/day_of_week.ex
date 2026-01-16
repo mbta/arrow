@@ -69,5 +69,6 @@ defmodule Arrow.Disruption.DayOfWeek do
   def day_name(7), do: "sunday"
 
   @spec date_to_day_name(Date.t()) :: String.t()
-  def date_to_day_name(date), do: date |> Date.day_of_week() |> day_name()
+  def date_to_day_name(date),
+    do: date |> Date.day_of_week() |> day_name()
 end
