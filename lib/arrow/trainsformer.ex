@@ -309,6 +309,7 @@ defmodule Arrow.Trainsformer do
         join: disruptions in assoc(exports, :disruption),
         join: services in assoc(exports, :services),
         join: service_dates in assoc(services, :service_dates),
+        join: routes in assoc(exports, :routes),
         where: disruptions.is_active == true,
         where:
           fragment(
@@ -320,7 +321,8 @@ defmodule Arrow.Trainsformer do
           ),
         preload: [
           disruption: disruptions,
-          services: {services, service_dates: service_dates}
+          services: {services, service_dates: service_dates},
+          routes: routes
         ]
 
     Repo.all(query)

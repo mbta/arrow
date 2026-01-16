@@ -30,11 +30,20 @@ defmodule ArrowWeb.API.TrainsformerServiceScheduleController do
               }
             end
 
+          routes =
+            for route <- export.routes do
+              %{
+                id: route.id,
+                route_name: route.route_id
+              }
+            end
+
           %{
             trainsformer_export_id: export.id,
             disruption_id: export.disruption_id,
             disruption_title: export.disruption.title,
             services: services,
+            routes: routes,
             download_url: download_url
           }
         end
