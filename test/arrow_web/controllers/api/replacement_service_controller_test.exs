@@ -50,8 +50,8 @@ defmodule ArrowWeb.API.ReplacementServiceControllerTest do
       active_end_date_formatted = Date.to_iso8601(active_end)
 
       res =
-        get(
-          conn,
+        conn
+        |> get(
           "/api/replacement-service?start_date=#{active_end_date_formatted}&end_date=#{active_end_date_formatted}"
         )
         |> json_response(200)

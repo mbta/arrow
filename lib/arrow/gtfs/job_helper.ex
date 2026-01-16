@@ -27,7 +27,11 @@ defmodule Arrow.Gtfs.JobHelper do
     worker = inspect(worker_mod)
     states = Map.fetch!(job_filters(), status_filter)
 
-    Arrow.Repo.all(from j in Oban.Job, where: [worker: ^worker], where: j.state in ^states)
+    from(j in Oban.Job,
+      where: [worker: ^worker],
+      where: j.state in ^states
+    )
+    |> Arrow.Repo.all()
     |> Enum.map(
       &Map.take(
         &1,

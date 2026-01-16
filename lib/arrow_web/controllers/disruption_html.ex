@@ -119,6 +119,6 @@ defmodule ArrowWeb.DisruptionView do
   end
 
   def date(dt) do
-    DateTime.shift_zone!(dt, "America/New_York") |> Calendar.strftime("%m/%d/%y")
+    dt |> DateTime.shift_zone!("America/New_York") |> Calendar.strftime("%m/%d/%y")
   end
 end
