@@ -237,17 +237,17 @@ defmodule ArrowWeb.EditLimitForm do
   defp get_stops_for_route(nil), do: []
 
   defp get_stops_for_route(route_id) do
-    Arrow.Repo.all(
-      from t in Arrow.Gtfs.Trip,
-        where: t.route_id == ^route_id and t.direction_id == 0 and t.service_id == "canonical",
-        join: st in Arrow.Gtfs.StopTime,
-        on: t.id == st.trip_id,
-        join: s in Arrow.Gtfs.Stop,
-        on: s.id == st.stop_id,
-        where: s.location_type == :stop_platform,
-        select: s,
-        order_by: st.stop_sequence
+    from(t in Arrow.Gtfs.Trip,
+      where: t.route_id == ^route_id and t.direction_id == 0 and t.service_id == "canonical",
+      join: st in Arrow.Gtfs.StopTime,
+      on: t.id == st.trip_id,
+      join: s in Arrow.Gtfs.Stop,
+      on: s.id == st.stop_id,
+      where: s.location_type == :stop_platform,
+      select: s,
+      order_by: st.stop_sequence
     )
+    |> Arrow.Repo.all()
     |> Enum.uniq_by(& &1.parent_station_id)
     |> Enum.map(&{&1.name, &1.parent_station_id})
   end

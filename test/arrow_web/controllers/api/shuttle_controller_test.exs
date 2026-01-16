@@ -67,7 +67,8 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
         |> Arrow.Repo.update()
 
       res =
-        get(conn, "/api/shuttles")
+        conn
+        |> get("/api/shuttles")
         |> json_response(200)
 
       route0_id = to_string(route0.id)
