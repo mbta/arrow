@@ -58,6 +58,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
            {:ok, t()}
            | {:error, {:invalid_stop_times, any()}}}
           | {:error, {:invalid_export_stops, [String.t()]}}
+          | {:error, {:existing_service_id, [String.t()]}}
   def extract_data_from_upload(
         %{path: zip_path},
         unzip_module \\ Unzip,
@@ -71,6 +72,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
          {:ok, stop_ids} <-
            validate_stop_times_in_gtfs(stop_times),
          :ok <- validate_stop_order(stop_times),
+         :ok <- validate_unique_service_ids(trips),
          {:ok, zip_bin} <- File.read(zip_path) do
       one_of_north_south_stations = validate_one_of_north_south_stations(stop_ids)
       {missing_routes, invalid_routes} = validate_one_or_all_routes_from_one_side(trips)
@@ -128,6 +130,26 @@ defmodule Arrow.Trainsformer.ExportUpload do
     e ->
       # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
       {:ok, {:error, "Could not parse zip, message=#{Exception.format(:error, e)}"}}
+  end
+
+  defp validate_unique_service_ids(trips) do
+    export_service_ids =
+      trips
+      |> MapSet.new(& &1[:service_id])
+      |> MapSet.to_list()
+
+    existing_service_ids_intersection =
+      Arrow.Repo.all(
+        from s in Arrow.Trainsformer.Service,
+          select: s.name,
+          where: s.name in ^export_service_ids
+      )
+
+    if Enum.empty?(existing_service_ids_intersection) do
+      :ok
+    else
+      {:error, {:existing_service_id, existing_service_ids_intersection}}
+    end
   end
 
   def validate_stop_times_in_gtfs(
