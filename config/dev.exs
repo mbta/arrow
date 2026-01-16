@@ -82,7 +82,13 @@ config :arrow,
   gtfs_archive_storage_prefix_env: "dev/local/",
   hastus_export_storage_enabled?: true,
   hastus_export_storage_prefix_env: "dev/local/",
+  trainsformer_export_storage_enabled?: true,
+  trainsformer_export_storage_prefix_env: "dev/local/",
   use_username_prefix?: true
+
+config :ex_aws,
+  access_key_id: [{:system, "AWS_ACCESS_KEY_ID"}, {:awscli, "default", 30}],
+  secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, {:awscli, "default", 30}]
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
@@ -96,7 +102,9 @@ config :phoenix, :plug_init_mode, :runtime
 
 config :phoenix_live_view,
   # Include HEEx debug annotations as HTML comments in rendered markup
-  debug_heex_annotations: true
+  debug_heex_annotations: true,
+  debug_attributes: true,
+  enable_expensive_runtime_checks: true
 
 # Enable helpful, but potentially expensive runtime checks
 # enable_expensive_runtime_checks: true

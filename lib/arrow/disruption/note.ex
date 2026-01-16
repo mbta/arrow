@@ -3,20 +3,12 @@ defmodule Arrow.Disruption.Note do
   Free-form text notes that can be attached to a disruption.
   """
 
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
 
   alias Arrow.Disruption
 
-  @type t :: %__MODULE__{
-          body: String.t(),
-          author: String.t(),
-          disruption: Arrow.Disruption.t() | Ecto.Association.NotLoaded.t(),
-          inserted_at: DateTime.t() | nil,
-          updated_at: DateTime.t() | nil
-        }
-
-  schema "disruption_notes" do
+  typed_schema "disruption_notes" do
     field(:body, :string)
     field(:author, :string)
     belongs_to(:disruption, Arrow.Disruption)

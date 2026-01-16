@@ -7,7 +7,7 @@ defmodule Arrow.MixProject do
       version: "0.1.0",
       elixir: "~> 1.18",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: Mix.compilers(),
+      compilers: [:phoenix_live_view] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps(),
@@ -20,7 +20,8 @@ defmodule Arrow.MixProject do
         ]
       ],
       preferred_cli_env: ["test.integration": :test],
-      test_coverage: [tool: LcovEx, ignore_paths: ["deps/"]]
+      test_coverage: [tool: LcovEx, ignore_paths: ["deps/"]],
+      listeners: [Phoenix.CodeReloader]
     ]
   end
 
@@ -43,6 +44,9 @@ defmodule Arrow.MixProject do
   # Type `mix help deps` for examples and options.
   def deps do
     [
+      {:typed_ecto_schema, "~> 0.4.3"},
+      {:ex_doc, "~> 0.38.3", only: :dev, runtime: false, warn_if_outdated: true},
+      {:configparser_ex, "~> 5.0", only: :dev},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:csv, "~> 3.2"},
       {:dialyxir, "~> 1.1", only: [:dev], runtime: false},
@@ -53,9 +57,8 @@ defmodule Arrow.MixProject do
       {:ex_aws_secretsmanager, "~> 2.0"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.1"},
-      {:floki, ">= 0.30.0", only: :test},
       {:sweet_xml, "~> 0.7.4"},
-      {:ex_machina, "~> 2.3", only: :test},
+      {:ex_machina, "~> 2.8", only: :test},
       {:gettext, "~> 0.11"},
       {:guardian, "~> 2.0"},
       {:hackney, "~> 1.21"},
@@ -63,6 +66,7 @@ defmodule Arrow.MixProject do
       {:ja_serializer, "~> 0.18.0"},
       {:jason, "~> 1.0"},
       {:live_select, "~> 1.7.0"},
+      {:lazy_html, ">= 0.1.0", only: :test},
       {:lcov_ex, "~> 0.2", only: [:dev, :test], runtime: false},
       {:mox, "~> 1.2", only: :test},
       {:oban, "~> 2.18"},
@@ -71,10 +75,10 @@ defmodule Arrow.MixProject do
       {:phoenix_html, "~> 4.0"},
       {:phoenix_html_helpers, "~> 1.0"},
       {:phoenix_live_react, "~> 0.6"},
-      {:phoenix_live_view, "~> 1.0.1"},
+      {:phoenix_live_view, "~> 1.1.2"},
       {:phoenix_live_dashboard, "~> 0.7"},
       {:phoenix_pubsub, "~> 2.0"},
-      {:phoenix, "~> 1.7.12"},
+      {:phoenix, "~> 1.8.0"},
       {:plug_cowboy, "~> 2.1"},
       {:telemetry, "~> 1.2", override: true},
       {:telemetry_poller, "~> 1.1"},

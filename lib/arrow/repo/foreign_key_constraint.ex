@@ -2,20 +2,13 @@ defmodule Arrow.Repo.ForeignKeyConstraint do
   @moduledoc """
   Schema allowing Arrow to introspect its DB's foreign key constraints.
   """
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Query
   alias Arrow.Repo
 
-  @type t :: %__MODULE__{
-          name: String.t(),
-          origin_table: String.t(),
-          referenced_table: String.t(),
-          definition: String.t()
-        }
-
   @primary_key false
 
-  schema "foreign_key_constraints" do
+  typed_schema "foreign_key_constraints" do
     field :name
     field :origin_table
     field :referenced_table

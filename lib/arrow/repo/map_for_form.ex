@@ -7,6 +7,8 @@ defmodule Arrow.Repo.MapForForm do
   """
   use Ecto.Type
 
+  @type t() :: map()
+
   def type, do: :map
 
   # External Data

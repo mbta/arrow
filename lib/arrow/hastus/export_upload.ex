@@ -2,7 +2,6 @@ defmodule Arrow.Hastus.ExportUpload do
   @moduledoc """
   Functions for validating and parsing HASTUS exports
   """
-
   import Ecto.Query, only: [from: 2]
 
   require Logger
@@ -46,7 +45,7 @@ defmodule Arrow.Hastus.ExportUpload do
   def extract_data_from_upload(%{path: zip_path}, user_id) do
     tmp_dir = ~c"tmp/hastus/#{user_id}"
 
-    with {:ok, zip_bin, file_map} <- read_zip(zip_path, tmp_dir),
+    with {:ok, zip_bin, file_map} <- Arrow.Util.read_zip(zip_path, @filenames, tmp_dir),
          {:ok, zip_bin, file_map, amended?} <- amend_service_ids(zip_bin, file_map, tmp_dir),
          revenue_trips <- Stream.filter(file_map["all_trips.txt"], &revenue_trip?/1),
          :ok <- validate_trip_shapes(revenue_trips, file_map["all_shapes.txt"]),
@@ -90,22 +89,17 @@ defmodule Arrow.Hastus.ExportUpload do
       {:ok, {:error, "Could not parse zip."}}
   end
 
-  @spec upload_to_s3(binary(), String.t()) ::
+  @spec upload_to_s3(binary(), String.t(), String.t() | integer()) ::
           {:ok, :disabled} | {:ok, String.t()} | {:error, term()}
-  def upload_to_s3(file_data, filename) do
+  def upload_to_s3(file_data, filename, disruption_id) do
     if Application.fetch_env!(:arrow, :hastus_export_storage_enabled?) do
-      do_upload(file_data, filename)
+      timestamp = System.system_time(:second)
+      basename = Path.basename(filename, Path.extname(filename))
+      ext = Path.extname(filename)
+      modified_filename = "#{timestamp}_#{basename}_disruption_#{disruption_id}#{ext}"
+      do_upload(file_data, modified_filename)
     else
       {:ok, "disabled"}
-    end
-  end
-
-  @spec read_zip(Path.t(), Path.t()) :: {:ok, binary(), map()} | {:error, term()}
-  defp read_zip(zip_path, tmp_dir) do
-    with {:ok, zip_bin} <- File.read(zip_path),
-         {:ok, unzipped_file_list} <- :zip.unzip(zip_bin, file_list: @filenames, cwd: tmp_dir),
-         {:ok, file_map} <- read_csvs(unzipped_file_list, tmp_dir) do
-      {:ok, zip_bin, file_map}
     end
   end
 
@@ -148,7 +142,8 @@ defmodule Arrow.Hastus.ExportUpload do
       Enum.each(replacements, &amend_service_id(&1, tmp_dir))
 
       with {:ok, zip_path} <- write_amended_zip(tmp_dir),
-           {:ok, amended_zip_bin, amended_file_map} <- read_zip(zip_path, tmp_dir) do
+           {:ok, amended_zip_bin, amended_file_map} <-
+             Arrow.Util.read_zip(zip_path, @filenames, tmp_dir) do
         {:ok, amended_zip_bin, amended_file_map, true}
       end
     end
@@ -207,7 +202,11 @@ defmodule Arrow.Hastus.ExportUpload do
     s3_bucket = Application.fetch_env!(:arrow, :hastus_export_storage_bucket)
     path = get_upload_path(filename)
 
-    upload_op = ExAws.S3.put_object(s3_bucket, path, file_data, content_type: "application/zip")
+    upload_op =
+      ExAws.S3.put_object(s3_bucket, path, file_data,
+        content_type: "application/zip",
+        if_none_match: "*"
+      )
 
     {mod, fun} = Application.fetch_env!(:arrow, :hastus_export_storage_request_fn)
 
@@ -230,30 +229,6 @@ defmodule Arrow.Hastus.ExportUpload do
     [prefix_env, username_prefix, s3_prefix, filename]
     |> Enum.reject(&is_nil/1)
     |> Path.join()
-  end
-
-  defp read_csvs(unzip, tmp_dir) do
-    missing_files = Enum.filter(@filenames, &(get_unzipped_file_path(&1, tmp_dir) not in unzip))
-
-    if Enum.any?(missing_files) do
-      {:error,
-       "The following files are missing from the export: #{Enum.join(missing_files, ", ")}"}
-    else
-      map =
-        @filenames
-        |> Enum.map(fn filename ->
-          data =
-            filename
-            |> get_unzipped_file_path(tmp_dir)
-            |> File.stream!()
-            |> CSV.decode!(headers: true)
-
-          {to_string(filename), data}
-        end)
-        |> Map.new()
-
-      {:ok, map}
-    end
   end
 
   defp validate_trip_shapes(revenue_trips, shapes) do
@@ -365,10 +340,13 @@ defmodule Arrow.Hastus.ExportUpload do
         branch when branch in ["B", "C", "D", "E"] ->
           "Green-#{branch}"
 
-        _ ->
+        branch ->
+          stop_ids_for_trip = Enum.map(stop_times_by_trip_id[trip["trip_id"]], & &1["stop_id"])
+
           find_branch_based_on_stop_times(
             canonical_stops_by_branch,
-            Enum.map(stop_times_by_trip_id[trip["trip_id"]], & &1["stop_id"])
+            stop_ids_for_trip,
+            branch
           )
       end
 
@@ -385,7 +363,15 @@ defmodule Arrow.Hastus.ExportUpload do
     end
   end
 
-  defp find_branch_based_on_stop_times(canonical_stops_by_branch, stop_ids_for_trip) do
+  defp find_branch_based_on_stop_times(canonical_stops_by_branch, stop_ids_for_trip, branch) do
+    if branch == "U" and "70504" in stop_ids_for_trip and "70260" in stop_ids_for_trip do
+      "Green-E"
+    else
+      find_branch_based_on_canonical_stop_times(canonical_stops_by_branch, stop_ids_for_trip)
+    end
+  end
+
+  defp find_branch_based_on_canonical_stop_times(canonical_stops_by_branch, stop_ids_for_trip) do
     case Enum.filter(canonical_stops_by_branch, fn {_route_id, canonical_stops} ->
            Enum.all?(
              stop_ids_for_trip,
@@ -397,8 +383,6 @@ defmodule Arrow.Hastus.ExportUpload do
       [_ | _] -> nil
     end
   end
-
-  defp get_unzipped_file_path(filename, tmp_dir), do: ~c"#{tmp_dir}/#{filename}"
 
   defp parse_services(%{
          "all_calendar.txt" => calendar,

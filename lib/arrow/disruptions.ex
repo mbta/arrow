@@ -14,7 +14,8 @@ defmodule Arrow.Disruptions do
   @preloads [
     limits: [:route, :start_stop, :end_stop, :limit_day_of_weeks],
     replacement_services: [shuttle: [routes: [route_stops: [:stop]]]],
-    hastus_exports: [:line, services: [:service_dates, derived_limits: [:start_stop, :end_stop]]]
+    hastus_exports: [:line, services: [:service_dates, derived_limits: [:start_stop, :end_stop]]],
+    trainsformer_exports: [:routes, services: [:service_dates]]
   ]
 
   @doc """
@@ -379,24 +380,32 @@ defmodule Arrow.Disruptions do
     )
   end
 
-  def start_end_dates(%DisruptionV2{limits: [], replacement_services: []}) do
-    {nil, nil}
-  end
-
   def start_end_dates(%DisruptionV2{
         limits: limits,
-        replacement_services: replacement_services
+        replacement_services: replacement_services,
+        hastus_exports: hastus_exports
       }) do
-    min_date =
-      (limits ++ replacement_services)
-      |> Enum.map(& &1.start_date)
-      |> Enum.min(Date, fn -> ~D[9999-12-31] end)
+    hastus_service_dates =
+      Enum.flat_map(hastus_exports, fn export ->
+        export.services
+        |> Enum.filter(& &1.import?)
+        |> Enum.flat_map(& &1.service_dates)
+      end)
 
-    max_date =
-      (limits ++ replacement_services)
-      |> Enum.map(& &1.end_date)
-      |> Enum.max(Date, fn -> ~D[0000-01-01] end)
+    if limits == [] and replacement_services == [] and hastus_service_dates == [] do
+      {nil, nil}
+    else
+      min_date =
+        (limits ++ replacement_services ++ hastus_service_dates)
+        |> Enum.map(& &1.start_date)
+        |> Enum.min(Date, fn -> ~D[9999-12-31] end)
 
-    {min_date, max_date}
+      max_date =
+        (limits ++ replacement_services ++ hastus_service_dates)
+        |> Enum.map(& &1.end_date)
+        |> Enum.max(Date, fn -> ~D[0000-01-01] end)
+
+      {min_date, max_date}
+    end
   end
 end

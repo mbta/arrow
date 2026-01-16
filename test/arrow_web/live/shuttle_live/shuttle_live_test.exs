@@ -161,8 +161,9 @@ defmodule ArrowWeb.ShuttleLiveTest do
       assert edit_live
              |> form("#shuttle-form")
              |> render_change(shuttle: edit_stop_attrs)
-             |> Floki.find("#shuttle_routes_0_route_stops_0_display_stop_id")
-             |> Floki.attribute("value")
+             |> LazyHTML.from_fragment()
+             |> LazyHTML.query("#shuttle_routes_0_route_stops_0_display_stop_id")
+             |> LazyHTML.attribute("value")
              |> List.first() =~ "#{stop_id}"
 
       {:ok, conn} =
@@ -254,8 +255,9 @@ defmodule ArrowWeb.ShuttleLiveTest do
       assert edit_live
              |> form("#shuttle-form")
              |> render_change(shuttle: add_stop_attrs)
-             |> Floki.find("#shuttle_routes_0_route_stops_0_display_stop_id")
-             |> Floki.attribute("value")
+             |> LazyHTML.from_fragment()
+             |> LazyHTML.query("#shuttle_routes_0_route_stops_0_display_stop_id")
+             |> LazyHTML.attribute("value")
              |> List.first() =~ "#{stop_id}"
 
       {:ok, conn} =
@@ -382,7 +384,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       {:ok, edit_live, _html} = live(conn, ~p"/shuttles/#{shuttle}/edit")
 
       refute edit_live
-             |> element(~s{#shuttle_routes_0_route_stops_1_time_to_next_stop"})
+             |> element("#shuttle_routes_0_route_stops_1_time_to_next_stop")
              |> render() =~ "value"
 
       edit_live
@@ -390,7 +392,7 @@ defmodule ArrowWeb.ShuttleLiveTest do
       |> render_click()
 
       assert edit_live
-             |> element(~s{#shuttle_routes_0_route_stops_1_time_to_next_stop"})
+             |> element("#shuttle_routes_0_route_stops_1_time_to_next_stop")
              |> render() =~ "value=\"300\""
     end
   end
@@ -467,29 +469,32 @@ defmodule ArrowWeb.ShuttleLiveTest do
         insert(:gtfs_stop, %{id: stop_id})
       end)
 
-      html = render_upload(definition, "valid.xlsx")
+      html =
+        definition
+        |> render_upload("valid.xlsx")
+        |> LazyHTML.from_fragment()
 
-      direction_0_stop_rows = Floki.find(html, "#stops-dir-0 > .row")
-      direction_1_stop_rows = Floki.find(html, "#stops-dir-1 > .row")
+      direction_0_stop_rows = LazyHTML.query(html, "#stops-dir-0 > .row")
+      direction_1_stop_rows = LazyHTML.query(html, "#stops-dir-1 > .row")
 
       for {stop_id, index} <- Enum.with_index(direction_0_stop_sequence, 1) do
         [stop] =
-          Floki.attribute(
-            direction_0_stop_rows,
-            "[data-stop_sequence=#{index}] > div > div.form-group > div > div > div > input[type=text]",
-            "value"
+          direction_0_stop_rows
+          |> LazyHTML.query(
+            "[data-stop_sequence|=\"#{index}\"] > div > div.form-group > div > div > div > input[type=text]"
           )
+          |> LazyHTML.attribute("value")
 
         assert stop =~ stop_id
       end
 
       for {stop_id, index} <- Enum.with_index(direction_1_stop_sequence, 1) do
         [stop] =
-          Floki.attribute(
-            direction_1_stop_rows,
-            "[data-stop_sequence=#{index}] > div > div.form-group > div > div > div > input[type=text]",
-            "value"
+          direction_1_stop_rows
+          |> LazyHTML.query(
+            "[data-stop_sequence|=\"#{index}\"] > div > div.form-group > div > div > div > input[type=text]"
           )
+          |> LazyHTML.attribute("value")
 
         assert stop =~ stop_id
       end
@@ -510,31 +515,36 @@ defmodule ArrowWeb.ShuttleLiveTest do
       direction_0_stop_sequence = ~w(9328 5327 5271)
       direction_1_stop_sequence = ~w(5271 5072 9328)
 
-      html = render_upload(definition, "valid.xlsx")
+      html =
+        definition
+        |> render_upload("valid.xlsx")
+        |> LazyHTML.from_fragment()
 
-      assert html =~ "Failed to upload definition:"
-      assert html =~ "not a valid stop ID &#39;9328"
-      assert html =~ "not a valid stop ID &#39;5072"
+      text = LazyHTML.text(html)
 
-      direction_0_stop_rows = Floki.find(html, "#stops-dir-0 > .row")
-      direction_1_stop_rows = Floki.find(html, "#stops-dir-1 > .row")
+      assert text =~ "Failed to upload definition:"
+      assert text =~ "not a valid stop ID '9328'"
+      assert text =~ "not a valid stop ID '5072'"
+
+      direction_0_stop_rows = LazyHTML.query(html, "#stops-dir-0 > .row")
+      direction_1_stop_rows = LazyHTML.query(html, "#stops-dir-1 > .row")
 
       for {_stop_id, index} <- Enum.with_index(direction_0_stop_sequence, 1) do
         assert [] =
-                 Floki.attribute(
-                   direction_0_stop_rows,
-                   "[data-stop_sequence=#{index}] > div > div.form-group > div > div > div > input[type=text]",
-                   "value"
+                 direction_0_stop_rows
+                 |> LazyHTML.query(
+                   "[data-stop_sequence|=\"#{index}\"] > div > div.form-group > div > div > div > input[type=text]"
                  )
+                 |> LazyHTML.attribute("value")
       end
 
       for {_stop_id, index} <- Enum.with_index(direction_1_stop_sequence, 1) do
         assert [] =
-                 Floki.attribute(
-                   direction_1_stop_rows,
-                   "[data-stop_sequence=#{index}] > div > div.form-group > div > div > div > input[type=text]",
-                   "value"
+                 direction_1_stop_rows
+                 |> LazyHTML.query(
+                   "[data-stop_sequence|=\"#{index}\"] > div > div.form-group > div > div > div > input[type=text]"
                  )
+                 |> LazyHTML.attribute("value")
       end
     end
 

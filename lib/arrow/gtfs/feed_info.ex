@@ -8,18 +8,7 @@ defmodule Arrow.Gtfs.FeedInfo do
   use Arrow.Gtfs.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          id: String.t(),
-          publisher_name: String.t(),
-          publisher_url: String.t(),
-          lang: String.t(),
-          start_date: Date.t(),
-          end_date: Date.t(),
-          version: String.t(),
-          contact_email: String.t()
-        }
-
-  schema "gtfs_feed_info" do
+  typed_schema "gtfs_feed_info" do
     field :publisher_name, :string
     field :publisher_url, :string
     field :lang, :string

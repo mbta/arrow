@@ -159,7 +159,7 @@ defmodule Arrow.ShuttlesTest do
       shuttle = shuttle_fixture()
       update_attrs = %{status: :draft, shuttle_name: "some updated shuttle_name"}
 
-      assert {:ok, %Shuttle{} = shuttle} = Shuttles.update_shuttle(shuttle, update_attrs)
+      assert {:ok, %Shuttle{} = shuttle, _} = Shuttles.update_shuttle(shuttle, update_attrs)
       assert shuttle.status == :draft
       assert shuttle.shuttle_name == "some updated shuttle_name"
     end
@@ -176,7 +176,7 @@ defmodule Arrow.ShuttlesTest do
           | routes: [Map.from_struct(updated_route1), Map.from_struct(route2)]
         })
 
-      assert {:ok, %Shuttle{} = shuttle} = Shuttles.update_shuttle(shuttle, update_attrs)
+      assert {:ok, %Shuttle{} = shuttle, _} = Shuttles.update_shuttle(shuttle, update_attrs)
       assert List.first(shuttle.routes).id == route1.id
       assert List.first(shuttle.routes).destination == destination
     end
@@ -196,7 +196,9 @@ defmodule Arrow.ShuttlesTest do
           | routes: [Map.from_struct(updated_route1), Map.from_struct(existing_route2)]
         })
 
-      assert {:ok, %Shuttle{} = updated_shuttle} = Shuttles.update_shuttle(shuttle, update_attrs)
+      assert {:ok, %Shuttle{} = updated_shuttle, _} =
+               Shuttles.update_shuttle(shuttle, update_attrs)
+
       # Shuttle id is the same
       assert updated_shuttle.id == shuttle.id
       # Existing route is unchanged
@@ -223,6 +225,142 @@ defmodule Arrow.ShuttlesTest do
       shuttle = shuttle_fixture()
       assert {:error, %Ecto.Changeset{}} = Shuttles.update_shuttle(shuttle, @invalid_attrs)
       assert shuttle == Shuttles.get_shuttle!(shuttle.id)
+    end
+
+    test "update_shuttle/2 deactivates associated past disruptions when shuttle is deactivated" do
+      today = ~D[2025-06-01]
+
+      # Set up an active shuttle
+      shuttle = shuttle_fixture(%{status: :active}, true, true)
+      # Create another active shuttle to ensure we don't affect other shuttles
+      # (inactive disruption -> active shuttle is ok, active disruption -> inactive shuttle is not)
+      other_shuttle = shuttle_fixture(%{status: :active}, true, true)
+
+      # Associate shuttle with some approved (is_active=true) disruptions with all-past replacement services
+      disruption = insert(:disruption_v2, is_active: true)
+
+      insert(:replacement_service,
+        shuttle: shuttle,
+        disruption: disruption,
+        end_date: ~D[2025-05-31]
+      )
+
+      insert(:replacement_service,
+        shuttle: shuttle,
+        disruption: disruption,
+        end_date: ~D[2025-05-15]
+      )
+
+      insert(:replacement_service,
+        shuttle: other_shuttle,
+        disruption: disruption,
+        end_date: ~D[2025-05-15]
+      )
+
+      disruption2 = insert(:disruption_v2, is_active: true)
+
+      insert(:replacement_service,
+        shuttle: shuttle,
+        disruption: disruption2,
+        end_date: ~D[2025-05-15]
+      )
+
+      insert(:replacement_service,
+        shuttle: other_shuttle,
+        disruption: disruption2,
+        end_date: ~D[2025-05-15]
+      )
+
+      # An already-inactive disruption that should not be affected, and should not prevent shuttle deactivation
+      # despite having a replacement service with an end date in the future
+      disruption3 = insert(:disruption_v2, is_active: false)
+
+      insert(:replacement_service,
+        shuttle: shuttle,
+        disruption: disruption3,
+        end_date: ~D[2025-06-15]
+      )
+
+      # An unrelated disruption that should not be affected
+      disruption4 = insert(:disruption_v2, is_active: true)
+
+      insert(:replacement_service,
+        shuttle: other_shuttle,
+        disruption: disruption4,
+        end_date: ~D[2025-01-15]
+      )
+
+      assert {:ok, %Shuttles.Shuttle{} = updated_shuttle, [_ | _] = deactivated_disruptions} =
+               Shuttles.update_shuttle(shuttle, %{status: :inactive}, today)
+
+      assert updated_shuttle.status == :inactive
+
+      assert Enum.all?(deactivated_disruptions, &(not &1.is_active))
+
+      assert MapSet.new(deactivated_disruptions, & &1.id) ==
+               MapSet.new([disruption.id, disruption2.id])
+
+      refute Arrow.Disruptions.get_disruption_v2!(disruption3.id).is_active
+
+      assert Arrow.Disruptions.get_disruption_v2!(disruption4.id).is_active
+
+      assert Shuttles.get_shuttle!(other_shuttle.id).status == :active
+    end
+
+    test "update_shuttle/2 fails to deactivate shuttle if it belongs to a current/upcoming replacement service that belongs to an active disruption" do
+      today = ~D[2025-06-01]
+
+      shuttle = shuttle_fixture(%{status: :active}, true, true)
+      disruption = insert(:disruption_v2, is_active: true)
+      insert(:replacement_service, shuttle: shuttle, disruption: disruption, end_date: today)
+
+      update_attrs = %{status: :inactive}
+
+      assert {:error, %Ecto.Changeset{} = changeset} =
+               Shuttles.update_shuttle(shuttle, update_attrs, today)
+
+      expected_error_msg =
+        "can't deactivate: shuttle is in use by approved disruption(s) that are in effect now or in the future: \"#{disruption.title}\""
+
+      assert %{errors: [status: {^expected_error_msg, []}]} = changeset
+
+      still_active_disruption = Arrow.Disruptions.get_disruption_v2!(disruption.id)
+      assert still_active_disruption.is_active
+    end
+
+    test "update_shuttle/2 fails to deactivate shuttle if any active associated disruption exists with a current/upcoming replacement service (including those using different shuttles)" do
+      today = ~D[2025-06-01]
+
+      shuttle = shuttle_fixture(%{status: :active}, true, true)
+      other_shuttle = shuttle_fixture(%{status: :active}, true, true)
+      disruption = insert(:disruption_v2, is_active: true)
+
+      # Disruption uses this shuttle in the past only, which is ok
+      insert(:replacement_service,
+        shuttle: shuttle,
+        disruption: disruption,
+        end_date: Date.add(today, -1)
+      )
+
+      # Disruption uses a different shuttle in the future, which should block deactivation
+      insert(:replacement_service,
+        shuttle: other_shuttle,
+        disruption: disruption,
+        end_date: Date.add(today, 5)
+      )
+
+      update_attrs = %{status: :inactive}
+
+      assert {:error, %Ecto.Changeset{} = changeset} =
+               Shuttles.update_shuttle(shuttle, update_attrs, today)
+
+      expected_error_msg =
+        "can't deactivate: shuttle is in use by approved disruption(s) that are in effect now or in the future: \"#{disruption.title}\""
+
+      assert %{errors: [status: {^expected_error_msg, []}]} = changeset
+
+      still_active_disruption = Arrow.Disruptions.get_disruption_v2!(disruption.id)
+      assert still_active_disruption.is_active
     end
 
     test "change_shuttle/1 returns a shuttle changeset" do

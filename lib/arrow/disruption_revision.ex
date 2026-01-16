@@ -3,7 +3,7 @@ defmodule Arrow.DisruptionRevision do
   A particular version of a Disruption, in that Disruption's creation/edit/deletion life cycle.
   """
 
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Query
 
   alias Arrow.{Adjustment, Disruption, Repo}
@@ -11,26 +11,8 @@ defmodule Arrow.DisruptionRevision do
   alias Ecto.Changeset
 
   @type id :: integer
-  @type t :: %__MODULE__{
-          id: id,
-          end_date: Date.t() | nil,
-          start_date: Date.t() | nil,
-          row_approved: boolean(),
-          is_active: boolean(),
-          description: String.t(),
-          adjustment_kind: atom() | nil,
-          note_body: String.t() | nil,
-          disruption: Disruption.t() | Ecto.Association.NotLoaded.t(),
-          days_of_week: [DayOfWeek.t()] | Ecto.Association.NotLoaded.t(),
-          exceptions: [Exception.t()] | Ecto.Association.NotLoaded.t(),
-          trip_short_names: [TripShortName.t()] | Ecto.Association.NotLoaded.t(),
-          adjustments: [Adjustment.t()] | Ecto.Association.NotLoaded.t(),
-          inserted_at: DateTime.t() | nil,
-          updated_at: DateTime.t() | nil,
-          title: String.t()
-        }
 
-  schema "disruption_revisions" do
+  typed_schema "disruption_revisions" do
     field(:end_date, :date)
     field(:start_date, :date)
     field(:is_active, :boolean)

@@ -125,7 +125,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
     |> scroll_down()
     |> assert_text("some-Weekday-service")
     |> click(Query.css("#delete-export-button-#{export.id}"))
-    |> refute_has(Query.css("#export-table-#{export.id}"))
+    |> refute_has(Query.css("#export-table-hastus-#{export.id}"))
   end
 
   feature "warns and requests confirmation if export reuses existing service IDs known to Arrow",

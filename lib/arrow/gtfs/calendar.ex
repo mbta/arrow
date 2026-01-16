@@ -10,20 +10,7 @@ defmodule Arrow.Gtfs.Calendar do
 
   @primary_key false
 
-  @type t :: %__MODULE__{
-          service: Arrow.Gtfs.Service.t() | Ecto.Association.NotLoaded.t(),
-          monday: boolean,
-          tuesday: boolean,
-          wednesday: boolean,
-          thursday: boolean,
-          friday: boolean,
-          saturday: boolean,
-          sunday: boolean,
-          start_date: Date.t(),
-          end_date: Date.t()
-        }
-
-  schema "gtfs_calendars" do
+  typed_schema "gtfs_calendars" do
     belongs_to :service, Arrow.Gtfs.Service, primary_key: true
 
     for day <- ~w[monday tuesday wednesday thursday friday saturday sunday]a do

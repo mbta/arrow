@@ -4,7 +4,8 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   alias Arrow.{Adjustment, Disruptions, Limits}
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
   alias Arrow.Hastus
-  alias Arrow.Hastus.Export
+  alias Arrow.Hastus.Export, as: HastusExport
+  alias Arrow.Trainsformer.Export, as: TrainsformerExport
   alias ArrowWeb.DisruptionComponents
 
   @impl true
@@ -39,24 +40,37 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     </div>
 
     <%= if !@editing || !is_struct(@editing, DisruptionV2) || @editing.id do %>
-      <DisruptionComponents.view_limits
-        disruption={@disruption}
-        icon_paths={@icon_paths}
-        editing={@editing}
-      />
+      <%= if @disruption.mode != :commuter_rail do %>
+        <DisruptionComponents.view_limits
+          disruption={@disruption}
+          icon_paths={@icon_paths}
+          editing={@editing}
+        />
+      <% end %>
 
-      <DisruptionComponents.view_hastus_service_schedules
-        disruption={@disruption}
-        icon_paths={@icon_paths}
-        editing={@editing}
-        user_id={@user_id}
-      />
+      <%= if @disruption.mode == :commuter_rail do %>
+        <DisruptionComponents.view_trainsformer_service_schedules
+          disruption={@disruption}
+          editing={@editing}
+          user_id={@user_id}
+          icon_paths={@icon_paths}
+        />
+      <% else %>
+        <DisruptionComponents.view_hastus_service_schedules
+          disruption={@disruption}
+          icon_paths={@icon_paths}
+          editing={@editing}
+          user_id={@user_id}
+        />
+      <% end %>
 
-      <DisruptionComponents.view_replacement_services
-        disruption={@disruption}
-        icon_paths={@icon_paths}
-        editing={@editing}
-      />
+      <%= if @disruption.mode != :commuter_rail do %>
+        <DisruptionComponents.view_replacement_services
+          disruption={@disruption}
+          icon_paths={@icon_paths}
+          editing={@editing}
+        />
+      <% end %>
     <% end %>
     """
   end
@@ -242,7 +256,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
 
   defp apply_action(socket, :new_hastus_export, %{"id" => id}) do
     disruption = Disruptions.get_disruption_v2!(id)
-    hastus_export = %Export{services: []}
+    hastus_export = %HastusExport{services: []}
 
     socket
     |> assign(:title, "edit disruption")
@@ -260,6 +274,17 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     |> assign(:page_title, "Edit Disruption v2")
     |> assign(:disruption, disruption)
     |> assign(:editing, hastus_export)
+  end
+
+  defp apply_action(socket, :new_trainsformer_export, %{"id" => id}) do
+    disruption = Disruptions.get_disruption_v2!(id)
+    trainsformer_export = %TrainsformerExport{}
+
+    socket
+    |> assign(:title, "edit disruption")
+    |> assign(:page_title, "Edit Disruption v2")
+    |> assign(:disruption, disruption)
+    |> assign(:editing, trainsformer_export)
   end
 
   defp apply_action(socket, :new_replacement_service, %{"id" => id}) do

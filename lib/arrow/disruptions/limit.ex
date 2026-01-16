@@ -1,11 +1,9 @@
 defmodule Arrow.Disruptions.Limit do
   @moduledoc "schema for a limit for the db"
 
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
 
-  alias Arrow.Disruptions.DisruptionV2
-  alias Arrow.Gtfs.{Route, Stop}
   alias Arrow.Limits.LimitDayOfWeek
 
   @default_day_of_weeks_list [
@@ -18,17 +16,7 @@ defmodule Arrow.Disruptions.Limit do
     %LimitDayOfWeek{day_name: :sunday}
   ]
 
-  @type t :: %__MODULE__{
-          start_date: Date.t() | nil,
-          end_date: Date.t() | nil,
-          disruption: DisruptionV2.t() | Ecto.Association.NotLoaded.t(),
-          route: Route.t() | Ecto.Association.NotLoaded.t(),
-          start_stop: Stop.t() | Ecto.Association.NotLoaded.t(),
-          end_stop: Stop.t() | Ecto.Association.NotLoaded.t(),
-          limit_day_of_weeks: [LimitDayOfWeek.t()] | Ecto.Association.NotLoaded.t()
-        }
-
-  schema "limits" do
+  typed_schema "limits" do
     field :start_date, :date
     field :end_date, :date
     field :check_for_overlap, :boolean, default: true
@@ -113,7 +101,8 @@ defmodule Arrow.Disruptions.Limit do
     )
   end
 
-  @spec dow_in_date_range(Date.t() | nil, Date.t() | nil) :: MapSet.t(LimitDayOfWeek.day_name())
+  @spec dow_in_date_range(Date.t() | nil, Date.t() | nil) ::
+          MapSet.t(Arrow.Util.DayOfWeek.day_name())
   defp dow_in_date_range(start_date, end_date)
        when is_nil(start_date)
        when is_nil(end_date) do
@@ -124,6 +113,6 @@ defmodule Arrow.Disruptions.Limit do
     start_date
     |> Date.range(end_date)
     |> Stream.take(7)
-    |> MapSet.new(&(&1 |> Date.day_of_week() |> LimitDayOfWeek.day_name()))
+    |> MapSet.new(&(&1 |> Date.day_of_week() |> Arrow.Util.DayOfWeek.get_day_name()))
   end
 end

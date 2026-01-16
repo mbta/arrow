@@ -3,17 +3,10 @@ defmodule Arrow.Disruption.Exception do
   Dates within a disruption's time frame for which it does not apply.
   """
 
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{
-          excluded_date: Date.t() | nil,
-          disruption_revision: Arrow.DisruptionRevision | Ecto.Association.NotLoaded.t(),
-          inserted_at: DateTime.t() | nil,
-          updated_at: DateTime.t() | nil
-        }
-
-  schema "disruption_exceptions" do
+  typed_schema "disruption_exceptions" do
     field(:excluded_date, :date)
     belongs_to(:disruption_revision, Arrow.DisruptionRevision)
 

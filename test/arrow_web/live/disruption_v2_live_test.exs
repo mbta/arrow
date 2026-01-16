@@ -61,6 +61,23 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     end
 
     @tag :authenticated_admin
+    test "saves new disruption_v2 for Commuter Rail", %{conn: conn} do
+      {:ok, index_live, _html} = live(conn, ~p"/disruptions/new")
+
+      assert index_live
+             |> form("#disruption_v2-form",
+               disruption_v2: %{@create_attrs | mode: "commuter_rail"}
+             )
+             |> render_submit()
+
+      html = render(index_live)
+      assert html =~ "Disruption created successfully"
+      refute html =~ "Limits"
+      assert html =~ "Trainsformer Service Schedules"
+      refute html =~ "Replacement Service"
+    end
+
+    @tag :authenticated_admin
     test "Does not show additional sections when creating new disruption", %{conn: conn} do
       {:ok, _index_live, html} = live(conn, ~p"/disruptions/new")
 
@@ -123,10 +140,13 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
         |> render_change(%{
           replacement_service: %{shuttle_id: shuttle.id, disruption_id: disruption_v2.id}
         })
-        |> Floki.find("#shuttle-view-map-disruptionsv2-container")
+        |> LazyHTML.from_fragment()
+        |> LazyHTML.query("#shuttle-view-map-disruptionsv2-container")
+        |> LazyHTML.to_tree()
 
-      # make sure the shuttle map container is displayed when we have entered a new shuttle
-      assert [_shuttle_map_div] = stop_map_container
+      assert [
+               {"div", [{"id", "shuttle-view-map-disruptionsv2-container"}, _], _}
+             ] = stop_map_container
     end
 
     @tag :authenticated_admin
@@ -174,14 +194,17 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
         live
         |> form("#replacement_service-form")
         |> render_change(%{replacement_service: valid_attrs})
+        |> LazyHTML.from_fragment()
 
       replacement_service_workbook_filename =
         replacement_service_form
-        |> Floki.attribute("#display_replacement_service_source_workbook_filename", "value")
+        |> LazyHTML.query("#display_replacement_service_source_workbook_filename")
+        |> LazyHTML.attribute("value")
 
       replacement_service_workbook_data =
         replacement_service_form
-        |> Floki.attribute("#replacement_service_source_workbook_data", "value")
+        |> LazyHTML.query("#replacement_service_source_workbook_data")
+        |> LazyHTML.attribute("value")
 
       assert ["some source_workbook_filename"] = replacement_service_workbook_filename
       assert [^data] = replacement_service_workbook_data
@@ -214,16 +237,19 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
              |> render_click() =~
                "select shuttle route"
 
-      html = render(live)
+      html =
+        live
+        |> render()
+        |> LazyHTML.from_fragment()
 
       assert html
-             |> Floki.find(replacement_service_shuttle_id_input)
-             |> Floki.attribute("value")
+             |> LazyHTML.query(replacement_service_shuttle_id_input)
+             |> LazyHTML.attribute("value")
              |> List.first() =~ "#{replacement_service.shuttle.id}"
 
       assert html
-             |> Floki.find(replacement_service_shuttle_id_text_input)
-             |> Floki.attribute("value")
+             |> LazyHTML.query(replacement_service_shuttle_id_text_input)
+             |> LazyHTML.attribute("value")
              |> List.first() =~ "#{replacement_service.shuttle.shuttle_name}"
 
       new_shuttle = shuttle_fixture()
@@ -235,15 +261,16 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
         |> render_change(%{
           replacement_service: %{shuttle_id: new_shuttle.id, disruption_id: disruption_v2.id}
         })
+        |> LazyHTML.from_fragment()
 
       assert updated_shuttle_input_html
-             |> Floki.find(replacement_service_shuttle_id_input)
-             |> Floki.attribute("value")
+             |> LazyHTML.query(replacement_service_shuttle_id_input)
+             |> LazyHTML.attribute("value")
              |> List.first() =~ "#{new_shuttle.id}"
 
       assert updated_shuttle_input_html
-             |> Floki.find(replacement_service_shuttle_id_text_input)
-             |> Floki.attribute("value")
+             |> LazyHTML.query(replacement_service_shuttle_id_text_input)
+             |> LazyHTML.attribute("value")
              |> List.first() =~ "#{new_shuttle.shuttle_name}"
     end
 
@@ -267,16 +294,19 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
              |> render_click() =~
                "select shuttle route"
 
-      html = render(live)
+      html =
+        live
+        |> render()
+        |> LazyHTML.from_fragment()
 
       assert html
-             |> Floki.find(replacement_service_shuttle_id_input)
-             |> Floki.attribute("value")
+             |> LazyHTML.query(replacement_service_shuttle_id_input)
+             |> LazyHTML.attribute("value")
              |> List.first() =~ "#{shuttle.id}"
 
       assert html
-             |> Floki.find(replacement_service_shuttle_id_text_input)
-             |> Floki.attribute("value")
+             |> LazyHTML.query(replacement_service_shuttle_id_text_input)
+             |> LazyHTML.attribute("value")
              |> List.first() =~ "#{shuttle.shuttle_name}"
 
       updated_shuttle_input_html =
@@ -288,15 +318,16 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
             disruption_id: disruption_v2.id
           }
         })
+        |> LazyHTML.from_fragment()
 
       assert updated_shuttle_input_html
-             |> Floki.find(replacement_service_shuttle_id_input)
-             |> Floki.attribute("value")
+             |> LazyHTML.query(replacement_service_shuttle_id_input)
+             |> LazyHTML.attribute("value")
              |> List.first() =~ "#{shuttle.id}"
 
       assert updated_shuttle_input_html
-             |> Floki.find(replacement_service_shuttle_id_text_input)
-             |> Floki.attribute("value")
+             |> LazyHTML.query(replacement_service_shuttle_id_text_input)
+             |> LazyHTML.attribute("value")
              |> List.first() =~ "#{shuttle.shuttle_name}"
     end
   end
@@ -311,14 +342,24 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
     } do
       {:ok, live, _html} = live(conn, ~p"/disruptions/#{disruption.id}")
 
-      html = live |> element("#duplicate-limit-#{limit.id}") |> render_click()
+      html =
+        live
+        |> element("#duplicate-limit-#{limit.id}")
+        |> render_click()
+        |> LazyHTML.from_fragment()
 
-      assert html =~ "add new disruption limit"
+      assert LazyHTML.text(html) =~ "add new disruption limit"
 
-      assert html |> Floki.attribute("#limit_start_date", "value") |> List.first() ==
+      assert html
+             |> LazyHTML.query("#limit_start_date")
+             |> LazyHTML.attribute("value")
+             |> List.first() ==
                "#{limit.start_date}"
 
-      assert html |> Floki.attribute("#limit_end_date", "value") |> List.first() ==
+      assert html
+             |> LazyHTML.query("#limit_end_date")
+             |> LazyHTML.attribute("value")
+             |> List.first() ==
                "#{limit.end_date}"
     end
   end

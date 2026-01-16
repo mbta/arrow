@@ -63,9 +63,12 @@ defmodule Arrow.Factory do
   end
 
   def limit_factory do
+    today = Date.utc_today()
+    end_date = Date.add(today, 1)
+
     %Arrow.Disruptions.Limit{
       start_date: ~D[2025-01-01],
-      end_date: ~D[2025-12-31],
+      end_date: end_date,
       disruption: build(:disruption_v2),
       route: build(:gtfs_route),
       start_stop: build(:gtfs_stop),
@@ -95,9 +98,9 @@ defmodule Arrow.Factory do
 
   def stop_factory do
     %Arrow.Shuttles.Stop{
-      stop_id: sequence(:source_label, &"stop-#{&1}"),
-      stop_name: sequence(:source_label, &"Stop #{&1}"),
-      stop_desc: sequence(:source_label, &"Stop Description #{&1}"),
+      stop_id: sequence(:shuttle_stop_id, &"stop-#{&1}"),
+      stop_name: sequence(:shuttle_stop_name, &"Stop #{&1}"),
+      stop_desc: sequence(:shuttle_stop_desc, &"Stop Description #{&1}"),
       stop_lat: 72.0,
       stop_lon: 43.0,
       municipality: "Boston"
@@ -106,7 +109,7 @@ defmodule Arrow.Factory do
 
   def gtfs_stop_factory(attrs \\ %{}) do
     %Arrow.Gtfs.Stop{
-      id: sequence(:source_label, &"gtfs-stop-#{&1}"),
+      id: sequence(:gtfs_stop_id, &"gtfs-stop-#{&1}"),
       code: nil,
       name: "Test Stop",
       desc: nil,
@@ -131,7 +134,7 @@ defmodule Arrow.Factory do
 
   def gtfs_route_factory do
     %Arrow.Gtfs.Route{
-      id: sequence(:source_label, &"gtfs-route-#{&1}"),
+      id: sequence(:gtfs_route_id, &"gtfs-route-#{&1}"),
       agency: build(:gtfs_agency),
       short_name: nil,
       long_name: "Red Line",
@@ -149,7 +152,7 @@ defmodule Arrow.Factory do
 
   def gtfs_line_factory do
     %Arrow.Gtfs.Line{
-      id: sequence(:source_label, &"gtfs-line-#{&1}"),
+      id: sequence(:gtfs_line_id, &"gtfs-line-#{&1}"),
       short_name: "",
       long_name: "Red Line",
       desc: "",
@@ -176,7 +179,7 @@ defmodule Arrow.Factory do
 
   def gtfs_service_factory do
     %Arrow.Gtfs.Service{
-      id: sequence(:source_label, &"gtfs-service-#{&1}"),
+      id: sequence(:gtfs_service_id, &"gtfs-service-#{&1}"),
       calendar: build(:gtfs_calendar),
       calendar_dates: []
     }
@@ -184,7 +187,7 @@ defmodule Arrow.Factory do
 
   def gtfs_trip_factory do
     %Arrow.Gtfs.Trip{
-      id: sequence(:source_label, &"gtfs-trip-#{&1}"),
+      id: sequence(:gtfs_trip_id, &"gtfs-trip-#{&1}"),
       service: build(:gtfs_service),
       route: build(:gtfs_route),
       headsign: "Test Headsign",
@@ -218,7 +221,7 @@ defmodule Arrow.Factory do
 
   def gtfs_route_pattern_factory do
     %Arrow.Gtfs.RoutePattern{
-      id: sequence(:source_label, &"gtfs-route-pattern-#{&1}"),
+      id: sequence(:gtfs_route_pattern_id, &"gtfs-route-pattern-#{&1}"),
       direction_id: 0,
       name: "Test Route Pattern",
       typicality: :typical,
@@ -229,7 +232,7 @@ defmodule Arrow.Factory do
 
   def gtfs_agency_factory do
     %Arrow.Gtfs.Agency{
-      id: sequence(:source_label, &"gtfs-agency-#{&1}"),
+      id: sequence(:gtfs_agency_id, &"gtfs-agency-#{&1}"),
       name: "MBTA",
       url: "https://www.mbta.com",
       timezone: "ETC"
@@ -239,7 +242,7 @@ defmodule Arrow.Factory do
   def shuttle_factory do
     %Arrow.Shuttles.Shuttle{
       status: :draft,
-      shuttle_name: "Test shuttle",
+      shuttle_name: sequence("shuttle-name"),
       disrupted_route_id: "Red"
     }
   end
@@ -297,6 +300,16 @@ defmodule Arrow.Factory do
     }
   end
 
+  def hastus_export_factory do
+    %Arrow.Hastus.Export{
+      s3_path: sequence(:export_s3_path, &"s3://hastus-export-#{&1}"),
+      line: build(:gtfs_line),
+      services: [],
+      trip_route_directions: [],
+      disruption: not_loaded(Arrow.Hastus.Export, :disruption)
+    }
+  end
+
   def hastus_service_factory do
     %Arrow.Hastus.Service{
       name: sequence(:service_id, &"hastus-service-#{&1}"),
@@ -304,6 +317,14 @@ defmodule Arrow.Factory do
       derived_limits: [],
       import?: true,
       export: not_loaded(Arrow.Hastus.Service, :export)
+    }
+  end
+
+  def hastus_service_date_factory do
+    %Arrow.Hastus.ServiceDate{
+      start_date: ~D[2025-01-01],
+      end_date: ~D[2025-12-31],
+      service: not_loaded(Arrow.Hastus.ServiceDate, :service)
     }
   end
 

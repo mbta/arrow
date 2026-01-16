@@ -4,7 +4,7 @@ defmodule Arrow.Disruptions.ReplacementService do
 
   See related: https://github.com/mbta/gtfs_creator/blob/ab5aac52561027aa13888e4c4067a8de177659f6/gtfs_creator2/disruptions/activated_shuttles.py
   """
-  use Ecto.Schema
+  use Arrow.Schema
   import Ecto.Changeset
   import Ecto.Query, only: [from: 2]
 
@@ -19,24 +19,7 @@ defmodule Arrow.Disruptions.ReplacementService do
   @type timetable ::
           %{direction_id() => list(stop_time()), direction_id() => list(stop_time())} | nil
 
-  @type t :: %__MODULE__{
-          reason: String.t() | nil,
-          start_date: Date.t() | nil,
-          end_date: Date.t() | nil,
-          source_workbook_data: map(),
-          source_workbook_filename: String.t(),
-          disruption: DisruptionV2.t() | Ecto.Association.NotLoaded.t(),
-          shuttle: Shuttle.t() | Ecto.Association.NotLoaded.t(),
-          timetable: %{weekday: timetable(), saturday: timetable(), sunday: timetable()} | nil
-        }
-
-  @service_type_to_workbook_abbreviation %{
-    :weekday => "WKDY",
-    :sunday => "SUN",
-    :saturday => "SAT"
-  }
-
-  schema "replacement_services" do
+  typed_schema "replacement_services" do
     field :reason, :string
     field :start_date, :date
     field :end_date, :date
@@ -124,8 +107,20 @@ defmodule Arrow.Disruptions.ReplacementService do
     |> Enum.map(&add_timetable/1)
   end
 
+  @service_type_to_workbook_abbreviation [
+    weekday: "WKDY",
+    friday: "FRI",
+    sunday: "SUN",
+    saturday: "SAT"
+  ]
+
+  @schedule_service_types Keyword.keys(@service_type_to_workbook_abbreviation)
+
   @spec schedule_service_types :: list(atom())
-  def schedule_service_types, do: [:weekday, :saturday, :sunday]
+  def schedule_service_types, do: @schedule_service_types
+
+  defp service_type_to_workbook_abbreviation(schedule_service_type),
+    do: Keyword.get(@service_type_to_workbook_abbreviation, schedule_service_type)
 
   @spec first_last_trip_times(t(), list(atom())) :: %{
           atom() => %{
@@ -139,7 +134,7 @@ defmodule Arrow.Disruptions.ReplacementService do
       ) do
     schedule_service_types
     |> Enum.map(fn service_type ->
-      service_type_abbreviation = Map.get(@service_type_to_workbook_abbreviation, service_type)
+      service_type_abbreviation = service_type_to_workbook_abbreviation(service_type)
 
       day_of_week_data =
         Map.get(
@@ -162,7 +157,7 @@ defmodule Arrow.Disruptions.ReplacementService do
          %__MODULE__{source_workbook_data: workbook_data} = replacement_service,
          service_type_atom
        ) do
-    service_type_abbreviation = Map.get(@service_type_to_workbook_abbreviation, service_type_atom)
+    service_type_abbreviation = service_type_to_workbook_abbreviation(service_type_atom)
 
     if day_of_week_data =
          Map.get(workbook_data, workbook_column_from_day_of_week(service_type_abbreviation)) do

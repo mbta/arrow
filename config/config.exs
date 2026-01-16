@@ -42,6 +42,10 @@ config :arrow,
   hastus_export_storage_bucket: "mbta-arrow",
   hastus_export_storage_prefix: "hastus-export-uploads/",
   hastus_export_storage_request_fn: {ExAws, :request},
+  trainsformer_export_storage_enabled?: false,
+  trainsformer_export_storage_bucket: "mbta-arrow",
+  trainsformer_export_storage_prefix: "trainsformer-export-uploads/",
+  trainsformer_export_storage_request_fn: {ExAws, :request},
   use_username_prefix?: false
 
 # Addresses an issue with Oban
@@ -79,16 +83,11 @@ config :esbuild,
       --external:/fonts/*
       --external:/images/*
       --external:/css/*
+      --alias:@=.
       #{if(Mix.env() == :test, do: "--define:__REACT_DEVTOOLS_GLOBAL_HOOK__={'isDisabled':true}")}
     ),
     cd: Path.expand("../assets", __DIR__),
-    env: %{
-      "NODE_PATH" =>
-        Enum.join(
-          [Path.expand("../deps", __DIR__)],
-          ":"
-        )
-    }
+    env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
   ]
 
 # Configure tailwind (the version is required)

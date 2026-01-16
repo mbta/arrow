@@ -5,6 +5,7 @@ on:
     branches:
       - master
   pull_request:
+  workflow_dispatch:
   schedule:
     - cron: "0 5 * * *"
 
@@ -152,7 +153,7 @@ jobs:
           mix local.hex --force
       - name: Install NPM assets
         run: npm --prefix assets ci
-      - uses: mbta/setup-chromedriver@69cc01d772a1595b8aee87d52f53e71b3904d9d0
+      - uses: mbta/setup-chromedriver@v1.0.6
       - name: Run integration tests
         run: mix test.integration
       - name: Save integration test screenshots
