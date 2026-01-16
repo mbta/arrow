@@ -50,10 +50,12 @@ defmodule ArrowWeb.API.TrainsformerServiceScheduleControllerTest do
                 %{start_date: ~D[2025-03-29], end_date: ~D[2025-03-30]}
               ]
             }
-          ]
+          ],
+          routes: [%{route_id: "CR-Worcester"}]
         })
 
       [service] = trainsformer_export.services
+      [route] = trainsformer_export.routes
 
       assert response =
                conn
@@ -79,6 +81,7 @@ defmodule ArrowWeb.API.TrainsformerServiceScheduleControllerTest do
                    ]
                  }
                ],
+               "routes" => [%{"id" => route.id, "route_name" => "CR-Worcester"}],
                "download_url" => download_url
              } == data
     end
