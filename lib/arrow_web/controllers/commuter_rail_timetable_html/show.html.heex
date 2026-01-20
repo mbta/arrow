@@ -8,7 +8,7 @@
       <ul>
         <li :for={available_route_id <- @available_routes}>
           <%= if available_route_id == @route_id do %>
-            {available_route_id}
+            <span class="font-bold">{available_route_id}</span>
           <% else %>
             <a href={
               ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{available_route_id}&direction_id=#{@direction_id}"
@@ -22,7 +22,7 @@
     <div class="col-2">
       <div>Direction:</div>
       <%= if @direction_id == 0 do %>
-        <span>Outbound</span>
+        <span class="font-bold">Outbound</span>
         <a href={
           ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{@route_id}&direction_id=1"
         }>
@@ -34,7 +34,7 @@
         }>
           Outbound
         </a>
-        <span>Inbound</span>
+        <span class="font-bold">Inbound</span>
       <% end %>
     </div>
   </div>
