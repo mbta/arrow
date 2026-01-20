@@ -2,11 +2,41 @@
   View timetables: {@service_id}
 </.header>
 <div>
-  <div>
-    <div>Route:</div>
-    <ul>
-      <li :for={available_route_id <- @available_routes}>{available_route_id}</li>
-    </ul>
+  <div class="row">
+    <div class="col-4">
+      <div>Route:</div>
+      <ul>
+        <li :for={available_route_id <- @available_routes}>
+          <%= if available_route_id == @route_id do %>
+            {available_route_id}
+          <% else %>
+            <a href={
+              ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{available_route_id}&direction_id=#{@direction_id}"
+            }>
+              {available_route_id}
+            </a>
+          <% end %>
+        </li>
+      </ul>
+    </div>
+    <div class="col-2">
+      <div>Direction:</div>
+      <%= if @direction_id == 0 do %>
+        <span>Outbound</span>
+        <a href={
+          ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{@route_id}&direction_id=1"
+        }>
+          Inbound
+        </a>
+      <% else %>
+        <a href={
+          ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{@route_id}&direction_id=0"
+        }>
+          Outbound
+        </a>
+        <span>Inbound</span>
+      <% end %>
+    </div>
   </div>
 
   <table class="overflow-scroll w-full table-fixed block p-4">
