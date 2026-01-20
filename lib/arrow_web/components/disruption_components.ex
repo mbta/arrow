@@ -444,8 +444,8 @@ defmodule ArrowWeb.DisruptionComponents do
                   </tr>
                 </thead>
                 <tbody>
-                  <%= for service <- export.services do %>
-                    <tr>
+                  <%= for {service, i} <- Enum.with_index(export.services) do %>
+                    <tr class="align-top">
                       <td>
                         {service.name}
                       </td>
@@ -471,29 +471,35 @@ defmodule ArrowWeb.DisruptionComponents do
                           {Calendar.strftime(date, "%m/%d/%Y")}
                         </div>
                       </td>
-                      <td>
-                        <span
-                          :for={dow <- Arrow.Util.DayOfWeek.get_all_day_names()}
-                          class="text-gray-400"
-                        >
-                          {format_day_name_short(dow)}
-                        </span>
+                      <td :if={i == length(export.services) - 1}>
+                        <div class="text-right">
+                          <.link
+                            :if={!@editing}
+                            id={"edit-export-button-#{export.id}"}
+                            class="btn-sm p-0"
+                            patch={
+                              ~p"/disruptions/#{@disruption.id}/trainsformer_export/#{export.id}/edit"
+                            }
+                          >
+                            <.icon name="hero-pencil-solid" class="bg-primary" />
+                          </.link>
+                          <.button
+                            :if={!@editing}
+                            id={"delete-export-button-#{export.id}"}
+                            class="btn-sm p-0"
+                            type="button"
+                            phx-click="delete_export"
+                            phx-value-export={export.id}
+                            data-confirm="Are you sure you want to delete this export?"
+                          >
+                            <.icon name="hero-trash-solid" class="bg-primary" />
+                          </.button>
+                        </div>
                       </td>
                     </tr>
                   <% end %>
                 </tbody>
               </table>
-            </div>
-
-            <div class="flex flex-col flex-shrink justify-end">
-              <.link
-                :if={!@editing}
-                id="edit-disruption-button"
-                class="grow-0 shrink"
-                patch={~p"/disruptions/#{@disruption.id}/trainsformer_export/#{export.id}/edit"}
-              >
-                <.icon name="hero-pencil-solid" class="bg-primary" />
-              </.link>
             </div>
           </div>
         </div>
