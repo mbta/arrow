@@ -3,38 +3,50 @@
 </.header>
 <div>
   <div class="row">
-    <div class="col-4">
-      <div>Route:</div>
+    <div class="col-4" role="radiogroup" aria-labelledby="route-label">
+      <div id="route-label">Route:</div>
       <ul>
         <li :for={available_route_id <- @available_routes}>
           <%= if available_route_id == @route_id do %>
-            <span class="font-bold">{available_route_id}</span>
+            <span class="font-bold" role="radio" aria-checked={true}>{available_route_id}</span>
           <% else %>
-            <a href={
-              ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{available_route_id}&direction_id=#{@direction_id}"
-            }>
+            <a
+              href={
+                ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{available_route_id}&direction_id=#{@direction_id}"
+              }
+              role="radio"
+              aria-checked={false}
+            >
               {available_route_id}
             </a>
           <% end %>
         </li>
       </ul>
     </div>
-    <div class="col-2">
-      <div>Direction:</div>
+    <div class="col-2" role="radiogroup" aria-labelledby="direction-label">
+      <div id="direction-label">Direction:</div>
       <%= if @direction_id == 0 do %>
-        <span class="font-bold">Outbound</span>
-        <a href={
-          ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{@route_id}&direction_id=1"
-        }>
+        <span class="font-bold" role="radio" aria-checked={true}>Outbound</span>
+        <a
+          href={
+            ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{@route_id}&direction_id=1"
+          }
+          role="radio"
+          aria-checked={false}
+        >
           Inbound
         </a>
       <% else %>
-        <a href={
-          ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{@route_id}&direction_id=0"
-        }>
+        <a
+          href={
+            ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{@route_id}&direction_id=0"
+          }
+          role="radio"
+          aria-checked={false}
+        >
           Outbound
         </a>
-        <span class="font-bold">Inbound</span>
+        <span class="font-bold" role="radio" aria-checked={true}>Inbound</span>
       <% end %>
     </div>
   </div>
