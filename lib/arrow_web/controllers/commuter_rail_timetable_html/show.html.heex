@@ -9,7 +9,7 @@
 <div>
   <div class="row">
     <div class="col-4" role="radiogroup" aria-labelledby="route-label">
-      <div id="route-label">Route:</div>
+      <div id="route-label" class="font-bold">Route:</div>
       <ul>
         <li :for={available_route_id <- @available_routes}>
           <%= if available_route_id == @route_id do %>
@@ -29,7 +29,7 @@
       </ul>
     </div>
     <div class="col-2" role="radiogroup" aria-labelledby="direction-label">
-      <div id="direction-label">Direction:</div>
+      <div id="direction-label" class="font-bold">Direction:</div>
       <%= if @direction_id == 0 do %>
         <span class="font-bold" role="radio" aria-checked={true}>Outbound</span>
         <a
@@ -56,15 +56,18 @@
     </div>
     <div class="col-6">
       <table>
-        <thead>
+        <thead class="border-b-2 border-t-0 border-x-0 border-solid">
           <tr>
-            <th>Start date:</th>
-            <th>End date:</th>
+            <th class="pr-8">Start date:</th>
+            <th class="pr-8">End date:</th>
             <th>Days of week:</th>
           </tr>
         </thead>
         <tbody>
-          <tr :for={service_date <- @service_dates}>
+          <tr
+            :for={service_date <- @service_dates}
+            class="border-t border-b-0 border-x-0 border-solid"
+          >
             <td>{Calendar.strftime(service_date.start_date, "%m/%d/%Y")}</td>
             <td>{Calendar.strftime(service_date.end_date, "%m/%d/%Y")}</td>
             <td />
