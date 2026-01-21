@@ -18,6 +18,8 @@ defmodule ArrowWeb.CommuterRailTimetableController do
 
     service_id = Map.get(params, "service_id", Enum.at(available_services, 0))
 
+    service = Enum.find(trainsformer_export.services, &(&1.name == service_id))
+
     # Get route, defaulting to first one available
     available_routes =
       schedule_data
@@ -84,6 +86,7 @@ defmodule ArrowWeb.CommuterRailTimetableController do
       disruption_id: trainsformer_export.disruption.id,
       disruption_title: trainsformer_export.disruption.title,
       service_id: service_id,
+      service_dates: service.service_dates,
       route_id: route_id,
       direction_id: direction_id,
       available_routes: available_routes,

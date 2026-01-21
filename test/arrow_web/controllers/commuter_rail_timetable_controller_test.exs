@@ -21,7 +21,18 @@ defmodule ArrowWeb.CommuterRailTimetableControllerTest do
 
       disruption = Arrow.DisruptionsFixtures.disruption_v2_fixture(%{mode: "commuter_rail"})
 
-      export = Arrow.TrainsformerFixtures.export_fixture(%{disruption_id: disruption.id})
+      export =
+        Arrow.TrainsformerFixtures.export_fixture(%{
+          disruption_id: disruption.id,
+          services: [
+            %{
+              name: "SPRING2025-SOUTHSS-Weekend-66",
+              service_dates: [
+                %{start_date: ~D[2026-01-26], end_date: ~D[2026-01-26]}
+              ]
+            }
+          ]
+        })
 
       conn = get(conn, ~p"/trainsformer_exports/#{export.id}/timetable")
 
@@ -29,6 +40,7 @@ defmodule ArrowWeb.CommuterRailTimetableControllerTest do
 
       assert response =~ disruption.title
       assert response =~ "/disruptions/#{disruption.id}"
+      assert response =~ "01/26/2026"
       assert response =~ "SPRING2025-SOUTHSS-Weekend-66"
       assert response =~ "CR-Foxboro"
       assert response =~ "Back Bay"

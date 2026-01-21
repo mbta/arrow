@@ -54,6 +54,24 @@
         <span class="font-bold" role="radio" aria-checked={true}>Inbound</span>
       <% end %>
     </div>
+    <div class="col-6">
+      <table>
+        <thead>
+          <tr>
+            <th>Start date:</th>
+            <th>End date:</th>
+            <th>Days of week:</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr :for={service_date <- @service_dates}>
+            <td>{Calendar.strftime(service_date.start_date, "%m/%d/%Y")}</td>
+            <td>{Calendar.strftime(service_date.end_date, "%m/%d/%Y")}</td>
+            <td />
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <table class="overflow-scroll w-full table-fixed block p-4">
