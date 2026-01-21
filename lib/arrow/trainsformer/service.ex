@@ -14,7 +14,7 @@ defmodule Arrow.Trainsformer.Service do
       on_replace: :delete,
       foreign_key: :service_id
 
-    belongs_to :export, Export
+    belongs_to :export, Export, on_replace: :delete, foreign_key: :export_id
 
     timestamps(type: :utc_datetime)
   end

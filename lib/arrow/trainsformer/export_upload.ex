@@ -193,7 +193,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
       Enum.flat_map(trainsformer_trips, &validate_trip(&1))
 
     if Enum.any?(invalid_stop_times) do
-      :ok
+      {:error, {:invalid_stop_times, invalid_stop_times}}
     else
       :ok
     end
