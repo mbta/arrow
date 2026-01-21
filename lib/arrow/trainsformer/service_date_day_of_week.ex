@@ -12,8 +12,8 @@ defmodule Arrow.Trainsformer.ServiceDateDayOfWeek do
   @doc false
   def changeset(service_date_days_of_week, attrs) do
     service_date_days_of_week
-    |> cast(attrs, [:day_name, :service_date_id])
-    |> validate_required([:day_name, :service_date_id])
+    |> cast(attrs, [:day_name])
+    |> validate_required([:day_name])
     |> assoc_constraint(:service_date)
   end
 end

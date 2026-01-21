@@ -133,6 +133,29 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     end
   end
 
+  def handle_event("delete_trainsformer_export", %{"export" => export_id}, socket) do
+    dbg()
+    {parsed_id, _} = Integer.parse(export_id)
+    export = Trainsformer.get_export!(parsed_id)
+
+    case Trainsformer.delete_export(export) do
+      {:ok, _} ->
+        disruption = %{
+          socket.assigns.disruption
+          | trainsformer_exports:
+              Enum.reject(socket.assigns.disruption.trainsformer_exports, &(&1.id == parsed_id))
+        }
+
+        {:noreply,
+         socket
+         |> assign(:disruption, disruption)
+         |> put_flash(:info, "Export deleted successfully")}
+
+      {:error, %Ecto.Changeset{} = _changeset} ->
+        {:noreply, put_flash(socket, :error, "Error when deleting export!")}
+    end
+  end
+
   def handle_event(
         "delete_replacement_service",
         %{"replacement_service" => replacement_service_id},

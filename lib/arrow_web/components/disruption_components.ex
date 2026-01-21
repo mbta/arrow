@@ -436,21 +436,19 @@ defmodule ArrowWeb.DisruptionComponents do
               <div class="col-9">
                 <table class="sm:w-full">
                   <thead>
-                    <tr>
-                      <th>
-                        Service
-                      </th>
-                      <th />
-                      <th>
-                        Start Date
-                      </th>
-                      <th>
-                        End Date
-                      </th>
-                      <th>
-                        Days of Week
-                      </th>
-                    </tr>
+                    <th>
+                      Service ID
+                    </th>
+                    <th />
+                    <th>
+                      Start Date
+                    </th>
+                    <th>
+                      End Date
+                    </th>
+                    <th>
+                      Days of Week
+                    </th>
                   </thead>
                   <tbody>
                     <%= for {service, i} <- Enum.with_index(export.services) do %>
