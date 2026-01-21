@@ -19,7 +19,7 @@ defmodule Arrow.Trainsformer.ServiceDate do
   def changeset(service_date, attrs) do
     attrs =
       with %{"service_date_days_of_week" => sddow} <- attrs,
-           [_ | _] = sddow do
+           [_ | _] <- sddow do
         formatted_days =
           Enum.map(sddow, fn day ->
             %{

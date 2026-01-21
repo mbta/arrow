@@ -487,7 +487,12 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
           |> Ecto.Changeset.get_assoc(:services)
           |> update_in([Access.at(index)], fn service ->
             existing_dates = Ecto.Changeset.get_assoc(service, :service_dates)
-            Ecto.Changeset.put_change(service, :service_dates, existing_dates ++ [%ServiceDate{}])
+
+            Ecto.Changeset.put_change(
+              service,
+              :service_dates,
+              existing_dates ++ [%ServiceDate{service_date_days_of_week: []}]
+            )
           end)
 
         changeset
