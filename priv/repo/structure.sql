@@ -2,10 +2,10 @@
 -- PostgreSQL database dump
 --
 
-\restrict 2U5xctdYZPzR7MiFLT6ex6uTDnp2eF7UGFIpPgaVW1X1NJYXsQ9bDXJi8zrFfC9
+\restrict PBjxTbZSVhID1naujtXeHcIJ3qcnQvE0BZlAhmgI3HPEG2HlymhqtAEn0eZIGFF
 
--- Dumped from database version 15.14 (Postgres.app)
--- Dumped by pg_dump version 15.14 (Postgres.app)
+-- Dumped from database version 15.14
+-- Dumped by pg_dump version 15.14
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1269,6 +1269,36 @@ ALTER SEQUENCE public.stops_id_seq OWNED BY public.stops.id;
 
 
 --
+-- Name: trainsformer_export_routes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.trainsformer_export_routes (
+    id bigint NOT NULL,
+    route_id character varying(255),
+    export_id bigint
+);
+
+
+--
+-- Name: trainsformer_export_routes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.trainsformer_export_routes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: trainsformer_export_routes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.trainsformer_export_routes_id_seq OWNED BY public.trainsformer_export_routes.id;
+
+
+--
 -- Name: trainsformer_exports; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1277,7 +1307,8 @@ CREATE TABLE public.trainsformer_exports (
     s3_path text,
     disruption_id bigint,
     inserted_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    name character varying(255)
 );
 
 
@@ -1298,6 +1329,69 @@ CREATE SEQUENCE public.trainsformer_exports_id_seq
 --
 
 ALTER SEQUENCE public.trainsformer_exports_id_seq OWNED BY public.trainsformer_exports.id;
+
+
+--
+-- Name: trainsformer_service_dates; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.trainsformer_service_dates (
+    id bigint NOT NULL,
+    start_date date,
+    end_date date,
+    service_id bigint
+);
+
+
+--
+-- Name: trainsformer_service_dates_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.trainsformer_service_dates_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: trainsformer_service_dates_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.trainsformer_service_dates_id_seq OWNED BY public.trainsformer_service_dates.id;
+
+
+--
+-- Name: trainsformer_services; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.trainsformer_services (
+    id bigint NOT NULL,
+    name character varying(255),
+    export_id bigint,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: trainsformer_services_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.trainsformer_services_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: trainsformer_services_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.trainsformer_services_id_seq OWNED BY public.trainsformer_services.id;
 
 
 --
@@ -1469,10 +1563,31 @@ ALTER TABLE ONLY public.stops ALTER COLUMN id SET DEFAULT nextval('public.stops_
 
 
 --
+-- Name: trainsformer_export_routes id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_export_routes ALTER COLUMN id SET DEFAULT nextval('public.trainsformer_export_routes_id_seq'::regclass);
+
+
+--
 -- Name: trainsformer_exports id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.trainsformer_exports ALTER COLUMN id SET DEFAULT nextval('public.trainsformer_exports_id_seq'::regclass);
+
+
+--
+-- Name: trainsformer_service_dates id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_service_dates ALTER COLUMN id SET DEFAULT nextval('public.trainsformer_service_dates_id_seq'::regclass);
+
+
+--
+-- Name: trainsformer_services id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_services ALTER COLUMN id SET DEFAULT nextval('public.trainsformer_services_id_seq'::regclass);
 
 
 --
@@ -1828,11 +1943,35 @@ ALTER TABLE ONLY public.stops
 
 
 --
+-- Name: trainsformer_export_routes trainsformer_export_routes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_export_routes
+    ADD CONSTRAINT trainsformer_export_routes_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: trainsformer_exports trainsformer_exports_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.trainsformer_exports
     ADD CONSTRAINT trainsformer_exports_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: trainsformer_service_dates trainsformer_service_dates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_service_dates
+    ADD CONSTRAINT trainsformer_service_dates_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: trainsformer_services trainsformer_services_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_services
+    ADD CONSTRAINT trainsformer_services_pkey PRIMARY KEY (id);
 
 
 --
@@ -2074,10 +2213,31 @@ CREATE INDEX stops_stop_lat_stop_lon_stop_id_index ON public.stops USING btree (
 
 
 --
+-- Name: trainsformer_export_routes_export_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX trainsformer_export_routes_export_id_index ON public.trainsformer_export_routes USING btree (export_id);
+
+
+--
 -- Name: trainsformer_exports_disruption_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX trainsformer_exports_disruption_id_index ON public.trainsformer_exports USING btree (disruption_id);
+
+
+--
+-- Name: trainsformer_service_dates_service_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX trainsformer_service_dates_service_id_index ON public.trainsformer_service_dates USING btree (service_id);
+
+
+--
+-- Name: trainsformer_services_export_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX trainsformer_services_export_id_index ON public.trainsformer_services USING btree (export_id);
 
 
 --
@@ -2487,6 +2647,14 @@ ALTER TABLE ONLY public.shuttles
 
 
 --
+-- Name: trainsformer_export_routes trainsformer_export_routes_export_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_export_routes
+    ADD CONSTRAINT trainsformer_export_routes_export_id_fkey FOREIGN KEY (export_id) REFERENCES public.trainsformer_exports(id) ON DELETE CASCADE;
+
+
+--
 -- Name: trainsformer_exports trainsformer_exports_disruption_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2495,10 +2663,26 @@ ALTER TABLE ONLY public.trainsformer_exports
 
 
 --
+-- Name: trainsformer_service_dates trainsformer_service_dates_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_service_dates
+    ADD CONSTRAINT trainsformer_service_dates_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.trainsformer_services(id) ON DELETE CASCADE;
+
+
+--
+-- Name: trainsformer_services trainsformer_services_export_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_services
+    ADD CONSTRAINT trainsformer_services_export_id_fkey FOREIGN KEY (export_id) REFERENCES public.trainsformer_exports(id) ON DELETE CASCADE;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 2U5xctdYZPzR7MiFLT6ex6uTDnp2eF7UGFIpPgaVW1X1NJYXsQ9bDXJi8zrFfC9
+\unrestrict PBjxTbZSVhID1naujtXeHcIJ3qcnQvE0BZlAhmgI3HPEG2HlymhqtAEn0eZIGFF
 
 INSERT INTO public."schema_migrations" (version) VALUES (20191223181419);
 INSERT INTO public."schema_migrations" (version) VALUES (20191223181443);
@@ -2562,3 +2746,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250501125059);
 INSERT INTO public."schema_migrations" (version) VALUES (20250601120000);
 INSERT INTO public."schema_migrations" (version) VALUES (20250602151911);
 INSERT INTO public."schema_migrations" (version) VALUES (20251202153220);
+INSERT INTO public."schema_migrations" (version) VALUES (20260108201439);
