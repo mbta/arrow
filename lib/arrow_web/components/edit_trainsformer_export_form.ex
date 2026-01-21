@@ -41,6 +41,9 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
             add a new service schedule
           </h4>
           <h5>Upload a new Trainsformer export</h5>
+          <div :if={not is_nil(@error)} class="alert alert-danger">
+            {@error}
+          </div>
           <div :if={not is_nil(@invalid_export_stops)} class="d-inline-block p-20 alert alert-danger">
             Some stops are not present in GTFS!
             <.button
@@ -109,10 +112,6 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
         phx-target={@myself}
       >
         <div class="container-fluid border-2 border-dashed border-primary p-2">
-          <div :if={not is_nil(@error)} class="text-danger">
-            {@error}
-          </div>
-
           <.input field={@form[:s3_path]} type="text" class="hidden" />
           <.input field={@form[:disruption_id]} type="text" class="hidden" />
 
@@ -279,6 +278,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     socket =
       socket
       |> assign(assigns)
+      |> assign(:error, nil)
       |> assign(:show_upload_form, true)
       |> assign(:show_service_import_form, false)
       |> assign(:form, nil)
