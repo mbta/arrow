@@ -83,6 +83,8 @@ defmodule ArrowWeb.CommuterRailTimetableController do
     # Render
     render(conn, :show,
       trainsformer_export_id: export_id,
+      disruption_id: trainsformer_export.disruption.id,
+      disruption_title: trainsformer_export.disruption.title,
       service_id: service_id,
       route_id: route_id,
       direction_id: direction_id,

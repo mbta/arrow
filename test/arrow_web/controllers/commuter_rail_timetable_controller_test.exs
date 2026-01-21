@@ -19,12 +19,16 @@ defmodule ArrowWeb.CommuterRailTimetableControllerTest do
       insert(:gtfs_stop, %{id: "FB-0118-01", name: "Dedham Corporate Center"})
       insert(:gtfs_stop, %{id: "FS-0049-S", name: "Foxboro"})
 
-      export = Arrow.TrainsformerFixtures.export_fixture()
+      disruption = Arrow.DisruptionsFixtures.disruption_v2_fixture(%{mode: "commuter_rail"})
+
+      export = Arrow.TrainsformerFixtures.export_fixture(%{disruption_id: disruption.id})
 
       conn = get(conn, ~p"/trainsformer_exports/#{export.id}/timetable")
 
       response = html_response(conn, 200)
 
+      assert response =~ disruption.title
+      assert response =~ "/disruptions/#{disruption.id}"
       assert response =~ "SPRING2025-SOUTHSS-Weekend-66"
       assert response =~ "CR-Foxboro"
       assert response =~ "Back Bay"
