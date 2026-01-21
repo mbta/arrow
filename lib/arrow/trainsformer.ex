@@ -12,7 +12,7 @@ defmodule Arrow.Trainsformer do
   @preloads [
     :disruption,
     :routes,
-    services: [:service_dates]
+    services: [service_dates: [:service_date_days_of_week]]
   ]
 
   @doc """

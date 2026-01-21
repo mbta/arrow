@@ -8,6 +8,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
   alias Arrow.Trainsformer.Export
   alias Arrow.Trainsformer.ExportUpload
   alias Arrow.Trainsformer.ServiceDate
+  alias Arrow.Trainsformer.ServiceDateDayOfWeek
   alias Phoenix.LiveView.UploadEntry
 
   attr :disruption, DisruptionV2, required: true
@@ -117,15 +118,17 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
 
           <.input field={@form[:name]} type="text" class="hidden" />
 
-          <div class="text-success mb-3">
-            <strong>
-              <i>Successfully imported export {@uploaded_file_name}!</i>
-            </strong>
-          </div>
+          <%= if is_nil(assigns.export.id) do %>
+            <div class="text-success mb-3">
+              <strong>
+                <i>Successfully imported export {@uploaded_file_name}!</i>
+              </strong>
+            </div>
+          <% end %>
           <div class="row">
             <div class="col-lg-2">
               <b class="mb-3">Routes</b>
-              <%= for route <- @uploaded_file_routes do %>
+              <%= for route <- @uploaded_file_routes || assigns.export.routes do %>
                 <div class="row">
                   <div class="col-lg-1">
                     <span
@@ -134,58 +137,65 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                     />
                   </div>
                   <div class="col-lg-10">
-                    <p>{route["route_id"]}</p>
+                    <p>{Map.get(route, "route_id") || route.route_id}</p>
                   </div>
                 </div>
               <% end %>
             </div>
             <div class="col-lg-10">
-              <b class="mb-3">Services</b>
+              <b class="mb-3">Service ID</b>
               <.inputs_for :let={f_service} field={@form[:services]}>
                 <div class="row">
-                  <div class="col-lg-4">
+                  <div class="col-lg-3 text-sm">
                     <.input field={f_service[:name]} type="text" class="hidden" />
                     {f_service[:name].value}
                   </div>
-                  <div class="col-lg-6">
+                  <div class="col-lg-9 text-md">
                     <.inputs_for :let={f_date} field={f_service[:service_dates]}>
                       {f_service[:start_date].value}
                       <div class="row">
-                        <div class="col-lg-1"></div>
                         <div class="col">
                           <.input
                             field={f_date[:start_date]}
                             type="date"
-                            label={if f_date.index == 0, do: "start date", else: ""}
+                            label="Start Date"
                           />
                         </div>
                         <div class="col">
                           <.input
                             field={f_date[:end_date]}
                             type="date"
-                            label={if f_date.index == 0, do: "end date", else: ""}
+                            label="End Date"
                           />
                         </div>
-                      </div>
-                      <div class="row">
-                        <div class="col-lg-4 ml-12">
-                          <span
-                            :for={
-                              dow <-
-                                Enum.map(
-                                  1..7,
-                                  &Arrow.Util.DayOfWeek.get_day_name(&1)
-                                )
-                            }
-                            class="text-gray-400"
-                          >
-                            {format_day_name_short(dow)}
-                          </span>
+
+                        <div class="col-lg-4">
+                          <div class="row col-form-label">
+                            Days of Week
+                          </div>
+                          <div class="row">
+                            <.checkgroup
+                              field={f_date[:service_date_days_of_week]}
+                              options={
+                                for dow <- Arrow.Util.DayOfWeek.get_all_day_names() do
+                                  {dow |> :erlang.atom_to_binary() |> String.capitalize(),
+                                   dow |> :erlang.atom_to_binary()}
+                                end
+                              }
+                              value={
+                                if Ecto.assoc_loaded?(f_date[:service_date_days_of_week]) do
+                                  Enum.map(f_date[:service_date_days_of_week].value, fn dow ->
+                                    Atom.to_string(dow.day_name)
+                                  end)
+                                else
+                                  []
+                                end
+                              }
+                              phx-change="change_days_of_week"
+                            />
+                          </div>
                         </div>
-                        <div
-                          :if={Enum.count(f_service[:service_dates].value) > 1}
-                          class="col-auto align-self-center mt-3"
-                        >
+                        <div class="col">
                           <.button
                             type="button"
                             phx-click="delete_service_date"
@@ -197,19 +207,29 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                           </.button>
                         </div>
                       </div>
+                      <div class="row">
+                        <div class="col ml-10"></div>
+                        <div
+                          :if={Enum.count(f_service[:service_dates].value) > 1}
+                          class="col-auto align-self-center mt-3"
+                        >
+                        </div>
+                      </div>
                     </.inputs_for>
                   </div>
-                  <div class="col-lg-2">
-                    <.button
-                      type="button"
-                      class="btn btn-primary ml-3 btn-sm"
-                      value={f_service.index}
-                      phx-click="add_service_date"
-                      phx-target={@myself}
-                    >
-                      Add Another Timeframe
-                    </.button>
-                  </div>
+                </div>
+
+                <div class="row mt-3">
+                  <div class="col-9" />
+                  <.button
+                    type="button"
+                    class="btn h-15 w-15 btn-primary btn-sm "
+                    value={f_service.index}
+                    phx-click="add_service_date"
+                    phx-target={@myself}
+                  >
+                    Add Another Timeframe
+                  </.button>
                 </div>
               </.inputs_for>
             </div>
@@ -299,8 +319,6 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
   end
 
   def update(assigns, socket) do
-    IO.inspect(socket.assigns)
-
     form =
       assigns.export
       |> Trainsformer.change_export()
@@ -309,15 +327,18 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     socket =
       socket
       |> assign(assigns)
-      |> assign(:show_upload_form, true)
-      |> assign(:show_service_import_form, false)
+      |> assign(:show_upload_form, false)
+      |> assign(:show_service_import_form, true)
       |> assign(:form, form)
       |> assign(:invalid_export_stops, nil)
       |> assign(:invalid_stop_times, nil)
       |> assign(:one_of_north_south_stations, :ok)
-      |> assign(:missing_routes, nil)
-      |> assign(:invalid_routes, nil)
-      |> assign(:trips_missing_transfers, nil)
+      |> assign(:missing_routes, [])
+      |> assign(:invalid_routes, [])
+      |> assign(:trips_missing_transfers, [])
+      |> assign(:error, nil)
+      |> assign(:uploaded_file_name, nil)
+      |> assign(:uploaded_file_routes, nil)
       |> allow_upload(:trainsformer_export,
         accept: ~w(.zip),
         progress: &handle_progress/3,
@@ -334,11 +355,73 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
 
   def handle_event("save", %{"export" => export_params}, socket) do
     if socket.assigns.export.id do
-      # Update to be implemented
-      {:noreply, socket}
+      update_export(export_params, socket)
     else
       create_export(export_params, socket)
     end
+  end
+
+  def handle_event(
+        "change_days_of_week",
+        %{
+          "_target" => [
+            _export,
+            _services,
+            service_id_index,
+            _service_dates,
+            service_date_index | _
+          ],
+          "export" => %{
+            "services" => services
+          }
+        },
+        socket
+      ) do
+    target_days_of_week =
+      get_in(services, [
+        service_id_index,
+        "service_dates",
+        service_date_index,
+        "service_date_days_of_week"
+      ])
+
+    formatted_days_of_week =
+      Enum.map(target_days_of_week, fn day ->
+        %ServiceDateDayOfWeek{day_name: :erlang.binary_to_existing_atom(day)}
+      end)
+
+    IO.inspect(formatted_days_of_week)
+
+    socket =
+      update(socket, :form, fn %{source: changeset} ->
+        updated_services =
+          changeset
+          |> Ecto.Changeset.get_assoc(:services)
+          |> update_in(
+            [
+              service_id_index |> String.to_integer() |> Access.at()
+            ],
+            fn service ->
+              existing_service_sds = Ecto.Changeset.get_assoc(service, :service_dates, :struct)
+              IO.inspect(existing_service_sds)
+              service_date_idx_num = String.to_integer(service_date_index)
+              target_sd = Enum.at(existing_service_sds, service_date_idx_num)
+
+              Ecto.Changeset.put_change(
+                service,
+                :service_dates,
+                existing_service_sds ++
+                  %ServiceDate{target_sd | service_date_days_of_week: formatted_days_of_week}
+              )
+            end
+          )
+
+        changeset
+        |> Ecto.Changeset.put_assoc(:services, updated_services)
+        |> to_form()
+      end)
+
+    {:noreply, socket}
   end
 
   def handle_event(
@@ -483,11 +566,57 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     end
   end
 
+  defp update_export(export_params, socket) do
+    imported_services =
+      for {key, value} <- export_params["services"],
+          into: %{},
+          do: {key, handle_service(value)}
+
+    if imported_services == %{} do
+      {:noreply, assign(socket, error: "You must import at least one service")}
+    else
+      export = Trainsformer.get_export!(socket.assigns.export.id)
+
+      case Trainsformer.update_export(export, export_params) do
+        {:ok, _} ->
+          {:noreply,
+           socket
+           |> push_patch(to: "/disruptions/#{socket.assigns.disruption.id}")
+           |> put_flash(:info, "Trainsformer service schedules updated successfully!")}
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          {:noreply, assign(socket, form: to_form(changeset))}
+      end
+    end
+  end
+
+  # formats input from the day of week multi-select 
+  # so that it works with Arrow.Trainsformer.ServiceDateDayOfWeek.changeset/2
+  defp handle_service(%{"service_dates" => service_dates_map} = service) do
+    fixed_service_dates =
+      Map.new(service_dates_map, fn
+        {service_date_id, %{"service_date_days_of_week" => sddow} = service_date} ->
+          {service_date_id,
+           %{
+             service_date
+             | "service_date_days_of_week" =>
+                 Enum.map(sddow, &%{"day_name" => &1, "service_date_id" => service_date_id})
+           }}
+
+        {service_date_id, service_date} ->
+          {service_date_id, Map.put(service_date, "service_date_days_of_week", [])}
+      end)
+
+    %{service | "service_dates" => fixed_service_dates}
+  end
+
   defp create_export(export_params, socket) do
     imported_services =
       for {key, value} <- export_params["services"],
           into: %{},
-          do: {key, value}
+          do: {key, handle_service(value)}
+
+    IO.inspect(imported_services)
 
     export_params = Map.put(export_params, "routes", socket.assigns.uploaded_file_routes)
 
