@@ -112,6 +112,50 @@ jobs:
           path: cover/
       - uses: mbta/actions/dialyzer@v2
 
+  database_structure_file:
+    name: Assert `structure.sql` up to date
+    runs-on: ubuntu-24.04
+    needs: build
+    env:
+      DATABASE_POSTGRESQL_PASSWORD: postgres
+      DATABASE_POSTGRESQL_USER: postgres
+      DATABASE_NAME: arrow_test
+      DATABASE_HOST: localhost
+    services:
+      postgres:
+        image: postgres:15
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_PASSWORD: ${{env.DATABASE_POSTGRESQL_PASSWORD}}
+          POSTGRES_USER: ${{env.DATABASE_POSTGRESQL_USER}}
+          POSTGRES_DB: ${{env.DATABASE_NAME}}
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v2
+      - name: ASDF cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.asdf
+          key: ${{ runner.os }}-asdf-v2-${{ hashFiles('.tool-versions') }}
+        id: asdf-cache
+      - uses: mbta/actions/reshim-asdf@v1
+      - name: Restore dependencies cache
+        id: deps-cache
+        uses: actions/cache@v4
+        with:
+          path: deps
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-
+      - name: Install dependencies
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+      - name: Run database migrations
+        run: mix ecto.reset
+      - name: Assert `structure.sql` unchanged
+        run: git diff --exit-code priv/repo/structure.sql
+
   elixir-integration:
     name: Elixir integration tests
     runs-on: ubuntu-24.04
