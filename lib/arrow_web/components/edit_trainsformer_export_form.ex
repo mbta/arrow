@@ -540,8 +540,6 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
           into: %{},
           do: {key, value}
 
-    IO.inspect(imported_services)
-
     export_params = Map.put(export_params, "routes", socket.assigns.uploaded_file_routes)
 
     with {:ok, s3_path} <-

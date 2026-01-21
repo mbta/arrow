@@ -337,8 +337,6 @@ defmodule ArrowWeb.CoreComponents do
   end
 
   def input(%{type: "checkgroup"} = assigns) do
-    dbg(assigns.field)
-
     ~H"""
     <div class="mt-1">
       <div class="grid grid-cols-2 gap-1 text-sm items-baseline">

@@ -1,4 +1,6 @@
 defmodule Arrow.Trainsformer.ServiceDateDayOfWeek do
+  @moduledoc "Describes the days of week for which a service should be active, within some date range"
+
   use Ecto.Schema
   import Ecto.Changeset
 

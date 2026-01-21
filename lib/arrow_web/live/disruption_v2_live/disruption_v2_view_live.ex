@@ -5,8 +5,8 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
   alias Arrow.Hastus
   alias Arrow.Hastus.Export, as: HastusExport
-  alias Arrow.Trainsformer.Export, as: TrainsformerExport
   alias Arrow.Trainsformer
+  alias Arrow.Trainsformer.Export, as: TrainsformerExport
   alias ArrowWeb.DisruptionComponents
 
   @impl true
@@ -134,7 +134,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   end
 
   def handle_event("delete_trainsformer_export", %{"export" => export_id}, socket) do
-    dbg()
     {parsed_id, _} = Integer.parse(export_id)
     export = Trainsformer.get_export!(parsed_id)
 
