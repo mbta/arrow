@@ -78,8 +78,6 @@ defmodule ArrowWeb.CommuterRailTimetableController do
         {stop_name, stop_times}
       end)
 
-    num_trips = Enum.count(all_schedules)
-
     # Render
     render(conn, :show,
       trainsformer_export_id: export_id,
@@ -89,7 +87,6 @@ defmodule ArrowWeb.CommuterRailTimetableController do
       route_id: route_id,
       direction_id: direction_id,
       available_routes: available_routes,
-      num_trips: num_trips,
       train_numbers: train_numbers,
       stop_times_by_stop: stop_times_by_stop
     )
