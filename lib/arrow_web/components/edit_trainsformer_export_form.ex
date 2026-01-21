@@ -364,69 +364,6 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
   end
 
   def handle_event(
-        "change_days_of_week",
-        %{
-          "_target" => [
-            _export,
-            _services,
-            service_id_index,
-            _service_dates,
-            service_date_index | _
-          ],
-          "export" => %{
-            "services" => services
-          }
-        },
-        socket
-      ) do
-    # target_days_of_week =
-    #   get_in(services, [
-    #     service_id_index,
-    #     "service_dates",
-    #     service_date_index,
-    #     "service_date_days_of_week"
-    #   ])
-    #
-    # formatted_days_of_week =
-    #   Enum.map(target_days_of_week, fn day ->
-    #     %ServiceDateDayOfWeek{day_name: :erlang.binary_to_existing_atom(day)}
-    #   end)
-    #
-    # IO.inspect(formatted_days_of_week)
-    #
-    # socket =
-    #   update(socket, :form, fn %{source: changeset} ->
-    #     updated_services =
-    #       changeset
-    #       |> Ecto.Changeset.get_assoc(:services)
-    #       |> update_in(
-    #         [
-    #           service_id_index |> String.to_integer() |> Access.at()
-    #         ],
-    #         fn service ->
-    #           existing_service_sds = Ecto.Changeset.get_assoc(service, :service_dates, :struct)
-    #           IO.inspect(existing_service_sds)
-    #           service_date_idx_num = String.to_integer(service_date_index)
-    #           target_sd = Enum.at(existing_service_sds, service_date_idx_num)
-    #
-    #           Ecto.Changeset.put_change(
-    #             service,
-    #             :service_dates,
-    #             existing_service_sds ++
-    #               %ServiceDate{target_sd | service_date_days_of_week: formatted_days_of_week}
-    #           )
-    #         end
-    #       )
-    #
-    #     changeset
-    #     |> Ecto.Changeset.put_assoc(:services, updated_services)
-    #     |> to_form()
-    #   end)
-    #
-    {:noreply, socket}
-  end
-
-  def handle_event(
         "download_invalid_export_stops",
         _params,
         %{assigns: %{invalid_export_stops: stops}} = socket
