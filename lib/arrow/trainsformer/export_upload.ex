@@ -64,9 +64,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
         unzip_module \\ Unzip,
         import_helper \\ Arrow.Gtfs.ImportHelper
       ) do
-    zip_bin = Unzip.LocalFile.open(zip_path)
-
-    with {:ok, unzip} <- Unzip.new(zip_bin),
+    with {:ok, unzip_handle} <- open_zip(zip_path),
+         {:ok, unzip} <- Unzip.new(unzip_handle),
          {:ok, %{trips: trips, stop_times: stop_times, transfers: transfers}} <-
            validate_csvs(unzip, unzip_module, import_helper),
          {:ok, stop_ids} <-
@@ -124,12 +123,48 @@ defmodule Arrow.Trainsformer.ExportUpload do
       {:ok, {:ok, export_data}}
     else
       errors ->
+        # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
         {:ok, errors}
     end
+  end
+
+  # NOTE: Consider moving to `Arrow.Gtfs.ImportHelper`?...
+  defp open_zip(zip_path) do
+    # `Unzip.LocalFile.open` is a very simple implementation and, (as of writing)
+    # simply expects that `:file.open` succeeds and pattern matches on that success.
+    # But due to the pattern match, the errors aren't very clear, helpful, or useful
+    # for users not familiar with Elixir/Erlang `:file` or this application.
+    #
+    # We could consider making our own `LocalFile` implementation, but really the
+    # only issue with it is it's error reporting, and we're unlikely to hit any
+    # of those issues.
+    #
+    # Per https://www.erlang.org/docs/28/apps/kernel/file.html#open/2
+    # These are the "typical" errors that `:file.open` could return, and why they
+    # may or may not apply:
+    #
+    # > `enoent` - The file does not exist.
+    # It'd be very strange if Phoenix gave us a file that didn't exist, not user actionable.
+    #
+    # > `eacces` - Missing permission for reading the file or searching one of the parent directories.
+    # It'd also be strange if Phoenix gave us a file that it wrote, but didn't have permissions for, not user actionable
+    #
+    # > `eisdir` - The named file is a directory.
+    # This would also be strange for Phoenix to give us a directory,
+    # _could_ be a security issue[^security-issue] if somehow we did receive a directory.
+    #
+    # [^security-issue]: (because that would mean that the "attacker" has gained control of Phoenix
+    # in a way we don't _currently_ expect)
+    #
+    # > `enospc` - There is no space left on the device (if write access was specified).
+    # This seems like the most likely error we'd get, but it's also not user actionable.
+    #
+    # Running out of space on our instance would likely mean we have bigger problems
+    # and not something we could "error handle" our way out of.
+    {:ok, Unzip.LocalFile.open(zip_path)}
   rescue
-    e ->
-      # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
-      {:ok, {:error, "Could not parse zip, message=#{Exception.format(:error, e)}"}}
+    error ->
+      {:error, "Failed to open zip file, message=#{Exception.format(:error, error)}"}
   end
 
   defp validate_unique_service_ids(trips) do
