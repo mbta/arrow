@@ -183,21 +183,16 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                                 end
                               }
                               value={
-                                if Ecto.assoc_loaded?(f_date[:service_date_days_of_week]) do
-                                  Enum.map(f_date[:service_date_days_of_week].value, fn
+                                Enum.map(
+                                  Phoenix.HTML.Form.input_value(f_date, :service_date_days_of_week),
+                                  fn
                                     %ServiceDateDayOfWeek{day_name: day_name} ->
-                                      Atom.to_string(day_name)
-
-                                    %Ecto.Changeset{data: %ServiceDateDayOfWeek{day_name: day_name}} ->
                                       Atom.to_string(day_name)
 
                                     str ->
                                       str
-                                  end)
-                                else
-                                  []
-                                end
-                                |> dbg()
+                                  end
+                                )
                               }
                             />
                           </div>
@@ -356,15 +351,6 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
   end
 
   @impl true
-  def handle_event("validate", %{"export" => export_params}, socket) do
-    # form =
-    #   socket.assigns.export
-    #   |> Trainsformer.change_export(export_params)
-    #   |> to_form(action: :validate)
-
-    {:noreply, socket}
-  end
-
   def handle_event("validate", _params, socket) do
     {:noreply, socket}
   end
@@ -591,7 +577,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     imported_services =
       for {key, value} <- export_params["services"],
           into: %{},
-          do: {key, handle_service(value)}
+          do: {key, value}
 
     if imported_services == %{} do
       {:noreply, assign(socket, error: "You must import at least one service")}
@@ -611,31 +597,11 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     end
   end
 
-  # formats input from the day of week multi-select 
-  # so that it works with Arrow.Trainsformer.ServiceDateDayOfWeek.changeset/2
-  defp handle_service(%{"service_dates" => service_dates_map} = service) do
-    fixed_service_dates =
-      Map.new(service_dates_map, fn
-        {service_date_id, %{"service_date_days_of_week" => sddow} = service_date} ->
-          {service_date_id,
-           %{
-             service_date
-             | "service_date_days_of_week" =>
-                 Enum.map(sddow, &%{"day_name" => &1, "service_date_id" => service_date_id})
-           }}
-
-        {service_date_id, service_date} ->
-          {service_date_id, Map.put(service_date, "service_date_days_of_week", [])}
-      end)
-
-    %{service | "service_dates" => fixed_service_dates}
-  end
-
   defp create_export(export_params, socket) do
     imported_services =
       for {key, value} <- export_params["services"],
           into: %{},
-          do: {key, handle_service(value)}
+          do: {key, value}
 
     IO.inspect(imported_services)
 
