@@ -399,143 +399,141 @@ defmodule ArrowWeb.DisruptionComponents do
     ~H"""
     <section id="trainsformer_service_schedules" class="py-4 my-4">
       <h3>Trainsformer Service Schedules</h3>
-      <%= if Ecto.assoc_loaded?(@disruption.trainsformer_exports) and Enum.any?(@disruption.trainsformer_exports) do %>
-        <%= for export <- @disruption.trainsformer_exports do %>
-          <%= if @editing && @editing.id == export.id do %>
-            <.live_component
-              module={EditTrainsformerExportForm}
-              id="trainsformer-export-edit-form"
-              disruption={@disruption}
-              export={@editing}
-              icon_paths={@icon_paths}
-              user_id={@user_id}
-            />
-          <% else %>
-            <div
-              id={"export-table-hastus-#{export.id}"}
-              class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3"
-            >
-              <p><b>Export:</b> {export.name}</p>
-              <div class="row">
-                <div class="col-lg-3">
-                  <b>Routes</b>
-                  <%= for route <- export.routes do %>
-                    <div class="row">
-                      <div class="col-lg-1">
-                        <span
-                          class="m-icon m-icon-sm mr-1"
-                          style={"background-image: url('#{Map.get(@icon_paths, :commuter_rail)}');"}
-                        />
-                      </div>
-                      <div class="col-lg-10">
-                        <p>{route.route_id}</p>
-                      </div>
+      <%= for export <- @disruption.trainsformer_exports do %>
+        <%= if @editing && @editing.id == export.id do %>
+          <.live_component
+            module={EditTrainsformerExportForm}
+            id="trainsformer-export-edit-form"
+            disruption={@disruption}
+            export={@editing}
+            icon_paths={@icon_paths}
+            user_id={@user_id}
+          />
+        <% else %>
+          <div
+            id={"export-table-hastus-#{export.id}"}
+            class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3"
+          >
+            <p><b>Export:</b> {export.name}</p>
+            <div class="row">
+              <div class="col-lg-3">
+                <b>Routes</b>
+                <%= for route <- export.routes do %>
+                  <div class="row">
+                    <div class="col-lg-1">
+                      <span
+                        class="m-icon m-icon-sm mr-1"
+                        style={"background-image: url('#{Map.get(@icon_paths, :commuter_rail)}');"}
+                      />
                     </div>
-                  <% end %>
-                </div>
+                    <div class="col-lg-10">
+                      <p>{route.route_id}</p>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
 
-                <div class="col-9">
-                  <table class="sm:w-full">
-                    <thead>
-                      <tr>
-                        <th>
-                          Service
-                        </th>
-                        <th />
-                        <th>
-                          Start Date
-                        </th>
-                        <th>
-                          End Date
-                        </th>
-                        <th>
-                          Days of Week
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <%= for {service, i} <- Enum.with_index(export.services) do %>
-                        <tr class="align-top">
-                          <td>{service.name}</td>
-                          <td>
-                            <a
-                              class="btn-link btn-sm pl-0 flex items-center"
-                              href={
-                                ~p"/trainsformer_exports/#{export.id}/timetable?service_id=#{service.name}"
+              <div class="col-9">
+                <table class="sm:w-full">
+                  <thead>
+                    <tr>
+                      <th>
+                        Service
+                      </th>
+                      <th />
+                      <th>
+                        Start Date
+                      </th>
+                      <th>
+                        End Date
+                      </th>
+                      <th>
+                        Days of Week
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <%= for {service, i} <- Enum.with_index(export.services) do %>
+                      <tr class="align-top">
+                        <td>{service.name}</td>
+                        <td>
+                          <a
+                            class="btn-link btn-sm pl-0 flex items-center"
+                            href={
+                              ~p"/trainsformer_exports/#{export.id}/timetable?service_id=#{service.name}"
+                            }
+                          >
+                            <.icon name="hero-table-cells" class="bg-primary" />Timetable
+                          </a>
+                        </td>
+                        <td>
+                          <div :for={date <- Enum.map(service.service_dates, & &1.start_date)}>
+                            <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
+                            {Calendar.strftime(date, "%m/%d/%Y")}
+                          </div>
+                        </td>
+                        <td>
+                          <div :for={date <- Enum.map(service.service_dates, & &1.end_date)}>
+                            <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
+                            {Calendar.strftime(date, "%m/%d/%Y")}
+                          </div>
+                        </td>
+                        <td>
+                          <div :for={
+                            active_dows <-
+                              Enum.map(
+                                service.service_dates,
+                                &Kernel.get_in(&1, [
+                                  Access.key(:service_date_days_of_week),
+                                  Access.all(),
+                                  Access.key(:day_name)
+                                ])
+                              )
+                          }>
+                            <span
+                              :for={dow <- Arrow.Util.DayOfWeek.get_all_day_names()}
+                              class={
+                                if dow in active_dows,
+                                  do: "text-primary",
+                                  else: "text-gray-400"
                               }
                             >
-                              <.icon name="hero-table-cells" class="bg-primary" />Timetable
-                            </a>
-                          </td>
-                          <td>
-                            <div :for={date <- Enum.map(service.service_dates, & &1.start_date)}>
-                              <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
-                              {Calendar.strftime(date, "%m/%d/%Y")}
-                            </div>
-                          </td>
-                          <td>
-                            <div :for={date <- Enum.map(service.service_dates, & &1.end_date)}>
-                              <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
-                              {Calendar.strftime(date, "%m/%d/%Y")}
-                            </div>
-                          </td>
-                          <td>
-                            <div :for={
-                              active_dows <-
-                                Enum.map(
-                                  service.service_dates,
-                                  &Kernel.get_in(&1, [
-                                    Access.key(:service_date_days_of_week),
-                                    Access.all(),
-                                    Access.key(:day_name)
-                                  ])
-                                )
-                            }>
-                              <span
-                                :for={dow <- Arrow.Util.DayOfWeek.get_all_day_names()}
-                                class={
-                                  if dow in active_dows,
-                                    do: "text-primary",
-                                    else: "text-gray-400"
-                                }
-                              >
-                                {format_day_name_short(dow)}
-                              </span>
-                            </div>
-                          </td>
-                          <td :if={i == length(export.services) - 1}>
-                            <div class="text-right">
-                              <.link
-                                :if={!@editing}
-                                id={"edit-export-button-#{export.id}"}
-                                class="btn-sm p-0"
-                                patch={
-                                  ~p"/disruptions/#{@disruption.id}/trainsformer_export/#{export.id}/edit"
-                                }
-                              >
-                                <.icon name="hero-pencil-solid" class="bg-primary" />
-                              </.link>
-                              <.button
-                                :if={!@editing}
-                                id={"delete-export-button-#{export.id}"}
-                                class="btn-sm p-0"
-                                type="button"
-                                phx-click="delete_export"
-                                phx-value-export={export.id}
-                                data-confirm="Are you sure you want to delete this export?"
-                              >
-                                <.icon name="hero-trash-solid" class="bg-primary" />
-                              </.button>
-                            </div>
-                          </td>
-                        </tr>
-                      <% end %>
-                    </tbody>
-                  </table>
-                </div>
+                              {format_day_name_short(dow)}
+                            </span>
+                          </div>
+                        </td>
+                        <td :if={i == length(export.services) - 1}>
+                          <div class="text-right">
+                            <.link
+                              :if={!@editing}
+                              id={"edit-export-button-#{export.id}"}
+                              class="btn-sm p-0"
+                              patch={
+                                ~p"/disruptions/#{@disruption.id}/trainsformer_export/#{export.id}/edit"
+                              }
+                            >
+                              <.icon name="hero-pencil-solid" class="bg-primary" />
+                            </.link>
+                            <.button
+                              :if={!@editing}
+                              id={"delete-export-button-#{export.id}"}
+                              class="btn-sm p-0"
+                              type="button"
+                              phx-click="delete_export"
+                              phx-value-export={export.id}
+                              data-confirm="Are you sure you want to delete this export?"
+                            >
+                              <.icon name="hero-trash-solid" class="bg-primary" />
+                            </.button>
+                          </div>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
               </div>
             </div>
-          <% end %>
+          </div>
         <% end %>
       <% end %>
 
