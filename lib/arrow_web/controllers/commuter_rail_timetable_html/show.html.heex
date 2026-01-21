@@ -12,7 +12,7 @@
           <% else %>
             <a
               href={
-                ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{available_route_id}&direction_id=#{@direction_id}"
+                ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{available_route_id}&direction_id=#{@direction_id}&service_id=#{@service_id}"
               }
               role="radio"
               aria-checked={false}
@@ -29,7 +29,7 @@
         <span class="font-bold" role="radio" aria-checked={true}>Outbound</span>
         <a
           href={
-            ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{@route_id}&direction_id=1"
+            ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{@route_id}&direction_id=1&service_id=#{@service_id}"
           }
           role="radio"
           aria-checked={false}
@@ -39,7 +39,7 @@
       <% else %>
         <a
           href={
-            ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{@route_id}&direction_id=0"
+            ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{@route_id}&direction_id=0&service_id=#{@service_id}"
           }
           role="radio"
           aria-checked={false}
