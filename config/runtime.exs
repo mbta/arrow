@@ -88,7 +88,8 @@ if config_env() == :prod do
   config :arrow,
     shape_storage_prefix_env: System.get_env("S3_PREFIX"),
     gtfs_archive_storage_prefix_env: System.get_env("S3_PREFIX"),
-    hastus_export_storage_prefix_env: System.get_env("S3_PREFIX")
+    hastus_export_storage_prefix_env: System.get_env("S3_PREFIX"),
+    trainsformer_export_storage_prefix_env: System.get_env("S3_PREFIX")
 end
 
 sync_enabled = System.get_env("ARROW_SYNC_ENABLED") == "true"
