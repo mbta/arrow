@@ -483,7 +483,8 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
 
-      {:error, _} ->
+      {:error, error} ->
+        Logger.warning("Failed to upload export to S3 error=#{inspect(error)}")
         {:noreply, assign(socket, error: "Failed to upload export to S3")}
     end
   end
