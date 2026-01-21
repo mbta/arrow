@@ -184,14 +184,21 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                               }
                               value={
                                 if Ecto.assoc_loaded?(f_date[:service_date_days_of_week]) do
-                                  Enum.map(f_date[:service_date_days_of_week].value, fn dow ->
-                                    Atom.to_string(dow.day_name)
+                                  Enum.map(f_date[:service_date_days_of_week].value, fn
+                                    %ServiceDateDayOfWeek{day_name: day_name} ->
+                                      Atom.to_string(day_name)
+
+                                    %Ecto.Changeset{data: %ServiceDateDayOfWeek{day_name: day_name}} ->
+                                      Atom.to_string(day_name)
+
+                                    str ->
+                                      str
                                   end)
                                 else
                                   []
                                 end
+                                |> dbg()
                               }
-                              phx-change="change_days_of_week"
                             />
                           </div>
                         </div>
@@ -349,6 +356,15 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
   end
 
   @impl true
+  def handle_event("validate", %{"export" => export_params}, socket) do
+    # form =
+    #   socket.assigns.export
+    #   |> Trainsformer.change_export(export_params)
+    #   |> to_form(action: :validate)
+
+    {:noreply, socket}
+  end
+
   def handle_event("validate", _params, socket) do
     {:noreply, socket}
   end
@@ -377,50 +393,50 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
         },
         socket
       ) do
-    target_days_of_week =
-      get_in(services, [
-        service_id_index,
-        "service_dates",
-        service_date_index,
-        "service_date_days_of_week"
-      ])
-
-    formatted_days_of_week =
-      Enum.map(target_days_of_week, fn day ->
-        %ServiceDateDayOfWeek{day_name: :erlang.binary_to_existing_atom(day)}
-      end)
-
-    IO.inspect(formatted_days_of_week)
-
-    socket =
-      update(socket, :form, fn %{source: changeset} ->
-        updated_services =
-          changeset
-          |> Ecto.Changeset.get_assoc(:services)
-          |> update_in(
-            [
-              service_id_index |> String.to_integer() |> Access.at()
-            ],
-            fn service ->
-              existing_service_sds = Ecto.Changeset.get_assoc(service, :service_dates, :struct)
-              IO.inspect(existing_service_sds)
-              service_date_idx_num = String.to_integer(service_date_index)
-              target_sd = Enum.at(existing_service_sds, service_date_idx_num)
-
-              Ecto.Changeset.put_change(
-                service,
-                :service_dates,
-                existing_service_sds ++
-                  %ServiceDate{target_sd | service_date_days_of_week: formatted_days_of_week}
-              )
-            end
-          )
-
-        changeset
-        |> Ecto.Changeset.put_assoc(:services, updated_services)
-        |> to_form()
-      end)
-
+    # target_days_of_week =
+    #   get_in(services, [
+    #     service_id_index,
+    #     "service_dates",
+    #     service_date_index,
+    #     "service_date_days_of_week"
+    #   ])
+    #
+    # formatted_days_of_week =
+    #   Enum.map(target_days_of_week, fn day ->
+    #     %ServiceDateDayOfWeek{day_name: :erlang.binary_to_existing_atom(day)}
+    #   end)
+    #
+    # IO.inspect(formatted_days_of_week)
+    #
+    # socket =
+    #   update(socket, :form, fn %{source: changeset} ->
+    #     updated_services =
+    #       changeset
+    #       |> Ecto.Changeset.get_assoc(:services)
+    #       |> update_in(
+    #         [
+    #           service_id_index |> String.to_integer() |> Access.at()
+    #         ],
+    #         fn service ->
+    #           existing_service_sds = Ecto.Changeset.get_assoc(service, :service_dates, :struct)
+    #           IO.inspect(existing_service_sds)
+    #           service_date_idx_num = String.to_integer(service_date_index)
+    #           target_sd = Enum.at(existing_service_sds, service_date_idx_num)
+    #
+    #           Ecto.Changeset.put_change(
+    #             service,
+    #             :service_dates,
+    #             existing_service_sds ++
+    #               %ServiceDate{target_sd | service_date_days_of_week: formatted_days_of_week}
+    #           )
+    #         end
+    #       )
+    #
+    #     changeset
+    #     |> Ecto.Changeset.put_assoc(:services, updated_services)
+    #     |> to_form()
+    #   end)
+    #
     {:noreply, socket}
   end
 

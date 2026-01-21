@@ -17,6 +17,22 @@ defmodule Arrow.Trainsformer.ServiceDate do
 
   @doc false
   def changeset(service_date, attrs) do
+    attrs =
+      with %{"service_date_days_of_week" => sddow} <- attrs,
+           [_ | _] = sddow do
+        formatted_days =
+          Enum.map(sddow, fn day ->
+            %{
+              "day_name" => day,
+              "service_date_id" => service_date.id
+            }
+          end)
+
+        %{attrs | "service_date_days_of_week" => formatted_days}
+      else
+        _ -> attrs
+      end
+
     service_date
     |> cast(attrs, [:start_date, :end_date, :service_id])
     |> cast_assoc(:service_date_days_of_week, with: &ServiceDateDayOfWeek.changeset/2)

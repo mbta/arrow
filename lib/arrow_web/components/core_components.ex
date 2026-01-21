@@ -251,6 +251,29 @@ defmodule ArrowWeb.CoreComponents do
   end
 
   @doc """
+  Multi-select checkbox. Adapted from https://fly.io/phoenix-files/making-a-checkboxgroup-input/
+  """
+  attr :id, :any
+  attr :name, :any
+  attr :label, :string, default: nil
+  attr :field, Phoenix.HTML.FormField
+  attr :errors, :list
+  attr :required, :boolean, default: false
+  attr :options, :list
+  attr :rest, :global, include: ~w(disabled form readonly)
+  attr :class, :string, default: nil
+  attr :value, :list
+
+  def checkgroup(assigns) do
+    new_assigns =
+      assigns
+      |> assign(:multiple, true)
+      |> assign(:type, "checkgroup")
+
+    input(new_assigns)
+  end
+
+  @doc """
   Renders an input with label and error messages.
 
   A `Phoenix.HTML.FormField` may be passed as argument,
@@ -313,30 +336,9 @@ defmodule ArrowWeb.CoreComponents do
     |> input()
   end
 
-  @doc """
-  Multi-select checkbox. Adapted from https://fly.io/phoenix-files/making-a-checkboxgroup-input/
-  """
-  attr :id, :any
-  attr :name, :any
-  attr :label, :string, default: nil
-  attr :field, Phoenix.HTML.FormField, doc: "..."
-  attr :errors, :list
-  attr :required, :boolean, default: false
-  attr :options, :list, doc: "..."
-  attr :rest, :global, include: ~w(disabled form readonly)
-  attr :class, :string, default: nil
-  attr :value, :list
-
-  def checkgroup(assigns) do
-    new_assigns =
-      assigns
-      |> assign(:multiple, true)
-      |> assign(:type, "checkgroup")
-
-    input(new_assigns)
-  end
-
   def input(%{type: "checkgroup"} = assigns) do
+    dbg(assigns.field)
+
     ~H"""
     <div class="mt-1">
       <div class="grid grid-cols-2 gap-1 text-sm items-baseline">
