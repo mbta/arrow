@@ -230,7 +230,7 @@ defmodule Arrow.Trainsformer do
 
   """
   def get_service_date!(id),
-    do: id |> Repo.get!(ServiceDate) |> Repo.preload(:service_date_days_of_week)
+    do: id |> then(&Repo.get!(ServiceDate, &1)) |> Repo.preload(:service_date_days_of_week)
 
   @doc """
   Creates a service_date.
