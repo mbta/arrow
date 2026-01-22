@@ -43,6 +43,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> click(Query.css("#save-export-button"))
     |> assert_text("CR-Foxboro")
     |> assert_text("SPRING2025-SOUTHSS-Weekend-66")
+    |> assert_text("Timetable")
   end
 
   feature "reports invalid ZIP errors", %{session: session} do
