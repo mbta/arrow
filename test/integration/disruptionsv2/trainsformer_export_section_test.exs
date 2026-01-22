@@ -45,6 +45,19 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> assert_text("SPRING2025-SOUTHSS-Weekend-66")
   end
 
+  feature "reports invalid ZIP errors", %{session: session} do
+    disruption = disruption_v2_fixture(%{mode: :commuter_rail})
+
+    session
+    |> visit("/disruptions/#{disruption.id}")
+    |> click(text("Upload Trainsformer export"))
+    |> assert_text("Upload Trainsformer .zip")
+    |> attach_file(file_field("trainsformer_export", visible: false),
+      path: "test/support/fixtures/trainsformer/invalid_zip.zip"
+    )
+    |> assert_text("Invalid zip file")
+  end
+
   feature "shows error for invalid gtfs stops in trainsformer export", %{session: session} do
     disruption = disruption_v2_fixture(%{mode: :commuter_rail})
 
