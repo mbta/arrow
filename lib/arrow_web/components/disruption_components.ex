@@ -454,6 +454,7 @@ defmodule ArrowWeb.DisruptionComponents do
                     <%= for {service, i} <- Enum.with_index(export.services) do %>
                       <tr class="align-top">
                         <td>{service.name}</td>
+
                         <td>
                           <a
                             class="btn-link btn-sm pl-0 flex items-center"
@@ -477,17 +478,14 @@ defmodule ArrowWeb.DisruptionComponents do
                           </div>
                         </td>
                         <td>
-                          <div :for={
-                            active_dows <-
-                              Enum.map(
-                                service.service_dates,
-                                &Kernel.get_in(&1, [
-                                  Access.key(:service_date_days_of_week),
-                                  Access.all(),
-                                  Access.key(:day_name)
-                                ])
-                              )
-                          }>
+                          <div :for={date <- service.service_dates}>
+                            <% active_dows =
+                              date
+                              |> Kernel.get_in([
+                                Access.key(:service_date_days_of_week),
+                                Access.all(),
+                                Access.key(:day_name)
+                              ]) %>
                             <span
                               :for={dow <- Arrow.Util.DayOfWeek.get_all_day_names()}
                               class={
@@ -495,6 +493,7 @@ defmodule ArrowWeb.DisruptionComponents do
                                   do: "text-primary",
                                   else: "text-gray-400"
                               }
+                              id={"service-#{service.id}-date-#{date.id}-#{dow}"}
                             >
                               {format_day_name_short(dow)}
                             </span>

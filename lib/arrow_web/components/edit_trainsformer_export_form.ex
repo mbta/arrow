@@ -183,16 +183,25 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                                 end
                               }
                               value={
-                                Enum.map(
-                                  Phoenix.HTML.Form.input_value(f_date, :service_date_days_of_week),
-                                  fn
-                                    %ServiceDateDayOfWeek{day_name: day_name} ->
-                                      Atom.to_string(day_name)
+                                if Ecto.assoc_loaded?(f_date[:service_date_days_of_week].value) do
+                                  Enum.map(
+                                    f_date[:service_date_days_of_week].value,
+                                    fn
+                                      %ServiceDateDayOfWeek{day_name: day_name} ->
+                                        Atom.to_string(day_name)
 
-                                    str ->
-                                      str
-                                  end
-                                )
+                                      %Ecto.Changeset{} = changeset ->
+                                        changeset
+                                        |> Ecto.Changeset.get_field(:day_name)
+                                        |> Atom.to_string()
+
+                                      str ->
+                                        str
+                                    end
+                                  )
+                                else
+                                  []
+                                end
                               }
                             />
                           </div>
@@ -348,6 +357,16 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
       )
 
     {:ok, socket}
+  end
+
+  @impl true
+  def handle_event("validate", %{"export" => export_params}, socket) do
+    form =
+      socket.assigns.export
+      |> Trainsformer.change_export(export_params)
+      |> to_form(action: :validate)
+
+    {:noreply, assign(socket, form: form)}
   end
 
   @impl true

@@ -51,6 +51,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
     |> cast(attrs, [:mode], force_changes: true)
     |> cast_assoc(:limits, with: &Limit.changeset/2)
     |> cast_assoc(:replacement_services, with: &ReplacementService.changeset/2)
+    |> cast_assoc(:trainsformer_exports, with: &Arrow.Trainsformer.Export.changeset/2)
     |> validate_required([:title, :mode, :is_active])
     |> validate_required_for(:is_active)
     |> validate_no_mode_change()

@@ -2,10 +2,10 @@
 -- PostgreSQL database dump
 --
 
-\restrict 2U5xctdYZPzR7MiFLT6ex6uTDnp2eF7UGFIpPgaVW1X1NJYXsQ9bDXJi8zrFfC9
+\restrict 162USDnzTVH6AoDpkAVnueTQTvFnNunyreal1sV0AuOxo1ZOXxE0kLpJYW5sHY6
 
--- Dumped from database version 15.14 (Postgres.app)
--- Dumped by pg_dump version 15.14 (Postgres.app)
+-- Dumped from database version 15.15 (Debian 15.15-1.pgdg13+1)
+-- Dumped by pg_dump version 15.15 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1085,6 +1085,38 @@ CREATE TABLE public.schema_migrations (
 
 
 --
+-- Name: service_date_days_of_week; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.service_date_days_of_week (
+    id bigint NOT NULL,
+    day_name integer NOT NULL,
+    service_date_id bigint,
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
+-- Name: service_date_days_of_week_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.service_date_days_of_week_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: service_date_days_of_week_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.service_date_days_of_week_id_seq OWNED BY public.service_date_days_of_week.id;
+
+
+--
 -- Name: shapes; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1269,6 +1301,36 @@ ALTER SEQUENCE public.stops_id_seq OWNED BY public.stops.id;
 
 
 --
+-- Name: trainsformer_export_routes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.trainsformer_export_routes (
+    id bigint NOT NULL,
+    route_id character varying(255),
+    export_id bigint
+);
+
+
+--
+-- Name: trainsformer_export_routes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.trainsformer_export_routes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: trainsformer_export_routes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.trainsformer_export_routes_id_seq OWNED BY public.trainsformer_export_routes.id;
+
+
+--
 -- Name: trainsformer_exports; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1277,7 +1339,8 @@ CREATE TABLE public.trainsformer_exports (
     s3_path text,
     disruption_id bigint,
     inserted_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    name character varying(255)
 );
 
 
@@ -1298,6 +1361,69 @@ CREATE SEQUENCE public.trainsformer_exports_id_seq
 --
 
 ALTER SEQUENCE public.trainsformer_exports_id_seq OWNED BY public.trainsformer_exports.id;
+
+
+--
+-- Name: trainsformer_service_dates; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.trainsformer_service_dates (
+    id bigint NOT NULL,
+    start_date date,
+    end_date date,
+    service_id bigint
+);
+
+
+--
+-- Name: trainsformer_service_dates_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.trainsformer_service_dates_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: trainsformer_service_dates_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.trainsformer_service_dates_id_seq OWNED BY public.trainsformer_service_dates.id;
+
+
+--
+-- Name: trainsformer_services; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.trainsformer_services (
+    id bigint NOT NULL,
+    name character varying(255),
+    export_id bigint,
+    inserted_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: trainsformer_services_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.trainsformer_services_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: trainsformer_services_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.trainsformer_services_id_seq OWNED BY public.trainsformer_services.id;
 
 
 --
@@ -1434,6 +1560,13 @@ ALTER TABLE ONLY public.replacement_services ALTER COLUMN id SET DEFAULT nextval
 
 
 --
+-- Name: service_date_days_of_week id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.service_date_days_of_week ALTER COLUMN id SET DEFAULT nextval('public.service_date_days_of_week_id_seq'::regclass);
+
+
+--
 -- Name: shapes id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1469,10 +1602,31 @@ ALTER TABLE ONLY public.stops ALTER COLUMN id SET DEFAULT nextval('public.stops_
 
 
 --
+-- Name: trainsformer_export_routes id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_export_routes ALTER COLUMN id SET DEFAULT nextval('public.trainsformer_export_routes_id_seq'::regclass);
+
+
+--
 -- Name: trainsformer_exports id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.trainsformer_exports ALTER COLUMN id SET DEFAULT nextval('public.trainsformer_exports_id_seq'::regclass);
+
+
+--
+-- Name: trainsformer_service_dates id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_service_dates ALTER COLUMN id SET DEFAULT nextval('public.trainsformer_service_dates_id_seq'::regclass);
+
+
+--
+-- Name: trainsformer_services id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_services ALTER COLUMN id SET DEFAULT nextval('public.trainsformer_services_id_seq'::regclass);
 
 
 --
@@ -1788,6 +1942,14 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
+-- Name: service_date_days_of_week service_date_days_of_week_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.service_date_days_of_week
+    ADD CONSTRAINT service_date_days_of_week_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: shapes shapes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1828,11 +1990,35 @@ ALTER TABLE ONLY public.stops
 
 
 --
+-- Name: trainsformer_export_routes trainsformer_export_routes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_export_routes
+    ADD CONSTRAINT trainsformer_export_routes_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: trainsformer_exports trainsformer_exports_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.trainsformer_exports
     ADD CONSTRAINT trainsformer_exports_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: trainsformer_service_dates trainsformer_service_dates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_service_dates
+    ADD CONSTRAINT trainsformer_service_dates_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: trainsformer_services trainsformer_services_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_services
+    ADD CONSTRAINT trainsformer_services_pkey PRIMARY KEY (id);
 
 
 --
@@ -2025,6 +2211,13 @@ CREATE INDEX replacement_services_shuttle_id_index ON public.replacement_service
 
 
 --
+-- Name: service_date_days_of_week_service_date_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX service_date_days_of_week_service_date_id_index ON public.service_date_days_of_week USING btree (service_date_id);
+
+
+--
 -- Name: shapes_name_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -2074,10 +2267,31 @@ CREATE INDEX stops_stop_lat_stop_lon_stop_id_index ON public.stops USING btree (
 
 
 --
+-- Name: trainsformer_export_routes_export_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX trainsformer_export_routes_export_id_index ON public.trainsformer_export_routes USING btree (export_id);
+
+
+--
 -- Name: trainsformer_exports_disruption_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX trainsformer_exports_disruption_id_index ON public.trainsformer_exports USING btree (disruption_id);
+
+
+--
+-- Name: trainsformer_service_dates_service_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX trainsformer_service_dates_service_id_index ON public.trainsformer_service_dates USING btree (service_id);
+
+
+--
+-- Name: trainsformer_services_export_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX trainsformer_services_export_id_index ON public.trainsformer_services USING btree (export_id);
 
 
 --
@@ -2439,6 +2653,14 @@ ALTER TABLE ONLY public.replacement_services
 
 
 --
+-- Name: service_date_days_of_week service_date_days_of_week_service_date_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.service_date_days_of_week
+    ADD CONSTRAINT service_date_days_of_week_service_date_id_fkey FOREIGN KEY (service_date_id) REFERENCES public.trainsformer_service_dates(id) ON DELETE CASCADE;
+
+
+--
 -- Name: shuttle_route_stops shuttle_route_stops_gtfs_stop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2487,6 +2709,14 @@ ALTER TABLE ONLY public.shuttles
 
 
 --
+-- Name: trainsformer_export_routes trainsformer_export_routes_export_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_export_routes
+    ADD CONSTRAINT trainsformer_export_routes_export_id_fkey FOREIGN KEY (export_id) REFERENCES public.trainsformer_exports(id);
+
+
+--
 -- Name: trainsformer_exports trainsformer_exports_disruption_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -2495,10 +2725,26 @@ ALTER TABLE ONLY public.trainsformer_exports
 
 
 --
+-- Name: trainsformer_service_dates trainsformer_service_dates_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_service_dates
+    ADD CONSTRAINT trainsformer_service_dates_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.trainsformer_services(id);
+
+
+--
+-- Name: trainsformer_services trainsformer_services_export_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trainsformer_services
+    ADD CONSTRAINT trainsformer_services_export_id_fkey FOREIGN KEY (export_id) REFERENCES public.trainsformer_exports(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 2U5xctdYZPzR7MiFLT6ex6uTDnp2eF7UGFIpPgaVW1X1NJYXsQ9bDXJi8zrFfC9
+\unrestrict 162USDnzTVH6AoDpkAVnueTQTvFnNunyreal1sV0AuOxo1ZOXxE0kLpJYW5sHY6
 
 INSERT INTO public."schema_migrations" (version) VALUES (20191223181419);
 INSERT INTO public."schema_migrations" (version) VALUES (20191223181443);
@@ -2562,3 +2808,5 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250501125059);
 INSERT INTO public."schema_migrations" (version) VALUES (20250601120000);
 INSERT INTO public."schema_migrations" (version) VALUES (20250602151911);
 INSERT INTO public."schema_migrations" (version) VALUES (20251202153220);
+INSERT INTO public."schema_migrations" (version) VALUES (20260108201439);
+INSERT INTO public."schema_migrations" (version) VALUES (20260120151940);
