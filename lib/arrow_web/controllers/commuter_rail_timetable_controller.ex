@@ -58,9 +58,13 @@ defmodule ArrowWeb.CommuterRailTimetableController do
     stops_in_order =
       Enum.reduce(all_schedules, [], fn trip_data, stop_ids ->
         unseen_stop_ids =
-          trip_data.stop_times
-          |> Enum.map(& &1.stop_id)
-          |> Enum.filter(fn stop_id -> stop_id not in stop_ids end)
+          Enum.reduce(trip_data.stop_times, [], fn stop_time, unseen_stop_ids ->
+            if stop_time.stop_id not in unseen_stop_ids do
+              unseen_stop_ids ++ [stop_time.stop_id]
+            else
+              unseen_stop_ids
+            end
+          end)
 
         stop_ids ++ unseen_stop_ids
       end)
