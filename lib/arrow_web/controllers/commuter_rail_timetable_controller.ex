@@ -56,18 +56,7 @@ defmodule ArrowWeb.CommuterRailTimetableController do
 
     # Combine stops across different trains to get global stop ordering
     stops_in_order =
-      Enum.reduce(all_schedules, [], fn trip_data, stop_ids ->
-        unseen_stop_ids =
-          Enum.reduce(trip_data.stop_times, [], fn stop_time, unseen_stop_ids ->
-            if stop_time.stop_id not in unseen_stop_ids do
-              unseen_stop_ids ++ [stop_time.stop_id]
-            else
-              unseen_stop_ids
-            end
-          end)
-
-        stop_ids ++ unseen_stop_ids
-      end)
+      Enum.reduce(all_schedules, [], &collect_unseen_stop_ids/2)
 
     train_numbers = Enum.map(all_schedules, & &1.short_name)
 
@@ -98,5 +87,18 @@ defmodule ArrowWeb.CommuterRailTimetableController do
       stop_times_by_stop: stop_times_by_stop,
       icon_paths: Arrow.Util.icon_paths(conn)
     )
+  end
+
+  defp collect_unseen_stop_ids(trip_data, stop_ids) do
+    unseen_stop_ids =
+      Enum.reduce(trip_data.stop_times, [], fn stop_time, unseen_stop_ids ->
+        if stop_time.stop_id in unseen_stop_ids do
+          unseen_stop_ids
+        else
+          unseen_stop_ids ++ [stop_time.stop_id]
+        end
+      end)
+
+    stop_ids ++ unseen_stop_ids
   end
 end
