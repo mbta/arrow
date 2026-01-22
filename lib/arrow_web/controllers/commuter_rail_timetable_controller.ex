@@ -91,7 +91,8 @@ defmodule ArrowWeb.CommuterRailTimetableController do
       direction_id: direction_id,
       available_routes: available_routes,
       train_numbers: train_numbers,
-      stop_times_by_stop: stop_times_by_stop
+      stop_times_by_stop: stop_times_by_stop,
+      icon_paths: Arrow.Util.icon_paths(conn)
     )
   end
 end
