@@ -92,7 +92,7 @@ defmodule ArrowWeb.CommuterRailTimetableController do
   defp collect_unseen_stop_ids(trip_data, stop_ids) do
     unseen_stop_ids =
       Enum.reduce(trip_data.stop_times, [], fn stop_time, unseen_stop_ids ->
-        if stop_time.stop_id in unseen_stop_ids do
+        if stop_time.stop_id in stop_ids do
           unseen_stop_ids
         else
           unseen_stop_ids ++ [stop_time.stop_id]
