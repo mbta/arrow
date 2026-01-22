@@ -295,9 +295,9 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       with: "01/28/2026"
     )
     |> click(text("Add Another Timeframe"))
-    |> fill_in(Query.fillable_field("Start Date") |> Query.at(1), with: "01/30/2026")
-    |> fill_in(Query.fillable_field("End Date") |> Query.at(1), with: "02/05/2026")
-    |> click(Query.checkbox("Monday") |> Query.at(1))
+    |> fill_in("Start Date" |> Query.fillable_field() |> Query.at(1), with: "01/30/2026")
+    |> fill_in("End Date" |> Query.fillable_field() |> Query.at(1), with: "02/05/2026")
+    |> click("Monday" |> Query.checkbox() |> Query.at(1))
     |> click(text("Save"))
     |> assert_text("Trainsformer service schedules updated successfully!")
     |> assert_text("01/21/2026")
