@@ -42,10 +42,7 @@ defmodule ArrowWeb.CommuterRailTimetableController do
       |> Map.get(service_id)
       |> Enum.reduce([], fn {_trip_id, trip_data}, acc ->
         if trip_data.route_id == route_id and trip_data.direction_id == direction_id do
-          {_, new_trip_data} =
-            Map.get_and_update(trip_data, :stop_times, fn stop_times ->
-              {stop_times, Enum.sort_by(stop_times, & &1.stop_sequence)}
-            end)
+          new_trip_data = sort_trip_data_by_stop_sequence(trip_data)
 
           acc ++ [new_trip_data]
         else
@@ -87,6 +84,15 @@ defmodule ArrowWeb.CommuterRailTimetableController do
       stop_times_by_stop: stop_times_by_stop,
       icon_paths: Arrow.Util.icon_paths(conn)
     )
+  end
+
+  defp sort_trip_data_by_stop_sequence(trip_data) do
+    {_, new_trip_data} =
+      Map.get_and_update(trip_data, :stop_times, fn stop_times ->
+        {stop_times, Enum.sort_by(stop_times, & &1.stop_sequence)}
+      end)
+
+    new_trip_data
   end
 
   defp collect_unseen_stop_ids(trip_data, stop_ids) do
