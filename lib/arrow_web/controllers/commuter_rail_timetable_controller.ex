@@ -40,17 +40,17 @@ defmodule ArrowWeb.CommuterRailTimetableController do
     all_schedules =
       schedule_data
       |> Map.get(service_id)
-      |> Enum.map(fn {_trip_id, trip_data} -> trip_data end)
-      |> Enum.filter(fn trip_data ->
-        trip_data.route_id == route_id and trip_data.direction_id == direction_id
-      end)
-      |> Enum.map(fn trip_data ->
-        {_, new_trip_data} =
-          Map.get_and_update(trip_data, :stop_times, fn stop_times ->
-            {stop_times, Enum.sort_by(stop_times, & &1.stop_sequence)}
-          end)
+      |> Enum.reduce([], fn {_trip_id, trip_data}, acc ->
+        if trip_data.route_id == route_id and trip_data.direction_id == direction_id do
+          {_, new_trip_data} =
+            Map.get_and_update(trip_data, :stop_times, fn stop_times ->
+              {stop_times, Enum.sort_by(stop_times, & &1.stop_sequence)}
+            end)
 
-        new_trip_data
+          acc ++ [new_trip_data]
+        else
+          acc
+        end
       end)
       |> Enum.sort_by(fn trip_data -> Enum.at(trip_data.stop_times, 0).departure_time end)
 
