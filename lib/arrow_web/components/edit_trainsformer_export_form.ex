@@ -184,19 +184,29 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                               }
                               value={
                                 if Ecto.assoc_loaded?(f_date[:service_date_days_of_week].value) do
-                                  Enum.map(
+                                  Enum.reduce(
                                     f_date[:service_date_days_of_week].value,
+                                    [],
                                     fn
-                                      %ServiceDateDayOfWeek{day_name: day_name} ->
-                                        Atom.to_string(day_name)
+                                      %ServiceDateDayOfWeek{day_name: day_name}, acc ->
+                                        [Atom.to_string(day_name) | acc]
 
-                                      %Ecto.Changeset{} = changeset ->
-                                        changeset
-                                        |> Ecto.Changeset.get_field(:day_name)
-                                        |> Atom.to_string()
+                                      %Ecto.Changeset{action: :replace}, acc ->
+                                        acc
 
-                                      str ->
-                                        str
+                                      %Ecto.Changeset{action: :delete}, acc ->
+                                        acc
+
+                                      %Ecto.Changeset{} = changeset, acc ->
+                                        day_name =
+                                          changeset
+                                          |> Ecto.Changeset.get_field(:day_name)
+                                          |> Atom.to_string()
+
+                                        [day_name | acc]
+
+                                      str, acc ->
+                                        [str | acc]
                                     end
                                   )
                                 else
