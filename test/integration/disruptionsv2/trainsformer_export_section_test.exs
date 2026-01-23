@@ -46,6 +46,25 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> assert_text("Timetable")
   end
 
+  @tag :skip
+  feature "can view a timetable and toggle directions", %{session: session} do
+    disruption = disruption_v2_fixture(%{mode: :commuter_rail})
+
+    session
+    |> visit("/disruptions/#{disruption.id}")
+    |> click(text("Upload Trainsformer export"))
+    |> attach_file(file_field("trainsformer_export", visible: false),
+      path: "test/support/fixtures/trainsformer/valid_export.zip"
+    )
+    |> click(Query.css("#save-export-button"))
+    |> assert_text("Timetable")
+    |> click(Query.text("Timetable"))
+    # Back Bay station
+    |> assert_text("NEC-2276-01")
+    |> click(text("Inbound"))
+    |> assert_text("NEC-2276-01")
+  end
+
   feature "reports invalid ZIP errors", %{session: session} do
     disruption = disruption_v2_fixture(%{mode: :commuter_rail})
 
