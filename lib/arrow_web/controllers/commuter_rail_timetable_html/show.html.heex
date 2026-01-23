@@ -1,11 +1,105 @@
+<div>
+  <a href={~p"/"}>Disruptions</a>
+  &gt; <a href={~p"/disruptions/#{@disruption_id}"}>{@disruption_title}</a>
+  &gt; {@service_id}
+</div>
 <.header>
   View timetables: {@service_id}
 </.header>
 <div>
-  <div>
-    <div>Route:</div>
-    <ul>
-      <li :for={available_route_id <- @available_routes}>{available_route_id}</li>
-    </ul>
+  <div class="row">
+    <div class="col-4" role="radiogroup" aria-labelledby="route-label">
+      <div id="route-label" class="font-bold">Route:</div>
+      <ul class="flex flex-wrap pl-0">
+        <li :for={available_route_id <- @available_routes} class="list-none shrink-0 pr-2">
+          <%= if available_route_id == @route_id do %>
+            <span class="font-bold" role="radio" aria-checked={true}>
+              <span
+                class="m-icon m-icon-sm mr-1"
+                style={"background-image: url('#{Map.get(@icon_paths, :commuter_rail)}');"}
+              />{available_route_id}
+            </span>
+          <% else %>
+            <a
+              href={
+                ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{available_route_id}&direction_id=#{@direction_id}&service_id=#{@service_id}"
+              }
+              role="radio"
+              aria-checked={false}
+            >
+              <span
+                class="m-icon m-icon-sm mr-1"
+                style={"background-image: url('#{Map.get(@icon_paths, :commuter_rail)}');"}
+              />{available_route_id}
+            </a>
+          <% end %>
+        </li>
+      </ul>
+    </div>
+    <div class="col-2" role="radiogroup" aria-labelledby="direction-label">
+      <div id="direction-label" class="font-bold">Direction:</div>
+      <%= if @direction_id == 0 do %>
+        <span class="font-bold" role="radio" aria-checked={true}>Outbound</span>
+        <a
+          href={
+            ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{@route_id}&direction_id=1&service_id=#{@service_id}"
+          }
+          role="radio"
+          aria-checked={false}
+        >
+          Inbound
+        </a>
+      <% else %>
+        <a
+          href={
+            ~p"/trainsformer_exports/#{@trainsformer_export_id}/timetable?route_id=#{@route_id}&direction_id=0&service_id=#{@service_id}"
+          }
+          role="radio"
+          aria-checked={false}
+        >
+          Outbound
+        </a>
+        <span class="font-bold" role="radio" aria-checked={true}>Inbound</span>
+      <% end %>
+    </div>
+    <div class="col-6">
+      <table>
+        <thead class="border-b-2 border-t-0 border-x-0 border-solid">
+          <tr>
+            <th class="pr-8">Start date:</th>
+            <th class="pr-8">End date:</th>
+            <th>Days of week:</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            :for={service_date <- @service_dates}
+            class="border-t border-b-0 border-x-0 border-solid"
+          >
+            <td>{Calendar.strftime(service_date.start_date, "%m/%d/%Y")}</td>
+            <td>{Calendar.strftime(service_date.end_date, "%m/%d/%Y")}</td>
+            <td />
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
+
+  <table class="overflow-scroll w-full table-fixed block p-4">
+    <thead>
+      <th class="border-2 border-black border-solid p-1">Stop</th>
+      <th
+        :for={train_number <- @train_numbers}
+        class="border-2 border-black border-solid text-center"
+      >
+        {train_number}
+      </th>
+    </thead>
+    <tr :for={{stop_name, times} <- @stop_times_by_stop}>
+      <td class="border-2 border-black border-solid p-1">{stop_name}</td>
+      <td :for={time <- times} class="border-2 border-black border-solid p-1 text-center">
+        {if is_nil(time), do: "--", else: time.departure_time || time.arrival_time}
+      </td>
+    </tr>
+  </table>
 </div>

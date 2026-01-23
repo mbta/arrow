@@ -426,45 +426,62 @@ defmodule ArrowWeb.DisruptionComponents do
 
             <div class="col-9">
               <table class="sm:w-full">
-                <tr>
-                  <th>
-                    Service
-                  </th>
-                  <th>
-                    Start Date
-                  </th>
-                  <th>
-                    End Date
-                  </th>
-                  <th>
-                    Days of Week
-                  </th>
-                </tr>
-                <%= for service <- export.services do %>
+                <thead>
                   <tr>
-                    <td>{service.name}</td>
-                    <td>
-                      <div :for={date <- Enum.map(service.service_dates, & &1.start_date)}>
-                        <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
-                        {Calendar.strftime(date, "%m/%d/%Y")}
-                      </div>
-                    </td>
-                    <td>
-                      <div :for={date <- Enum.map(service.service_dates, & &1.end_date)}>
-                        <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
-                        {Calendar.strftime(date, "%m/%d/%Y")}
-                      </div>
-                    </td>
-                    <td>
-                      <span
-                        :for={dow <- Arrow.Util.DayOfWeek.get_all_day_names()}
-                        class="text-gray-400"
-                      >
-                        {format_day_name_short(dow)}
-                      </span>
-                    </td>
+                    <th>
+                      Service
+                    </th>
+                    <th />
+                    <th>
+                      Start Date
+                    </th>
+                    <th>
+                      End Date
+                    </th>
+                    <th>
+                      Days of Week
+                    </th>
                   </tr>
-                <% end %>
+                </thead>
+                <tbody>
+                  <%= for service <- export.services do %>
+                    <tr>
+                      <td>
+                        {service.name}
+                      </td>
+                      <td>
+                        <a
+                          class="btn-link btn-sm pl-0 flex items-center"
+                          href={
+                            ~p"/trainsformer_exports/#{export.id}/timetable?service_id=#{service.name}"
+                          }
+                        >
+                          <.icon name="hero-table-cells" class="bg-primary" />Timetable
+                        </a>
+                      </td>
+                      <td>
+                        <div :for={date <- Enum.map(service.service_dates, & &1.start_date)}>
+                          <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
+                          {Calendar.strftime(date, "%m/%d/%Y")}
+                        </div>
+                      </td>
+                      <td>
+                        <div :for={date <- Enum.map(service.service_dates, & &1.end_date)}>
+                          <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
+                          {Calendar.strftime(date, "%m/%d/%Y")}
+                        </div>
+                      </td>
+                      <td>
+                        <span
+                          :for={dow <- Arrow.Util.DayOfWeek.get_all_day_names()}
+                          class="text-gray-400"
+                        >
+                          {format_day_name_short(dow)}
+                        </span>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
               </table>
             </div>
           </div>

@@ -1,6 +1,8 @@
 defmodule ArrowWeb.CommuterRailTimetableController do
   use ArrowWeb, :controller
 
+  alias Arrow.Gtfs.Stop
+  alias Arrow.Repo
   alias Arrow.Trainsformer
   alias Arrow.Trainsformer.ExportUpload
 
@@ -15,6 +17,8 @@ defmodule ArrowWeb.CommuterRailTimetableController do
     available_services = schedule_data |> Map.keys() |> Enum.sort()
 
     service_id = Map.get(params, "service_id", Enum.at(available_services, 0))
+
+    service = Enum.find(trainsformer_export.services, &(&1.name == service_id))
 
     # Get route, defaulting to first one available
     available_routes =
@@ -33,22 +37,71 @@ defmodule ArrowWeb.CommuterRailTimetableController do
         nil -> 0
       end
 
-    # Take schedule data for all trains, combine to get stop ordering
-    _all_schedules =
+    all_schedules =
       schedule_data
       |> Map.get(service_id)
-      |> Enum.map(fn {_trip_id, trip_data} -> trip_data end)
-      |> Enum.filter(fn trip_data ->
-        trip_data.route_id == route_id and trip_data.direction_id == direction_id
-      end)
+      |> Enum.reduce([], fn {_trip_id, trip_data}, acc ->
+        if trip_data.route_id == route_id and trip_data.direction_id == direction_id do
+          new_trip_data = sort_trip_data_by_stop_sequence(trip_data)
 
-    # Sort trips by relevant times
+          acc ++ [new_trip_data]
+        else
+          acc
+        end
+      end)
+      |> Enum.sort_by(fn trip_data -> Enum.at(trip_data.stop_times, 0).departure_time end)
+
+    # Combine stops across different trains to get global stop ordering
+    stops_in_order =
+      Enum.reduce(all_schedules, [], &collect_unseen_stop_ids/2)
+
+    train_numbers = Enum.map(all_schedules, & &1.short_name)
+
+    # Combine stop names and stop times into rows
+    stop_times_by_stop =
+      Enum.map(stops_in_order, fn stop_id ->
+        stop_name = Repo.get(Stop, stop_id).name
+
+        stop_times =
+          Enum.map(all_schedules, fn trip_data ->
+            Enum.find(trip_data.stop_times, &(&1.stop_id == stop_id))
+          end)
+
+        {stop_name, stop_times}
+      end)
 
     # Render
     render(conn, :show,
+      trainsformer_export_id: export_id,
+      disruption_id: trainsformer_export.disruption.id,
+      disruption_title: trainsformer_export.disruption.title,
       service_id: service_id,
+      service_dates: service.service_dates,
       route_id: route_id,
-      available_routes: available_routes
+      direction_id: direction_id,
+      available_routes: available_routes,
+      train_numbers: train_numbers,
+      stop_times_by_stop: stop_times_by_stop,
+      icon_paths: Arrow.Util.icon_paths(conn)
     )
+  end
+
+  defp sort_trip_data_by_stop_sequence(trip_data) do
+    Map.update!(trip_data, :stop_times, fn stop_times ->
+      Enum.sort_by(stop_times, & &1.stop_sequence)
+    end)
+  end
+
+  defp collect_unseen_stop_ids(trip_data, stop_ids) do
+    unseen_stop_ids =
+      Enum.reduce(trip_data.stop_times, [], fn stop_time, unseen_stop_ids ->
+        if stop_time.stop_id in stop_ids do
+          unseen_stop_ids
+        else
+          unseen_stop_ids ++ [stop_time.stop_id]
+        end
+      end)
+
+    stop_ids ++ unseen_stop_ids
   end
 end

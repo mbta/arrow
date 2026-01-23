@@ -44,4 +44,41 @@ defmodule Arrow.Util do
   end
 
   defp get_unzipped_file_path(filename, tmp_dir), do: ~c"#{tmp_dir}/#{filename}"
+
+  @adjustment_kind_icon_names %{
+    blue_line: "blue-line",
+    bus: "mode-bus",
+    commuter_rail: "mode-commuter-rail",
+    green_line: "green-line",
+    green_line_b: "green-line-b",
+    green_line_c: "green-line-c",
+    green_line_d: "green-line-d",
+    green_line_e: "green-line-e",
+    mattapan_line: "mattapan-line",
+    orange_line: "orange-line",
+    red_line: "red-line",
+    silver_line: "silver-line"
+  }
+
+  defp adjustment_kind_icon_path(conn_or_socket, kind) do
+    Phoenix.VerifiedRoutes.static_path(
+      conn_or_socket,
+      "/images/icon-#{@adjustment_kind_icon_names[kind]}-small.svg"
+    )
+  end
+
+  def icon_paths(conn_or_socket) do
+    @adjustment_kind_icon_names
+    |> Map.new(fn {kind, _icon_name} ->
+      {kind, adjustment_kind_icon_path(conn_or_socket, kind)}
+    end)
+    |> Map.put(
+      :subway,
+      Phoenix.VerifiedRoutes.static_path(conn_or_socket, "/images/icon-mode-subway-small.svg")
+    )
+    |> Map.put(
+      :bus_outline,
+      Phoenix.VerifiedRoutes.static_path(conn_or_socket, "/images/icon-bus-outline-small.svg")
+    )
+  end
 end

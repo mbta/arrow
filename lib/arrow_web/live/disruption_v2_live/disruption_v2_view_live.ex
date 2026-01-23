@@ -1,7 +1,7 @@
 defmodule ArrowWeb.DisruptionV2ViewLive do
   use ArrowWeb, :live_view
 
-  alias Arrow.{Adjustment, Disruptions, Limits}
+  alias Arrow.{Disruptions, Limits}
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
   alias Arrow.Hastus
   alias Arrow.Hastus.Export, as: HastusExport
@@ -79,7 +79,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   def mount(_params, session, socket) do
     {:ok,
      socket
-     |> assign(:icon_paths, icon_paths(socket))
+     |> assign(:icon_paths, Arrow.Util.icon_paths(socket))
      |> assign(:user_id, session["current_user"].id)}
   end
 
@@ -156,42 +156,6 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
       {:error, %Ecto.Changeset{} = _changeset} ->
         {:noreply, put_flash(socket, :error, "Error when deleting replacement service!")}
     end
-  end
-
-  @adjustment_kind_icon_names %{
-    blue_line: "blue-line",
-    bus: "mode-bus",
-    commuter_rail: "mode-commuter-rail",
-    green_line: "green-line",
-    green_line_b: "green-line-b",
-    green_line_c: "green-line-c",
-    green_line_d: "green-line-d",
-    green_line_e: "green-line-e",
-    mattapan_line: "mattapan-line",
-    orange_line: "orange-line",
-    red_line: "red-line",
-    silver_line: "silver-line"
-  }
-
-  defp adjustment_kind_icon_path(socket, kind) do
-    Phoenix.VerifiedRoutes.static_path(
-      socket,
-      "/images/icon-#{@adjustment_kind_icon_names[kind]}-small.svg"
-    )
-  end
-
-  defp icon_paths(socket) do
-    Adjustment.kinds()
-    |> Enum.map(&{&1, adjustment_kind_icon_path(socket, &1)})
-    |> Enum.into(%{})
-    |> Map.put(
-      :subway,
-      Phoenix.VerifiedRoutes.static_path(socket, "/images/icon-mode-subway-small.svg")
-    )
-    |> Map.put(
-      :bus_outline,
-      Phoenix.VerifiedRoutes.static_path(socket, "/images/icon-bus-outline-small.svg")
-    )
   end
 
   defp apply_action(socket, :show, %{"id" => id}) do

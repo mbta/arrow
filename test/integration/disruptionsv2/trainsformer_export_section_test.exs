@@ -5,6 +5,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
   import Wallaby.Query
   import Arrow.DisruptionsFixtures
   import Arrow.Factory
+  import Test.Support.Helpers
 
   @moduletag :integration
 
@@ -43,6 +44,35 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> click(Query.css("#save-export-button"))
     |> assert_text("CR-Foxboro")
     |> assert_text("SPRING2025-SOUTHSS-Weekend-66")
+    |> assert_text("Timetable")
+  end
+
+  feature "can view a timetable and toggle directions", %{session: session} do
+    reassign_env(
+      :trainsformer_export_storage_request_fn,
+      {Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest.FakeRequestWithValidExport,
+       :request}
+    )
+
+    reassign_env(:trainsformer_export_storage_enabled?, true)
+
+    disruption = disruption_v2_fixture(%{mode: :commuter_rail})
+
+    session
+    |> visit("/disruptions/#{disruption.id}")
+    |> click(text("Upload Trainsformer export"))
+    |> attach_file(file_field("trainsformer_export", visible: false),
+      path: "test/support/fixtures/trainsformer/valid_export.zip"
+    )
+    |> click(Query.css("#save-export-button"))
+    |> click(link("Timetable"))
+    # Back Bay station
+    |> assert_text("NEC-2276-01")
+    |> assert_text("10:50:00")
+    |> click(link("Inbound"))
+    # Providence station
+    |> assert_text("NEC-1851-03")
+    |> assert_text("10:15:00")
   end
 
   feature "reports invalid ZIP errors", %{session: session} do
@@ -213,5 +243,13 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     accept_prompt(session, fn s ->
       s |> click(text("Cancel")) |> assert_text("Upload Trainsformer export")
     end)
+  end
+
+  defmodule FakeRequestWithValidExport do
+    @export_dir "test/support/fixtures/trainsformer"
+
+    def request(_) do
+      {:ok, %{body: File.read!("#{@export_dir}/valid_export.zip")}}
+    end
   end
 end
