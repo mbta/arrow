@@ -144,6 +144,10 @@ config :ja_serializer,
 
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
+#  https://hexdocs.pm/excellent_migrations/readme.html#existing-migrations
+# Ignore migrations added before `excellent_migrations` was added
+config :excellent_migrations, start_after: "20260108201439"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

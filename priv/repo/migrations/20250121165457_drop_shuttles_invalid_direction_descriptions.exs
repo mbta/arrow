@@ -1,8 +1,8 @@
 defmodule Arrow.Repo.Migrations.DropShuttlesInvalidDirectionDescriptions do
   use Ecto.Migration
 
-  defp get_valid_direction_sql_strings() do
-    Arrow.Shuttles.Route.direction_desc_values() |> Enum.map(&"'#{&1}'") |> Enum.join(",")
+  defp get_valid_direction_sql_strings do
+    Enum.map_join(Arrow.Shuttles.Route.direction_desc_values(), ",", &"'#{&1}'")
   end
 
   def up do

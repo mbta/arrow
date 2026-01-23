@@ -29,7 +29,8 @@
           "apps/*/lib/",
           "apps/*/src/",
           "apps/*/test/",
-          "apps/*/web/"
+          "apps/*/web/",
+          "priv/repo/migrations/"
         ],
         excluded: [~r"/_build/", ~r"/deps/", ~r"/node_modules/"]
       },
@@ -65,6 +66,7 @@
       #     {Credo.Check.Design.DuplicatedCode, false}
       #
       checks: [
+        {ExcellentMigrations.CredoCheck.MigrationsSafety, []},
         #
         ## Consistency Checks
         #
