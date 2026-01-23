@@ -94,8 +94,6 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
       current_date_string = Date.to_iso8601(Date.utc_today())
 
-      # note from JD: I don't really like how tightly coupled this is to the frontend (edit_trainsformer_export_form.ex)
-      # but if you don't set defaults here, the form seems to blow up
       service_maps =
         Enum.map(services, fn service_id ->
           %{
@@ -104,8 +102,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
               %{
                 "service_id" => service_id,
                 "start_date" => current_date_string,
-                "end_date" => current_date_string,
-                "service_date_days_of_week" => []
+                "end_date" => current_date_string
               }
             ]
           }
