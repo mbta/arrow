@@ -1,4 +1,4 @@
-defmodule Arrow.Repo.Migrations.CreateTrainsformerExportServiceAndRoutes do
+dfmodule Arrow.Repo.Migrations.CreateTrainsformerExportServiceAndRoutes do
   use Ecto.Migration
 
   def change do
@@ -21,8 +21,7 @@ defmodule Arrow.Repo.Migrations.CreateTrainsformerExportServiceAndRoutes do
 
     create table(:trainsformer_export_routes) do
       add :route_id, :string
-
-      add :export_id, references(:trainsformer_exports, on_delete: :delete_all, validate: false)
+      add :export_id, references(:trainsformer_exports, on_delete: :delete_all)
     end
 
     create index(:trainsformer_export_routes, [:export_id])

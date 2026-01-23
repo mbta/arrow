@@ -7,7 +7,7 @@ defmodule Arrow.Repo.Migrations.CreateTrainsformerServiceDateDaysOfWeek do
 
       # excellent_migrations:safety-assured-for-next-line column_reference_added
       add :service_date_id,
-          references(:trainsformer_service_dates, on_delete: :delete_all)
+          references(:trainsformer_service_dates, on_delete: :delete_all, on_update: :update_all)
 
       timestamps()
     end
