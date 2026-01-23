@@ -44,6 +44,7 @@ defmodule Arrow.MixProject do
   # Type `mix help deps` for examples and options.
   def deps do
     [
+      {:excellent_migrations, "~> 0.1", only: [:dev, :test], runtime: false},
       {:typed_ecto_schema, "~> 0.4.3"},
       {:ex_doc, "~> 0.38.3", only: :dev, runtime: false, warn_if_outdated: true},
       {:configparser_ex, "~> 5.0", only: :dev},
