@@ -184,31 +184,28 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                               }
                               value={
                                 if Ecto.assoc_loaded?(f_date[:service_date_days_of_week].value) do
-                                  Enum.reduce(
-                                    f_date[:service_date_days_of_week].value,
-                                    [],
-                                    fn
-                                      %ServiceDateDayOfWeek{day_name: day_name}, acc ->
-                                        [Atom.to_string(day_name) | acc]
+                                  for day <- f_date[:service_date_days_of_week].value, reduce: [] do
+                                    acc ->
+                                      case day do
+                                        %ServiceDateDayOfWeek{day_name: day_name} ->
+                                          [Atom.to_string(day_name) | acc]
 
-                                      %Ecto.Changeset{action: :replace}, acc ->
-                                        acc
+                                        %Ecto.Changeset{action: action} = changeset
+                                        when action not in [:delete, :replace] ->
+                                          day_name =
+                                            changeset
+                                            |> Ecto.Changeset.get_field(:day_name)
+                                            |> Atom.to_string()
 
-                                      %Ecto.Changeset{action: :delete}, acc ->
-                                        acc
+                                          [day_name | acc]
 
-                                      %Ecto.Changeset{} = changeset, acc ->
-                                        day_name =
-                                          changeset
-                                          |> Ecto.Changeset.get_field(:day_name)
-                                          |> Atom.to_string()
+                                        str when is_binary(str) ->
+                                          [str | acc]
 
-                                        [day_name | acc]
-
-                                      str, acc ->
-                                        [str | acc]
-                                    end
-                                  )
+                                        _ ->
+                                          acc
+                                      end
+                                  end
                                 else
                                   []
                                 end
