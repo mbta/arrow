@@ -87,12 +87,9 @@ defmodule ArrowWeb.CommuterRailTimetableController do
   end
 
   defp sort_trip_data_by_stop_sequence(trip_data) do
-    {_, new_trip_data} =
-      Map.get_and_update(trip_data, :stop_times, fn stop_times ->
-        {stop_times, Enum.sort_by(stop_times, & &1.stop_sequence)}
-      end)
-
-    new_trip_data
+    Map.update!(trip_data, :stop_times, fn stop_times ->
+      Enum.sort_by(stop_times, & &1.stop_sequence)
+    end)
   end
 
   defp collect_unseen_stop_ids(trip_data, stop_ids) do
