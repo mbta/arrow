@@ -11,7 +11,6 @@ defmodule Arrow.Trainsformer.ServiceDate do
     belongs_to :service, Arrow.Trainsformer.Service, on_replace: :delete
 
     has_many :service_date_days_of_week, ServiceDateDayOfWeek,
-      on_delete: :delete_all,
       on_replace: :delete,
       foreign_key: :service_date_id
   end
