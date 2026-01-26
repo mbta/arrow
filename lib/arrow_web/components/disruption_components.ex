@@ -478,26 +478,9 @@ defmodule ArrowWeb.DisruptionComponents do
                           </div>
                         </td>
                         <td>
-                          <div :for={date <- service.service_dates}>
-                            <% active_dows =
-                              date
-                              |> Kernel.get_in([
-                                Access.key(:service_date_days_of_week),
-                                Access.all(),
-                                Access.key(:day_name)
-                              ]) %>
-                            <span
-                              :for={dow <- Arrow.Util.DayOfWeek.get_all_day_names()}
-                              class={
-                                if dow in active_dows,
-                                  do: "text-primary",
-                                  else: "text-gray-400"
-                              }
-                              id={"service-#{service.id}-date-#{date.id}-#{dow}"}
-                            >
-                              {format_day_name_short(dow)}
-                            </span>
-                          </div>
+                          <%= for date <- service.service_dates do %>
+                            <.trainsformer_days_of_week date={date} service_id={service.id} />
+                          <% end %>
                         </td>
                       </tr>
                     <% end %>
@@ -710,5 +693,35 @@ defmodule ArrowWeb.DisruptionComponents do
         day_of_weeks: day_of_weeks
       }
     end
+  end
+
+  defp active_dows(date),
+    do:
+      date
+      |> Kernel.get_in([
+        Access.key(:service_date_days_of_week),
+        Access.all(),
+        Access.key(:day_name)
+      ])
+
+  attr :date, Arrow.Trainsformer.ServiceDate, required: true
+  attr :service_id, :string, required: true
+
+  defp trainsformer_days_of_week(assigns) do
+    ~H"""
+    <div>
+      <span
+        :for={dow <- Arrow.Util.DayOfWeek.get_all_day_names()}
+        class={
+          if dow in active_dows(assigns.date),
+            do: "text-primary",
+            else: "text-gray-400"
+        }
+        id={"service-#{assigns.service_id}-date-#{assigns.date.id}-#{dow}"}
+      >
+        {format_day_name_short(dow)}
+      </span>
+    </div>
+    """
   end
 end
