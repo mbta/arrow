@@ -23,8 +23,9 @@ defmodule Arrow.TrainsformerFixtures do
             name: "SPRING2025-SOUTHSS-Weekend-31A",
             service_dates: [
               %{
-                start_date: ~D[2026-01-26],
-                end_date: ~D[2026-01-26]
+                "service_date_days_of_week" => ["monday"],
+                "start_date" => "2026-01-26",
+                "end_date" => "2026-01-26"
               }
             ]
           }
@@ -56,8 +57,9 @@ defmodule Arrow.TrainsformerFixtures do
     {:ok, service_date} =
       attrs
       |> Enum.into(%{
-        end_date: ~D[2025-03-11],
-        start_date: ~D[2025-03-11]
+        "service_date_days_of_week" => ["monday"],
+        "start_date" => "2026-01-26",
+        "end_date" => "2026-01-26"
       })
       |> Arrow.Trainsformer.create_service_date()
 

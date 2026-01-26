@@ -252,4 +252,60 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       {:ok, %{body: File.read!("#{@export_dir}/valid_export.zip")}}
     end
   end
+
+  feature "can edit an existing Trainsformer export", %{session: session} do
+    disruption =
+      disruption_v2_fixture(%{
+        mode: :commuter_rail,
+        trainsformer_exports: [
+          %{
+            s3_path: "foo/bar/baz.zip",
+            name: "get fricking exported",
+            routes: [
+              %{route_id: "CR-Foxboro"}
+            ],
+            services: %{
+              "service1" => %{
+                name: "service1",
+                service_dates: [
+                  %{
+                    start_date: ~D[2026-01-21],
+                    end_date: ~D[2026-01-22],
+                    service_date_days_of_week: [%{day_name: :monday}, %{day_name: :tuesday}]
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      })
+
+    [%{id: export_id} | _] = disruption.trainsformer_exports
+
+    session
+    |> visit("/disruptions/#{disruption.id}/")
+    |> click(Query.css("#edit-export-button-#{export_id}"))
+    |> click(Query.checkbox("Wednesday"))
+    |> fill_in(
+      Query.fillable_field("End Date"),
+      with: "01/28/2026"
+    )
+    |> click(text("Add Another Timeframe"))
+    |> fill_in("Start Date" |> Query.fillable_field() |> Query.at(1), with: "01/30/2026")
+    |> fill_in("End Date" |> Query.fillable_field() |> Query.at(1), with: "02/05/2026")
+    |> click("Monday" |> Query.checkbox() |> Query.at(1))
+    |> click(text("Save"))
+    |> assert_text("Trainsformer service schedules updated successfully!")
+    |> assert_text("01/21/2026")
+    |> assert_text("01/28/2026")
+    |> assert_text("01/30/2026")
+    |> assert_text("02/05/2026")
+    |> assert_has(".text-primary[name=\"day-of-week-monday\"]" |> Query.css() |> Query.count(2))
+    |> assert_has(".text-primary[name=\"day-of-week-tuesday\"]" |> Query.css() |> Query.count(1))
+    |> assert_has(
+      ".text-primary[name=\"day-of-week-wednesday\"]"
+      |> Query.css()
+      |> Query.count(1)
+    )
+  end
 end

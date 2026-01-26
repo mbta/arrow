@@ -5,6 +5,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
   alias Arrow.Hastus
   alias Arrow.Hastus.Export, as: HastusExport
+  alias Arrow.Trainsformer
   alias Arrow.Trainsformer.Export, as: TrainsformerExport
   alias ArrowWeb.DisruptionComponents
 
@@ -132,6 +133,28 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     end
   end
 
+  def handle_event("delete_trainsformer_export", %{"export" => export_id}, socket) do
+    {parsed_id, _} = Integer.parse(export_id)
+    export = Trainsformer.get_export!(parsed_id)
+
+    case Trainsformer.delete_export(export) do
+      {:ok, _} ->
+        disruption = %{
+          socket.assigns.disruption
+          | trainsformer_exports:
+              Enum.reject(socket.assigns.disruption.trainsformer_exports, &(&1.id == parsed_id))
+        }
+
+        {:noreply,
+         socket
+         |> assign(:disruption, disruption)
+         |> put_flash(:info, "Export deleted successfully")}
+
+      {:error, %Ecto.Changeset{} = _changeset} ->
+        {:noreply, put_flash(socket, :error, "Error when deleting export!")}
+    end
+  end
+
   def handle_event(
         "delete_replacement_service",
         %{"replacement_service" => replacement_service_id},
@@ -243,6 +266,17 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   defp apply_action(socket, :new_trainsformer_export, %{"id" => id}) do
     disruption = Disruptions.get_disruption_v2!(id)
     trainsformer_export = %TrainsformerExport{}
+
+    socket
+    |> assign(:title, "edit disruption")
+    |> assign(:page_title, "Edit Disruption v2")
+    |> assign(:disruption, disruption)
+    |> assign(:editing, trainsformer_export)
+  end
+
+  defp apply_action(socket, :edit_trainsformer_export, %{"id" => id, "export_id" => export_id}) do
+    disruption = Disruptions.get_disruption_v2!(id)
+    trainsformer_export = Trainsformer.get_export!(export_id)
 
     socket
     |> assign(:title, "edit disruption")

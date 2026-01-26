@@ -399,37 +399,45 @@ defmodule ArrowWeb.DisruptionComponents do
     ~H"""
     <section id="trainsformer_service_schedules" class="py-4 my-4">
       <h3>Trainsformer Service Schedules</h3>
-      <%= if Ecto.assoc_loaded?(@disruption.trainsformer_exports) and Enum.any?(@disruption.trainsformer_exports) do %>
-        <div
-          :for={export <- @disruption.trainsformer_exports}
-          id={"export-table-hastus-#{export.id}"}
-          class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3"
-        >
-          <p><b>Export:</b> {export.name}</p>
-          <div class="row">
-            <div class="col-3">
-              <b>Routes</b>
-              <%= for route <- export.routes do %>
-                <div class="row">
-                  <div class="col-lg-1">
-                    <span
-                      class="m-icon m-icon-sm mr-1"
-                      style={"background-image: url('#{Map.get(@icon_paths, :commuter_rail)}');"}
-                    />
+      <%= for export <- @disruption.trainsformer_exports do %>
+        <%= if @editing && @editing.id == export.id do %>
+          <.live_component
+            module={EditTrainsformerExportForm}
+            id="trainsformer-export-edit-form"
+            disruption={@disruption}
+            export={@editing}
+            icon_paths={@icon_paths}
+            user_id={@user_id}
+          />
+        <% else %>
+          <div
+            id={"export-table-hastus-#{export.id}"}
+            class="border-2 border-dashed border-secondary border-mb-3 p-2 mb-3"
+          >
+            <p><b>Export:</b> {export.name}</p>
+            <div class="row">
+              <div class="col-lg-3">
+                <b>Routes</b>
+                <%= for route <- export.routes do %>
+                  <div class="row">
+                    <div class="col-lg-1">
+                      <span
+                        class="m-icon m-icon-sm mr-1"
+                        style={"background-image: url('#{Map.get(@icon_paths, :commuter_rail)}');"}
+                      />
+                    </div>
+                    <div class="col-lg-10">
+                      <p>{route.route_id}</p>
+                    </div>
                   </div>
-                  <div class="col-lg-10">
-                    <p>{route.route_id}</p>
-                  </div>
-                </div>
-              <% end %>
-            </div>
+                <% end %>
+              </div>
 
-            <div class="col-9">
-              <table class="sm:w-full">
-                <thead>
-                  <tr>
+              <div class="col-9">
+                <table class="sm:w-full">
+                  <thead>
                     <th>
-                      Service
+                      Service ID
                     </th>
                     <th />
                     <th>
@@ -441,51 +449,71 @@ defmodule ArrowWeb.DisruptionComponents do
                     <th>
                       Days of Week
                     </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <%= for service <- export.services do %>
-                    <tr>
-                      <td>
-                        {service.name}
-                      </td>
-                      <td>
-                        <a
-                          class="btn-link btn-sm pl-0 flex items-center"
-                          href={
-                            ~p"/trainsformer_exports/#{export.id}/timetable?service_id=#{service.name}"
-                          }
-                        >
-                          <.icon name="hero-table-cells" class="bg-primary" />Timetable
-                        </a>
-                      </td>
-                      <td>
-                        <div :for={date <- Enum.map(service.service_dates, & &1.start_date)}>
-                          <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
-                          {Calendar.strftime(date, "%m/%d/%Y")}
-                        </div>
-                      </td>
-                      <td>
-                        <div :for={date <- Enum.map(service.service_dates, & &1.end_date)}>
-                          <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
-                          {Calendar.strftime(date, "%m/%d/%Y")}
-                        </div>
-                      </td>
-                      <td>
-                        <span
-                          :for={dow <- Arrow.Util.DayOfWeek.get_all_day_names()}
-                          class="text-gray-400"
-                        >
-                          {format_day_name_short(dow)}
-                        </span>
-                      </td>
-                    </tr>
-                  <% end %>
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    <%= for service <- export.services do %>
+                      <tr class="align-top">
+                        <td>{service.name}</td>
+
+                        <td>
+                          <a
+                            class="btn-link btn-sm pl-0 flex items-center"
+                            href={
+                              ~p"/trainsformer_exports/#{export.id}/timetable?service_id=#{service.name}"
+                            }
+                          >
+                            <.icon name="hero-table-cells" class="bg-primary" />Timetable
+                          </a>
+                        </td>
+                        <td>
+                          <div :for={date <- Enum.map(service.service_dates, & &1.start_date)}>
+                            <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
+                            {Calendar.strftime(date, "%m/%d/%Y")}
+                          </div>
+                        </td>
+                        <td>
+                          <div :for={date <- Enum.map(service.service_dates, & &1.end_date)}>
+                            <span class="text-danger">{Calendar.strftime(date, "%a")}.</span>
+                            {Calendar.strftime(date, "%m/%d/%Y")}
+                          </div>
+                        </td>
+                        <td>
+                          <%= for date <- service.service_dates do %>
+                            <.trainsformer_days_of_week date={date} service_id={service.id} />
+                          <% end %>
+                        </td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12 text-right">
+                <.link
+                  :if={!@editing}
+                  id={"edit-export-button-#{export.id}"}
+                  class="btn-sm p-0"
+                  patch={~p"/disruptions/#{@disruption.id}/trainsformer_export/#{export.id}/edit"}
+                >
+                  <.icon name="hero-pencil-solid" class="bg-primary" />
+                </.link>
+                <.button
+                  :if={!@editing}
+                  id={"delete-export-button-#{export.id}"}
+                  class="btn-sm p-0"
+                  type="button"
+                  phx-click="delete_export"
+                  phx-value-export={export.id}
+                  data-confirm="Are you sure you want to delete this export?"
+                >
+                  <.icon name="hero-trash-solid" class="bg-primary" />
+                </.button>
+              </div>
             </div>
           </div>
-        </div>
+        <% end %>
       <% end %>
 
       <.link
@@ -665,5 +693,36 @@ defmodule ArrowWeb.DisruptionComponents do
         day_of_weeks: day_of_weeks
       }
     end
+  end
+
+  defp active_dows(date),
+    do:
+      date
+      |> Kernel.get_in([
+        Access.key(:service_date_days_of_week),
+        Access.all(),
+        Access.key(:day_name)
+      ])
+
+  attr :date, Arrow.Trainsformer.ServiceDate, required: true
+  attr :service_id, :string, required: true
+
+  defp trainsformer_days_of_week(assigns) do
+    ~H"""
+    <div>
+      <span
+        :for={dow <- Arrow.Util.DayOfWeek.get_all_day_names()}
+        name={"day-of-week-#{dow}"}
+        class={
+          if dow in active_dows(assigns.date),
+            do: "text-primary",
+            else: "text-gray-400"
+        }
+        id={"service-#{assigns.service_id}-date-#{assigns.date.id}-#{dow}"}
+      >
+        {format_day_name_short(dow)}
+      </span>
+    </div>
+    """
   end
 end

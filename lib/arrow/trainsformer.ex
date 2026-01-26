@@ -12,7 +12,7 @@ defmodule Arrow.Trainsformer do
   @preloads [
     :disruption,
     :routes,
-    services: [:service_dates]
+    services: [service_dates: [:service_date_days_of_week]]
   ]
 
   @doc """
@@ -229,7 +229,8 @@ defmodule Arrow.Trainsformer do
       ** (Ecto.NoResultsError)
 
   """
-  def get_service_date!(id), do: Repo.get!(ServiceDate, id)
+  def get_service_date!(id),
+    do: ServiceDate |> Repo.get!(id) |> Repo.preload(:service_date_days_of_week)
 
   @doc """
   Creates a service_date.

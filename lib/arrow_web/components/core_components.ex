@@ -251,6 +251,29 @@ defmodule ArrowWeb.CoreComponents do
   end
 
   @doc """
+  Multi-select checkbox. Adapted from https://fly.io/phoenix-files/making-a-checkboxgroup-input/
+  """
+  attr :id, :any
+  attr :name, :any
+  attr :label, :string, default: nil
+  attr :field, Phoenix.HTML.FormField
+  attr :errors, :list
+  attr :required, :boolean, default: false
+  attr :options, :list
+  attr :rest, :global, include: ~w(disabled form readonly)
+  attr :class, :string, default: nil
+  attr :value, :list
+
+  def checkgroup(assigns) do
+    new_assigns =
+      assigns
+      |> assign(:multiple, true)
+      |> assign(:type, "checkgroup")
+
+    input(new_assigns)
+  end
+
+  @doc """
   Renders an input with label and error messages.
 
   A `Phoenix.HTML.FormField` may be passed as argument,
@@ -311,6 +334,29 @@ defmodule ArrowWeb.CoreComponents do
     |> assign_new(:name, fn -> if assigns.multiple, do: field.name <> "[]", else: field.name end)
     |> assign_new(:value, fn -> field.value end)
     |> input()
+  end
+
+  def input(%{type: "checkgroup"} = assigns) do
+    ~H"""
+    <div class="mt-1">
+      <div class="grid grid-cols-2 gap-1 text-sm items-baseline">
+        <div :for={{label, value} <- @options}>
+          <label for={"#{@name}-#{value}"}>
+            <input
+              type="checkbox"
+              id={"#{@name}-#{value}"}
+              name={@name}
+              value={value}
+              checked={value in @value}
+              class="mr-2 h-4 w-4 rounded"
+              {@rest}
+            />
+            {label}
+          </label>
+        </div>
+      </div>
+    </div>
+    """
   end
 
   def input(%{type: "checkbox"} = assigns) do
