@@ -1,4 +1,4 @@
-dfmodule Arrow.Repo.Migrations.CreateTrainsformerExportServiceAndRoutes do
+defmodule Arrow.Repo.Migrations.CreateTrainsformerExportServiceAndRoutes do
   use Ecto.Migration
 
   def change do
