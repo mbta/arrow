@@ -712,6 +712,7 @@ defmodule ArrowWeb.DisruptionComponents do
     <div>
       <span
         :for={dow <- Arrow.Util.DayOfWeek.get_all_day_names()}
+        name={"day-of-week-#{dow}"}
         class={
           if dow in active_dows(assigns.date),
             do: "text-primary",

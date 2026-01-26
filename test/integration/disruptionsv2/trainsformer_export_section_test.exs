@@ -280,11 +280,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
         ]
       })
 
-    [%{id: export_id} = export | _] = disruption.trainsformer_exports
-
-    [%{id: service_id} = service | _] = export.services
-
-    [%{id: service_date_id} | _] = service.service_dates
+    [%{id: export_id} | _] = disruption.trainsformer_exports
 
     session
     |> visit("/disruptions/#{disruption.id}/")
@@ -304,12 +300,12 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> assert_text("01/28/2026")
     |> assert_text("01/30/2026")
     |> assert_text("02/05/2026")
-    |> assert_has(Query.css("#service-#{service_id}-date-#{service_date_id}-monday.text-primary"))
+    |> assert_has(".text-primary[name=\"day-of-week-monday\"]" |> Query.css() |> Query.count(2))
+    |> assert_has(".text-primary[name=\"day-of-week-tuesday\"]" |> Query.css() |> Query.count(1))
     |> assert_has(
-      Query.css("#service-#{service_id}-date-#{service_date_id}-tuesday.text-primary")
-    )
-    |> assert_has(
-      Query.css("#service-#{service_id}-date-#{service_date_id}-wednesday.text-primary")
+      ".text-primary[name=\"day-of-week-wednesday\"]"
+      |> Query.css()
+      |> Query.count(1)
     )
   end
 end
