@@ -451,7 +451,7 @@ defmodule ArrowWeb.DisruptionComponents do
                     </th>
                   </thead>
                   <tbody>
-                    <%= for {service, i} <- Enum.with_index(export.services) do %>
+                    <%= for service <- export.services do %>
                       <tr class="align-top">
                         <td>{service.name}</td>
 
@@ -499,35 +499,34 @@ defmodule ArrowWeb.DisruptionComponents do
                             </span>
                           </div>
                         </td>
-                        <td :if={i == length(export.services) - 1}>
-                          <div class="text-right">
-                            <.link
-                              :if={!@editing}
-                              id={"edit-export-button-#{export.id}"}
-                              class="btn-sm p-0"
-                              patch={
-                                ~p"/disruptions/#{@disruption.id}/trainsformer_export/#{export.id}/edit"
-                              }
-                            >
-                              <.icon name="hero-pencil-solid" class="bg-primary" />
-                            </.link>
-                            <.button
-                              :if={!@editing}
-                              id={"delete-export-button-#{export.id}"}
-                              class="btn-sm p-0"
-                              type="button"
-                              phx-click="delete_export"
-                              phx-value-export={export.id}
-                              data-confirm="Are you sure you want to delete this export?"
-                            >
-                              <.icon name="hero-trash-solid" class="bg-primary" />
-                            </.button>
-                          </div>
-                        </td>
                       </tr>
                     <% end %>
                   </tbody>
                 </table>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12 text-right">
+                <.link
+                  :if={!@editing}
+                  id={"edit-export-button-#{export.id}"}
+                  class="btn-sm p-0"
+                  patch={~p"/disruptions/#{@disruption.id}/trainsformer_export/#{export.id}/edit"}
+                >
+                  <.icon name="hero-pencil-solid" class="bg-primary" />
+                </.link>
+                <.button
+                  :if={!@editing}
+                  id={"delete-export-button-#{export.id}"}
+                  class="btn-sm p-0"
+                  type="button"
+                  phx-click="delete_export"
+                  phx-value-export={export.id}
+                  data-confirm="Are you sure you want to delete this export?"
+                >
+                  <.icon name="hero-trash-solid" class="bg-primary" />
+                </.button>
               </div>
             </div>
           </div>
