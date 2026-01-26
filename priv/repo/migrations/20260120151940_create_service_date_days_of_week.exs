@@ -12,6 +12,6 @@ defmodule Arrow.Repo.Migrations.CreateTrainsformerServiceDateDaysOfWeek do
       timestamps()
     end
 
-    create index(:service_date_days_of_week, [:service_date_id]), concurrently: true
+    create index(:service_date_days_of_week, [:service_date_id], concurrently: true)
   end
 end
