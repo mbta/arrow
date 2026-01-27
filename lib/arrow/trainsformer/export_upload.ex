@@ -68,8 +68,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
          {:ok, unzip} <- Unzip.new(unzip_handle),
          {:ok, %{trips: trips, stop_times: stop_times, transfers: transfers}} <-
            validate_csvs(unzip, unzip_module, import_helper),
-         {:ok, stop_ids} <-
-           validate_stop_times_in_gtfs(stop_times),
+         stop_ids <- get_stop_ids(stop_times),
+         :ok <- validate_stop_ids_in_gtfs(stop_ids),
          :ok <- validate_stop_order(stop_times),
          :ok <- validate_unique_service_ids(trips),
          {:ok, zip_bin} <- File.read(zip_path) do
@@ -187,31 +187,26 @@ defmodule Arrow.Trainsformer.ExportUpload do
     end
   end
 
-  def validate_stop_times_in_gtfs(
-        stop_times,
+  def validate_stop_ids_in_gtfs(
+        stop_ids,
         repo \\ Arrow.Repo
       ) do
-    trainsformer_stop_ids =
-      stop_times
-      |> Enum.uniq_by(& &1.stop_id)
-      |> Enum.map(& &1.stop_id)
-
     gtfs_stop_ids =
       MapSet.new(
         repo.all(
           from s in Arrow.Gtfs.Stop,
-            where: s.id in ^trainsformer_stop_ids,
+            where: s.id in ^stop_ids,
             select: s.id
         )
       )
 
     stops_missing_from_gtfs =
-      Enum.filter(trainsformer_stop_ids, fn stop -> !MapSet.member?(gtfs_stop_ids, stop) end)
+      Enum.filter(stop_ids, fn stop -> !MapSet.member?(gtfs_stop_ids, stop) end)
 
     if Enum.any?(stops_missing_from_gtfs) do
       {:error, {:invalid_export_stops, stops_missing_from_gtfs}}
     else
-      {:ok, trainsformer_stop_ids}
+      :ok
     end
   end
 
@@ -653,5 +648,11 @@ defmodule Arrow.Trainsformer.ExportUpload do
       [%Unzip.Entry{file_name: full_file_name}] -> full_file_name
       _ -> nil
     end
+  end
+
+  defp get_stop_ids(stop_times) do
+    stop_times
+    |> Enum.uniq_by(& &1.stop_id)
+    |> Enum.map(& &1.stop_id)
   end
 end
