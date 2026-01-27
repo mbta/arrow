@@ -10,12 +10,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
   @type t :: %__MODULE__{
           zip_binary: binary(),
-          one_of_north_south_stations: :ok | :both | :neither,
           routes: [String.t()],
           services: [String.t()],
-          missing_routes: [String.t()],
-          invalid_routes: [String.t()],
-          trips_missing_transfers: MapSet.t(),
           warnings: list({:warning, {any(), {binary(), keyword()}}})
         }
 
@@ -25,13 +21,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
     :services,
     :warnings
   ]
-  defstruct [
-    :one_of_north_south_stations,
-    :missing_routes,
-    :invalid_routes,
-    :trips_missing_transfers
-    | @enforce_keys
-  ]
+  defstruct @enforce_keys
 
   @type transfer ::
           %{
