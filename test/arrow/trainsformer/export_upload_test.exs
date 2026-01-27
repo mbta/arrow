@@ -108,7 +108,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     end
   end
 
-  describe "validate_stop_times_in_gtfs/4" do
+  describe "validate_stop_ids_in_gtfs/4" do
     defmodule FakeRepo do
       def all(_) do
         ["WR-0329-02", "WR-0325-02", "WR-0264-02"]
@@ -116,73 +116,33 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     end
 
     test "returns ok if all stops in gtfs" do
-      stop_times_with_stops_in_repo = [
-        %{
-          arrival_time: "10:26:00",
-          departure_time: "10:26:00",
-          stop_id: "WR-0329-02",
-          stop_sequence: "140",
-          timepoint: "1",
-          trip_id: "Base-772221-5208"
-        },
-        %{
-          arrival_time: "10:31:00",
-          departure_time: "10:31:00",
-          stop_id: "WR-0325-02",
-          stop_sequence: "150",
-          trip_id: "Base-772221-5208"
-        },
-        %{
-          arrival_time: "10:31:00",
-          departure_time: "10:31:00",
-          stop_id: "WR-0264-02",
-          stop_sequence: "150",
-          trip_id: "Base-772221-5208"
-        }
+      stop_ids = [
+        "WR-0329-02",
+        "WR-0325-02",
+        "WR-0264-02"
       ]
 
-      assert {:ok, ["WR-0329-02", "WR-0325-02", "WR-0264-02"]} =
-               ExportUpload.validate_stop_times_in_gtfs(
-                 stop_times_with_stops_in_repo,
+      assert :ok =
+               ExportUpload.validate_stop_ids_in_gtfs(
+                 stop_ids,
                  FakeRepo
                )
     end
 
     test "returns missing stop if some stops missing from GTFS" do
-      stop_times_without_stops_in_repo = [
-        %{
-          arrival_time: "10:26:00",
-          departure_time: "10:26:00",
-          stop_id: "morket-borket",
-          stop_sequence: "140",
-          trip_id: "ReadWKNDHeadsigns-754204-5530"
-        },
-        %{
-          arrival_time: "10:31:00",
-          departure_time: "10:31:00",
-          stop_id: "mcdongals",
-          stop_sequence: "150",
-          trip_id: "ReadWKNDHeadsigns-754204-5530"
-        },
-        %{
-          arrival_time: "10:31:00",
-          departure_time: "10:31:00",
-          stop_id: "sbubby",
-          stop_sequence: "150",
-          trip_id: "ReadWKNDHeadsigns-754204-5530"
-        },
-        %{
-          arrival_time: "10:31:00",
-          departure_time: "10:31:00",
-          stop_id: "WR-0329-02",
-          stop_sequence: "150",
-          trip_id: "ReadWKNDHeadsigns-754204-5530"
-        }
+      stop_ids = [
+        "morket-borket",
+        "mcdongals",
+        "sbubby",
+        "WR-0329-02"
       ]
 
-      assert {:error, {:invalid_export_stops, ["morket-borket", "mcdongals", "sbubby"]}} =
-               ExportUpload.validate_stop_times_in_gtfs(
-                 stop_times_without_stops_in_repo,
+      assert {:error,
+              {:stop_id_not_in_gtfs,
+               {"Export has stops not present in GTFS",
+                [stop_id_not_in_gtfs: ["morket-borket", "mcdongals", "sbubby"]]}}} =
+               ExportUpload.validate_stop_ids_in_gtfs(
+                 stop_ids,
                  FakeRepo
                )
     end
