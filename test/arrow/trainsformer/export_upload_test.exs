@@ -356,6 +356,40 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                ])
     end
 
+    test "returns missing routes if more than one but not all Southside routes have a trip" do
+      assert {
+               :warning,
+               {
+                 :missing_routes,
+                 {
+                   "Not all southside routes are present",
+                   [
+                     missing_routes: [
+                       "CR-Greenbush",
+                       "CR-Kingston",
+                       "CR-Needham",
+                       "CR-NewBedford",
+                       "CR-Providence",
+                       "CR-Worcester"
+                     ]
+                   ]
+                 }
+               }
+             } =
+               ExportUpload.validate_one_or_all_routes_from_one_side([
+                 %{
+                   route_id: "CR-Fairmount",
+                   service_id: "FALL 2025-SOUTHWKD-Weekday-11A",
+                   trip_id: "Weekday-789267-102"
+                 },
+                 %{
+                   route_id: "CR-Franklin",
+                   service_id: "FALL 2025-SOUTHWKD-Weekday-11A",
+                   trip_id: "Weekday-789267-202"
+                 }
+               ])
+    end
+
     test "returns empty error route lists for a single route not in either side's required list" do
       assert :ok =
                ExportUpload.validate_one_or_all_routes_from_one_side([
