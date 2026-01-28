@@ -39,6 +39,7 @@ defmodule Arrow.Trainsformer.ServiceDate do
     |> cast(transformed_attrs, [:start_date, :end_date, :service_id])
     |> cast_assoc(:service_date_days_of_week, with: &ServiceDateDayOfWeek.changeset/2)
     |> validate_required([:start_date, :end_date])
+    |> Arrow.Util.validate_start_date_before_end_date()
     |> assoc_constraint(:service)
   end
 end
