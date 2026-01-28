@@ -44,7 +44,7 @@ defmodule Arrow.Disruptions.Limit do
     ])
     |> put_change(:check_for_overlap, true)
     |> validate_required([:start_date, :end_date, :route_id, :start_stop_id, :end_stop_id])
-    |> validate_start_date_before_end_date()
+    |> Arrow.Util.validate_start_date_before_end_date()
     |> cast_assoc_day_of_weeks()
     |> exclusion_constraint(:end_date,
       name: :no_overlap,
@@ -71,23 +71,6 @@ defmodule Arrow.Disruptions.Limit do
   def new(attrs \\ %{}) do
     %__MODULE__{limit_day_of_weeks: @default_day_of_weeks_list}
     |> struct!(attrs)
-  end
-
-  @spec validate_start_date_before_end_date(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
-  defp validate_start_date_before_end_date(changeset) do
-    start_date = get_field(changeset, :start_date)
-    end_date = get_field(changeset, :end_date)
-
-    cond do
-      is_nil(start_date) or is_nil(end_date) ->
-        changeset
-
-      Date.compare(start_date, end_date) == :gt ->
-        add_error(changeset, :start_date, "start date should not be after end date")
-
-      true ->
-        changeset
-    end
   end
 
   @spec cast_assoc_day_of_weeks(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())

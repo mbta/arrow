@@ -497,7 +497,7 @@ defmodule ArrowWeb.DisruptionComponents do
                   class="btn-sm p-0"
                   patch={~p"/disruptions/#{@disruption.id}/trainsformer_export/#{export.id}/edit"}
                 >
-                  <.icon name="hero-pencil-solid" class="bg-primary" />
+                  <.icon name="hero-pencil-solid" class="bg-primary hover:opacity-40" />
                 </.link>
                 <.button
                   :if={!@editing}
@@ -508,7 +508,7 @@ defmodule ArrowWeb.DisruptionComponents do
                   phx-value-export={export.id}
                   data-confirm="Are you sure you want to delete this export?"
                 >
-                  <.icon name="hero-trash-solid" class="bg-primary" />
+                  <.icon name="hero-trash-solid" class="bg-primary hover:opacity-40" />
                 </.button>
               </div>
             </div>

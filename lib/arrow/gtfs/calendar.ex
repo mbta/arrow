@@ -33,18 +33,7 @@ defmodule Arrow.Gtfs.Calendar do
       ~w[service_id monday tuesday wednesday thursday friday saturday sunday start_date end_date]a
     )
     |> assoc_constraint(:service)
-    |> validate_start_date_not_after_end_date()
-  end
-
-  defp validate_start_date_not_after_end_date(changeset) do
-    start_date = fetch_field!(changeset, :start_date)
-    end_date = fetch_field!(changeset, :end_date)
-
-    if Date.compare(start_date, end_date) in [:lt, :eq] do
-      changeset
-    else
-      add_error(changeset, :dates, "start date should not be after end date")
-    end
+    |> Arrow.Util.validate_start_date_before_end_date()
   end
 
   @impl Arrow.Gtfs.Importable
