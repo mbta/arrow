@@ -6,8 +6,8 @@ defmodule Arrow.Trainsformer.ServiceDate do
   alias Arrow.Trainsformer.ServiceDateDayOfWeek
 
   typed_schema "trainsformer_service_dates" do
-    field :start_date, :date
-    field :end_date, :date
+    field :start_date, :date, default: Date.utc_today()
+    field :end_date, :date, default: Date.utc_today()
     belongs_to :service, Arrow.Trainsformer.Service, on_replace: :delete
 
     has_many :service_date_days_of_week, ServiceDateDayOfWeek,
