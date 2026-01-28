@@ -221,6 +221,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                             phx-value-date_index={f_date.index}
                             phx-target={@myself}
                           >
+                          <label class="cursor-pointer hover:opacity-40">
                             <.icon name="hero-trash-solid" class="bg-primary" />
                           </.button>
                         </div>
