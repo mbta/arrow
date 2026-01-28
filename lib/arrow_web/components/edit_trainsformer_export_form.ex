@@ -7,7 +7,6 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
   alias Arrow.Trainsformer
   alias Arrow.Trainsformer.Export
   alias Arrow.Trainsformer.ExportUpload
-  alias Arrow.Trainsformer.ServiceDate
   alias Arrow.Trainsformer.ServiceDateDayOfWeek
   alias Phoenix.LiveView.UploadEntry
 
@@ -431,60 +430,6 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
         Enum.join(stop_times_lines, "\n"),
         content_type: "text/plain"
       )
-
-    {:noreply, socket}
-  end
-
-  def handle_event("add_service_date", %{"value" => index}, socket) do
-    {index, _} = Integer.parse(index)
-
-    socket =
-      update(socket, :form, fn %{source: changeset} ->
-        updated_services =
-          changeset
-          |> Ecto.Changeset.get_assoc(:services)
-          |> update_in([Access.at(index)], fn service ->
-            existing_dates = Ecto.Changeset.get_assoc(service, :service_dates)
-
-            Ecto.Changeset.put_change(
-              service,
-              :service_dates,
-              existing_dates ++ [%ServiceDate{service_date_days_of_week: []}]
-            )
-          end)
-
-        changeset
-        |> Ecto.Changeset.put_assoc(:services, updated_services)
-        |> to_form()
-      end)
-
-    {:noreply, socket}
-  end
-
-  def handle_event(
-        "delete_service_date",
-        %{"service_index" => service_index, "date_index" => date_index},
-        socket
-      ) do
-    {service_index, _} = Integer.parse(service_index)
-    {date_index, _} = Integer.parse(date_index)
-
-    socket =
-      update(socket, :form, fn %{source: changeset} ->
-        updated_services =
-          changeset
-          |> Ecto.Changeset.get_assoc(:services)
-          |> update_in([Access.at(service_index)], fn service ->
-            dates =
-              service |> Ecto.Changeset.get_assoc(:service_dates) |> List.delete_at(date_index)
-
-            Ecto.Changeset.put_change(service, :service_dates, dates)
-          end)
-
-        changeset
-        |> Ecto.Changeset.put_assoc(:services, updated_services)
-        |> to_form()
-      end)
 
     {:noreply, socket}
   end
