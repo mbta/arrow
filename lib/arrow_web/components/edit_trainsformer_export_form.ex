@@ -152,6 +152,11 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                   </div>
                   <div class="col-lg-9 text-md">
                     <.inputs_for :let={f_date} field={f_service[:service_dates]}>
+                      <input
+                        type="hidden"
+                        name={Phoenix.HTML.Form.input_name(f_service, :service_dates_sort) <> "[]"}
+                        value={f_date.index}
+                      />
                       {f_service[:start_date].value}
                       <div class="row">
                         <div class="col">
@@ -214,16 +219,15 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                           </div>
                         </div>
                         <div class="col">
-                          <.button
-                            type="button"
-                            phx-click="delete_service_date"
-                            phx-value-service_index={f_service.index}
-                            phx-value-date_index={f_date.index}
-                            phx-target={@myself}
-                          >
                           <label class="cursor-pointer hover:opacity-40">
                             <.icon name="hero-trash-solid" class="bg-primary" />
-                          </.button>
+                            <input
+                              type="checkbox"
+                              name={Phoenix.HTML.Form.input_name(f_service, :service_dates_drop) <> "[]"}
+                              class="hidden"
+                              value={f_date.index}
+                            />
+                          </label>
                         </div>
                       </div>
                       <div class="row">
@@ -240,15 +244,19 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
 
                 <div class="row mt-3">
                   <div class="col-9" />
-                  <.button
-                    type="button"
-                    class="btn h-15 w-15 btn-primary btn-sm "
-                    value={f_service.index}
-                    phx-click="add_service_date"
-                    phx-target={@myself}
-                  >
+                  <label class="btn h-15 w-15 btn-primary btn-sm">
                     Add Another Timeframe
-                  </.button>
+                    <input
+                      type="checkbox"
+                      name={Phoenix.HTML.Form.input_name(f_service, :service_dates_sort) <> "[]"}
+                      class="hidden"
+                      value={
+                        if Ecto.assoc_loaded?(f_service[:service_dates]),
+                          do: Enum.count(f_service[:service_dates].value),
+                          else: 0
+                      }
+                    />
+                  </label>
                 </div>
               </.inputs_for>
             </div>
