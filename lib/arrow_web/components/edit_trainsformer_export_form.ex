@@ -267,13 +267,18 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
         type: type,
         key: key,
         message: translate_error(error_contents),
-        metadata: metadata
+        data: if(is_atom(key), do: metadata[key], else: nil)
       )
       |> Map.drop([:error])
 
     ~H"""
     <ArrowWeb.DisruptionComponents.upload_alert type={@type}>
-      <.alert_message key={@key} message={@message} metadata={@metadata} myself={@myself} />
+      <.alert_message
+        key={@key}
+        message={@message}
+        data={@data}
+        myself={@myself}
+      />
     </ArrowWeb.DisruptionComponents.upload_alert>
     """
   end
@@ -306,56 +311,11 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     """
   end
 
-  defp alert_message(%{key: :invalid_service_ids} = assigns) do
+  defp alert_message(%{data: data} = assigns) when not is_nil(data) do
     ~H"""
-    Export contains previously used service ids
+    {@message}
     <ul>
-      <li :for={service_id <- @metadata[:existing_service_ids]}>{service_id}</li>
-    </ul>
-    """
-  end
-
-  defp alert_message(%{key: {:invalid_side, :both}} = assigns) do
-    ~H"""
-    Warning: export contains trips serving North and South Station.
-    """
-  end
-
-  defp alert_message(%{key: {:invalid_side, :neither}} = assigns) do
-    ~H"""
-    Warning: export does not contain trips serving North or South Station.
-    """
-  end
-
-  defp alert_message(%{key: :invalid_sides} = assigns) do
-    ~H"""
-    Warning: {@message}.
-    """
-  end
-
-  defp alert_message(%{key: :missing_routes} = assigns) do
-    ~H"""
-    Warning: Not all northside or southside routes are present. Missing routes:
-    <ul>
-      <li :for={route_id <- @metadata[:missing_routes]}>{route_id}</li>
-    </ul>
-    """
-  end
-
-  defp alert_message(%{key: :invalid_routes} = assigns) do
-    ~H"""
-    Warning: multiple routes not north or southside:
-    <ul>
-      <li :for={route_id <- @metadata[:invalid_routes]}>{route_id}</li>
-    </ul>
-    """
-  end
-
-  defp alert_message(%{key: :trips_missing_transfers} = assigns) do
-    ~H"""
-    Warning: some train trips that do not serve North Station, South Station, or Foxboro lack transfers.
-    <ul>
-      <li :for={trip_id <- @metadata[:trips_missing_transfers]}>{trip_id}</li>
+      <li :for={element <- @data}>{element}</li>
     </ul>
     """
   end
