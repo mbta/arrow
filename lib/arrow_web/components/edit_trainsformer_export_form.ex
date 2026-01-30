@@ -249,11 +249,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                       type="checkbox"
                       name={Phoenix.HTML.Form.input_name(f_service, :service_dates_sort) <> "[]"}
                       class="hidden"
-                      value={
-                        if Ecto.assoc_loaded?(f_service[:service_dates]),
-                          do: Enum.count(f_service[:service_dates].value),
-                          else: 0
-                      }
+                      value="new"
                     />
                   </label>
                 </div>
