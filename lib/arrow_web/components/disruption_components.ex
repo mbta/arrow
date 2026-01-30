@@ -504,7 +504,7 @@ defmodule ArrowWeb.DisruptionComponents do
                   id={"delete-export-button-#{export.id}"}
                   class="btn-sm p-0"
                   type="button"
-                  phx-click="delete_export"
+                  phx-click="delete_trainsformer_export"
                   phx-value-export={export.id}
                   data-confirm="Are you sure you want to delete this export?"
                 >
