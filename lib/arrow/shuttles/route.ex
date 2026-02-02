@@ -48,7 +48,11 @@ defmodule Arrow.Shuttles.Route do
       end
 
     changeset
-    |> then(&if error, do: add_error(&1, :shape_id, error), else: &1)
+    |> then(
+      &if error,
+        do: add_error(&1, :shape_id, "Error getting shape data: %{error}", error: inspect(error)),
+        else: &1
+    )
     |> cast_assoc(:route_stops,
       with: &Arrow.Shuttles.RouteStop.changeset(&1, &2, coordinates),
       sort_param: :route_stops_sort,
