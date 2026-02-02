@@ -554,11 +554,6 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
   end
 
   defp create_export(export_params, socket) do
-    imported_services =
-      for {key, value} <- export_params["services"],
-          into: %{},
-          do: {key, value}
-
     export_params = Map.put(export_params, "routes", socket.assigns.uploaded_file_routes)
 
     with {:ok, s3_path} <-
@@ -571,8 +566,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
            Trainsformer.create_export(%{
              export_params
              | "s3_path" => s3_path,
-               "name" => socket.assigns.uploaded_file_name,
-               "services" => imported_services
+               "name" => socket.assigns.uploaded_file_name
            }) do
       {:noreply,
        socket
