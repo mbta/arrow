@@ -217,6 +217,28 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     )
   end
 
+  feature "reports errors about missing service ids and route ids", %{session: session} do
+    disruption = disruption_v2_fixture(%{mode: :commuter_rail})
+
+    session
+    |> visit("/disruptions/#{disruption.id}")
+    |> click(text("Upload Trainsformer export"))
+    |> assert_text("Upload Trainsformer .zip")
+    |> attach_file(file_field("trainsformer_export", visible: false),
+      path:
+        "test/support/fixtures/trainsformer/invalid,reasons=no-trips,no-stop-times,no-multi-route-trips.zip"
+    )
+    |> assert_text(
+      "Successfully imported export invalid,reasons=no-trips,no-stop-times,no-multi-route-trips.zip!"
+    )
+    |> assert_text("Export must contain at least one Service ID")
+    |> assert_text("Export must contain at least one route")
+    |> click(Query.css("#save-export-button"))
+    |> assert_text("Export must contain at least one Service ID")
+    |> assert_text("Export must contain at least one route")
+    |> assert_has(Query.css("#save-export-button"))
+  end
+
   feature "can cancel uploading a Trainsformer export", %{session: session} do
     disruption = disruption_v2_fixture(%{mode: :commuter_rail})
 
