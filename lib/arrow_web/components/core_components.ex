@@ -452,6 +452,37 @@ defmodule ArrowWeb.CoreComponents do
     """
   end
 
+  @doc """
+  Utility for showing errors on a `Phoenix.HTML.Form`
+
+  Takes a form field as `field` and renders [`<.error>`](`error/1`) for each error
+
+      <.errors field={@form[:services]} />
+
+  Can specify `always_show` to always show errors regardless of if the
+  field is considered "used" by `Phoenix.Component`
+
+      <.errors field={@form[:services]} always_show />
+  """
+  attr :field, Phoenix.HTML.FormField,
+    doc: "a form field struct retrieved from the form, for example: `@form[:email]`"
+
+  attr :always_show, :boolean,
+    default: false,
+    doc: "a flag that forces any errors to be displayed regardless of it's used state"
+
+  def errors(%{field: field, always_show: show?} = assigns) do
+    errors =
+      if(Phoenix.Component.used_input?(field) or show?, do: field.errors, else: [])
+
+    assigns =
+      assign(assigns, errors: Enum.map(errors, &translate_error(&1)))
+
+    ~H"""
+    <.error :for={msg <- @errors} class="d-block alert alert-danger">{msg}</.error>
+    """
+  end
+
   def custom_normalize_value("text", value) when is_map(value) do
     iodata = Jason.encode_to_iodata!(value)
     Phoenix.HTML.Form.normalize_value("text", iodata)

@@ -141,6 +141,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                   </div>
                 </div>
               <% end %>
+              <.errors field={@form[:routes]} always_show />
             </div>
             <div class="col-lg-10">
               <b class="mb-3">Service ID</b>
@@ -250,6 +251,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                   </.button>
                 </div>
               </.inputs_for>
+              <.errors field={@form[:services]} always_show />
             </div>
           </div>
 
@@ -537,26 +539,17 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
   end
 
   defp update_export(export_params, socket) do
-    imported_services =
-      for {key, value} <- export_params["services"],
-          into: %{},
-          do: {key, value}
+    export = Trainsformer.get_export!(socket.assigns.export.id)
 
-    if imported_services == %{} do
-      {:noreply, assign(socket, error: "You must import at least one service")}
-    else
-      export = Trainsformer.get_export!(socket.assigns.export.id)
+    case Trainsformer.update_export(export, export_params) do
+      {:ok, _} ->
+        {:noreply,
+         socket
+         |> push_patch(to: "/disruptions/#{socket.assigns.disruption.id}")
+         |> put_flash(:info, "Trainsformer service schedules updated successfully!")}
 
-      case Trainsformer.update_export(export, export_params) do
-        {:ok, _} ->
-          {:noreply,
-           socket
-           |> push_patch(to: "/disruptions/#{socket.assigns.disruption.id}")
-           |> put_flash(:info, "Trainsformer service schedules updated successfully!")}
-
-        {:error, %Ecto.Changeset{} = changeset} ->
-          {:noreply, assign(socket, form: to_form(changeset))}
-      end
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
     end
   end
 
