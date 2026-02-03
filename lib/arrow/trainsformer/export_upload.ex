@@ -98,7 +98,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
                false -> {:ok, errors_and_warnings}
              end
            ),
-         {:read_zip, {:ok, zip_bin}} <- {:read_zip, File.read(zip_path)} do
+         {:ok, zip_bin} <- read_zip_binary(zip_path) do
       {routes, services} =
         trips
         |> Enum.reduce(
@@ -192,6 +192,19 @@ defmodule Arrow.Trainsformer.ExportUpload do
         :zip_file,
         "Failed to open zip file, message=#{Exception.format(:error, error)}"
       )
+  end
+
+  defp read_zip_binary(zip_path) do
+    case File.read(zip_path) do
+      {:ok, _} = result ->
+        result
+
+      {:error, posix} ->
+        new_error(:zip_file, "Failed to read zip file contents: %{error_message}",
+          error_message: :file.format_error(posix),
+          posix_error: posix
+        )
+    end
   end
 
   defp validate_unique_service_ids(trips) do
