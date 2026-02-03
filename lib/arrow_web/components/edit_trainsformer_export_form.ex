@@ -267,7 +267,13 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
         type: type,
         key: key,
         message: translate_error(error_contents),
-        data: if(is_atom(key), do: metadata[key], else: nil)
+        # If there is a metadata element with the same name as the alert `key`
+        # try to use that as enumerable metadata to report alongside the message
+        enum_metadata:
+          if(is_atom(key) and Enumerable.impl_for(metadata[key]) != nil,
+            do: metadata[key],
+            else: nil
+          )
       )
       |> Map.drop([:error])
 
@@ -276,7 +282,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
       <.alert_message
         key={@key}
         message={@message}
-        data={@data}
+        enum_metadata={@enum_metadata}
         myself={@myself}
       />
     </ArrowWeb.DisruptionComponents.upload_alert>
@@ -311,11 +317,11 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     """
   end
 
-  defp alert_message(%{data: data} = assigns) when not is_nil(data) do
+  defp alert_message(%{enum_metadata: enum_metadata} = assigns) when not is_nil(enum_metadata) do
     ~H"""
     {@message}
     <ul>
-      <li :for={element <- @data}>{element}</li>
+      <li :for={element <- @enum_metadata}>{element}</li>
     </ul>
     """
   end
