@@ -70,34 +70,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
          {:ok, unzip} <- new_unzip(unzip_handle),
          {:ok, %{trips: trips, stop_times: stop_times, transfers: transfers}} <-
            validate_csvs(unzip, unzip_module, import_helper),
-         stop_ids <- get_stop_ids(stop_times),
          {:ok, warnings} <-
-           (
-             errors_and_warnings =
-               [
-                 validate_stop_ids_in_gtfs(stop_ids),
-                 validate_stop_order(stop_times),
-                 validate_unique_service_ids(trips),
-                 validate_one_of_north_south_stations(stop_ids),
-                 validate_one_or_all_routes_from_one_side(trips),
-                 validate_transfers(transfers, stop_times)
-               ]
-               |> Enum.reject(fn
-                 :ok -> true
-                 _ -> false
-               end)
-               |> List.flatten()
-
-             errors_and_warnings
-             |> Enum.any?(fn
-               tuple when is_tuple(tuple) -> elem(tuple, 0) == :error
-               _ -> false
-             end)
-             |> case do
-               true -> errors_and_warnings
-               false -> {:ok, errors_and_warnings}
-             end
-           ),
+           validate_export_data(trips, stop_times, transfers),
          {:ok, zip_bin} <- read_zip_binary(zip_path) do
       {routes, services} =
         trips
@@ -204,6 +178,27 @@ defmodule Arrow.Trainsformer.ExportUpload do
           error_message: :file.format_error(posix),
           posix_error: posix
         )
+    end
+  end
+
+  defp validate_export_data(trips, stop_times, transfers) do
+    stop_ids = get_stop_ids(stop_times)
+
+    errors_and_warnings =
+      [
+        validate_stop_ids_in_gtfs(stop_ids),
+        validate_stop_order(stop_times),
+        validate_unique_service_ids(trips),
+        validate_one_of_north_south_stations(stop_ids),
+        validate_one_or_all_routes_from_one_side(trips),
+        validate_transfers(transfers, stop_times)
+      ]
+      |> Enum.reject(&(&1 == :ok))
+
+    if Enum.any?(errors_and_warnings, &match?({:error, _}, &1)) do
+      errors_and_warnings
+    else
+      {:ok, errors_and_warnings}
     end
   end
 
