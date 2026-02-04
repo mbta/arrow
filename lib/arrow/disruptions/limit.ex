@@ -85,7 +85,7 @@ defmodule Arrow.Disruptions.Limit do
   end
 
   @spec dow_in_date_range(Date.t() | nil, Date.t() | nil) ::
-          MapSet.t(Arrow.Util.Validation.DayOfWeek.day_name())
+          MapSet.t(Arrow.Validation.DayOfWeek.day_name())
   defp dow_in_date_range(start_date, end_date)
        when is_nil(start_date)
        when is_nil(end_date) do
@@ -96,6 +96,6 @@ defmodule Arrow.Disruptions.Limit do
     start_date
     |> Date.range(end_date)
     |> Stream.take(7)
-    |> MapSet.new(&(&1 |> Date.day_of_week() |> Arrow.Util.Validation.DayOfWeek.get_day_name()))
+    |> MapSet.new(&(&1 |> Date.day_of_week() |> Arrow.Util.DayOfWeek.get_day_name()))
   end
 end
