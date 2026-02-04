@@ -329,7 +329,7 @@ defmodule ArrowWeb.DisruptionComponents do
                   <div class="text-right">
                     <.link
                       :if={!@editing}
-                      id={"edit-export-button-#{export.id}"}
+                      id={"edit-hastus-export-button-#{export.id}"}
                       class="btn-sm p-0"
                       patch={~p"/disruptions/#{@disruption.id}/hastus_export/#{export.id}/edit"}
                     >
@@ -337,10 +337,10 @@ defmodule ArrowWeb.DisruptionComponents do
                     </.link>
                     <.button
                       :if={!@editing}
-                      id={"delete-export-button-#{export.id}"}
+                      id={"delete-hastus-export-button-#{export.id}"}
                       class="btn-sm p-0"
                       type="button"
-                      phx-click="delete_export"
+                      phx-click="delete_hastus_export"
                       phx-value-export={export.id}
                       data-confirm="Are you sure you want to delete this export?"
                     >

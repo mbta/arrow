@@ -124,7 +124,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
     |> visit("/disruptions/#{disruption.id}")
     |> scroll_down()
     |> assert_text("some-Weekday-service")
-    |> click(Query.css("#delete-export-button-#{export.id}"))
+    |> click(Query.css("#delete-hastus-export-button-#{export.id}"))
     |> refute_has(Query.css("#export-table-hastus-#{export.id}"))
   end
 
