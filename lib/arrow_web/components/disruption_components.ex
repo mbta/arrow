@@ -493,7 +493,7 @@ defmodule ArrowWeb.DisruptionComponents do
               <div class="col-12 text-right">
                 <.link
                   :if={!@editing}
-                  id={"edit-export-button-#{export.id}"}
+                  id={"edit-trainsformer-export-button-#{export.id}"}
                   class="btn-sm p-0"
                   patch={~p"/disruptions/#{@disruption.id}/trainsformer_export/#{export.id}/edit"}
                 >
@@ -501,7 +501,7 @@ defmodule ArrowWeb.DisruptionComponents do
                 </.link>
                 <.button
                   :if={!@editing}
-                  id={"delete-export-button-#{export.id}"}
+                  id={"delete-trainsformer-export-button-#{export.id}"}
                   class="btn-sm p-0"
                   type="button"
                   phx-click="delete_trainsformer_export"

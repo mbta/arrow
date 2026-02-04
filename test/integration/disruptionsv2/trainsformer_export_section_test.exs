@@ -285,7 +285,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     session_before_delete =
       session
       |> visit("/disruptions/#{disruption.id}/")
-      |> click(Query.css("#edit-hastus-export-button-#{export_id}"))
+      |> click(Query.css("#edit-trainsformer-export-button-#{export_id}"))
       |> click(Query.checkbox("Wednesday"))
       |> fill_in(
         Query.fillable_field("End Date"),
@@ -315,7 +315,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
 
     # delete second service date
     session_before_delete
-    |> click(Query.css("#edit-hastus-export-button-#{export_id}"))
+    |> click(Query.css("#edit-trainsformer-export-button-#{export_id}"))
     |> click("label span.hero-trash-solid" |> Query.css() |> Query.at(1))
     |> click(text("Save"))
     |> refute_has(text("01/30/2026"))
