@@ -26,8 +26,16 @@ defmodule Arrow.Trainsformer.Export do
   def changeset(export, attrs) do
     export
     |> cast(attrs, [:s3_path, :disruption_id, :name])
-    |> cast_assoc(:services, with: &Service.changeset/2, required: true)
-    |> cast_assoc(:routes, with: &Route.changeset/2, required: true)
+    |> cast_assoc(:services,
+      with: &Service.changeset/2,
+      required: true,
+      required_message: "Export must contain at least one Service ID"
+    )
+    |> cast_assoc(:routes,
+      with: &Route.changeset/2,
+      required: true,
+      required_message: "Export must contain at least one route"
+    )
     |> validate_required([:s3_path])
     |> assoc_constraint(:disruption)
   end
