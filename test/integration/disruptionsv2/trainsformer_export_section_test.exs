@@ -282,30 +282,43 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
 
     [%{id: export_id} | _] = disruption.trainsformer_exports
 
-    session
-    |> visit("/disruptions/#{disruption.id}/")
-    |> click(Query.css("#edit-export-button-#{export_id}"))
-    |> click(Query.checkbox("Wednesday"))
-    |> fill_in(
-      Query.fillable_field("End Date"),
-      with: "01/28/2026"
-    )
-    |> click(text("Add Another Timeframe"))
-    |> fill_in("Start Date" |> Query.fillable_field() |> Query.at(1), with: "01/30/2026")
-    |> fill_in("End Date" |> Query.fillable_field() |> Query.at(1), with: "02/05/2026")
-    |> click("Monday" |> Query.checkbox() |> Query.at(1))
+    session_before_delete =
+      session
+      |> visit("/disruptions/#{disruption.id}/")
+      |> click(Query.css("#edit-trainsformer-export-button-#{export_id}"))
+      |> click(Query.checkbox("Wednesday"))
+      |> fill_in(
+        Query.fillable_field("End Date"),
+        with: "01/28/2026"
+      )
+      |> click(text("Add Another Timeframe"))
+      |> fill_in("Start Date" |> Query.fillable_field() |> Query.at(1), with: "01/30/2026")
+      |> fill_in("End Date" |> Query.fillable_field() |> Query.at(1), with: "02/05/2026")
+      |> click("Monday" |> Query.checkbox() |> Query.at(1))
+      |> click(text("Save"))
+      |> assert_text("Trainsformer service schedules updated successfully!")
+      |> assert_text("01/21/2026")
+      |> assert_text("01/28/2026")
+      |> assert_text("01/30/2026")
+      |> assert_text("02/05/2026")
+      |> assert_has(".text-primary[name=\"day-of-week-monday\"]" |> Query.css() |> Query.count(2))
+      |> assert_has(
+        ".text-primary[name=\"day-of-week-tuesday\"]"
+        |> Query.css()
+        |> Query.count(1)
+      )
+      |> assert_has(
+        ".text-primary[name=\"day-of-week-wednesday\"]"
+        |> Query.css()
+        |> Query.count(1)
+      )
+
+    # delete second service date
+    session_before_delete
+    |> click(Query.css("#edit-trainsformer-export-button-#{export_id}"))
+    |> click("label span.hero-trash-solid" |> Query.css() |> Query.at(1))
     |> click(text("Save"))
-    |> assert_text("Trainsformer service schedules updated successfully!")
-    |> assert_text("01/21/2026")
-    |> assert_text("01/28/2026")
-    |> assert_text("01/30/2026")
-    |> assert_text("02/05/2026")
-    |> assert_has(".text-primary[name=\"day-of-week-monday\"]" |> Query.css() |> Query.count(2))
-    |> assert_has(".text-primary[name=\"day-of-week-tuesday\"]" |> Query.css() |> Query.count(1))
-    |> assert_has(
-      ".text-primary[name=\"day-of-week-wednesday\"]"
-      |> Query.css()
-      |> Query.count(1)
-    )
+    |> refute_has(text("01/30/2026"))
+    |> refute_has(text("02/05/2026"))
   end
 end

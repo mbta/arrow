@@ -7,7 +7,6 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
   alias Arrow.Trainsformer
   alias Arrow.Trainsformer.Export
   alias Arrow.Trainsformer.ExportUpload
-  alias Arrow.Trainsformer.ServiceDate
   alias Arrow.Trainsformer.ServiceDateDayOfWeek
   alias Phoenix.LiveView.UploadEntry
 
@@ -152,6 +151,11 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                   </div>
                   <div class="col-lg-9 text-md">
                     <.inputs_for :let={f_date} field={f_service[:service_dates]}>
+                      <input
+                        type="hidden"
+                        name={Phoenix.HTML.Form.input_name(f_service, :service_dates_sort) <> "[]"}
+                        value={f_date.index}
+                      />
                       {f_service[:start_date].value}
                       <div class="row">
                         <div class="col">
@@ -214,15 +218,15 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                           </div>
                         </div>
                         <div class="col">
-                          <.button
-                            type="button"
-                            phx-click="delete_service_date"
-                            phx-value-service_index={f_service.index}
-                            phx-value-date_index={f_date.index}
-                            phx-target={@myself}
-                          >
+                          <label class="cursor-pointer hover:opacity-140">
                             <.icon name="hero-trash-solid" class="bg-primary" />
-                          </.button>
+                            <input
+                              type="checkbox"
+                              name={Phoenix.HTML.Form.input_name(f_service, :service_dates_drop) <> "[]"}
+                              class="hidden"
+                              value={f_date.index}
+                            />
+                          </label>
                         </div>
                       </div>
                       <div class="row">
@@ -239,15 +243,15 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
 
                 <div class="row mt-3">
                   <div class="col-9" />
-                  <.button
-                    type="button"
-                    class="btn h-15 w-15 btn-primary btn-sm "
-                    value={f_service.index}
-                    phx-click="add_service_date"
-                    phx-target={@myself}
-                  >
+                  <label class="btn h-15 w-15 btn-primary btn-sm">
                     Add Another Timeframe
-                  </.button>
+                    <input
+                      type="checkbox"
+                      name={Phoenix.HTML.Form.input_name(f_service, :service_dates_sort) <> "[]"}
+                      class="hidden"
+                      value="new"
+                    />
+                  </label>
                 </div>
               </.inputs_for>
             </div>
@@ -422,60 +426,6 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
         Enum.join(stop_times_lines, "\n"),
         content_type: "text/plain"
       )
-
-    {:noreply, socket}
-  end
-
-  def handle_event("add_service_date", %{"value" => index}, socket) do
-    {index, _} = Integer.parse(index)
-
-    socket =
-      update(socket, :form, fn %{source: changeset} ->
-        updated_services =
-          changeset
-          |> Ecto.Changeset.get_assoc(:services)
-          |> update_in([Access.at(index)], fn service ->
-            existing_dates = Ecto.Changeset.get_assoc(service, :service_dates)
-
-            Ecto.Changeset.put_change(
-              service,
-              :service_dates,
-              existing_dates ++ [%ServiceDate{service_date_days_of_week: []}]
-            )
-          end)
-
-        changeset
-        |> Ecto.Changeset.put_assoc(:services, updated_services)
-        |> to_form()
-      end)
-
-    {:noreply, socket}
-  end
-
-  def handle_event(
-        "delete_service_date",
-        %{"service_index" => service_index, "date_index" => date_index},
-        socket
-      ) do
-    {service_index, _} = Integer.parse(service_index)
-    {date_index, _} = Integer.parse(date_index)
-
-    socket =
-      update(socket, :form, fn %{source: changeset} ->
-        updated_services =
-          changeset
-          |> Ecto.Changeset.get_assoc(:services)
-          |> update_in([Access.at(service_index)], fn service ->
-            dates =
-              service |> Ecto.Changeset.get_assoc(:service_dates) |> List.delete_at(date_index)
-
-            Ecto.Changeset.put_change(service, :service_dates, dates)
-          end)
-
-        changeset
-        |> Ecto.Changeset.put_assoc(:services, updated_services)
-        |> to_form()
-      end)
 
     {:noreply, socket}
   end
