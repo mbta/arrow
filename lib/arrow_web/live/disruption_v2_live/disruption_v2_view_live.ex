@@ -111,7 +111,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     end
   end
 
-  def handle_event("delete_hastus_aexport", %{"export" => export_id}, socket) do
+  def handle_event("delete_hastus_export", %{"export" => export_id}, socket) do
     {parsed_id, _} = Integer.parse(export_id)
     export = Hastus.get_export!(parsed_id)
 
