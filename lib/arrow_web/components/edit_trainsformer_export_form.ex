@@ -218,7 +218,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                           </div>
                         </div>
                         <div class="col">
-                          <label class="cursor-pointer hover:opacity-40">
+                          <label class="cursor-pointer hover:opacity-140">
                             <.icon name="hero-trash-solid" class="bg-primary" />
                             <input
                               type="checkbox"
