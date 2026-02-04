@@ -52,7 +52,7 @@ defmodule Arrow.Disruptions.ReplacementService do
       :disruption_id,
       :shuttle_id
     ])
-    |> Arrow.Util.validate_start_date_before_end_date()
+    |> Arrow.Util.Validation.validate_start_date_before_end_date()
     |> assoc_constraint(:shuttle)
     |> assoc_constraint(:disruption)
   end

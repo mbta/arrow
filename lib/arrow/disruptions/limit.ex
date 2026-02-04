@@ -44,7 +44,7 @@ defmodule Arrow.Disruptions.Limit do
     ])
     |> put_change(:check_for_overlap, true)
     |> validate_required([:start_date, :end_date, :route_id, :start_stop_id, :end_stop_id])
-    |> Arrow.Util.validate_start_date_before_end_date()
+    |> Arrow.Util.Validation.validate_start_date_before_end_date()
     |> cast_assoc_day_of_weeks()
     |> exclusion_constraint(:end_date,
       name: :no_overlap,
@@ -85,7 +85,7 @@ defmodule Arrow.Disruptions.Limit do
   end
 
   @spec dow_in_date_range(Date.t() | nil, Date.t() | nil) ::
-          MapSet.t(Arrow.Util.DayOfWeek.day_name())
+          MapSet.t(Arrow.Util.Validation.DayOfWeek.day_name())
   defp dow_in_date_range(start_date, end_date)
        when is_nil(start_date)
        when is_nil(end_date) do
@@ -96,6 +96,6 @@ defmodule Arrow.Disruptions.Limit do
     start_date
     |> Date.range(end_date)
     |> Stream.take(7)
-    |> MapSet.new(&(&1 |> Date.day_of_week() |> Arrow.Util.DayOfWeek.get_day_name()))
+    |> MapSet.new(&(&1 |> Date.day_of_week() |> Arrow.Util.Validation.DayOfWeek.get_day_name()))
   end
 end

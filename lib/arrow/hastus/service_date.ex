@@ -17,7 +17,7 @@ defmodule Arrow.Hastus.ServiceDate do
     service_date
     |> cast(attrs, [:start_date, :end_date, :service_id])
     |> validate_required([:start_date, :end_date])
-    |> Arrow.Util.validate_start_date_before_end_date()
+    |> Arrow.Util.Validation.validate_start_date_before_end_date()
     |> assoc_constraint(:service)
   end
 

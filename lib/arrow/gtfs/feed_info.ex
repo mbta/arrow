@@ -32,7 +32,7 @@ defmodule Arrow.Gtfs.FeedInfo do
     |> validate_required(
       ~w[id publisher_name publisher_url lang start_date end_date version contact_email]a
     )
-    |> Arrow.Util.validate_start_date_before_end_date()
+    |> Arrow.Util.Validation.validate_start_date_before_end_date()
   end
 
   @impl Arrow.Gtfs.Importable

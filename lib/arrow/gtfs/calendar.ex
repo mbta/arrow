@@ -33,7 +33,7 @@ defmodule Arrow.Gtfs.Calendar do
       ~w[service_id monday tuesday wednesday thursday friday saturday sunday start_date end_date]a
     )
     |> assoc_constraint(:service)
-    |> Arrow.Util.validate_start_date_before_end_date()
+    |> Arrow.Util.Validation.validate_start_date_before_end_date()
   end
 
   @impl Arrow.Gtfs.Importable
