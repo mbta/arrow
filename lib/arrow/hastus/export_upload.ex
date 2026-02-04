@@ -488,10 +488,12 @@ defmodule Arrow.Hastus.ExportUpload do
     trips = Enum.filter(trips, &(&1["service_id"] == service.name))
     trip_ids = MapSet.new(trips, & &1["trip_id"])
 
+    stop_times_in_trips =
+      Stream.filter(stop_times, &(&1["trip_id"] in trip_ids))
+
     # List of sets. Each set contains the stop IDs visited by all trips that start within a time window.
     visited_stops_per_time_window =
-      stop_times
-      |> Stream.filter(&(&1["trip_id"] in trip_ids))
+      stop_times_in_trips
       |> Enum.group_by(& &1["trip_id"])
       |> Enum.group_by(
         fn {_trip_id, stop_times} ->
@@ -506,15 +508,44 @@ defmodule Arrow.Hastus.ExportUpload do
         Enum.reduce(stop_id_sets, &MapSet.union/2)
       end)
 
+    stop_id_to_checkpoint_map =
+      Map.new(stop_times_in_trips, fn stop_time ->
+        {stop_time["stop_id"], stop_time["checkpoint_id"]}
+      end)
+
     derived_limits =
       for visited_stops <- visited_stops_per_time_window,
           seq <- canonical_stop_sequences,
           {start_stop_id, end_stop_id} <- limits_from_sequence(seq, visited_stops) do
         %{start_stop_id: start_stop_id, end_stop_id: end_stop_id}
       end
-      |> Enum.uniq()
+      |> filter_by_checkpoint(stop_id_to_checkpoint_map)
 
     Map.put(service, :derived_limits, derived_limits)
+  end
+
+  @typep limit :: {start_stop_id :: stop_id, end_stop_id :: stop_id}
+
+  @spec filter_by_checkpoint([limit], Enumerable.t(map)) :: [limit]
+  defp filter_by_checkpoint([], _stop_id_to_checkpoint_map), do: []
+
+  defp filter_by_checkpoint(limits, stop_id_to_checkpoint_map) do
+    limits
+    |> Enum.map(fn %{start_stop_id: start_stop_id, end_stop_id: end_stop_id} ->
+      start_checkpoint_id =
+        Map.get(stop_id_to_checkpoint_map, start_stop_id)
+
+      end_checkpoint_id =
+        Map.get(stop_id_to_checkpoint_map, end_stop_id)
+
+      %{
+        start_stop_id: start_stop_id,
+        end_stop_id: end_stop_id,
+        start_checkpoint_id: start_checkpoint_id,
+        end_checkpoint_id: end_checkpoint_id
+      }
+    end)
+    |> Enum.uniq_by(fn limit -> {limit.start_checkpoint_id, limit.end_checkpoint_id} end)
   end
 
   defp trip_type(trip), do: Map.take(trip, ["service_id", "route_id", "via_variant", "avi_code"])
@@ -564,7 +595,6 @@ defmodule Arrow.Hastus.ExportUpload do
     |> Map.new()
   end
 
-  @typep limit :: {start_stop_id :: stop_id, end_stop_id :: stop_id}
   @typep stop_id :: String.t()
 
   @spec limits_from_sequence([stop_id], MapSet.t(stop_id)) :: [limit]
