@@ -490,23 +490,21 @@ defmodule Arrow.Hastus.ExportUpload do
 
     # List of sets. Each set contains the stop IDs visited by all trips that start within a time window.
     visited_stops_per_time_window =
-      stop_times_in_trips
-
-    stop_times
-    |> Stream.filter(&(&1["trip_id"] in trip_ids))
-    |> Enum.group_by(& &1["trip_id"])
-    |> Enum.group_by(
-      fn {_trip_id, stop_times} ->
-        first_stop_time = Enum.min_by(stop_times, & &1["stop_sequence"])
-        hour = first_stop_time["departure_time"] |> String.slice(0..1) |> String.to_integer()
-        if hour in 7..23, do: hour, else: :skip
-      end,
-      fn {_trip_id, stop_times} -> MapSet.new(stop_times, & &1["stop_id"]) end
-    )
-    |> Map.delete(:skip)
-    |> Enum.map(fn {_hour, stop_id_sets} ->
-      Enum.reduce(stop_id_sets, &MapSet.union/2)
-    end)
+      stop_times
+      |> Stream.filter(&(&1["trip_id"] in trip_ids))
+      |> Enum.group_by(& &1["trip_id"])
+      |> Enum.group_by(
+        fn {_trip_id, stop_times} ->
+          first_stop_time = Enum.min_by(stop_times, & &1["stop_sequence"])
+          hour = first_stop_time["departure_time"] |> String.slice(0..1) |> String.to_integer()
+          if hour in 7..23, do: hour, else: :skip
+        end,
+        fn {_trip_id, stop_times} -> MapSet.new(stop_times, & &1["stop_id"]) end
+      )
+      |> Map.delete(:skip)
+      |> Enum.map(fn {_hour, stop_id_sets} ->
+        Enum.reduce(stop_id_sets, &MapSet.union/2)
+      end)
 
     derived_limits =
       for visited_stops <- visited_stops_per_time_window,
