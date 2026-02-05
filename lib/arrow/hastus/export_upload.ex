@@ -508,44 +508,40 @@ defmodule Arrow.Hastus.ExportUpload do
         Enum.reduce(stop_id_sets, &MapSet.union/2)
       end)
 
-    stop_id_to_checkpoint_map =
-      Map.new(stop_times_in_trips, fn stop_time ->
-        {stop_time["stop_id"], stop_time["checkpoint_id"]}
-      end)
-
     derived_limits =
       for visited_stops <- visited_stops_per_time_window,
           seq <- canonical_stop_sequences,
           {start_stop_id, end_stop_id} <- limits_from_sequence(seq, visited_stops) do
         %{start_stop_id: start_stop_id, end_stop_id: end_stop_id}
       end
-      |> filter_by_checkpoint(stop_id_to_checkpoint_map)
+      |> filter_by_parent_station()
 
     Map.put(service, :derived_limits, derived_limits)
   end
 
   @typep limit :: {start_stop_id :: stop_id, end_stop_id :: stop_id}
 
-  @spec filter_by_checkpoint([limit], Enumerable.t(map)) :: [limit]
-  defp filter_by_checkpoint([], _stop_id_to_checkpoint_map), do: []
+  @spec filter_by_parent_station([limit]) :: [limit]
+  defp filter_by_parent_station([]), do: []
 
-  defp filter_by_checkpoint(limits, stop_id_to_checkpoint_map) do
+  defp filter_by_parent_station(limits) do
     limits
     |> Enum.map(fn %{start_stop_id: start_stop_id, end_stop_id: end_stop_id} ->
-      start_checkpoint_id =
-        Map.get(stop_id_to_checkpoint_map, start_stop_id)
+      start_parent_station_id =
+        Arrow.Repo.get(Arrow.Gtfs.Stop, start_stop_id).parent_station_id
 
-      end_checkpoint_id =
-        Map.get(stop_id_to_checkpoint_map, end_stop_id)
+      end_parent_station_id =
+        Arrow.Repo.get(Arrow.Gtfs.Stop, end_stop_id).parent_station_id
 
       %{
         start_stop_id: start_stop_id,
         end_stop_id: end_stop_id,
-        start_checkpoint_id: start_checkpoint_id,
-        end_checkpoint_id: end_checkpoint_id
+        start_parent_station_id: start_parent_station_id,
+        end_parent_station_id: end_parent_station_id
       }
     end)
-    |> Enum.uniq_by(fn limit -> {limit.start_checkpoint_id, limit.end_checkpoint_id} end)
+    |> Enum.uniq_by(fn limit -> {limit.start_parent_station_id, limit.end_parent_station_id} end)
+    |> Enum.map(&Map.drop(&1, [:start_parent_station_id, :end_parent_station_id]))
   end
 
   defp trip_type(trip), do: Map.take(trip, ["service_id", "route_id", "via_variant", "avi_code"])
