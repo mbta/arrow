@@ -60,7 +60,14 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
       data =
         ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"})
 
-      assert {:ok, {:error, {:existing_service_id, ["SPRING2025-SOUTHSS-Weekend-66"]}}} = data
+      assert {:ok,
+              {:error,
+               [
+                 {:error,
+                  {:existing_service_ids,
+                   {"Export contains previously used service_id's",
+                    [existing_service_ids: ["SPRING2025-SOUTHSS-Weekend-66"]]}}}
+               ]}} = data
     end
 
     @tag export: "invalid_csv.zip"
@@ -69,10 +76,15 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
         ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"})
 
       assert {:ok,
-              [
-                {:error, "SPRING2025-SOUTHSS-Weekend-66/stop_times.txt",
-                 "** (CSV.RowLengthError) Row 2 has length 9 instead of expected length 11\n\nYou are seeing this error because :validate_row_length has been set to true\n"}
-              ]} = data
+              {:error,
+               [
+                 {:error,
+                  {"SPRING2025-SOUTHSS-Weekend-66/stop_times.txt",
+                   {
+                     "** (CSV.RowLengthError) Row 2 has length 9 instead of expected length 11\n\nYou are seeing this error because :validate_row_length has been set to true\n",
+                     []
+                   }}}
+               ]}} = data
     end
   end
 
@@ -108,7 +120,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     end
   end
 
-  describe "validate_stop_times_in_gtfs/4" do
+  describe "validate_stop_ids_in_gtfs/4" do
     defmodule FakeRepo do
       def all(_) do
         ["WR-0329-02", "WR-0325-02", "WR-0264-02"]
@@ -116,73 +128,33 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     end
 
     test "returns ok if all stops in gtfs" do
-      stop_times_with_stops_in_repo = [
-        %{
-          arrival_time: "10:26:00",
-          departure_time: "10:26:00",
-          stop_id: "WR-0329-02",
-          stop_sequence: "140",
-          timepoint: "1",
-          trip_id: "Base-772221-5208"
-        },
-        %{
-          arrival_time: "10:31:00",
-          departure_time: "10:31:00",
-          stop_id: "WR-0325-02",
-          stop_sequence: "150",
-          trip_id: "Base-772221-5208"
-        },
-        %{
-          arrival_time: "10:31:00",
-          departure_time: "10:31:00",
-          stop_id: "WR-0264-02",
-          stop_sequence: "150",
-          trip_id: "Base-772221-5208"
-        }
+      stop_ids = [
+        "WR-0329-02",
+        "WR-0325-02",
+        "WR-0264-02"
       ]
 
-      assert {:ok, ["WR-0329-02", "WR-0325-02", "WR-0264-02"]} =
-               ExportUpload.validate_stop_times_in_gtfs(
-                 stop_times_with_stops_in_repo,
+      assert :ok =
+               ExportUpload.validate_stop_ids_in_gtfs(
+                 stop_ids,
                  FakeRepo
                )
     end
 
     test "returns missing stop if some stops missing from GTFS" do
-      stop_times_without_stops_in_repo = [
-        %{
-          arrival_time: "10:26:00",
-          departure_time: "10:26:00",
-          stop_id: "morket-borket",
-          stop_sequence: "140",
-          trip_id: "ReadWKNDHeadsigns-754204-5530"
-        },
-        %{
-          arrival_time: "10:31:00",
-          departure_time: "10:31:00",
-          stop_id: "mcdongals",
-          stop_sequence: "150",
-          trip_id: "ReadWKNDHeadsigns-754204-5530"
-        },
-        %{
-          arrival_time: "10:31:00",
-          departure_time: "10:31:00",
-          stop_id: "sbubby",
-          stop_sequence: "150",
-          trip_id: "ReadWKNDHeadsigns-754204-5530"
-        },
-        %{
-          arrival_time: "10:31:00",
-          departure_time: "10:31:00",
-          stop_id: "WR-0329-02",
-          stop_sequence: "150",
-          trip_id: "ReadWKNDHeadsigns-754204-5530"
-        }
+      stop_ids = [
+        "morket-borket",
+        "mcdongals",
+        "sbubby",
+        "WR-0329-02"
       ]
 
-      assert {:error, {:invalid_export_stops, ["morket-borket", "mcdongals", "sbubby"]}} =
-               ExportUpload.validate_stop_times_in_gtfs(
-                 stop_times_without_stops_in_repo,
+      assert {:error,
+              {:stop_id_not_in_gtfs,
+               {"Export has stops not present in GTFS",
+                [stop_id_not_in_gtfs: ["morket-borket", "mcdongals", "sbubby"]]}}} =
+               ExportUpload.validate_stop_ids_in_gtfs(
+                 stop_ids,
                  FakeRepo
                )
     end
@@ -244,22 +216,25 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
 
       assert {:error,
               {:invalid_stop_times,
-               [
-                 %{
-                   stop_id: "NEC-2287",
-                   stop_sequence: "10",
-                   arrival_time: "10:30:00",
-                   departure_time: "10:30:00",
-                   trip_id: "October26November2-781218-9733"
-                 },
-                 %{
-                   stop_id: "NEC-2276-01",
-                   stop_sequence: "20",
-                   arrival_time: "11:01:00",
-                   departure_time: "11:00:00",
-                   trip_id: "October26November2-781218-9733"
-                 }
-               ]}} =
+               {"Export contains trips with out-of-order stop times",
+                [
+                  invalid_stop_times: [
+                    %{
+                      stop_id: "NEC-2287",
+                      stop_sequence: "10",
+                      trip_id: "October26November2-781218-9733",
+                      arrival_time: "10:30:00",
+                      departure_time: "10:30:00"
+                    },
+                    %{
+                      stop_id: "NEC-2276-01",
+                      stop_sequence: "20",
+                      trip_id: "October26November2-781218-9733",
+                      arrival_time: "11:01:00",
+                      departure_time: "11:00:00"
+                    }
+                  ]
+                ]}}} =
                ExportUpload.validate_stop_order(invalid_stop_times)
     end
   end
@@ -282,7 +257,8 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     end
 
     test "returns error if North and South Stations are both served" do
-      assert :both =
+      assert {:warning,
+              {:invalid_sides, {"Export contains trips serving North and South Station", []}}} =
                ExportUpload.validate_one_of_north_south_stations([
                  "BNT-0000",
                  "WR-0045-S",
@@ -292,7 +268,9 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     end
 
     test "returns error if neither North nor South Station is served" do
-      assert :neither =
+      assert {:warning,
+              {:invalid_sides,
+               {"Export does not contain trips serving North or South Station", _}}} =
                ExportUpload.validate_one_of_north_south_stations([
                  "WR-0045-S",
                  "WR-0053-S"
@@ -302,7 +280,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
 
   describe "validate_one_or_all_routes_from_one_side/3" do
     test "returns empty error route lists if all Northside routes have a trip" do
-      assert {[], []} =
+      assert :ok =
                ExportUpload.validate_one_or_all_routes_from_one_side([
                  %{
                    route_id: "CR-Newburyport",
@@ -328,7 +306,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     end
 
     test "returns empty error route lists if exactly one Northside route has a trip" do
-      assert {[], []} =
+      assert :ok =
                ExportUpload.validate_one_or_all_routes_from_one_side([
                  %{
                    route_id: "CR-Newburyport",
@@ -354,7 +332,16 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     end
 
     test "returns missing routes if more than one but not all Northside routes have a trip" do
-      assert {["CR-Fitchburg", "CR-Lowell"], []} =
+      assert {
+               :warning,
+               {
+                 :missing_routes,
+                 {
+                   "Not all northside routes are present",
+                   [missing_routes: ["CR-Fitchburg", "CR-Lowell"]]
+                 }
+               }
+             } =
                ExportUpload.validate_one_or_all_routes_from_one_side([
                  %{
                    route_id: "CR-Newburyport",
@@ -369,8 +356,42 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                ])
     end
 
+    test "returns missing routes if more than one but not all Southside routes have a trip" do
+      assert {
+               :warning,
+               {
+                 :missing_routes,
+                 {
+                   "Not all southside routes are present",
+                   [
+                     missing_routes: [
+                       "CR-Greenbush",
+                       "CR-Kingston",
+                       "CR-Needham",
+                       "CR-NewBedford",
+                       "CR-Providence",
+                       "CR-Worcester"
+                     ]
+                   ]
+                 }
+               }
+             } =
+               ExportUpload.validate_one_or_all_routes_from_one_side([
+                 %{
+                   route_id: "CR-Fairmount",
+                   service_id: "FALL 2025-SOUTHWKD-Weekday-11A",
+                   trip_id: "Weekday-789267-102"
+                 },
+                 %{
+                   route_id: "CR-Franklin",
+                   service_id: "FALL 2025-SOUTHWKD-Weekday-11A",
+                   trip_id: "Weekday-789267-202"
+                 }
+               ])
+    end
+
     test "returns empty error route lists for a single route not in either side's required list" do
-      assert {[], []} =
+      assert :ok =
                ExportUpload.validate_one_or_all_routes_from_one_side([
                  %{
                    route_id: "CR-Foxboro",
@@ -386,7 +407,10 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     end
 
     test "returns invalid routes for multiple routes not in either side's required list" do
-      assert {[], ["CR-Foxboro", "CR-Nowhere"]} =
+      assert {:warning,
+              {:invalid_routes,
+               {"Multiple routes not north or southside",
+                [invalid_routes: ["CR-Foxboro", "CR-Nowhere"]]}}} =
                ExportUpload.validate_one_or_all_routes_from_one_side([
                  %{
                    route_id: "CR-Foxboro",
@@ -466,7 +490,12 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     test "returns an error if any transfers are missing" do
       expected_trips_with_missing_transfers = MapSet.new(["5678"])
 
-      assert {:error, {:trips_missing_transfers, ^expected_trips_with_missing_transfers}} =
+      assert {:warning,
+              {:trips_missing_transfers,
+               {
+                 "Some train trips that do not serve North Station, South Station, or Foxboro lack transfers",
+                 [trips_missing_transfers: ^expected_trips_with_missing_transfers]
+               }}} =
                ExportUpload.validate_transfers(
                  [],
                  [
