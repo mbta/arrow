@@ -512,34 +512,19 @@ defmodule Arrow.Hastus.ExportUpload do
           {start_stop_id, end_stop_id} <- limits_from_sequence(seq, visited_stops) do
         %{start_stop_id: start_stop_id, end_stop_id: end_stop_id}
       end
-      |> filter_by_parent_station()
+      |> Enum.uniq_by(&parent_station_ids/1)
 
     Map.put(service, :derived_limits, derived_limits)
   end
 
-  @typep limit :: {start_stop_id :: stop_id, end_stop_id :: stop_id}
+  defp parent_station_ids(limit) do
+    start_parent_station_id =
+      Arrow.Repo.get(Arrow.Gtfs.Stop, limit.start_stop_id).parent_station_id
 
-  @spec filter_by_parent_station([limit]) :: [limit]
-  defp filter_by_parent_station([]), do: []
+    end_parent_station_id =
+      Arrow.Repo.get(Arrow.Gtfs.Stop, limit.end_stop_id).parent_station_id
 
-  defp filter_by_parent_station(limits) do
-    limits
-    |> Enum.map(fn %{start_stop_id: start_stop_id, end_stop_id: end_stop_id} ->
-      start_parent_station_id =
-        Arrow.Repo.get(Arrow.Gtfs.Stop, start_stop_id).parent_station_id
-
-      end_parent_station_id =
-        Arrow.Repo.get(Arrow.Gtfs.Stop, end_stop_id).parent_station_id
-
-      %{
-        start_stop_id: start_stop_id,
-        end_stop_id: end_stop_id,
-        start_parent_station_id: start_parent_station_id,
-        end_parent_station_id: end_parent_station_id
-      }
-    end)
-    |> Enum.uniq_by(fn limit -> {limit.start_parent_station_id, limit.end_parent_station_id} end)
-    |> Enum.map(&Map.drop(&1, [:start_parent_station_id, :end_parent_station_id]))
+    {start_parent_station_id, end_parent_station_id}
   end
 
   defp trip_type(trip), do: Map.take(trip, ["service_id", "route_id", "via_variant", "avi_code"])
@@ -589,6 +574,7 @@ defmodule Arrow.Hastus.ExportUpload do
     |> Map.new()
   end
 
+  @typep limit :: {start_stop_id :: stop_id, end_stop_id :: stop_id}
   @typep stop_id :: String.t()
 
   @spec limits_from_sequence([stop_id], MapSet.t(stop_id)) :: [limit]
