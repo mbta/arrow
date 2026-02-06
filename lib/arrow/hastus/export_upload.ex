@@ -512,9 +512,19 @@ defmodule Arrow.Hastus.ExportUpload do
           {start_stop_id, end_stop_id} <- limits_from_sequence(seq, visited_stops) do
         %{start_stop_id: start_stop_id, end_stop_id: end_stop_id}
       end
-      |> Enum.uniq()
+      |> Enum.uniq_by(&parent_station_ids/1)
 
     Map.put(service, :derived_limits, derived_limits)
+  end
+
+  defp parent_station_ids(limit) do
+    start_parent_station_id =
+      Arrow.Repo.get(Arrow.Gtfs.Stop, limit.start_stop_id).parent_station_id
+
+    end_parent_station_id =
+      Arrow.Repo.get(Arrow.Gtfs.Stop, limit.end_stop_id).parent_station_id
+
+    {start_parent_station_id, end_parent_station_id}
   end
 
   defp trip_type(trip), do: Map.take(trip, ["service_id", "route_id", "via_variant", "avi_code"])

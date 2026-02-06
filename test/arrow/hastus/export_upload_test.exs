@@ -577,6 +577,86 @@ defmodule Arrow.Hastus.ExportUploadTest do
       assert result.trip_route_directions == expected_trip_route_directions
       assert result.dup_service_ids_amended? == false
     end
+
+    @tag export: "2025-Summer-vehicle-RLKendallJFK-v2.zip"
+    @tag subway_line: "line-Red"
+    test "correctly handles derived limits end stop for separate stop ids at the same station (JFK)",
+         %{export: export} do
+      data =
+        ExportUpload.extract_data_from_upload(
+          %{path: "#{@export_dir}/#{export}"},
+          "uid-#{System.unique_integer([:positive])}"
+        )
+
+      expected_services = [
+        %{
+          name: "RTL32025-hms35011-Weekday-01",
+          service_dates: [%{start_date: ~D[2025-07-14], end_date: ~D[2025-07-16]}],
+          derived_limits: []
+        },
+        %{
+          name: "RTL32025-hms35kf1-Weekday-01",
+          service_dates: [
+            %{start_date: ~D[2025-07-11], end_date: ~D[2025-07-11]},
+            %{start_date: ~D[2025-07-18], end_date: ~D[2025-07-18]}
+          ],
+          derived_limits: [
+            %{
+              start_stop_id: "70071",
+              end_stop_id: "70095"
+            }
+          ]
+        },
+        %{
+          name: "RTL32025-hms35kj1-Weekday-01",
+          service_dates: [
+            %{start_date: ~D[2025-07-10], end_date: ~D[2025-07-10]},
+            %{start_date: ~D[2025-07-17], end_date: ~D[2025-07-17]}
+          ],
+          derived_limits: [
+            %{
+              start_stop_id: "70071",
+              end_stop_id: "70095"
+            }
+          ]
+        },
+        %{
+          name: "RTL32025-hms35kj6-Saturday-01",
+          service_dates: [
+            %{start_date: ~D[2025-07-12], end_date: ~D[2025-07-12]},
+            %{start_date: ~D[2025-07-19], end_date: ~D[2025-07-19]}
+          ],
+          derived_limits: [
+            %{
+              start_stop_id: "70071",
+              end_stop_id: "70095"
+            }
+          ]
+        },
+        %{
+          name: "RTL32025-hms35kj7-Sunday-01",
+          service_dates: [
+            %{start_date: ~D[2025-07-13], end_date: ~D[2025-07-13]},
+            %{start_date: ~D[2025-07-20], end_date: ~D[2025-07-20]}
+          ],
+          derived_limits: [
+            %{
+              start_stop_id: "70071",
+              end_stop_id: "70095"
+            }
+          ]
+        }
+      ]
+
+      assert {:ok,
+              {:ok,
+               %ExportUpload{
+                 services: ^expected_services,
+                 line_id: "line-Red",
+                 trip_route_directions: [],
+                 dup_service_ids_amended?: false
+               }}} = data
+    end
   end
 
   describe "upload_to_s3/3" do
