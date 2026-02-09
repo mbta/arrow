@@ -228,7 +228,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
       )
 
     stops_missing_from_gtfs =
-      Enum.filter(stop_ids, fn stop -> !MapSet.member?(gtfs_stop_ids, stop) end)
+      Enum.reject(stop_ids, fn stop -> MapSet.member?(gtfs_stop_ids, stop) end)
 
     if Enum.any?(stops_missing_from_gtfs) do
       new_error(:stop_id_not_in_gtfs, "Export has stops not present in GTFS",
