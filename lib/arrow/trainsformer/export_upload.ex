@@ -8,6 +8,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
   require Logger
 
+  use Gettext, backend: ArrowWeb.Gettext
+
   @type t :: %__MODULE__{
           zip_binary: binary(),
           routes: [String.t()],
@@ -111,8 +113,11 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
   defp new_unzip(unzip_handle) do
     case Unzip.new(unzip_handle) do
-      {:ok, _} = ok_result -> ok_result
-      {:error, error_message} -> new_error(:zip_file, error_message)
+      {:ok, _} = ok_result ->
+        ok_result
+
+      {:error, error_message} ->
+        new_error(:zip_file, gettext("Invalid ZIP file."), message: error_message)
     end
   end
 
@@ -154,7 +159,9 @@ defmodule Arrow.Trainsformer.ExportUpload do
     error ->
       new_error(
         :zip_file,
-        "Failed to open zip file, message=#{Exception.format(:error, error)}"
+        gettext("Failed to open ZIP file"),
+        message: Exception.format(:error, error),
+        suggestion: gettext("Please report this error to Arrow Developers")
       )
   end
 
@@ -164,9 +171,12 @@ defmodule Arrow.Trainsformer.ExportUpload do
         result
 
       {:error, posix} ->
-        new_error(:zip_file, "Failed to read zip file contents: %{error_message}",
-          error_message: :file.format_error(posix),
-          posix_error: posix
+        new_error(
+          :zip_file,
+          gettext("Failed to read ZIP file contents"),
+          posix_error: posix,
+          message: :file.format_error(posix),
+          suggestion: gettext("Please report this error to Arrow Developers")
         )
     end
   end
@@ -206,8 +216,20 @@ defmodule Arrow.Trainsformer.ExportUpload do
       )
 
     if Enum.any?(existing_service_ids_intersection) do
-      new_error(:existing_service_ids, "Export contains previously used service_id's",
-        existing_service_ids: existing_service_ids_intersection
+      new_error(
+        :existing_service_ids,
+        ngettext(
+          "A Service ID already exists.",
+          "%{count} Service ID's already exist.",
+          length(existing_service_ids_intersection)
+        ),
+        items: existing_service_ids_intersection,
+        suggestion:
+          ngettext(
+            "Please change this Service ID in your upload to continue.",
+            "Please change these Service ID's in your upload to continue.",
+            length(existing_service_ids_intersection)
+          )
       )
     else
       :ok
@@ -231,8 +253,14 @@ defmodule Arrow.Trainsformer.ExportUpload do
       Enum.reject(stop_ids, fn stop -> MapSet.member?(gtfs_stop_ids, stop) end)
 
     if Enum.any?(stops_missing_from_gtfs) do
-      new_error(:stop_id_not_in_gtfs, "Export has stops not present in GTFS",
-        stop_id_not_in_gtfs: stops_missing_from_gtfs
+      new_error(
+        :stop_id_not_in_gtfs,
+        ngettext(
+          "Export has a stop not present in GTFS.",
+          "Export has %{count} stops not present in GTFS.",
+          length(stops_missing_from_gtfs)
+        ),
+        items: stops_missing_from_gtfs
       )
     else
       :ok
@@ -249,8 +277,14 @@ defmodule Arrow.Trainsformer.ExportUpload do
       Enum.flat_map(trainsformer_trips, &validate_trip(&1))
 
     if Enum.any?(invalid_stop_times) do
-      new_error(:invalid_stop_times, "Export contains trips with out-of-order stop times",
-        invalid_stop_times: invalid_stop_times
+      new_error(
+        :invalid_stop_times,
+        ngettext(
+          "Export contains trips with one out-of-order stop time.",
+          "Export contains trips with %{count} out-of-order stop times.",
+          length(invalid_stop_times)
+        ),
+        rows: invalid_stop_times
       )
     else
       :ok
@@ -352,8 +386,12 @@ defmodule Arrow.Trainsformer.ExportUpload do
     if Enum.any?(trips_needing_transfers_without_transfers) do
       new_warning(
         :trips_missing_transfers,
-        "Some train trips that do not serve North Station, South Station, or Foxboro lack transfers",
-        trips_missing_transfers: trips_needing_transfers_without_transfers
+        ngettext(
+          "A train trip that does not serve North Station, South Station, or Foxboro lacks a transfer.",
+          "%{count} train trips that do not serve North Station, South Station, or Foxboro lack transfers.",
+          MapSet.size(trips_needing_transfers_without_transfers)
+        ),
+        items: trips_needing_transfers_without_transfers
       )
     else
       :ok
@@ -383,13 +421,13 @@ defmodule Arrow.Trainsformer.ExportUpload do
       north_station_served and south_station_served ->
         new_warning(
           :invalid_sides,
-          "Export contains trips serving both North Station and South Station"
+          gettext("Export contains trips serving both North Station and South Station.")
         )
 
       not north_station_served and not south_station_served ->
         new_warning(
           :invalid_sides,
-          "Export does not contain trips serving North Station or South Station"
+          gettext("Export does not contain trips serving North Station or South Station.")
         )
 
       true ->
@@ -447,23 +485,31 @@ defmodule Arrow.Trainsformer.ExportUpload do
       num_southside_routes_missing < length(@southside_route_ids) ->
         new_warning(
           :missing_routes,
-          "Not all southside routes are present",
-          missing_routes: southside_routes_missing
+          ngettext(
+            "Export is missing a Southside route.",
+            "Export is missing %{count} Southside routes.",
+            num_southside_routes_missing
+          ),
+          items: southside_routes_missing
         )
 
       num_northside_routes_missing < length(@northside_route_ids) ->
         new_warning(
           :missing_routes,
-          "Not all northside routes are present",
-          missing_routes: northside_routes_missing
+          ngettext(
+            "Export is missing a Northside route.",
+            "Export is missing %{count} Northside routes.",
+            num_northside_routes_missing
+          ),
+          items: northside_routes_missing
         )
 
       # More than one route, and they all aren't in @northside_route_ids or @southside_route_ids
       true ->
         new_warning(
           :invalid_routes,
-          "Multiple routes not north or southside",
-          invalid_routes: trainsformer_route_ids
+          gettext("Multiple routes not north or southside."),
+          items: trainsformer_route_ids
         )
     end
   end
@@ -633,7 +679,14 @@ defmodule Arrow.Trainsformer.ExportUpload do
   rescue
     e ->
       {
-        [new_error(entry.file_name, Exception.format(:error, e)) | errors],
+        [
+          new_error(
+            entry.file_name,
+            gettext("Failed to parse file %{filename}", filename: entry.file_name),
+            message: Exception.format(:error, e)
+          )
+          | errors
+        ],
         result
       }
   end
@@ -709,7 +762,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
   @type validation_message(type) ::
           {type, {any(), {String.t(), Keyword.t()}}}
 
-  defp new_error(key, message, metadata \\ []),
+  defp new_error(key, message, metadata),
     do: {:error, new_validation_message(key, message, metadata)}
 
   defp new_warning(key, message, metadata \\ []),

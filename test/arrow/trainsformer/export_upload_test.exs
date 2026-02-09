@@ -65,8 +65,11 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                [
                  {:error,
                   {:existing_service_ids,
-                   {"Export contains previously used service_id's",
-                    [existing_service_ids: ["SPRING2025-SOUTHSS-Weekend-66"]]}}}
+                   {"A Service ID already exists.",
+                    [
+                      items: ["SPRING2025-SOUTHSS-Weekend-66"],
+                      suggestion: "Please change this Service ID in your upload to continue."
+                    ]}}}
                ]}} = data
     end
 
@@ -81,8 +84,11 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                  {:error,
                   {"SPRING2025-SOUTHSS-Weekend-66/stop_times.txt",
                    {
-                     "** (CSV.RowLengthError) Row 2 has length 9 instead of expected length 11\n\nYou are seeing this error because :validate_row_length has been set to true\n",
-                     []
+                     "Failed to parse file SPRING2025-SOUTHSS-Weekend-66/stop_times.txt",
+                     [
+                       message:
+                         "** (CSV.RowLengthError) Row 2 has length 9 instead of expected length 11\n\nYou are seeing this error because :validate_row_length has been set to true\n"
+                     ]
                    }}}
                ]}} = data
     end
@@ -151,8 +157,8 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
 
       assert {:error,
               {:stop_id_not_in_gtfs,
-               {"Export has stops not present in GTFS",
-                [stop_id_not_in_gtfs: ["morket-borket", "mcdongals", "sbubby"]]}}} =
+               {"Export has 3 stops not present in GTFS.",
+                [items: ["morket-borket", "mcdongals", "sbubby"]]}}} =
                ExportUpload.validate_stop_ids_in_gtfs(
                  stop_ids,
                  FakeRepo
@@ -216,9 +222,9 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
 
       assert {:error,
               {:invalid_stop_times,
-               {"Export contains trips with out-of-order stop times",
+               {"Export contains trips with 2 out-of-order stop times.",
                 [
-                  invalid_stop_times: [
+                  rows: [
                     %{
                       stop_id: "NEC-2287",
                       stop_sequence: "10",
@@ -258,7 +264,8 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
 
     test "returns error if North and South Stations are both served" do
       assert {:warning,
-              {:invalid_sides, {"Export contains trips serving North and South Station", []}}} =
+              {:invalid_sides,
+               {"Export contains trips serving both North Station and South Station.", []}}} =
                ExportUpload.validate_one_of_north_south_stations([
                  "BNT-0000",
                  "WR-0045-S",
@@ -270,7 +277,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     test "returns error if neither North nor South Station is served" do
       assert {:warning,
               {:invalid_sides,
-               {"Export does not contain trips serving North or South Station", _}}} =
+               {"Export does not contain trips serving North Station or South Station.", _}}} =
                ExportUpload.validate_one_of_north_south_stations([
                  "WR-0045-S",
                  "WR-0053-S"
@@ -337,8 +344,8 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                {
                  :missing_routes,
                  {
-                   "Not all northside routes are present",
-                   [missing_routes: ["CR-Fitchburg", "CR-Lowell"]]
+                   "Export is missing 2 Northside routes.",
+                   [items: ["CR-Fitchburg", "CR-Lowell"]]
                  }
                }
              } =
@@ -362,9 +369,9 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                {
                  :missing_routes,
                  {
-                   "Not all southside routes are present",
+                   "Export is missing 6 Southside routes.",
                    [
-                     missing_routes: [
+                     items: [
                        "CR-Greenbush",
                        "CR-Kingston",
                        "CR-Needham",
@@ -409,8 +416,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     test "returns invalid routes for multiple routes not in either side's required list" do
       assert {:warning,
               {:invalid_routes,
-               {"Multiple routes not north or southside",
-                [invalid_routes: ["CR-Foxboro", "CR-Nowhere"]]}}} =
+               {"Multiple routes not north or southside.", [items: ["CR-Foxboro", "CR-Nowhere"]]}}} =
                ExportUpload.validate_one_or_all_routes_from_one_side([
                  %{
                    route_id: "CR-Foxboro",
@@ -493,8 +499,8 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
       assert {:warning,
               {:trips_missing_transfers,
                {
-                 "Some train trips that do not serve North Station, South Station, or Foxboro lack transfers",
-                 [trips_missing_transfers: ^expected_trips_with_missing_transfers]
+                 "A train trip that does not serve North Station, South Station, or Foxboro lacks a transfer.",
+                 [items: ^expected_trips_with_missing_transfers]
                }}} =
                ExportUpload.validate_transfers(
                  [],
