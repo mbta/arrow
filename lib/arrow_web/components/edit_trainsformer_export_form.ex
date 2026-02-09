@@ -291,7 +291,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
 
   defp alert_message(%{key: :stop_id_not_in_gtfs} = assigns) do
     ~H"""
-    Some stops are not present in GTFS!
+    {@message}
     <.button
       type="button"
       class="alert-info d-block"
@@ -305,7 +305,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
 
   defp alert_message(%{key: :invalid_stop_times} = assigns) do
     ~H"""
-    Some stop times are out of order!
+    {@message}
     <.button
       type="button"
       class="alert-info d-block"
