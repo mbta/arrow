@@ -112,6 +112,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       path: "test/support/fixtures/trainsformer/invalid_export_stops_missing_from_gtfs.zip"
     )
     |> assert_text("Some stops are not present in GTFS!")
+    |> assert_has(Query.button("Download list of invalid stops"))
   end
 
   feature "shows error for previously used service_ids in export", %{session: session} do
@@ -150,6 +151,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       path: "test/support/fixtures/trainsformer/invalid_export_stop_times_out_of_order.zip"
     )
     |> assert_text("Some stop times are out of order!")
+    |> assert_has(Query.button("Download list of invalid stop times"))
   end
 
   feature "shows warning for trainsformer export containing North and South Station", %{
