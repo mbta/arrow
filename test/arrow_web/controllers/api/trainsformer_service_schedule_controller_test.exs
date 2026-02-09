@@ -7,7 +7,7 @@ defmodule ArrowWeb.API.TrainsformerServiceScheduleControllerTest do
   describe "GET /api/trainsformer-trainsformer-service-schedules" do
     @tag :authenticated
     test "returns exports and their trainsformer services for active disruptions", %{conn: conn} do
-      inactive_disruption = insert(:disruption_v2, mode: :commuter_rail, is_active: false)
+      inactive_disruption = insert(:disruption_v2, mode: :commuter_rail, status: :pending)
 
       _inactive_trainsformer_export =
         export_fixture(%{
@@ -22,7 +22,7 @@ defmodule ArrowWeb.API.TrainsformerServiceScheduleControllerTest do
           ]
         })
 
-      out_of_range_disruption = insert(:disruption_v2, mode: :commuter_rail, is_active: true)
+      out_of_range_disruption = insert(:disruption_v2, mode: :commuter_rail, status: :approved)
 
       _out_of_range_trainsformer_export =
         export_fixture(%{
@@ -37,7 +37,7 @@ defmodule ArrowWeb.API.TrainsformerServiceScheduleControllerTest do
           ]
         })
 
-      disruption = insert(:disruption_v2, mode: :commuter_rail, is_active: true)
+      disruption = insert(:disruption_v2, mode: :commuter_rail, status: :approved)
 
       trainsformer_export =
         export_fixture(%{

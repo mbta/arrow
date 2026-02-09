@@ -91,7 +91,7 @@ defmodule Arrow.Shuttles.Shuttle do
           d in DisruptionV2,
           join: s in assoc(d, :shuttles),
           where: s.id == ^shuttle_id,
-          where: d.is_active,
+          where: d.status == :approved,
           preload: [:limits, :replacement_services, hastus_exports: [services: [:service_dates]]]
         )
         |> Repo.all()

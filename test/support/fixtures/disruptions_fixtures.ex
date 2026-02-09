@@ -16,7 +16,7 @@ defmodule Arrow.DisruptionsFixtures do
       |> Enum.into(%{
         title: "get disrupted bro",
         mode: "subway",
-        is_active: true,
+        status: :approved,
         description: "very disruptive",
         limits: [],
         replacement_services: []

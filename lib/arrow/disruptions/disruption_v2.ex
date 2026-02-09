@@ -18,7 +18,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   typed_schema "disruptionsv2" do
     field :title, :string
     field :mode, Ecto.Enum, values: [:subway, :commuter_rail, :silver_line, :bus]
-    field :is_active, :boolean
+    field :status, Ecto.Enum, values: [:pending, :approved, :archived]
     field :description, :string
 
     has_many :limits, Limit,
@@ -47,13 +47,13 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   @doc false
   def changeset(disruption_v2, attrs \\ %{}) do
     disruption_v2
-    |> cast(attrs, [:title, :is_active, :description])
+    |> cast(attrs, [:title, :status, :description])
     |> cast(attrs, [:mode], force_changes: true)
     |> cast_assoc(:limits, with: &Limit.changeset/2)
     |> cast_assoc(:replacement_services, with: &ReplacementService.changeset/2)
     |> cast_assoc(:trainsformer_exports, with: &Arrow.Trainsformer.Export.changeset/2)
-    |> validate_required([:title, :mode, :is_active])
-    |> validate_required_for(:is_active)
+    |> validate_required([:title, :mode, :status])
+    |> validate_required_for(:status)
     |> validate_no_mode_change()
   end
 
@@ -84,10 +84,10 @@ defmodule Arrow.Disruptions.DisruptionV2 do
   def route("Green-E"), do: :green_line_e
   def route(_), do: nil
 
-  defp validate_required_for(changeset, :is_active) do
+  defp validate_required_for(changeset, :status) do
     id = get_field(changeset, :id)
 
-    if id != nil and get_field(changeset, :is_active) do
+    if id != nil and get_field(changeset, :status) == :approved do
       non_active_activated_shuttles =
         Repo.all(
           from d in __MODULE__,
@@ -105,7 +105,7 @@ defmodule Arrow.Disruptions.DisruptionV2 do
 
         add_error(
           changeset,
-          :is_active,
+          :status,
           "the following shuttle(s) used by this disruption must be set as 'active' first: #{shuttles}"
         )
       end

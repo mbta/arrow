@@ -39,7 +39,7 @@ defmodule ArrowWeb.DisruptionV2View.CalendarTest do
             shuttle: %Shuttle{disrupted_route_id: "Blue"}
           }
         ],
-        is_active: true
+        status: :approved
       }
 
       expected_events = [

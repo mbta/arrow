@@ -58,7 +58,7 @@ defmodule Arrow.Factory do
     %Arrow.Disruptions.DisruptionV2{
       title: sequence(:title, &"Disruption #{&1}"),
       mode: :bus,
-      is_active: true
+      status: :approved
     }
   end
 

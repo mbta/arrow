@@ -25,10 +25,10 @@ defmodule ArrowWeb.DisruptionV2View.Calendar do
          title: title,
          limits: limits,
          replacement_services: replacement_services,
-         is_active: is_active
+         status: status
        }) do
-    Enum.flat_map(limits, &events(id, &1, title, is_active)) ++
-      Enum.flat_map(replacement_services, &events(id, &1, title, is_active))
+    Enum.flat_map(limits, &events(id, &1, title, status)) ++
+      Enum.flat_map(replacement_services, &events(id, &1, title, status))
   end
 
   defp events(
@@ -40,7 +40,7 @@ defmodule ArrowWeb.DisruptionV2View.Calendar do
            route_id: route_id
          },
          event_title,
-         is_active
+         status
        ) do
     day_numbers =
       day_of_weeks
@@ -58,13 +58,13 @@ defmodule ArrowWeb.DisruptionV2View.Calendar do
       {event_start, event_end} ->
         %{
           title: event_title,
-          classNames: "kind-#{route_class(route_id)} status-#{status_class(is_active)}",
+          classNames: "kind-#{route_class(route_id)} status-#{status_class(status)}",
           start: event_start,
           # end date is treated as exclusive
           end: Date.add(event_end, 1),
           url: Routes.disruption_v2_view_path(Endpoint, :edit, disruption_id),
           extendedProps: %{
-            statusOrder: if(is_active, do: 0, else: 1)
+            statusOrder: if(status == :approved, do: 0, else: 1)
           }
         }
     end)
@@ -78,7 +78,7 @@ defmodule ArrowWeb.DisruptionV2View.Calendar do
            shuttle: %Shuttle{disrupted_route_id: route_id}
          },
          event_title,
-         is_active
+         status
        ) do
     Date.range(start_date, end_date)
     |> Enum.chunk_while([], &chunk_dates/2, &chunk_dates/1)
@@ -87,13 +87,13 @@ defmodule ArrowWeb.DisruptionV2View.Calendar do
       {event_start, event_end} ->
         %{
           title: event_title,
-          classNames: "kind-#{route_class(route_id)} status-#{status_class(is_active)}",
+          classNames: "kind-#{route_class(route_id)} status-#{status_class(status)}",
           start: event_start,
           # end date is treated as exclusive
           end: Date.add(event_end, 1),
           url: Routes.disruption_v2_view_path(Endpoint, :edit, disruption_id),
           extendedProps: %{
-            statusOrder: if(is_active, do: 0, else: 1)
+            statusOrder: if(status == :approved, do: 0, else: 1)
           }
         }
     end)
@@ -119,6 +119,7 @@ defmodule ArrowWeb.DisruptionV2View.Calendar do
   defp route_class(route_id),
     do: route_id |> DisruptionV2.route() |> to_string() |> String.replace("_", "-")
 
-  defp status_class(true), do: "approved"
-  defp status_class(false), do: "pending"
+  defp status_class(:approved), do: "approved"
+  defp status_class(:archived), do: "archived"
+  defp status_class(:pending), do: "pending"
 end

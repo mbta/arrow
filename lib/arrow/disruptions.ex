@@ -230,7 +230,7 @@ defmodule Arrow.Disruptions do
   def get_limits_in_date_range(start_date, end_date) do
     from(l in Limit,
       join: d in assoc(l, :disruption),
-      where: d.is_active == true,
+      where: d.status == :approved,
       where: l.start_date <= ^end_date and l.end_date >= ^start_date,
       preload: [
         :disruption,

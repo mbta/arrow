@@ -43,7 +43,7 @@ defmodule ArrowWeb.DisruptionV2ControllerTest do
     @tag :authenticated
     test "lists disruptions that satisfy the only approved filter", %{conn: conn} do
       insert(:limit,
-        disruption: build(:disruption_v2, title: "Test disruption", is_active: true),
+        disruption: build(:disruption_v2, title: "Test disruption", status: :approved),
         route: build(:gtfs_route, id: "Red")
       )
 
@@ -55,7 +55,7 @@ defmodule ArrowWeb.DisruptionV2ControllerTest do
     @tag :authenticated
     test "doesn't list disruptions that don't satisfy the only approved filter", %{conn: conn} do
       insert(:limit,
-        disruption: build(:disruption_v2, title: "Test disruption", is_active: false),
+        disruption: build(:disruption_v2, title: "Test disruption", status: :pending),
         route: build(:gtfs_route, id: "Red")
       )
 

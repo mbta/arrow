@@ -21,14 +21,14 @@ defmodule Arrow.Disruptions.DisruptionV2Test do
         insert(:disruption_v2,
           title: "A valid disruption",
           mode: :subway,
-          is_active: false,
+          status: :pending,
           description: "A valid disruption",
           limits: [],
           replacement_services: replacement_services
         )
 
       assert %Ecto.Changeset{valid?: true} =
-               DisruptionV2.changeset(disruption, %{is_active: true})
+               DisruptionV2.changeset(disruption, %{status: :approved})
     end
 
     test "can't set as approved if any replacement service uses a non-active shuttle" do
@@ -47,14 +47,14 @@ defmodule Arrow.Disruptions.DisruptionV2Test do
         insert(:disruption_v2,
           title: "An old disruption being reused",
           mode: :subway,
-          is_active: false,
+          status: :pending,
           description: "An old disruption being reused",
           limits: [],
           replacement_services: replacement_services
         )
 
-      assert %Ecto.Changeset{valid?: false, errors: [is_active: {error_msg, []}]} =
-               DisruptionV2.changeset(disruption, %{is_active: true})
+      assert %Ecto.Changeset{valid?: false, errors: [status: {error_msg, []}]} =
+               DisruptionV2.changeset(disruption, %{status: :approved})
 
       assert error_msg =~
                "the following shuttle(s) used by this disruption must be set as 'active' first:"

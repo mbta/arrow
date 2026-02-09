@@ -14,7 +14,7 @@ defmodule ArrowWeb.DisruptionV2LiveTest do
   @update_attrs %{
     title: "the second great molasses disruption",
     mode: "subway",
-    is_active: false,
+    status: :pending,
     description: "there is more"
   }
   @invalid_attrs %{

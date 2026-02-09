@@ -316,7 +316,7 @@ defmodule Arrow.Hastus do
         left_join: trip_route_directions in assoc(exports, :trip_route_directions),
         join: services in assoc(exports, :services),
         join: service_dates in assoc(services, :service_dates),
-        where: disruptions.is_active == true,
+        where: disruptions.status == :approved,
         where:
           fragment(
             "daterange(?, ?, '[]') && daterange(?, ?, '[]')",

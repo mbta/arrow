@@ -428,10 +428,10 @@ CREATE TABLE public.disruptionsv2 (
     id bigint NOT NULL,
     title character varying(255),
     mode character varying(255),
-    is_active boolean,
     description text,
     inserted_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    status character varying(255)
 );
 
 
@@ -2810,3 +2810,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250602151911);
 INSERT INTO public."schema_migrations" (version) VALUES (20251202153220);
 INSERT INTO public."schema_migrations" (version) VALUES (20260108201439);
 INSERT INTO public."schema_migrations" (version) VALUES (20260120151940);
+INSERT INTO public."schema_migrations" (version) VALUES (20260210192525);

@@ -77,7 +77,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Index do
   end
 
   defp apply_only_approved_filter(disruption, %Filters{only_approved?: true}),
-    do: disruption.is_active
+    do: disruption.status == :approved
 
   defp apply_only_approved_filter(_disruption, %Filters{only_approved?: false}),
     do: true

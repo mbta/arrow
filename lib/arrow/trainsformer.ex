@@ -311,7 +311,7 @@ defmodule Arrow.Trainsformer do
         join: services in assoc(exports, :services),
         join: service_dates in assoc(services, :service_dates),
         join: routes in assoc(exports, :routes),
-        where: disruptions.is_active == true,
+        where: disruptions.status == :approved,
         where:
           fragment(
             "daterange(?, ?, '[]') && daterange(?, ?, '[]')",

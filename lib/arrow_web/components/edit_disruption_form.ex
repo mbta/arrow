@@ -42,52 +42,30 @@ defmodule ArrowWeb.EditDisruptionForm do
           </fieldset>
           <%= if @disruption.id do %>
             <fieldset class="w-50 ml-20">
-              <% approved? = normalize_value("checkbox", input_value(@form, :is_active)) %>
+              <% approved? = normalize_value("checkbox", input_value(@form, :status)) %>
               <legend>Approval Status</legend>
-              <div class="form-check">
+              <div
+                :for={{{value, status}, idx} <- Enum.with_index(status_labels())}
+                class={[
+                  "form-check",
+                  input_value(@form, :status) == value && @form[:status].errors != [] && "is-invalid"
+                ]}
+              >
                 <input
-                  name={@form[:is_active].name}
-                  id="status-approved"
-                  class={[
-                    "form-check-input",
-                    approved? && @form[:is_active].errors != [] && "is-invalid"
-                  ]}
+                  name={@form[:status].name}
+                  id={"#{@form[:status].id}-#{idx}"}
+                  class="form-check-input"
                   type="radio"
-                  checked={approved?}
-                  value="true"
+                  checked={input_value(@form, :status) == value}
+                  value={value}
                 />
-                <label for="status-approved" class="form-check-label">
-                  Approved
+                <label for={"#{@form[:status].id}-#{idx}"} class="form-check-label">
+                  {status}
                 </label>
-                <.error
-                  :for={error <- @form[:is_active].errors}
-                  :if={approved? && Phoenix.Component.used_input?(@form[:is_active])}
-                >
-                  {translate_error(error)}
-                </.error>
               </div>
-              <div class="form-check">
-                <input
-                  name={@form[:is_active].name}
-                  id="status-pending"
-                  class={[
-                    "form-check-input",
-                    !approved? && @form[:is_active].errors != [] && "is-invalid"
-                  ]}
-                  type="radio"
-                  checked={!approved?}
-                  value="false"
-                />
-                <label for="status-pending" class="form-check-label">
-                  Pending
-                </label>
-                <.error
-                  :for={error <- @form[:is_active].errors}
-                  :if={!approved? && Phoenix.Component.used_input?(@form[:is_active])}
-                >
-                  {translate_error(error)}
-                </.error>
-              </div>
+              <.error :for={error <- @form[:status].errors}>
+                {translate_error(error)}
+              </.error>
             </fieldset>
           <% end %>
         </div>
@@ -206,7 +184,7 @@ defmodule ArrowWeb.EditDisruptionForm do
   end
 
   defp create_disruption(params, socket) do
-    params = Map.put(params, "is_active", false)
+    params = Map.put(params, "status", :pending)
 
     case Disruptions.create_disruption_v2(params) do
       {:ok, disruption} ->

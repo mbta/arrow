@@ -74,7 +74,7 @@
 
         <td class="col-lg-auto text-center">{format_date(end_date)}</td>
 
-        <td class="col-lg-auto">{if disruption.is_active, do: "Approved", else: "Pending"}</td>
+        <td class="col-lg-auto">{case disruption.status, do: (:approved -> "Approved"; :archived -> "Archived"; _ -> "Pending")}</td>
       </tr>
     <% end %>
   </tbody>

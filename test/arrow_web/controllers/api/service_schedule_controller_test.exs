@@ -9,7 +9,7 @@ defmodule ArrowWeb.API.ServiceScheduleControllerTest do
     test "returns exports and their hastus services for active disruptions", %{conn: conn} do
       line = insert(:gtfs_line, id: "test-line-1", short_name: "TL1", long_name: "Test Line 1")
 
-      inactive_disruption = insert(:disruption_v2, mode: :subway, is_active: false)
+      inactive_disruption = insert(:disruption_v2, mode: :subway, status: :pending)
 
       _inactive_hastus_export =
         export_fixture(%{
@@ -25,7 +25,7 @@ defmodule ArrowWeb.API.ServiceScheduleControllerTest do
           ]
         })
 
-      out_of_range_disruption = insert(:disruption_v2, mode: :subway, is_active: true)
+      out_of_range_disruption = insert(:disruption_v2, mode: :subway, status: :approved)
 
       _out_of_range_hastus_export =
         export_fixture(%{
@@ -41,7 +41,7 @@ defmodule ArrowWeb.API.ServiceScheduleControllerTest do
           ]
         })
 
-      disruption = insert(:disruption_v2, mode: :subway, is_active: true)
+      disruption = insert(:disruption_v2, mode: :subway, status: :approved)
 
       hastus_export =
         export_fixture(%{

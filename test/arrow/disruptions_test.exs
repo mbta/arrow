@@ -10,7 +10,7 @@ defmodule Arrow.DisruptionsTest do
 
     import Arrow.DisruptionsFixtures
 
-    @invalid_attrs %{title: "foobar", description: "barfoo", mode: nil, is_active: true}
+    @invalid_attrs %{title: "foobar", description: "barfoo", mode: nil, status: :approved}
 
     test "list_disruptionsv2/0 returns all disruptionsv2" do
       disruption_v2 = disruption_v2_fixture()
@@ -26,7 +26,7 @@ defmodule Arrow.DisruptionsTest do
       valid_attrs = %{
         title: "the great molasses disruption of 2025",
         mode: "commuter_rail",
-        is_active: true,
+        status: :approved,
         description: "Run for the hills"
       }
 
@@ -35,7 +35,7 @@ defmodule Arrow.DisruptionsTest do
 
       assert disruption_v2.title == valid_attrs.title
       assert to_string(disruption_v2.mode) == valid_attrs.mode
-      assert disruption_v2.is_active == valid_attrs.is_active
+      assert disruption_v2.status == valid_attrs.status
       assert disruption_v2.description == valid_attrs.description
     end
 
@@ -48,7 +48,7 @@ defmodule Arrow.DisruptionsTest do
 
       update_attrs = %{
         title: "some updated name",
-        is_active: true,
+        status: :approved,
         description: "bar",
         mode: "subway"
       }
@@ -58,7 +58,7 @@ defmodule Arrow.DisruptionsTest do
 
       assert disruption_v2.title == update_attrs.title
       assert to_string(disruption_v2.mode) == update_attrs.mode
-      assert disruption_v2.is_active == update_attrs.is_active
+      assert disruption_v2.status == update_attrs.status
       assert disruption_v2.description == update_attrs.description
     end
 

@@ -280,7 +280,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       # Disruption uses *this shuttle* in a replacement service with a current or upcoming timeframe
       bad_disruption1 =
         insert(:disruption_v2,
-          is_active: true,
+          status: :approved,
           replacement_services: [
             build(:replacement_service,
               shuttle: shuttle,
@@ -298,7 +298,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       # Disruption uses *a different shuttle* in a replacement service with a current timeframe
       bad_disruption2 =
         insert(:disruption_v2,
-          is_active: true,
+          status: :approved,
           replacement_services: [
             build(:replacement_service,
               shuttle: shuttle,
@@ -316,7 +316,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       # Disruption uses *a different shuttle* in a replacement service with an upcoming timeframe
       bad_disruption3 =
         insert(:disruption_v2,
-          is_active: true,
+          status: :approved,
           replacement_services: [
             build(:replacement_service,
               shuttle: shuttle,
@@ -335,7 +335,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       # Disruption uses this shuttle and another one in replacement services with past timeframes
       ok_disruption1 =
         insert(:disruption_v2,
-          is_active: true,
+          status: :approved,
           replacement_services: [
             build(:replacement_service,
               shuttle: shuttle,
@@ -353,7 +353,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       # Disruption uses this shuttle and another one in replacement services with future timeframes, but is inactive
       ok_disruption2 =
         insert(:disruption_v2,
-          is_active: false,
+          status: :pending,
           replacement_services: [
             build(:replacement_service,
               shuttle: shuttle,
@@ -371,7 +371,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       # Disruption does not use this shuttle, so it is not affected by this operation
       ok_disruption3 =
         insert(:disruption_v2,
-          is_active: true,
+          status: :approved,
           replacement_services: [
             build(:replacement_service,
               shuttle: other_shuttle,
@@ -405,7 +405,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       # Disruption uses this shuttle in a past replacement service, but has a current limit
       disruption =
         insert(:disruption_v2,
-          is_active: true,
+          status: :approved,
           limits: [
             build(:limit,
               end_date: today,
@@ -438,7 +438,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
 
       insert_disruption_with_hastus_service = fn import?, end_date ->
         insert(:disruption_v2,
-          is_active: true,
+          status: :approved,
           hastus_exports: [
             build(:hastus_export,
               services: [
@@ -495,7 +495,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
       # Disruption uses this shuttle and has only past timeframes + a
       # non-imported HASTUS service with current or future timeframe
       insert(:disruption_v2,
-        is_active: true,
+        status: :approved,
         limits: [
           build(:limit,
             end_date: Date.add(today, -1),
@@ -537,7 +537,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
 
       # Disruption uses this shuttle and has several current / future timeframes, but is inactive
       insert(:disruption_v2,
-        is_active: false,
+        status: :pending,
         limits: [
           build(:limit,
             end_date: today,
@@ -573,7 +573,7 @@ defmodule Arrow.Shuttles.ShuttleTest do
 
       # Disruption does not use this shuttle, so it is not affected by this operation
       insert(:disruption_v2,
-        is_active: true,
+        status: :approved,
         replacement_services: [
           build(:replacement_service,
             shuttle: other_shuttle,
