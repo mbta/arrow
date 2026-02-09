@@ -12,7 +12,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
           zip_binary: binary(),
           routes: [String.t()],
           services: [String.t()],
-          warnings: list({:warning, {any(), {binary(), keyword()}}})
+          warnings: list(validation_message(:warning))
         }
 
   @enforce_keys [
@@ -50,7 +50,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
   @spec extract_data_from_upload(%{path: binary()}) ::
           {:ok,
            {:ok, t()}
-           | {:error, list({:error | :warning, {any(), {binary(), keyword()}}})}}
+           | {:error, list(validation_message(:warning | :error))}}
   def extract_data_from_upload(
         %{path: zip_path},
         unzip_module \\ Unzip,
@@ -705,6 +705,9 @@ defmodule Arrow.Trainsformer.ExportUpload do
     |> Enum.uniq_by(& &1.stop_id)
     |> Enum.map(& &1.stop_id)
   end
+
+  @type validation_message(type) ::
+          {type, {any(), {String.t(), Keyword.t()}}}
 
   defp new_error(key, message, metadata \\ []),
     do: {:error, new_validation_message(key, message, metadata)}
