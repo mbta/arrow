@@ -260,41 +260,64 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     """
   end
 
-  defp export_alert(%{error: {type, {key, {_, metadata} = error_contents}}} = assigns) do
+  attr :error, :any,
+    required: true,
+    doc:
+      "A `Arrow.Trainsformer.ExportUpload.validation_message()` tuple used to render an `<.alert>`"
+
+  attr :myself, Phoenix.Component.CID, doc: "The component instance to send events to"
+
+  def export_alert(%{error: {type, {key, {message, metadata}}}} = assigns) do
     assigns =
       assigns
       |> assign(
         type: type,
         key: key,
-        message: translate_error(error_contents),
-        # If there is a metadata element with the same name as the alert `key`
-        # try to use that as enumerable metadata to report alongside the message
-        enum_metadata:
-          if(is_atom(key) and Enumerable.impl_for(metadata[key]) != nil,
-            do: metadata[key],
-            else: nil
-          )
+        message: message,
+        metadata: metadata
       )
       |> Map.drop([:error])
 
+    alert(assigns)
+  end
+
+  attr :type, :atom, required: true, values: [:error, :warning], doc: "The severity of the alert"
+  attr :message, :string, required: true, doc: "Text used as the summary of the alert"
+  attr :metadata, :list, default: [], doc: "A Keyword list used to add extra content to the alert"
+  attr :key, :any, doc: "Any identifier that can be used to differentiate specific alerts"
+
+  attr :myself, Phoenix.Component.CID, doc: "The component instance to send events to"
+
+  defp alert(assigns) do
     ~H"""
     <ArrowWeb.DisruptionComponents.upload_alert type={@type}>
-      <.alert_message
-        key={@key}
-        message={@message}
-        enum_metadata={@enum_metadata}
+      <strong>{@message}</strong>
+
+      <.alert_content
+        :for={{key, value} <- @metadata}
+        key={key}
+        value={value}
+        alert_key={@key}
         myself={@myself}
       />
     </ArrowWeb.DisruptionComponents.upload_alert>
     """
   end
 
-  defp alert_message(%{key: :stop_id_not_in_gtfs} = assigns) do
+  attr :alert_key, :any, doc: "Any identifier that can be used to differentiate specific alerts"
+
+  attr :key, :atom,
+    required: true,
+    doc: "Atom identifying how the associated data attribute should be rendered"
+
+  attr :value, :any, doc: "Data for rendering"
+  attr :myself, Phoenix.Component.CID, doc: "The component instance to send events to"
+
+  defp alert_content(%{alert_key: :stop_id_not_in_gtfs, key: :items} = assigns) do
     ~H"""
-    {@message}
     <.button
       type="button"
-      class="alert-info d-block"
+      class="alert-info d-block mt-2"
       phx-click="download_invalid_export_stops"
       phx-target={@myself}
     >
@@ -303,12 +326,11 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     """
   end
 
-  defp alert_message(%{key: :invalid_stop_times} = assigns) do
+  defp alert_content(%{alert_key: :invalid_stop_times, key: :rows} = assigns) do
     ~H"""
-    {@message}
     <.button
       type="button"
-      class="alert-info d-block"
+      class="alert-info d-block mt-2"
       phx-click="download_invalid_stop_times"
       phx-target={@myself}
     >
@@ -317,30 +339,18 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     """
   end
 
-  defp alert_message(%{enum_metadata: enum_metadata} = assigns) when not is_nil(enum_metadata) do
+  defp alert_content(%{key: :items} = assigns) do
     ~H"""
-    {@message}
     <ul>
-      <li :for={element <- @enum_metadata}>{element}</li>
+      <li :for={item <- @value}>{item}</li>
     </ul>
     """
   end
 
-  defp alert_message(assigns) do
-    assigns =
-      assign_new(assigns, :title, fn ->
-        if(is_binary(assigns[:key]), do: assigns[:key], else: nil)
-      end)
+  defp alert_content(%{key: :message} = assigns), do: ~H"<pre>{@value}</pre>"
+  defp alert_content(%{key: :suggestion} = assigns), do: ~H"<p>{@value}</p>"
 
-    ~H"""
-    <%= if not is_nil(@title) do %>
-      <span :if={not is_nil(@title)} class="font-bold">{@title}</span>
-      <br />
-    <% end %>
-
-    {@message}
-    """
-  end
+  defp alert_content(assigns), do: ~H""
 
   @impl true
   def update(%{export: %{id: nil}} = assigns, socket) do
@@ -414,7 +424,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
       ) do
     stops =
       Enum.find_value(errors, fn
-        {_, {:stop_id_not_in_gtfs, {_, opts}}} -> opts[:stop_id_not_in_gtfs]
+        {_, {:stop_id_not_in_gtfs, {_, opts}}} -> opts[:items]
         _ -> false
       end)
 
@@ -436,7 +446,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
       ) do
     stop_times =
       Enum.find_value(errors, fn
-        {_, {:invalid_stop_times, {_, opts}}} -> opts[:invalid_stop_times]
+        {_, {:invalid_stop_times, {_, opts}}} -> opts[:rows]
         _ -> false
       end)
 
