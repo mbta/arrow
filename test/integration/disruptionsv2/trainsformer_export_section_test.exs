@@ -138,6 +138,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       path: "test/support/fixtures/trainsformer/valid_export.zip"
     )
     |> assert_text("Export contains previously used service_id's")
+    |> assert_text("SPRING2025-SOUTHSS-Weekend-66")
   end
 
   feature "shows error for invalid stop order in trainsformer export", %{session: session} do
