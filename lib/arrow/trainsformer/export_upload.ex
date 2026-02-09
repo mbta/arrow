@@ -383,13 +383,13 @@ defmodule Arrow.Trainsformer.ExportUpload do
       north_station_served and south_station_served ->
         new_warning(
           :invalid_sides,
-          "Export contains trips serving North and South Station"
+          "Export contains trips serving both North Station and South Station"
         )
 
       not north_station_served and not south_station_served ->
         new_warning(
           :invalid_sides,
-          "Export does not contain trips serving North or South Station"
+          "Export does not contain trips serving North Station or South Station"
         )
 
       true ->
