@@ -2,10 +2,8 @@
 -- PostgreSQL database dump
 --
 
-\restrict 162USDnzTVH6AoDpkAVnueTQTvFnNunyreal1sV0AuOxo1ZOXxE0kLpJYW5sHY6
-
--- Dumped from database version 15.15 (Debian 15.15-1.pgdg13+1)
--- Dumped by pg_dump version 15.15 (Homebrew)
+-- Dumped from database version 15.12
+-- Dumped by pg_dump version 15.12
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -2657,7 +2655,7 @@ ALTER TABLE ONLY public.replacement_services
 --
 
 ALTER TABLE ONLY public.service_date_days_of_week
-    ADD CONSTRAINT service_date_days_of_week_service_date_id_fkey FOREIGN KEY (service_date_id) REFERENCES public.trainsformer_service_dates(id) ON DELETE CASCADE;
+    ADD CONSTRAINT service_date_days_of_week_service_date_id_fkey FOREIGN KEY (service_date_id) REFERENCES public.trainsformer_service_dates(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -2713,7 +2711,7 @@ ALTER TABLE ONLY public.shuttles
 --
 
 ALTER TABLE ONLY public.trainsformer_export_routes
-    ADD CONSTRAINT trainsformer_export_routes_export_id_fkey FOREIGN KEY (export_id) REFERENCES public.trainsformer_exports(id);
+    ADD CONSTRAINT trainsformer_export_routes_export_id_fkey FOREIGN KEY (export_id) REFERENCES public.trainsformer_exports(id) ON DELETE CASCADE;
 
 
 --
@@ -2729,7 +2727,7 @@ ALTER TABLE ONLY public.trainsformer_exports
 --
 
 ALTER TABLE ONLY public.trainsformer_service_dates
-    ADD CONSTRAINT trainsformer_service_dates_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.trainsformer_services(id);
+    ADD CONSTRAINT trainsformer_service_dates_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.trainsformer_services(id) ON DELETE CASCADE;
 
 
 --
@@ -2737,14 +2735,12 @@ ALTER TABLE ONLY public.trainsformer_service_dates
 --
 
 ALTER TABLE ONLY public.trainsformer_services
-    ADD CONSTRAINT trainsformer_services_export_id_fkey FOREIGN KEY (export_id) REFERENCES public.trainsformer_exports(id);
+    ADD CONSTRAINT trainsformer_services_export_id_fkey FOREIGN KEY (export_id) REFERENCES public.trainsformer_exports(id) ON DELETE CASCADE;
 
 
 --
 -- PostgreSQL database dump complete
 --
-
-\unrestrict 162USDnzTVH6AoDpkAVnueTQTvFnNunyreal1sV0AuOxo1ZOXxE0kLpJYW5sHY6
 
 INSERT INTO public."schema_migrations" (version) VALUES (20191223181419);
 INSERT INTO public."schema_migrations" (version) VALUES (20191223181443);

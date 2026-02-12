@@ -42,7 +42,6 @@ defmodule ArrowWeb.EditDisruptionForm do
           </fieldset>
           <%= if @disruption.id do %>
             <fieldset class="w-50 ml-20">
-              <% approved? = normalize_value("checkbox", input_value(@form, :status)) %>
               <legend>Approval Status</legend>
               <div
                 :for={{{value, status}, idx} <- Enum.with_index(status_labels())}

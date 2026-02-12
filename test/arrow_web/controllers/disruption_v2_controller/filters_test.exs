@@ -85,6 +85,7 @@ defmodule ArrowWeb.DisruptionV2Controller.FiltersTest do
       assert Filters.flatten(calendar_filters) == %{
                kinds: kinds,
                only_approved?: false,
+               only_archived?: false,
                search: "test"
              }
 
@@ -93,6 +94,7 @@ defmodule ArrowWeb.DisruptionV2Controller.FiltersTest do
         search: "test",
         include_past?: true,
         only_approved?: false,
+        only_archived?: false,
         sort: %{start_date: :asc, end_date: :desc},
         active_sort: :start_date
       }
@@ -108,6 +110,7 @@ defmodule ArrowWeb.DisruptionV2Controller.FiltersTest do
       assert Filters.resettable?(%Filters{search: "test"})
       assert Filters.resettable?(%Filters{view: %Table{include_past?: true}})
       assert Filters.resettable?(%Filters{only_approved?: true})
+      assert Filters.resettable?(%Filters{only_archived?: true})
     end
 
     test "does not treat the sort field of the table view as resettable" do
@@ -121,6 +124,7 @@ defmodule ArrowWeb.DisruptionV2Controller.FiltersTest do
         search: "test",
         kinds: set(~w(red_line)),
         only_approved?: true,
+        only_archived?: true,
         view: %Table{include_past?: true}
       }
 
@@ -143,6 +147,32 @@ defmodule ArrowWeb.DisruptionV2Controller.FiltersTest do
     test "removes the given kind from the kinds filter if it is present" do
       filters = %Filters{kinds: set(~w(red_line blue_line)a)}
       assert Filters.toggle_kind(filters, :red_line) == %Filters{kinds: set(~w(blue_line)a)}
+    end
+  end
+
+  describe "toggle_only_approved/1" do
+    test "toggles only showing approved disruptions" do
+      assert Filters.toggle_only_approved(%Filters{only_approved?: false}) == %Filters{
+               only_approved?: true
+             }
+
+      assert Filters.toggle_only_approved(%Filters{only_approved?: true}) == %Filters{
+               only_approved?: false
+             }
+    end
+  end
+
+  describe "toggle_only_archived/1" do
+    test "toggle_only_archived toggles only_archived? and turns off only_approved?" do
+      assert Filters.toggle_only_archived(%Filters{only_archived?: false}) == %Filters{
+               only_archived?: true,
+               only_approved?: false
+             }
+
+      assert Filters.toggle_only_archived(%Filters{only_archived?: true}) == %Filters{
+               only_archived?: false,
+               only_approved?: false
+             }
     end
   end
 

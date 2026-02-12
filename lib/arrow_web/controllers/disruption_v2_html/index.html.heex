@@ -60,6 +60,13 @@
       to: update_filters_path(@conn, Filters.toggle_only_approved(@filters))
     )}
 
+    {link("archived",
+      class:
+        "mx-2 btn btn-outline-secondary" <>
+          if(@filters.only_archived?, do: " active", else: ""),
+      to: update_filters_path(@conn, Filters.toggle_only_archived(@filters))
+    )}
+
     {link("⬒ #{if(Filters.calendar?(@filters), do: "list", else: "calendar")} view",
       class: "ml-auto btn btn-outline-secondary",
       to: update_filters_path(@conn, Filters.toggle_view(@filters))

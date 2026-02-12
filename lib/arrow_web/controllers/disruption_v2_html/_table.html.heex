@@ -74,7 +74,13 @@
 
         <td class="col-lg-auto text-center">{format_date(end_date)}</td>
 
-        <td class="col-lg-auto">{case disruption.status, do: (:approved -> "Approved"; :archived -> "Archived"; _ -> "Pending")}</td>
+        <td class="col-lg-auto">
+          {case disruption.status do
+            :approved -> "Approved"
+            :archived -> "Archived"
+            _ -> "Pending"
+          end}
+        </td>
       </tr>
     <% end %>
   </tbody>
