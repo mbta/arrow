@@ -42,11 +42,6 @@ defmodule ArrowWeb.DisruptionComponents do
         <div class="w-50">
           <h4>Approval Status</h4>
           <p>
-            <span
-              class="m-icon m-icon-sm mr-1"
-              style={"background-image: url('#{Map.get(@icon_paths, @disruption.status)}');"}
-            >
-            </span>
             {status_labels()[@disruption.status]}
           </p>
         </div>

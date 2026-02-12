@@ -42,7 +42,6 @@ defmodule ArrowWeb.EditDisruptionForm do
           </fieldset>
           <%= if @disruption.id do %>
             <fieldset class="w-50 ml-20">
-              <% approved? = normalize_value("checkbox", input_value(@form, :status)) %>
               <legend>Approval Status</legend>
               <div
                 :for={{{value, status}, idx} <- Enum.with_index(status_labels())}
@@ -56,7 +55,7 @@ defmodule ArrowWeb.EditDisruptionForm do
                   id={"#{@form[:status].id}-#{idx}"}
                   class="form-check-input"
                   type="radio"
-                  checked={input_value(@form, :status) == value}
+                  checked={Ecto.Changeset.get_field(@form[:status].form.source, :status) == value}
                   value={value}
                 />
                 <label for={"#{@form[:status].id}-#{idx}"} class="form-check-label">

@@ -41,27 +41,83 @@ defmodule ArrowWeb.DisruptionV2ControllerTest do
     end
 
     @tag :authenticated
-    test "lists disruptions that satisfy the only approved filter", %{conn: conn} do
+    test "lists only disruptions that satisfy the only_approved filter", %{conn: conn} do
+      route = insert(:gtfs_route)
+
       insert(:limit,
-        disruption: build(:disruption_v2, title: "Test disruption", status: :approved),
-        route: build(:gtfs_route, id: "Red")
+        disruption: build(:disruption_v2, title: "Pending disruption", status: :pending),
+        route: route
+      )
+
+      insert(:limit,
+        disruption: build(:disruption_v2, title: "Approved disruption", status: :approved),
+        route: route
+      )
+
+      insert(:limit,
+        disruption: build(:disruption_v2, title: "Archived disruption", status: :archived),
+        route: route
       )
 
       resp = conn |> get(~p"/?only_approved=true") |> html_response(200)
 
-      assert resp =~ "Test disruption"
+      refute resp =~ "Pending disruption"
+      assert resp =~ "Approved disruption"
+      refute resp =~ "Archived disruption"
     end
 
     @tag :authenticated
-    test "doesn't list disruptions that don't satisfy the only approved filter", %{conn: conn} do
+    test "lists only disruptions that satisfy the only_archived filter", %{conn: conn} do
+      route = insert(:gtfs_route)
+
       insert(:limit,
-        disruption: build(:disruption_v2, title: "Test disruption", status: :pending),
-        route: build(:gtfs_route, id: "Red")
+        disruption: build(:disruption_v2, title: "Pending disruption", status: :pending),
+        route: route
       )
 
-      resp = conn |> get(~p"/?only_approved=true") |> html_response(200)
+      insert(:limit,
+        disruption: build(:disruption_v2, title: "Approved disruption", status: :approved),
+        route: route
+      )
 
-      refute resp =~ "Test disruption"
+      insert(:limit,
+        disruption: build(:disruption_v2, title: "Archived disruption", status: :archived),
+        route: route
+      )
+
+      resp = conn |> get(~p"/?only_archived=true") |> html_response(200)
+
+      refute resp =~ "Pending disruption"
+      refute resp =~ "Approved disruption"
+      assert resp =~ "Archived disruption"
+    end
+
+    @tag :authenticated
+    test "When there's no filter, lists approved and pending but not archived disruptions", %{
+      conn: conn
+    } do
+      route = insert(:gtfs_route)
+
+      insert(:limit,
+        disruption: build(:disruption_v2, title: "Pending disruption", status: :pending),
+        route: route
+      )
+
+      insert(:limit,
+        disruption: build(:disruption_v2, title: "Approved disruption", status: :approved),
+        route: route
+      )
+
+      insert(:limit,
+        disruption: build(:disruption_v2, title: "Archived disruption", status: :archived),
+        route: route
+      )
+
+      resp = conn |> get(~p"/") |> html_response(200)
+
+      assert resp =~ "Pending disruption"
+      assert resp =~ "Approved disruption"
+      refute resp =~ "Archived disruption"
     end
 
     @tag :authenticated

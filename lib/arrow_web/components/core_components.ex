@@ -589,6 +589,7 @@ defmodule ArrowWeb.CoreComponents do
 
   attr :shuttle, :any, required: true, doc: "Currently selected shuttle, if any"
   attr :only_approved?, :boolean, default: false
+  attr :only_archived?, :boolean, default: false
 
   attr :label, :string, default: "Stop ID"
   attr :class, :string, default: nil
@@ -606,6 +607,7 @@ defmodule ArrowWeb.CoreComponents do
       field={@field}
       shuttle={@shuttle}
       only_approved?={@only_approved?}
+      only_archived?={@only_archived?}
       class={@class}
     />
     """

@@ -1,4 +1,7 @@
 defmodule Arrow.Repo.Migrations.ArchivedStatus do
+  # excellent_migrations:safety-assured-for-this-file raw_sql_executed
+  # excellent_migrations:safety-assured-for-this-file column_removed
+  # excellent_migrations:safety-assured-for-this-file column_added_with_default
   use Ecto.Migration
 
   def up do

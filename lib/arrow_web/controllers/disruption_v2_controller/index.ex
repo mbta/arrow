@@ -36,7 +36,8 @@ defmodule ArrowWeb.DisruptionV2Controller.Index do
 
   defp accept?(disruption, filters) do
     apply_kinds_filter(disruption, filters) and apply_only_approved_filter(disruption, filters) and
-      apply_past_filter(disruption, filters) and apply_search_filter(disruption, filters)
+      apply_only_archived_filter(disruption, filters) and apply_past_filter(disruption, filters) and
+      apply_search_filter(disruption, filters)
   end
 
   defp sort(disruptions, %Filters{view: %Table{sort: sort_state, active_sort: sort_field}}) do
@@ -81,6 +82,13 @@ defmodule ArrowWeb.DisruptionV2Controller.Index do
 
   defp apply_only_approved_filter(_disruption, %Filters{only_approved?: false}),
     do: true
+
+  defp apply_only_archived_filter(disruption, %Filters{only_archived?: true}),
+    do: disruption.status == :archived
+
+  # Do NOT show archived disruptions if the only_archived filter is off.
+  defp apply_only_archived_filter(disruption, %Filters{only_archived?: false}),
+    do: disruption.status != :archived
 
   defp apply_past_filter(disruption, %Filters{view: %Table{include_past?: false}}) do
     cutoff = Date.utc_today() |> Date.add(-7)
