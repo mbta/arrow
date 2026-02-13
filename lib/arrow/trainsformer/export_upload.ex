@@ -8,24 +8,20 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
   require Logger
 
+  use Gettext, backend: ArrowWeb.Gettext
+
   @type t :: %__MODULE__{
           zip_binary: binary(),
-          one_of_north_south_stations: :ok | :both | :neither,
           routes: [String.t()],
           services: [String.t()],
-          missing_routes: [String.t()],
-          invalid_routes: [String.t()],
-          trips_missing_transfers: MapSet.t()
+          warnings: list(validation_message(:warning))
         }
 
   @enforce_keys [
     :zip_binary,
-    :one_of_north_south_stations,
     :routes,
     :services,
-    :missing_routes,
-    :invalid_routes,
-    :trips_missing_transfers
+    :warnings
   ]
   defstruct @enforce_keys
 
@@ -56,33 +52,19 @@ defmodule Arrow.Trainsformer.ExportUpload do
   @spec extract_data_from_upload(%{path: binary()}) ::
           {:ok,
            {:ok, t()}
-           | {:error, {:invalid_stop_times, any()}}}
-          | {:error, {:invalid_export_stops, [String.t()]}}
-          | {:error, {:existing_service_id, [String.t()]}}
+           | {:error, list(validation_message(:warning | :error))}}
   def extract_data_from_upload(
         %{path: zip_path},
         unzip_module \\ Unzip,
         import_helper \\ Arrow.Gtfs.ImportHelper
       ) do
-    zip_bin = Unzip.LocalFile.open(zip_path)
-
-    with {:ok, unzip} <- Unzip.new(zip_bin),
+    with {:ok, unzip_handle} <- open_zip(zip_path),
+         {:ok, unzip} <- new_unzip(unzip_handle),
          {:ok, %{trips: trips, stop_times: stop_times, transfers: transfers}} <-
            validate_csvs(unzip, unzip_module, import_helper),
-         {:ok, stop_ids} <-
-           validate_stop_times_in_gtfs(stop_times),
-         :ok <- validate_stop_order(stop_times),
-         :ok <- validate_unique_service_ids(trips),
-         {:ok, zip_bin} <- File.read(zip_path) do
-      one_of_north_south_stations = validate_one_of_north_south_stations(stop_ids)
-      {missing_routes, invalid_routes} = validate_one_or_all_routes_from_one_side(trips)
-
-      trips_missing_transfers =
-        case validate_transfers(transfers, stop_times) do
-          :ok -> MapSet.new()
-          {:error, {:trips_missing_transfers, invalid_trips}} -> invalid_trips
-        end
-
+         {:ok, warnings} <-
+           validate_export_data(trips, stop_times, transfers),
+         {:ok, zip_bin} <- read_zip_binary(zip_path) do
       {routes, services} =
         trips
         |> Enum.reduce(
@@ -113,23 +95,111 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
       export_data = %__MODULE__{
         zip_binary: zip_bin,
-        one_of_north_south_stations: one_of_north_south_stations,
-        missing_routes: missing_routes,
-        invalid_routes: invalid_routes,
         routes: route_maps,
         services: service_maps,
-        trips_missing_transfers: trips_missing_transfers
+        warnings: warnings
       }
 
       {:ok, {:ok, export_data}}
     else
-      errors ->
-        {:ok, errors}
-    end
-  rescue
-    e ->
       # Must be wrapped in an ok tuple for caller, consume_uploaded_entry/3
-      {:ok, {:error, "Could not parse zip, message=#{Exception.format(:error, e)}"}}
+      errors when is_list(errors) ->
+        {:ok, {:error, errors}}
+
+      {:error, _} = error ->
+        {:ok, {:error, List.wrap(error)}}
+    end
+  end
+
+  defp new_unzip(unzip_handle) do
+    case Unzip.new(unzip_handle) do
+      {:ok, _} = ok_result ->
+        ok_result
+
+      {:error, error_message} ->
+        new_error(:zip_file, gettext("Invalid ZIP file."), message: error_message)
+    end
+  end
+
+  # NOTE: Consider moving to `Arrow.Gtfs.ImportHelper`?...
+  defp open_zip(zip_path) do
+    # `Unzip.LocalFile.open` is a very simple implementation and, (as of writing)
+    # simply expects that `:file.open` succeeds and pattern matches on that success.
+    # But due to the pattern match, the errors aren't very clear, helpful, or useful
+    # for users not familiar with Elixir/Erlang `:file` or this application.
+    #
+    # We could consider making our own `LocalFile` implementation, but really the
+    # only issue with it is it's error reporting, and we're unlikely to hit any
+    # of those issues.
+    #
+    # Per https://www.erlang.org/docs/28/apps/kernel/file.html#open/2
+    # These are the "typical" errors that `:file.open` could return, and why they
+    # may or may not apply:
+    #
+    # > `enoent` - The file does not exist.
+    # It'd be very strange if Phoenix gave us a file that didn't exist, not user actionable.
+    #
+    # > `eacces` - Missing permission for reading the file or searching one of the parent directories.
+    # It'd also be strange if Phoenix gave us a file that it wrote, but didn't have permissions for, not user actionable
+    #
+    # > `eisdir` - The named file is a directory.
+    # This would also be strange for Phoenix to give us a directory,
+    # _could_ be a security issue[^security-issue] if somehow we did receive a directory.
+    #
+    # [^security-issue]: (because that would mean that the "attacker" has gained control of Phoenix
+    # in a way we don't _currently_ expect)
+    #
+    # > `enospc` - There is no space left on the device (if write access was specified).
+    # This seems like the most likely error we'd get, but it's also not user actionable.
+    #
+    # Running out of space on our instance would likely mean we have bigger problems
+    # and not something we could "error handle" our way out of.
+    {:ok, Unzip.LocalFile.open(zip_path)}
+  rescue
+    error ->
+      new_error(
+        :zip_file,
+        gettext("Failed to open ZIP file"),
+        message: Exception.format(:error, error),
+        suggestion: gettext("Please report this error to Arrow Developers")
+      )
+  end
+
+  defp read_zip_binary(zip_path) do
+    case File.read(zip_path) do
+      {:ok, _} = result ->
+        result
+
+      {:error, posix} ->
+        new_error(
+          :zip_file,
+          gettext("Failed to read ZIP file contents"),
+          posix_error: posix,
+          message: :file.format_error(posix),
+          suggestion: gettext("Please report this error to Arrow Developers")
+        )
+    end
+  end
+
+  defp validate_export_data(trips, stop_times, transfers) do
+    stop_ids = get_stop_ids(stop_times)
+
+    errors_and_warnings =
+      [
+        validate_stop_ids_in_gtfs(stop_ids),
+        validate_stop_order(stop_times),
+        validate_unique_service_ids(trips),
+        validate_one_of_north_south_stations(stop_ids),
+        validate_one_or_all_routes_from_one_side(trips),
+        validate_transfers(transfers, stop_times)
+      ]
+      |> Enum.reject(&(&1 == :ok))
+
+    if Enum.any?(errors_and_warnings, &match?({:error, _}, &1)) do
+      errors_and_warnings
+    else
+      {:ok, errors_and_warnings}
+    end
   end
 
   defp validate_unique_service_ids(trips) do
@@ -145,43 +215,60 @@ defmodule Arrow.Trainsformer.ExportUpload do
           where: s.name in ^export_service_ids
       )
 
-    if Enum.empty?(existing_service_ids_intersection) do
-      :ok
+    if Enum.any?(existing_service_ids_intersection) do
+      new_error(
+        :existing_service_ids,
+        ngettext(
+          "A Service ID already exists.",
+          "%{count} Service ID's already exist.",
+          length(existing_service_ids_intersection)
+        ),
+        items: existing_service_ids_intersection,
+        suggestion:
+          ngettext(
+            "Please change this Service ID in your upload to continue.",
+            "Please change these Service ID's in your upload to continue.",
+            length(existing_service_ids_intersection)
+          )
+      )
     else
-      {:error, {:existing_service_id, existing_service_ids_intersection}}
+      :ok
     end
   end
 
-  def validate_stop_times_in_gtfs(
-        stop_times,
+  def validate_stop_ids_in_gtfs(
+        stop_ids,
         repo \\ Arrow.Repo
       ) do
-    trainsformer_stop_ids =
-      stop_times
-      |> Enum.uniq_by(& &1.stop_id)
-      |> Enum.map(& &1.stop_id)
-
     gtfs_stop_ids =
       MapSet.new(
         repo.all(
           from s in Arrow.Gtfs.Stop,
-            where: s.id in ^trainsformer_stop_ids,
+            where: s.id in ^stop_ids,
             select: s.id
         )
       )
 
     stops_missing_from_gtfs =
-      Enum.filter(trainsformer_stop_ids, fn stop -> !MapSet.member?(gtfs_stop_ids, stop) end)
+      Enum.reject(stop_ids, fn stop -> MapSet.member?(gtfs_stop_ids, stop) end)
 
     if Enum.any?(stops_missing_from_gtfs) do
-      {:error, {:invalid_export_stops, stops_missing_from_gtfs}}
+      new_error(
+        :stop_id_not_in_gtfs,
+        ngettext(
+          "Export has a stop not present in GTFS.",
+          "Export has %{count} stops not present in GTFS.",
+          length(stops_missing_from_gtfs)
+        ),
+        items: stops_missing_from_gtfs
+      )
     else
-      {:ok, trainsformer_stop_ids}
+      :ok
     end
   end
 
   @spec validate_stop_order(any()) ::
-          :ok | {:error, {:invalid_stop_times, any()}} | {:ok, {:error, <<_::160>>}}
+          :ok | {:error, {:invalid_stop_times, {binary(), keyword()}}}
   def validate_stop_order(stop_times) do
     trainsformer_trips =
       Enum.group_by(stop_times, & &1.trip_id)
@@ -190,7 +277,15 @@ defmodule Arrow.Trainsformer.ExportUpload do
       Enum.flat_map(trainsformer_trips, &validate_trip(&1))
 
     if Enum.any?(invalid_stop_times) do
-      {:error, {:invalid_stop_times, invalid_stop_times}}
+      new_error(
+        :invalid_stop_times,
+        ngettext(
+          "Export contains trips with one out-of-order stop time.",
+          "Export contains trips with %{count} out-of-order stop times.",
+          length(invalid_stop_times)
+        ),
+        rows: invalid_stop_times
+      )
     else
       :ok
     end
@@ -288,10 +383,18 @@ defmodule Arrow.Trainsformer.ExportUpload do
     trips_needing_transfers_without_transfers =
       MapSet.difference(trips_needing_transfers, trips_with_transfers)
 
-    if Enum.empty?(trips_needing_transfers_without_transfers) do
-      :ok
+    if Enum.any?(trips_needing_transfers_without_transfers) do
+      new_warning(
+        :trips_missing_transfers,
+        ngettext(
+          "A train trip that does not serve North Station, South Station, or Foxboro lacks a transfer.",
+          "%{count} train trips that do not serve North Station, South Station, or Foxboro lack transfers.",
+          MapSet.size(trips_needing_transfers_without_transfers)
+        ),
+        items: trips_needing_transfers_without_transfers
+      )
     else
-      {:error, {:trips_missing_transfers, trips_needing_transfers_without_transfers}}
+      :ok
     end
   end
 
@@ -309,19 +412,23 @@ defmodule Arrow.Trainsformer.ExportUpload do
   end
 
   @spec validate_one_of_north_south_stations(any()) ::
-          :ok
-          | :both
-          | :neither
+          :ok | {:warning, {:invalid_sides, {binary(), keyword()}}}
   def validate_one_of_north_south_stations(trainsformer_stop_ids) do
     north_station_served = Enum.member?(trainsformer_stop_ids, "BNT-0000")
     south_station_served = Enum.member?(trainsformer_stop_ids, "NEC-2287")
 
     cond do
       north_station_served and south_station_served ->
-        :both
+        new_warning(
+          :invalid_sides,
+          gettext("Export contains trips serving both North Station and South Station.")
+        )
 
       not north_station_served and not south_station_served ->
-        :neither
+        new_warning(
+          :invalid_sides,
+          gettext("Export does not contain trips serving North Station or South Station.")
+        )
 
       true ->
         :ok
@@ -343,9 +450,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
   # We require all of the routes from one side to be present,
   # or a single route.
-  # Returns {missing_routes, invalid_routes}
   @spec validate_one_or_all_routes_from_one_side(any()) ::
-          {[String.t()], [String.t()]}
+          :ok | {:warning, {:missing_routes | :invalid_routes, {binary(), keyword()}}}
   def validate_one_or_all_routes_from_one_side(trips) do
     trainsformer_route_ids =
       trips
@@ -368,23 +474,43 @@ defmodule Arrow.Trainsformer.ExportUpload do
 
     cond do
       length(trainsformer_route_ids) == 1 ->
-        {[], []}
+        :ok
 
       num_southside_routes_missing == 0 ->
-        {[], []}
+        :ok
 
       num_northside_routes_missing == 0 ->
-        {[], []}
+        :ok
 
       num_southside_routes_missing < length(@southside_route_ids) ->
-        {southside_routes_missing, []}
+        new_warning(
+          :missing_routes,
+          ngettext(
+            "Export is missing a Southside route.",
+            "Export is missing %{count} Southside routes.",
+            num_southside_routes_missing
+          ),
+          items: southside_routes_missing
+        )
 
       num_northside_routes_missing < length(@northside_route_ids) ->
-        {northside_routes_missing, []}
+        new_warning(
+          :missing_routes,
+          ngettext(
+            "Export is missing a Northside route.",
+            "Export is missing %{count} Northside routes.",
+            num_northside_routes_missing
+          ),
+          items: northside_routes_missing
+        )
 
       # More than one route, and they all aren't in @northside_route_ids or @southside_route_ids
       true ->
-        {[], trainsformer_route_ids}
+        new_warning(
+          :invalid_routes,
+          gettext("Multiple routes not north or southside."),
+          items: trainsformer_route_ids
+        )
     end
   end
 
@@ -552,10 +678,17 @@ defmodule Arrow.Trainsformer.ExportUpload do
     {errors, Map.put(result, data_type, rows)}
   rescue
     e ->
-      {[
-         {:error, entry.file_name, Exception.format(:error, e)}
-         | errors
-       ], result}
+      {
+        [
+          new_error(
+            entry.file_name,
+            gettext("Failed to parse file %{filename}", filename: entry.file_name),
+            message: Exception.format(:error, e)
+          )
+          | errors
+        ],
+        result
+      }
   end
 
   @files_to_parse ["trips.txt", "transfers.txt", "stop_times.txt"]
@@ -619,4 +752,50 @@ defmodule Arrow.Trainsformer.ExportUpload do
       _ -> nil
     end
   end
+
+  defp get_stop_ids(stop_times) do
+    stop_times
+    |> Enum.uniq_by(& &1.stop_id)
+    |> Enum.map(& &1.stop_id)
+  end
+
+  @type validation_message(type) ::
+          {type, {any(), {String.t(), Keyword.t()}}}
+
+  defp new_error(key, message, metadata),
+    do: {:error, new_validation_message(key, message, metadata)}
+
+  defp new_warning(key, message, metadata \\ []),
+    do: {:warning, new_validation_message(key, message, metadata)}
+
+  # This function returns a data structure that follows similarly to how Ecto
+  # changesets encode errors
+  #
+  # Ecto changesets have a structure of
+  # ```
+  # {key, {message, keys}}
+  # ```
+  # where
+  # - `key` is the field the error is related to
+  # - `message` is the templated message that describes the error
+  # - `keys` is a keyword list of metadata that can be used to "hydrate" the `message`
+  #
+  # This structure is valuable for a few reasons:
+  # 1. `ArrowWeb.CoreComponents.translate_error/1` takes a `{msg, opts}`
+  #     structure by default, which was a decent place to build off of
+  #     due to how it mirrors/consumes Ecto `{message, keys}` data
+  #
+  # 2. Having the `message` and `keys` wrapped together means there's less
+  #     modifications that need to be done when grouping by `key`
+  #
+  # 3. Having this all be it's own tuple, rather than a 4 element tuple when
+  #     combined with an error, such as: `{:error, new_validation_message(...)}`
+  #     has similar value to #2, i.e., you don't need to write as
+  #     many match cases to extract values from the tuple if you're only dealing
+  #     with checking the "type" or "key" values
+  #
+  #     a downside is that it does complicate extracting a single element with the
+  #     `Kernel.elem/2` function.
+  defp new_validation_message(key, message, metadata),
+    do: {key, {message, metadata}}
 end

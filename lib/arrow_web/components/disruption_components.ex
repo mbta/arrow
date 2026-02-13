@@ -725,4 +725,24 @@ defmodule ArrowWeb.DisruptionComponents do
     </div>
     """
   end
+
+  attr :type, :atom, required: true, values: [:error, :warning]
+  slot :inner_block, required: true
+
+  def upload_alert(assigns) do
+    assigns =
+      assign(assigns,
+        alert_type:
+          case assigns[:type] do
+            :error -> "alert-danger"
+            :warning -> "alert-warning"
+          end
+      )
+
+    ~H"""
+    <ArrowWeb.CoreComponents.error class={"d-block alert #{@alert_type}"}>
+      {render_slot(@inner_block)}
+    </ArrowWeb.CoreComponents.error>
+    """
+  end
 end

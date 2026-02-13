@@ -63,15 +63,9 @@ defmodule Arrow.Shuttles.Route do
   end
 
   defp get_route_shape(route_changeset) do
-    case get_field(route_changeset, :shape) do
-      %Shuttles.Shape{} = shape ->
-        shape
-
-      nil ->
-        case get_field(route_changeset, :shape_id) do
-          nil -> nil
-          shape_id -> Repo.get(Shuttles.Shape, shape_id)
-        end
+    case get_field(route_changeset, :shape_id) do
+      nil -> nil
+      shape_id -> Repo.get(Shuttles.Shape, shape_id)
     end
   end
 
