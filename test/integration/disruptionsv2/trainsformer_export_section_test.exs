@@ -85,7 +85,22 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> attach_file(file_field("trainsformer_export", visible: false),
       path: "test/support/fixtures/trainsformer/invalid_zip.zip"
     )
-    |> assert_text("Invalid zip file")
+    |> assert_text("Invalid ZIP file.")
+    |> assert_text("Invalid zip file, missing EOCD record")
+  end
+
+  feature "reports invalid CSV errors", %{session: session} do
+    disruption = disruption_v2_fixture(%{mode: :commuter_rail})
+
+    session
+    |> visit("/disruptions/#{disruption.id}")
+    |> click(text("Upload Trainsformer export"))
+    |> assert_text("Upload Trainsformer .zip")
+    |> attach_file(file_field("trainsformer_export", visible: false),
+      path: "test/support/fixtures/trainsformer/invalid_csv.zip"
+    )
+    |> assert_text("Failed to parse file SPRING2025-SOUTHSS-Weekend-66/stop_times.txt")
+    |> assert_text("Row 2 has length 9 instead of expected length 11")
   end
 
   feature "shows error for invalid gtfs stops in trainsformer export", %{session: session} do
@@ -98,7 +113,8 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> attach_file(file_field("trainsformer_export", visible: false),
       path: "test/support/fixtures/trainsformer/invalid_export_stops_missing_from_gtfs.zip"
     )
-    |> assert_text("Some stops are not present in GTFS!")
+    |> assert_text("Export has 118 stops not present in GTFS.")
+    |> assert_has(Query.button("Download list of invalid stops"))
   end
 
   feature "shows error for previously used service_ids in export", %{session: session} do
@@ -123,7 +139,8 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> attach_file(file_field("trainsformer_export", visible: false),
       path: "test/support/fixtures/trainsformer/valid_export.zip"
     )
-    |> assert_text("Export contains previously used service ids")
+    |> assert_text("A Service ID already exists.")
+    |> assert_text("SPRING2025-SOUTHSS-Weekend-66")
   end
 
   feature "shows error for invalid stop order in trainsformer export", %{session: session} do
@@ -136,7 +153,8 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> attach_file(file_field("trainsformer_export", visible: false),
       path: "test/support/fixtures/trainsformer/invalid_export_stop_times_out_of_order.zip"
     )
-    |> assert_text("Some stop times are out of order!")
+    |> assert_text("Export contains trips with 2 out-of-order stop times.")
+    |> assert_has(Query.button("Download list of invalid stop times"))
   end
 
   feature "shows warning for trainsformer export containing North and South Station", %{
@@ -151,7 +169,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> attach_file(file_field("trainsformer_export", visible: false),
       path: "test/support/fixtures/trainsformer/invalid_export_north_and_south_station.zip"
     )
-    |> assert_text("Warning: export contains trips serving North and South Station.")
+    |> assert_text("Export contains trips serving both North Station and South Station.")
   end
 
   feature "shows warning for trainsformer export containing neither North nor South Station", %{
@@ -167,7 +185,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       path:
         "test/support/fixtures/trainsformer/invalid_export_neither_north_nor_south_station.zip"
     )
-    |> assert_text("Warning: export does not contain trips serving North or South Station.")
+    |> assert_text("Export does not contain trips serving North Station or South Station.")
   end
 
   feature "shows warning for trainsformer export containing some but not all routes for a side",
@@ -183,7 +201,8 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> attach_file(file_field("trainsformer_export", visible: false),
       path: "test/support/fixtures/trainsformer/invalid_export_missing_south_side_routes.zip"
     )
-    |> assert_text("Warning: Not all northside or southside routes are present. Missing routes:")
+    |> assert_text("Export is missing 4 Southside routes.")
+    |> assert_text("CR-Greenbush")
   end
 
   feature "shows warning for trainsformer export containing multiple routes that are neither north nor southside",
@@ -199,7 +218,9 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> attach_file(file_field("trainsformer_export", visible: false),
       path: "test/support/fixtures/trainsformer/invalid_export_multiple_no_side_routes.zip"
     )
-    |> assert_text("Warning: multiple routes not north or southside:")
+    |> assert_text("Multiple routes not north or southside.")
+    |> assert_text("CR-Nowhere")
+    |> assert_text("CR-Foxboro")
   end
 
   feature "shows warning for missing transfers in trainsformer export", %{session: session} do
@@ -213,8 +234,9 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       path: "test/support/fixtures/trainsformer/invalid_export_missing_transfers.zip"
     )
     |> assert_text(
-      "Warning: some train trips that do not serve North Station, South Station, or Foxboro lack transfers."
+      "A train trip that does not serve North Station, South Station, or Foxboro lacks a transfer."
     )
+    |> assert_text("Dec14PatsGame-781225-9731")
   end
 
   feature "reports errors about missing service ids and route ids", %{session: session} do
@@ -304,30 +326,43 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
 
     [%{id: export_id} | _] = disruption.trainsformer_exports
 
-    session
-    |> visit("/disruptions/#{disruption.id}/")
-    |> click(Query.css("#edit-export-button-#{export_id}"))
-    |> click(Query.checkbox("Wednesday"))
-    |> fill_in(
-      Query.fillable_field("End Date"),
-      with: "01/28/2026"
-    )
-    |> click(text("Add Another Timeframe"))
-    |> fill_in("Start Date" |> Query.fillable_field() |> Query.at(1), with: "01/30/2026")
-    |> fill_in("End Date" |> Query.fillable_field() |> Query.at(1), with: "02/05/2026")
-    |> click("Monday" |> Query.checkbox() |> Query.at(1))
+    session_before_delete =
+      session
+      |> visit("/disruptions/#{disruption.id}/")
+      |> click(Query.css("#edit-trainsformer-export-button-#{export_id}"))
+      |> click(Query.checkbox("Wednesday"))
+      |> fill_in(
+        Query.fillable_field("End Date"),
+        with: "01/28/2026"
+      )
+      |> click(text("Add Another Timeframe"))
+      |> fill_in("Start Date" |> Query.fillable_field() |> Query.at(1), with: "01/30/2026")
+      |> fill_in("End Date" |> Query.fillable_field() |> Query.at(1), with: "02/05/2026")
+      |> click("Monday" |> Query.checkbox() |> Query.at(1))
+      |> click(text("Save"))
+      |> assert_text("Trainsformer service schedules updated successfully!")
+      |> assert_text("01/21/2026")
+      |> assert_text("01/28/2026")
+      |> assert_text("01/30/2026")
+      |> assert_text("02/05/2026")
+      |> assert_has(".text-primary[name=\"day-of-week-monday\"]" |> Query.css() |> Query.count(2))
+      |> assert_has(
+        ".text-primary[name=\"day-of-week-tuesday\"]"
+        |> Query.css()
+        |> Query.count(1)
+      )
+      |> assert_has(
+        ".text-primary[name=\"day-of-week-wednesday\"]"
+        |> Query.css()
+        |> Query.count(1)
+      )
+
+    # delete second service date
+    session_before_delete
+    |> click(Query.css("#edit-trainsformer-export-button-#{export_id}"))
+    |> click("label span.hero-trash-solid" |> Query.css() |> Query.at(1))
     |> click(text("Save"))
-    |> assert_text("Trainsformer service schedules updated successfully!")
-    |> assert_text("01/21/2026")
-    |> assert_text("01/28/2026")
-    |> assert_text("01/30/2026")
-    |> assert_text("02/05/2026")
-    |> assert_has(".text-primary[name=\"day-of-week-monday\"]" |> Query.css() |> Query.count(2))
-    |> assert_has(".text-primary[name=\"day-of-week-tuesday\"]" |> Query.css() |> Query.count(1))
-    |> assert_has(
-      ".text-primary[name=\"day-of-week-wednesday\"]"
-      |> Query.css()
-      |> Query.count(1)
-    )
+    |> refute_has(text("01/30/2026"))
+    |> refute_has(text("02/05/2026"))
   end
 end

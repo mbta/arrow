@@ -23,8 +23,12 @@ defmodule Arrow.Trainsformer.Service do
   def changeset(service, attrs) do
     service
     |> cast(attrs, [:name, :export_id])
+    |> cast_assoc(:service_dates,
+      with: &ServiceDate.changeset/2,
+      sort_param: :service_dates_sort,
+      drop_param: :service_dates_drop
+    )
     |> validate_required([:name])
-    |> cast_assoc(:service_dates, with: &ServiceDate.changeset/2)
     |> assoc_constraint(:export)
   end
 end

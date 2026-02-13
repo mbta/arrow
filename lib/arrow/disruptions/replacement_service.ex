@@ -52,26 +52,9 @@ defmodule Arrow.Disruptions.ReplacementService do
       :disruption_id,
       :shuttle_id
     ])
-    |> validate_start_date_before_end_date()
+    |> Arrow.Util.Validation.validate_start_date_before_end_date()
     |> assoc_constraint(:shuttle)
     |> assoc_constraint(:disruption)
-  end
-
-  @spec validate_start_date_before_end_date(Ecto.Changeset.t(t())) :: Ecto.Changeset.t(t())
-  defp validate_start_date_before_end_date(changeset) do
-    start_date = get_field(changeset, :start_date)
-    end_date = get_field(changeset, :end_date)
-
-    cond do
-      is_nil(start_date) or is_nil(end_date) ->
-        changeset
-
-      Date.compare(start_date, end_date) == :gt ->
-        add_error(changeset, :start_date, "start date should not be after end date")
-
-      true ->
-        changeset
-    end
   end
 
   def add_timetable(%__MODULE__{} = replacement_service) do

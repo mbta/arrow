@@ -7,7 +7,6 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
   alias Arrow.Trainsformer
   alias Arrow.Trainsformer.Export
   alias Arrow.Trainsformer.ExportUpload
-  alias Arrow.Trainsformer.ServiceDate
   alias Arrow.Trainsformer.ServiceDateDayOfWeek
   alias Phoenix.LiveView.UploadEntry
 
@@ -42,37 +41,9 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
             add a new service schedule
           </h4>
           <h5>Upload a new Trainsformer export</h5>
-          <div :if={not is_nil(@error)} class="alert alert-danger">
-            {@error}
-          </div>
-          <div :if={not is_nil(@invalid_export_stops)} class="d-inline-block p-20 alert alert-danger">
-            Some stops are not present in GTFS!
-            <.button
-              type="button"
-              class="alert-info d-block"
-              phx-click="download_invalid_export_stops"
-              phx-target={@myself}
-            >
-              Download list of invalid stops
-            </.button>
-          </div>
-          <div :if={not is_nil(@invalid_stop_times)} class="d-inline-block p-20 alert alert-danger">
-            Some stop times are out of order!
-            <.button
-              type="button"
-              class="alert-info d-block"
-              phx-click="download_invalid_stop_times"
-              phx-target={@myself}
-            >
-              Download list of invalid stop times
-            </.button>
-          </div>
-          <div :if={not is_nil(@existing_service_ids)} class="d-inline-block p-20 alert alert-danger">
-            Export contains previously used service ids
-            <ul>
-              <li :for={service_id <- @existing_service_ids}>{service_id}</li>
-            </ul>
-          </div>
+
+          <.export_alert :for={error <- @errors} error={error} myself={@myself} />
+
           <div :for={entry <- @uploads.trainsformer_export.entries}>
             <progress value={entry.progress} max="100">
               {entry.progress}%
@@ -153,6 +124,11 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                   </div>
                   <div class="col-lg-9 text-md">
                     <.inputs_for :let={f_date} field={f_service[:service_dates]}>
+                      <input
+                        type="hidden"
+                        name={Phoenix.HTML.Form.input_name(f_service, :service_dates_sort) <> "[]"}
+                        value={f_date.index}
+                      />
                       {f_service[:start_date].value}
                       <div class="row">
                         <div class="col">
@@ -215,15 +191,15 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                           </div>
                         </div>
                         <div class="col">
-                          <.button
-                            type="button"
-                            phx-click="delete_service_date"
-                            phx-value-service_index={f_service.index}
-                            phx-value-date_index={f_date.index}
-                            phx-target={@myself}
-                          >
+                          <label class="cursor-pointer hover:opacity-140">
                             <.icon name="hero-trash-solid" class="bg-primary" />
-                          </.button>
+                            <input
+                              type="checkbox"
+                              name={Phoenix.HTML.Form.input_name(f_service, :service_dates_drop) <> "[]"}
+                              class="hidden"
+                              value={f_date.index}
+                            />
+                          </label>
                         </div>
                       </div>
                       <div class="row">
@@ -240,49 +216,22 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
 
                 <div class="row mt-3">
                   <div class="col-9" />
-                  <.button
-                    type="button"
-                    class="btn h-15 w-15 btn-primary btn-sm "
-                    value={f_service.index}
-                    phx-click="add_service_date"
-                    phx-target={@myself}
-                  >
+                  <label class="btn h-15 w-15 btn-primary btn-sm">
                     Add Another Timeframe
-                  </.button>
+                    <input
+                      type="checkbox"
+                      name={Phoenix.HTML.Form.input_name(f_service, :service_dates_sort) <> "[]"}
+                      class="hidden"
+                      value="new"
+                    />
+                  </label>
                 </div>
               </.inputs_for>
               <.errors field={@form[:services]} always_show />
             </div>
           </div>
 
-          <div :if={@one_of_north_south_stations == :both} class="text-warning mb-3">
-            Warning: export contains trips serving North and South Station.
-          </div>
-
-          <div :if={@one_of_north_south_stations == :neither} class="text-warning mb-3">
-            Warning: export does not contain trips serving North or South Station.
-          </div>
-
-          <div :if={not Enum.empty?(@missing_routes)} class="text-warning mb-3">
-            Warning: Not all northside or southside routes are present. Missing routes:
-            <ul>
-              <li :for={route_id <- @missing_routes}>{route_id}</li>
-            </ul>
-          </div>
-
-          <div :if={not Enum.empty?(@invalid_routes)} class="text-warning mb-3">
-            Warning: multiple routes not north or southside:
-            <ul>
-              <li :for={route_id <- @invalid_routes}>{route_id}</li>
-            </ul>
-          </div>
-
-          <div :if={not Enum.empty?(@trips_missing_transfers)} class="text-warning mb-3">
-            Warning: some train trips that do not serve North Station, South Station, or Foxboro lack transfers.
-            <ul>
-              <li :for={trip_id <- @trips_missing_transfers}>{trip_id}</li>
-            </ul>
-          </div>
+          <.export_alert :for={error <- @errors} error={error} myself={@myself} />
 
           <div class="row">
             <div class="col-lg-4">
@@ -313,22 +262,107 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     """
   end
 
+  attr :error, :any,
+    required: true,
+    doc:
+      "A `Arrow.Trainsformer.ExportUpload.validation_message()` tuple used to render an `<.alert>`"
+
+  attr :myself, Phoenix.Component.CID, doc: "The component instance to send events to"
+
+  def export_alert(%{error: {type, {key, {message, metadata}}}} = assigns) do
+    assigns =
+      assigns
+      |> assign(
+        type: type,
+        key: key,
+        message: message,
+        metadata: metadata
+      )
+      |> Map.drop([:error])
+
+    alert(assigns)
+  end
+
+  attr :type, :atom, required: true, values: [:error, :warning], doc: "The severity of the alert"
+  attr :message, :string, required: true, doc: "Text used as the summary of the alert"
+  attr :metadata, :list, default: [], doc: "A Keyword list used to add extra content to the alert"
+  attr :key, :any, doc: "Any identifier that can be used to differentiate specific alerts"
+
+  attr :myself, Phoenix.Component.CID, doc: "The component instance to send events to"
+
+  defp alert(assigns) do
+    ~H"""
+    <ArrowWeb.DisruptionComponents.upload_alert type={@type}>
+      <strong>{@message}</strong>
+
+      <.alert_content
+        :for={{key, value} <- @metadata}
+        key={key}
+        value={value}
+        alert_key={@key}
+        myself={@myself}
+      />
+    </ArrowWeb.DisruptionComponents.upload_alert>
+    """
+  end
+
+  attr :alert_key, :any, doc: "Any identifier that can be used to differentiate specific alerts"
+
+  attr :key, :atom,
+    required: true,
+    doc: "Atom identifying how the associated data attribute should be rendered"
+
+  attr :value, :any, doc: "Data for rendering"
+  attr :myself, Phoenix.Component.CID, doc: "The component instance to send events to"
+
+  defp alert_content(%{alert_key: :stop_id_not_in_gtfs, key: :items} = assigns) do
+    ~H"""
+    <.button
+      type="button"
+      class="alert-info d-block mt-2"
+      phx-click="download_invalid_export_stops"
+      phx-target={@myself}
+    >
+      Download list of invalid stops
+    </.button>
+    """
+  end
+
+  defp alert_content(%{alert_key: :invalid_stop_times, key: :rows} = assigns) do
+    ~H"""
+    <.button
+      type="button"
+      class="alert-info d-block mt-2"
+      phx-click="download_invalid_stop_times"
+      phx-target={@myself}
+    >
+      Download list of invalid stop times
+    </.button>
+    """
+  end
+
+  defp alert_content(%{key: :items} = assigns) do
+    ~H"""
+    <ul>
+      <li :for={item <- @value}>{item}</li>
+    </ul>
+    """
+  end
+
+  defp alert_content(%{key: :message} = assigns), do: ~H"<pre>{@value}</pre>"
+  defp alert_content(%{key: :suggestion} = assigns), do: ~H"<p>{@value}</p>"
+
+  defp alert_content(assigns), do: ~H""
+
   @impl true
   def update(%{export: %{id: nil}} = assigns, socket) do
     socket =
       socket
       |> assign(assigns)
-      |> assign(:error, nil)
+      |> assign(:errors, [])
       |> assign(:show_upload_form, true)
       |> assign(:show_service_import_form, false)
       |> assign(:form, nil)
-      |> assign(:invalid_export_stops, nil)
-      |> assign(:invalid_stop_times, nil)
-      |> assign(:one_of_north_south_stations, :ok)
-      |> assign(:missing_routes, nil)
-      |> assign(:invalid_routes, nil)
-      |> assign(:trips_missing_transfers, nil)
-      |> assign(:existing_service_ids, nil)
       |> allow_upload(:trainsformer_export,
         accept: ~w(.zip),
         progress: &handle_progress/3,
@@ -347,16 +381,10 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     socket =
       socket
       |> assign(assigns)
+      |> assign(:errors, [])
       |> assign(:show_upload_form, false)
       |> assign(:show_service_import_form, true)
       |> assign(:form, form)
-      |> assign(:invalid_export_stops, nil)
-      |> assign(:invalid_stop_times, nil)
-      |> assign(:one_of_north_south_stations, :ok)
-      |> assign(:missing_routes, [])
-      |> assign(:invalid_routes, [])
-      |> assign(:trips_missing_transfers, [])
-      |> assign(:error, nil)
       |> assign(:uploaded_file_name, nil)
       |> assign(:uploaded_file_routes, nil)
       |> allow_upload(:trainsformer_export,
@@ -394,8 +422,14 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
   def handle_event(
         "download_invalid_export_stops",
         _params,
-        %{assigns: %{invalid_export_stops: stops}} = socket
+        %{assigns: %{errors: errors}} = socket
       ) do
+    stops =
+      Enum.find_value(errors, fn
+        {_, {:stop_id_not_in_gtfs, {_, opts}}} -> opts[:items]
+        _ -> false
+      end)
+
     socket =
       send_download(
         socket,
@@ -410,8 +444,14 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
   def handle_event(
         "download_invalid_stop_times",
         _params,
-        %{assigns: %{invalid_stop_times: stop_times}} = socket
+        %{assigns: %{errors: errors}} = socket
       ) do
+    stop_times =
+      Enum.find_value(errors, fn
+        {_, {:invalid_stop_times, {_, opts}}} -> opts[:rows]
+        _ -> false
+      end)
+
     stop_times_lines =
       Enum.map(stop_times, fn stop_time ->
         "trip_id: #{stop_time[:trip_id]}, stop_id: #{stop_time[:stop_id]}, stop_sequence: #{stop_time[:stop_sequence]}, arrival_time: #{stop_time[:arrival_time]}, departure_time: #{stop_time[:departure_time]}"
@@ -428,60 +468,6 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     {:noreply, socket}
   end
 
-  def handle_event("add_service_date", %{"value" => index}, socket) do
-    {index, _} = Integer.parse(index)
-
-    socket =
-      update(socket, :form, fn %{source: changeset} ->
-        updated_services =
-          changeset
-          |> Ecto.Changeset.get_assoc(:services)
-          |> update_in([Access.at(index)], fn service ->
-            existing_dates = Ecto.Changeset.get_assoc(service, :service_dates)
-
-            Ecto.Changeset.put_change(
-              service,
-              :service_dates,
-              existing_dates ++ [%ServiceDate{service_date_days_of_week: []}]
-            )
-          end)
-
-        changeset
-        |> Ecto.Changeset.put_assoc(:services, updated_services)
-        |> to_form()
-      end)
-
-    {:noreply, socket}
-  end
-
-  def handle_event(
-        "delete_service_date",
-        %{"service_index" => service_index, "date_index" => date_index},
-        socket
-      ) do
-    {service_index, _} = Integer.parse(service_index)
-    {date_index, _} = Integer.parse(date_index)
-
-    socket =
-      update(socket, :form, fn %{source: changeset} ->
-        updated_services =
-          changeset
-          |> Ecto.Changeset.get_assoc(:services)
-          |> update_in([Access.at(service_index)], fn service ->
-            dates =
-              service |> Ecto.Changeset.get_assoc(:service_dates) |> List.delete_at(date_index)
-
-            Ecto.Changeset.put_change(service, :service_dates, dates)
-          end)
-
-        changeset
-        |> Ecto.Changeset.put_assoc(:services, updated_services)
-        |> to_form()
-      end)
-
-    {:noreply, socket}
-  end
-
   defp handle_progress(:trainsformer_export, %UploadEntry{done?: false}, socket) do
     {:noreply, socket}
   end
@@ -491,7 +477,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
          %UploadEntry{client_name: client_name} = entry,
          socket
        ) do
-    socket = socket |> clear_flash() |> assign(error: nil)
+    socket = socket |> clear_flash() |> assign(errors: [])
 
     case consume_uploaded_entry(
            socket,
@@ -516,25 +502,13 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
            show_service_import_form: true,
            uploaded_file_name: client_name,
            uploaded_file_data: export_data.zip_binary,
-           one_of_north_south_stations: export_data.one_of_north_south_stations,
-           missing_routes: export_data.missing_routes,
-           invalid_routes: export_data.invalid_routes,
-           trips_missing_transfers: export_data.trips_missing_transfers,
            uploaded_file_routes: export_data.routes,
-           uploaded_file_services: export_data.services
+           uploaded_file_services: export_data.services,
+           errors: export_data.warnings
          )}
 
-      {:error, {:invalid_export_stops, stops}} ->
-        {:noreply, assign(socket, invalid_export_stops: stops)}
-
-      {:error, {:invalid_stop_times, stop_times}} ->
-        {:noreply, assign(socket, invalid_stop_times: stop_times)}
-
-      {:error, {:existing_service_id, existing_ids}} ->
-        {:noreply, assign(socket, existing_service_ids: existing_ids)}
-
-      {:error, error} ->
-        {:noreply, assign(socket, error: error)}
+      {:error, errors_and_warnings} ->
+        {:noreply, assign(socket, errors: errors_and_warnings)}
     end
   end
 
@@ -577,7 +551,12 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
         {:noreply, assign(socket, form: to_form(changeset))}
 
       {:error, _} ->
-        {:noreply, assign(socket, error: "Failed to upload export to S3")}
+        {:noreply,
+         socket
+         |> update(
+           :errors,
+           &[{:error, {:s3_upload_failed, {"Failed to upload export to S3", []}}} | &1]
+         )}
     end
   end
 end
