@@ -6,7 +6,7 @@ defmodule ArrowWeb.API.LimitControllerTest do
   describe "index/2" do
     @tag :authenticated
     test "returns limits within date range", %{conn: conn} do
-      disruption = insert(:disruption_v2, %{is_active: true, title: "Test Disruption"})
+      disruption = insert(:disruption_v2, %{status: :approved, title: "Test Disruption"})
       route = insert(:gtfs_route)
       start_stop = insert(:gtfs_stop)
       end_stop = insert(:gtfs_stop)
@@ -89,7 +89,7 @@ defmodule ArrowWeb.API.LimitControllerTest do
 
     @tag :authenticated
     test "does not return limits outside date range", %{conn: conn} do
-      disruption = insert(:disruption_v2, %{is_active: true})
+      disruption = insert(:disruption_v2, %{status: :approved})
       route = insert(:gtfs_route)
       start_stop = insert(:gtfs_stop)
       end_stop = insert(:gtfs_stop)
@@ -138,7 +138,7 @@ defmodule ArrowWeb.API.LimitControllerTest do
 
     @tag :authenticated
     test "filters out inactive disruptions", %{conn: conn} do
-      inactive_disruption = insert(:disruption_v2, %{is_active: false})
+      inactive_disruption = insert(:disruption_v2, %{status: :pending})
       route = insert(:gtfs_route)
       start_stop = insert(:gtfs_stop)
       end_stop = insert(:gtfs_stop)
@@ -162,7 +162,7 @@ defmodule ArrowWeb.API.LimitControllerTest do
 
     @tag :authenticated
     test "returns limits that overlap with date range", %{conn: conn} do
-      disruption = insert(:disruption_v2, %{is_active: true})
+      disruption = insert(:disruption_v2, %{status: :approved})
       route = insert(:gtfs_route)
       start_stop = insert(:gtfs_stop)
       end_stop = insert(:gtfs_stop)

@@ -236,8 +236,8 @@ defmodule Arrow.ShuttlesTest do
       # (inactive disruption -> active shuttle is ok, active disruption -> inactive shuttle is not)
       other_shuttle = shuttle_fixture(%{status: :active}, true, true)
 
-      # Associate shuttle with some approved (is_active=true) disruptions with all-past replacement services
-      disruption = insert(:disruption_v2, is_active: true)
+      # Associate shuttle with some approved (status: :approved) disruptions with all-past replacement services
+      disruption = insert(:disruption_v2, status: :approved)
 
       insert(:replacement_service,
         shuttle: shuttle,
@@ -257,7 +257,7 @@ defmodule Arrow.ShuttlesTest do
         end_date: ~D[2025-05-15]
       )
 
-      disruption2 = insert(:disruption_v2, is_active: true)
+      disruption2 = insert(:disruption_v2, status: :approved)
 
       insert(:replacement_service,
         shuttle: shuttle,
@@ -273,7 +273,7 @@ defmodule Arrow.ShuttlesTest do
 
       # An already-inactive disruption that should not be affected, and should not prevent shuttle deactivation
       # despite having a replacement service with an end date in the future
-      disruption3 = insert(:disruption_v2, is_active: false)
+      disruption3 = insert(:disruption_v2, status: :pending)
 
       insert(:replacement_service,
         shuttle: shuttle,
@@ -282,7 +282,7 @@ defmodule Arrow.ShuttlesTest do
       )
 
       # An unrelated disruption that should not be affected
-      disruption4 = insert(:disruption_v2, is_active: true)
+      disruption4 = insert(:disruption_v2, status: :approved)
 
       insert(:replacement_service,
         shuttle: other_shuttle,
@@ -295,14 +295,14 @@ defmodule Arrow.ShuttlesTest do
 
       assert updated_shuttle.status == :inactive
 
-      assert Enum.all?(deactivated_disruptions, &(not &1.is_active))
+      assert Enum.all?(deactivated_disruptions, &(&1.status == :pending))
 
       assert MapSet.new(deactivated_disruptions, & &1.id) ==
                MapSet.new([disruption.id, disruption2.id])
 
-      refute Arrow.Disruptions.get_disruption_v2!(disruption3.id).is_active
+      assert Arrow.Disruptions.get_disruption_v2!(disruption3.id).status == :pending
 
-      assert Arrow.Disruptions.get_disruption_v2!(disruption4.id).is_active
+      assert Arrow.Disruptions.get_disruption_v2!(disruption4.id).status == :approved
 
       assert Shuttles.get_shuttle!(other_shuttle.id).status == :active
     end
@@ -311,7 +311,7 @@ defmodule Arrow.ShuttlesTest do
       today = ~D[2025-06-01]
 
       shuttle = shuttle_fixture(%{status: :active}, true, true)
-      disruption = insert(:disruption_v2, is_active: true)
+      disruption = insert(:disruption_v2, status: :approved)
       insert(:replacement_service, shuttle: shuttle, disruption: disruption, end_date: today)
 
       update_attrs = %{status: :inactive}
@@ -325,7 +325,7 @@ defmodule Arrow.ShuttlesTest do
       assert %{errors: [status: {^expected_error_msg, []}]} = changeset
 
       still_active_disruption = Arrow.Disruptions.get_disruption_v2!(disruption.id)
-      assert still_active_disruption.is_active
+      assert still_active_disruption.status == :approved
     end
 
     test "update_shuttle/2 fails to deactivate shuttle if any active associated disruption exists with a current/upcoming replacement service (including those using different shuttles)" do
@@ -333,7 +333,7 @@ defmodule Arrow.ShuttlesTest do
 
       shuttle = shuttle_fixture(%{status: :active}, true, true)
       other_shuttle = shuttle_fixture(%{status: :active}, true, true)
-      disruption = insert(:disruption_v2, is_active: true)
+      disruption = insert(:disruption_v2, status: :approved)
 
       # Disruption uses this shuttle in the past only, which is ok
       insert(:replacement_service,
@@ -360,7 +360,7 @@ defmodule Arrow.ShuttlesTest do
       assert %{errors: [status: {^expected_error_msg, []}]} = changeset
 
       still_active_disruption = Arrow.Disruptions.get_disruption_v2!(disruption.id)
-      assert still_active_disruption.is_active
+      assert still_active_disruption.status == :approved
     end
 
     test "change_shuttle/1 returns a shuttle changeset" do

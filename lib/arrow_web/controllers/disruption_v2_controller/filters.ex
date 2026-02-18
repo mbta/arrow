@@ -23,10 +23,15 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
   @type t :: %__MODULE__{
           kinds: MapSet.t(atom()),
           only_approved?: boolean(),
+          only_archived?: boolean(),
           view: Calendar.t() | Table.t()
         }
 
-  defstruct kinds: @empty_set, only_approved?: false, search: nil, view: %Table{}
+  defstruct kinds: @empty_set,
+            only_approved?: false,
+            only_archived?: false,
+            search: nil,
+            view: %Table{}
 
   @spec calendar?(%__MODULE__{}) :: boolean
   def calendar?(%__MODULE__{view: %Calendar{}}), do: true
@@ -50,6 +55,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
       kinds:
         params |> Map.get("kinds", []) |> Enum.map(&String.to_existing_atom/1) |> MapSet.new(),
       only_approved?: not is_nil(params["only_approved"]),
+      only_archived?: not is_nil(params["only_archived"]),
       search: search,
       view: view_mod.from_params(params)
     }
@@ -73,7 +79,12 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
 
   @spec toggle_only_approved(t()) :: t()
   def toggle_only_approved(%__MODULE__{only_approved?: only_approved} = filters) do
-    %__MODULE__{filters | only_approved?: !only_approved}
+    %__MODULE__{filters | only_approved?: !only_approved, only_archived?: false}
+  end
+
+  @spec toggle_only_archived(t()) :: t()
+  def toggle_only_archived(%__MODULE__{only_archived?: only_archived} = filters) do
+    %__MODULE__{filters | only_archived?: !only_archived, only_approved?: false}
   end
 
   @spec toggle_view(%__MODULE__{}) :: %__MODULE__{}
@@ -84,6 +95,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
   def to_params(%__MODULE__{
         kinds: kinds,
         only_approved?: only_approved?,
+        only_archived?: only_archived?,
         search: search,
         view: %{__struct__: view_mod} = view
       }) do
@@ -95,6 +107,7 @@ defmodule ArrowWeb.DisruptionV2Controller.Filters do
       kinds |> MapSet.to_list() |> Enum.map(&to_string/1) |> Enum.sort()
     )
     |> put_if(only_approved?, "only_approved", "true")
+    |> put_if(only_archived?, "only_archived", "true")
     |> put_if(not is_nil(search), "search", search)
     |> Map.merge(view_mod.to_params(view))
   end

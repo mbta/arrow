@@ -39,4 +39,11 @@ defmodule ArrowWeb.Helpers do
       bus: "Bus",
       silver_line: "Silver Line"
     ]
+
+  def status_labels,
+    do: [
+      pending: "Pending",
+      approved: "Approved",
+      archived: "Archived"
+    ]
 end

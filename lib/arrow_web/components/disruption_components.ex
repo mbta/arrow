@@ -41,11 +41,9 @@ defmodule ArrowWeb.DisruptionComponents do
         </div>
         <div class="w-50">
           <h4>Approval Status</h4>
-          <%= if @disruption.is_active do %>
-            <p>Approved</p>
-          <% else %>
-            <p>Pending</p>
-          <% end %>
+          <p>
+            {status_labels()[@disruption.status]}
+          </p>
         </div>
       </div>
       <div class="w-full">

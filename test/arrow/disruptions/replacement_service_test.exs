@@ -6,7 +6,7 @@ defmodule Arrow.Disruptions.ReplacementServiceTest do
 
   describe "get_replacement_services_with_timetables/2" do
     test "returns replacement services that overlap with the given date range" do
-      disruption = insert(:disruption_v2, is_active: true)
+      disruption = insert(:disruption_v2, status: :approved)
       shuttle = ShuttlesFixtures.shuttle_fixture(%{status: :active}, true, true)
 
       in_range_service =
@@ -76,8 +76,8 @@ defmodule Arrow.Disruptions.ReplacementServiceTest do
     test "only returns services for active disruptions" do
       shuttle = ShuttlesFixtures.shuttle_fixture(%{status: :active}, true, true)
 
-      active_disruption = insert(:disruption_v2, is_active: true)
-      inactive_disruption = insert(:disruption_v2, is_active: false)
+      active_disruption = insert(:disruption_v2, status: :approved)
+      inactive_disruption = insert(:disruption_v2, status: :pending)
 
       active_service =
         insert(:replacement_service,
@@ -106,7 +106,7 @@ defmodule Arrow.Disruptions.ReplacementServiceTest do
     end
 
     test "builds timetables based on workbook data" do
-      disruption = insert(:disruption_v2, is_active: true)
+      disruption = insert(:disruption_v2, status: :approved)
 
       shuttle = ShuttlesFixtures.shuttle_fixture(%{status: :active}, true, true)
 
@@ -146,7 +146,7 @@ defmodule Arrow.Disruptions.ReplacementServiceTest do
 
     test "in timetables, always includes the last trips specified in workbook data" do
       # ...even if they don't line up exactly with the specified headway cadence.
-      disruption = insert(:disruption_v2, is_active: true)
+      disruption = insert(:disruption_v2, status: :approved)
 
       shuttle = ShuttlesFixtures.shuttle_fixture(%{status: :active}, true, true)
 

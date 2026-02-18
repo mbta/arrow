@@ -428,10 +428,10 @@ defmodule Arrow.Shuttles do
         as: :disruption,
         join: s in assoc(d, :shuttles),
         where: s.id == ^shuttle_id,
-        where: d.is_active,
+        where: d.status == :approved,
         select: d
       )
-      |> Repo.update_all(set: [is_active: false, updated_at: DateTime.utc_now()])
+      |> Repo.update_all(set: [status: :pending, updated_at: DateTime.utc_now()])
 
     if deactivated_disruptions != [] do
       disruption_ids = Enum.map_join(deactivated_disruptions, ",", & &1.id)
