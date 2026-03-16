@@ -366,7 +366,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> refute_has(text("02/05/2026"))
   end
 
-  feature "can edit an uploaded but unsaved Trainsformer export", %{session: session} do
+  feature "can edit an uploaded Trainsformer export before saving", %{session: session} do
     disruption = disruption_v2_fixture(%{mode: :commuter_rail})
 
     session
