@@ -398,12 +398,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
 
   @impl true
   def handle_event("validate", %{"export" => export_params}, socket) do
-    uploaded_file_routes = socket.assigns.uploaded_file_routes
-
-    export_params =
-      if is_nil(uploaded_file_routes),
-        do: export_params,
-        else: Map.put(export_params, "routes", uploaded_file_routes)
+    export_params = Map.put(export_params, "routes", socket.assigns.uploaded_file_routes)
 
     form =
       socket.assigns.export
