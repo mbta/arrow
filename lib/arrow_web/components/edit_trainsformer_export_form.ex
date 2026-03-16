@@ -401,9 +401,9 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
     uploaded_file_routes = socket.assigns.uploaded_file_routes
 
     export_params =
-      if not is_nil(uploaded_file_routes),
-        do: Map.put(export_params, "routes", uploaded_file_routes),
-        else: export_params
+      if is_nil(uploaded_file_routes),
+        do: export_params,
+        else: Map.put(export_params, "routes", uploaded_file_routes)
 
     form =
       socket.assigns.export
