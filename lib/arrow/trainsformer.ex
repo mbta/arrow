@@ -310,6 +310,7 @@ defmodule Arrow.Trainsformer do
         join: disruptions in assoc(exports, :disruption),
         join: services in assoc(exports, :services),
         join: service_dates in assoc(services, :service_dates),
+        join: service_date_days_of_week in assoc(service_dates, :service_date_days_of_week),
         join: routes in assoc(exports, :routes),
         where: disruptions.status == :approved,
         where:
@@ -322,7 +323,9 @@ defmodule Arrow.Trainsformer do
           ),
         preload: [
           disruption: disruptions,
-          services: {services, service_dates: service_dates},
+          services:
+            {services,
+             service_dates: {service_dates, service_date_days_of_week: service_date_days_of_week}},
           routes: routes
         ]
 

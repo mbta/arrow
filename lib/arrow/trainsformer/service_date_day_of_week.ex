@@ -4,6 +4,8 @@ defmodule Arrow.Trainsformer.ServiceDateDayOfWeek do
   use Arrow.Schema
   import Ecto.Changeset
 
+  @derive {Jason.Encoder, only: [:day_name]}
+
   typed_schema "service_date_days_of_week" do
     field :day_name, Ecto.Enum, values: Arrow.Util.DayOfWeek.day_name_values()
     belongs_to :service_date, Arrow.Trainsformer.ServiceDate, on_replace: :delete

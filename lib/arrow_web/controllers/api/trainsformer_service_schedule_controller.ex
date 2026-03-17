@@ -24,7 +24,8 @@ defmodule ArrowWeb.API.TrainsformerServiceScheduleController do
                     service.service_dates,
                     &%{
                       start_date: &1.start_date,
-                      end_date: &1.end_date
+                      end_date: &1.end_date,
+                      days_of_week: &1.service_date_days_of_week
                     }
                   )
               }
