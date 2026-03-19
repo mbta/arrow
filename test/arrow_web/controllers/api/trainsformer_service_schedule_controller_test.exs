@@ -46,8 +46,16 @@ defmodule ArrowWeb.API.TrainsformerServiceScheduleControllerTest do
             %{
               name: "test-service-1",
               service_dates: [
-                %{start_date: ~D[2025-03-22], end_date: ~D[2025-03-23]},
-                %{start_date: ~D[2025-03-29], end_date: ~D[2025-03-30]}
+                %{
+                  start_date: ~D[2025-03-22],
+                  end_date: ~D[2025-03-23],
+                  service_date_days_of_week: [%{day_name: "monday"}]
+                },
+                %{
+                  start_date: ~D[2025-03-29],
+                  end_date: ~D[2025-03-30],
+                  service_date_days_of_week: [%{day_name: "monday"}]
+                }
               ]
             }
           ],
@@ -77,7 +85,11 @@ defmodule ArrowWeb.API.TrainsformerServiceScheduleControllerTest do
                    "service_id" => service.id,
                    "service_name" => "test-service-1",
                    "date_ranges" => [
-                     %{"start_date" => "2025-03-29", "end_date" => "2025-03-30"}
+                     %{
+                       "start_date" => "2025-03-29",
+                       "end_date" => "2025-03-30",
+                       "days_of_week" => [%{"day_name" => "monday"}]
+                     }
                    ]
                  }
                ],
