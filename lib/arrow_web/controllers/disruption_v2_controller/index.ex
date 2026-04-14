@@ -74,7 +74,8 @@ defmodule ArrowWeb.DisruptionV2Controller.Index do
   defp apply_kinds_filter(disruption, %Filters{kinds: kinds}) do
     kind_routes = kinds |> Enum.map(&@disruption_kind_routes[&1]) |> List.flatten()
 
-    Enum.any?(disruption.limits, fn limit -> limit.route.id in kind_routes end)
+    Enum.any?(disruption.limits, fn limit -> limit.route.id in kind_routes end) or
+      MapSet.member?(kinds, disruption.mode)
   end
 
   defp apply_only_approved_filter(disruption, %Filters{only_approved?: true}),
