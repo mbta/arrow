@@ -395,8 +395,7 @@ defmodule Arrow.Disruptions do
 
     trainsformer_service_dates =
       Enum.flat_map(trainsformer_exports, fn export ->
-        export.services
-        |> Enum.flat_map(& &1.service_dates)
+        Enum.flat_map(export.services, & &1.service_dates)
       end)
 
     if limits == [] and replacement_services == [] and hastus_service_dates == [] and

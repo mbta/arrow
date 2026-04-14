@@ -48,7 +48,7 @@ defmodule ArrowWeb.DisruptionV2ControllerTest do
 
       resp = conn |> get(~p"/?kinds[]=commuter_rail") |> html_response(200)
 
-      resp =~ "Test CR disruption"
+      assert resp =~ "Test CR disruption"
     end
 
     @tag :authenticated
