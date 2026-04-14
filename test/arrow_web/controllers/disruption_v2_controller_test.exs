@@ -41,6 +41,17 @@ defmodule ArrowWeb.DisruptionV2ControllerTest do
     end
 
     @tag :authenticated
+    test "list CR disruptions that match the kinds filter", %{conn: conn} do
+      insert(:limit,
+        disruption: build(:disruption_v2, title: "Test CR disruption", mode: "commuter_rail")
+      )
+
+      resp = conn |> get(~p"/?kinds[]=commuter_rail") |> html_response(200)
+
+      resp =~ "Test CR disruption"
+    end
+
+    @tag :authenticated
     test "lists only disruptions that satisfy the only_approved filter", %{conn: conn} do
       route = insert(:gtfs_route)
 
