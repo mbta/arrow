@@ -120,8 +120,6 @@ defmodule ArrowWeb.DisruptionV2View.Calendar do
        ) do
     day_numbers = MapSet.new(days_of_week, &ServiceDateDayOfWeek.day_number/1)
 
-    dbg()
-
     Date.range(start_date, end_date)
     |> Enum.filter(&(Date.day_of_week(&1) in day_numbers))
     |> Enum.chunk_while([], &chunk_dates/2, &chunk_dates/1)
