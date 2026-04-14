@@ -52,4 +52,40 @@ defmodule Arrow.DisruptionsFixtures do
 
     replacement_service
   end
+
+  @doc """
+  Generate a disruption_v2 for CR.
+  """
+  def disruption_v2_cr_fixture(attrs \\ %{}) do
+    {:ok, disruption_v2} =
+      attrs
+      |> Enum.into(%{
+        title: "cr disruption",
+        mode: "commuter_rail",
+        status: :approved,
+        description: "super disruptive",
+        limits: [],
+        replacement_services: [],
+        trainsformer_exports: [
+          %{
+            s3_path: "s3://mbta-arrow/test/trainsformer-export-uploads/export.zip",
+            routes: [%{route_id: "CR-Worcester"}],
+            services: [
+              %{
+                name: "SPRING2025-SOUTHSS-Weekend-31A",
+                service_dates: [
+                  %{
+                    "start_date" => "2026-01-26",
+                    "end_date" => "2026-01-27"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      })
+      |> Arrow.Disruptions.create_disruption_v2()
+
+    disruption_v2
+  end
 end

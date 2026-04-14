@@ -92,7 +92,14 @@ defmodule Arrow.Shuttles.Shuttle do
           join: s in assoc(d, :shuttles),
           where: s.id == ^shuttle_id,
           where: d.status == :approved,
-          preload: [:limits, :replacement_services, hastus_exports: [services: [:service_dates]]]
+          preload: [
+            :limits,
+            :replacement_services,
+            hastus_exports: [
+              services: [:service_dates]
+            ],
+            trainsformer_exports: [services: [:service_dates]]
+          ]
         )
         |> Repo.all()
         |> Enum.filter(fn d ->

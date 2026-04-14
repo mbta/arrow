@@ -41,6 +41,18 @@ defmodule Arrow.Integration.DisruptionsV2Test do
     |> assert_text("N/A")
   end
 
+  feature "shows start and end dates for CR disruptions with a trainsformer export", %{
+    session: session
+  } do
+    disruption_v2_cr_fixture()
+
+    session
+    |> visit("/")
+    |> click(link("include past"))
+    |> assert_text("01/26/26")
+    |> assert_text("01/27/26")
+  end
+
   defp create_disruption(limit_attrs, replacement_service_attrs) do
     disruption_v2 = disruption_v2_fixture()
     limit = limit_fixture(Map.put_new(limit_attrs, :disruption_id, disruption_v2.id))
