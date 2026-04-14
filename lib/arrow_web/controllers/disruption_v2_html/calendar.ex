@@ -6,6 +6,7 @@ defmodule ArrowWeb.DisruptionV2View.Calendar do
   alias Arrow.Shuttles.Shuttle
   alias ArrowWeb.Endpoint
   alias ArrowWeb.Router.Helpers, as: Routes
+  alias Arrow.Trainsformer.{ServiceDate, ServiceDateDayOfWeek}
 
   @doc """
   Generates props for `DisruptionCalendar`, which has the same interface as `FullCalendar`.
@@ -18,17 +19,25 @@ defmodule ArrowWeb.DisruptionV2View.Calendar do
     Enum.flat_map(disruptions, &events/1)
   end
 
-  defp events(%DisruptionV2{limits: [], replacement_services: []}), do: []
+  defp events(%DisruptionV2{limits: [], replacement_services: [], trainsformer_exports: []}),
+    do: []
 
   defp events(%DisruptionV2{
          id: id,
          title: title,
          limits: limits,
          replacement_services: replacement_services,
+         trainsformer_exports: trainsformer_exports,
          status: status
        }) do
+    trainsformer_service_dates =
+      Enum.flat_map(trainsformer_exports, fn export ->
+        Enum.flat_map(export.services, & &1.service_dates)
+      end)
+
     Enum.flat_map(limits, &events(id, &1, title, status)) ++
-      Enum.flat_map(replacement_services, &events(id, &1, title, status))
+      Enum.flat_map(replacement_services, &events(id, &1, title, status)) ++
+      Enum.flat_map(trainsformer_service_dates, &events(id, &1, title, status))
   end
 
   defp events(
@@ -92,6 +101,43 @@ defmodule ArrowWeb.DisruptionV2View.Calendar do
           # end date is treated as exclusive
           end: Date.add(event_end, 1),
           url: Routes.disruption_v2_view_path(Endpoint, :edit, disruption_id),
+          extendedProps: %{
+            statusOrder: if(status == :approved, do: 0, else: 1)
+          }
+        }
+    end)
+  end
+
+  defp events(
+         disruption_id,
+         %ServiceDate{
+           start_date: start_date,
+           end_date: end_date,
+           service_date_days_of_week: days_of_week
+         },
+         event_title,
+         status
+       ) do
+    day_numbers = MapSet.new(days_of_week, &ServiceDateDayOfWeek.day_number/1)
+
+    dbg()
+
+    Date.range(start_date, end_date)
+    |> Enum.filter(&(Date.day_of_week(&1) in day_numbers))
+    |> Enum.chunk_while([], &chunk_dates/2, &chunk_dates/1)
+    |> Enum.map(&{List.last(&1), List.first(&1)})
+    |> Enum.map(fn
+      {nil, nil} ->
+        %{}
+
+      {event_start, event_end} ->
+        %{
+          title: event_title,
+          classNames: "kind-commuter-rail status-#{status_class(status)}",
+          start: event_start,
+          # end date is treated as exclusive
+          end: Date.add(event_end, 1),
+          url: Routes.disruption_v2_view_path(Endpoint, :show, disruption_id),
           extendedProps: %{
             statusOrder: if(status == :approved, do: 0, else: 1)
           }
