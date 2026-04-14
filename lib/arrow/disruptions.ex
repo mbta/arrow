@@ -383,7 +383,7 @@ defmodule Arrow.Disruptions do
   def start_end_dates(%DisruptionV2{
         limits: limits,
         replacement_services: replacement_services,
-        hastus_exports: hastus_exports
+        hastus_exports: [_ | _] = hastus_exports
       }) do
     hastus_service_dates =
       Enum.flat_map(hastus_exports, fn export ->
@@ -407,5 +407,40 @@ defmodule Arrow.Disruptions do
 
       {min_date, max_date}
     end
+  end
+
+  def start_end_dates(%DisruptionV2{
+        limits: limits,
+        trainsformer_exports: [_ | _] = trainsformer_exports
+      }) do
+    trainsformer_service_dates =
+      Enum.flat_map(trainsformer_exports, fn export ->
+        export.services
+        |> Enum.flat_map(& &1.service_dates)
+      end)
+
+    if limits == [] and trainsformer_service_dates == [] do
+      {nil, nil}
+    else
+      min_date =
+        (limits ++ trainsformer_service_dates)
+        |> Enum.map(& &1.start_date)
+        |> Enum.min(Date, fn -> ~D[9999-12-31] end)
+
+      max_date =
+        (limits ++ trainsformer_service_dates)
+        |> Enum.map(& &1.end_date)
+        |> Enum.max(Date, fn -> ~D[0000-01-01] end)
+
+      {min_date, max_date}
+    end
+  end
+
+  def start_end_dates(%DisruptionV2{
+        limits: limits,
+        trainsformer_exports: [],
+        hastus_exports: []
+      }) do
+    {nil, nil}
   end
 end
