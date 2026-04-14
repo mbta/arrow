@@ -5,6 +5,7 @@ defmodule ArrowWeb.DisruptionV2View.CalendarTest do
   alias Arrow.Limits.LimitDayOfWeek
   alias Arrow.Shuttles.Shuttle
   alias ArrowWeb.DisruptionV2View.Calendar, as: DCalendar
+  alias Arrow.Trainsformer.{Export, Service, ServiceDate, ServiceDateDayOfWeek}
 
   describe "props/1" do
     test "converts a list of Disruptions to DisruptionCalendar props" do
@@ -39,6 +40,7 @@ defmodule ArrowWeb.DisruptionV2View.CalendarTest do
             shuttle: %Shuttle{disrupted_route_id: "Blue"}
           }
         ],
+        trainsformer_exports: [],
         status: :approved
       }
 
@@ -81,6 +83,72 @@ defmodule ArrowWeb.DisruptionV2View.CalendarTest do
           start: ~D[2021-02-01],
           end: ~D[2021-03-01],
           url: "/disruptions/123/edit",
+          extendedProps: %{statusOrder: 0}
+        }
+      ]
+
+      assert DCalendar.props([disruption]) == %{events: expected_events}
+    end
+
+    test "converts a list with a CR disruption to DisruptionCalendar props" do
+      disruption = %DisruptionV2{
+        id: 321,
+        title: "CR Disruption",
+        limits: [],
+        replacement_services: [],
+        trainsformer_exports: [
+          %Export{
+            services: [
+              %Service{
+                service_dates: [
+                  %ServiceDate{
+                    start_date: ~D[2026-04-01],
+                    end_date: ~D[2026-05-01],
+                    service_date_days_of_week: [
+                      %ServiceDateDayOfWeek{
+                        day_name: :saturday
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        status: :approved
+      }
+
+      expected_events = [
+        %{
+          start: ~D[2026-04-04],
+          title: "CR Disruption",
+          end: ~D[2026-04-05],
+          url: "/disruptions/321",
+          classNames: "kind-commuter-rail status-approved",
+          extendedProps: %{statusOrder: 0}
+        },
+        %{
+          start: ~D[2026-04-11],
+          title: "CR Disruption",
+          end: ~D[2026-04-12],
+          url: "/disruptions/321",
+          classNames: "kind-commuter-rail status-approved",
+          extendedProps: %{statusOrder: 0}
+        },
+        %{
+          start: ~D[2026-04-18],
+          title: "CR Disruption",
+          end: ~D[2026-04-19],
+          url: "/disruptions/321",
+          classNames: "kind-commuter-rail status-approved",
+          extendedProps: %{statusOrder: 0}
+        },
+        %{
+          start: ~D[2026-04-25],
+          title: "CR Disruption",
+          end: ~D[2026-04-26],
+          url: "/disruptions/321",
+          classNames: "kind-commuter-rail status-approved",
           extendedProps: %{statusOrder: 0}
         }
       ]
