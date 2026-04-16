@@ -46,11 +46,22 @@ defmodule Arrow.Integration.DisruptionsV2Test do
   } do
     disruption_v2_cr_fixture()
 
+    today = Calendar.strftime(DateTime.utc_now(), "%m/%d/%y")
+
     session
     |> visit("/")
     |> click(link("include past"))
-    |> assert_text("01/26/26")
-    |> assert_text("01/27/26")
+    |> assert_text(today)
+    |> assert_text(today)
+  end
+
+  feature "shows CR disruption in calendar view", %{session: session} do
+    disruption_v2_cr_fixture()
+
+    session
+    |> visit("/")
+    |> click(link("⬒ calendar view"))
+    |> assert_text("cr disruption")
   end
 
   defp create_disruption(limit_attrs, replacement_service_attrs) do

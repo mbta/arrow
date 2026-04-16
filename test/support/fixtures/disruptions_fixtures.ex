@@ -75,8 +75,17 @@ defmodule Arrow.DisruptionsFixtures do
                 name: "SPRING2025-SOUTHSS-Weekend-31A",
                 service_dates: [
                   %{
-                    "start_date" => "2026-01-26",
-                    "end_date" => "2026-01-27"
+                    "service_date_days_of_week" => [
+                      "sunday",
+                      "monday",
+                      "tuesday",
+                      "wednesday",
+                      "thursday",
+                      "friday",
+                      "saturday"
+                    ],
+                    "start_date" => Calendar.strftime(DateTime.utc_now(), "%Y-%m-%d"),
+                    "end_date" => Calendar.strftime(DateTime.utc_now(), "%Y-%m-%d")
                   }
                 ]
               }
