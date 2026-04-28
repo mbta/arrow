@@ -191,7 +191,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
         validate_unique_service_ids(trips),
         validate_one_of_north_south_stations(stop_ids),
         validate_one_or_all_routes_from_one_side(trips),
-        validate_transfers(transfers, stop_times)
+        validate_transfers(transfers, stop_times),
+        validate_trips_in_stop_times(trips, stop_times)
       ]
       |> Enum.reject(&(&1 == :ok))
 
@@ -511,6 +512,31 @@ defmodule Arrow.Trainsformer.ExportUpload do
           gettext("Multiple routes not north or southside."),
           items: trainsformer_route_ids
         )
+    end
+  end
+
+  def validate_trips_in_stop_times(trips, stop_times) do
+    stop_time_trip_ids = MapSet.new(stop_times, & &1.trip_id)
+
+    trip_ids_missing_stop_times =
+      trips
+      |> Enum.filter(fn trip -> not MapSet.member?(stop_time_trip_ids, trip.trip_id) end)
+      |> Enum.map(& &1.trip_id)
+
+    num_trips_missing_stop_times = length(trip_ids_missing_stop_times)
+
+    if num_trips_missing_stop_times == 0 do
+      :ok
+    else
+      new_error(
+        :trips_missing_stop_times,
+        ngettext(
+          "Export contains a trip with no corresponding stop times.",
+          "Export contains %{count} trips with no corresponding stop times.",
+          num_trips_missing_stop_times
+        ),
+        items: trip_ids_missing_stop_times
+      )
     end
   end
 
