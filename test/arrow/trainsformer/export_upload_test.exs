@@ -538,6 +538,220 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     end
   end
 
+  describe "validate_trips_in_stop_times/2" do
+    test "returns ok if all trip IDs exist in stop times" do
+      assert :ok =
+               ExportUpload.validate_trips_in_stop_times(
+                 [
+                   %{
+                     service_id: "FALL 2025-NORTHWKD-Weekday-21A",
+                     route_id: "CR-Haverhill",
+                     trip_id: "ERMLTieJob-819522-265"
+                   }
+                 ],
+                 [
+                   %{
+                     departure_time: "17:35:00",
+                     arrival_time: "17:35:00",
+                     stop_id: "BNT-0000",
+                     stop_sequence: "00",
+                     trip_id: "ERMLTieJob-819522-265"
+                   },
+                   %{
+                     departure_time: "18:07:00",
+                     arrival_time: "18:07:00",
+                     stop_id: "WR-0205-02",
+                     stop_sequence: "10",
+                     trip_id: "ERMLTieJob-819522-265"
+                   },
+                   %{
+                     departure_time: "18:12:00",
+                     arrival_time: "18:12:00",
+                     stop_id: "WR-0228-02",
+                     stop_sequence: "20",
+                     trip_id: "ERMLTieJob-819522-265"
+                   },
+                   %{
+                     departure_time: "18:19:00",
+                     arrival_time: "18:19:00",
+                     stop_id: "WR-0264-02",
+                     stop_sequence: "30",
+                     trip_id: "ERMLTieJob-819522-265"
+                   },
+                   %{
+                     departure_time: "18:28:00",
+                     arrival_time: "18:28:00",
+                     stop_id: "WR-0325-01",
+                     stop_sequence: "40",
+                     trip_id: "ERMLTieJob-819522-265"
+                   },
+                   %{
+                     departure_time: "18:37:00",
+                     arrival_time: "18:37:00",
+                     stop_id: "WR-0329-01",
+                     stop_sequence: "50",
+                     trip_id: "ERMLTieJob-819522-265"
+                   }
+                 ]
+               )
+    end
+
+    test "returns an error if any trip IDs are missing from stop times" do
+      expected_trip_ids_with_missing_stop_times = ["ERMLTieJob-819522-2f65"]
+
+      assert {:error,
+              {:trips_missing_stop_times,
+               {
+                 "Export contains a trip with no corresponding stop times.",
+                 [items: ^expected_trip_ids_with_missing_stop_times]
+               }}} =
+               ExportUpload.validate_trips_in_stop_times(
+                 [
+                   %{
+                     service_id: "FALL 2025-NORTHWKD-Weekday-21A",
+                     route_id: "CR-Haverhill",
+                     trip_id: "ERMLTieJob-819522-2f65"
+                   }
+                 ],
+                 [
+                   %{
+                     departure_time: "17:35:00",
+                     arrival_time: "17:35:00",
+                     stop_id: "BNT-0000",
+                     stop_sequence: "00",
+                     trip_id: "ERMLTieJob-819522-265"
+                   },
+                   %{
+                     departure_time: "18:07:00",
+                     arrival_time: "18:07:00",
+                     stop_id: "WR-0205-02",
+                     stop_sequence: "10",
+                     trip_id: "ERMLTieJob-819522-265"
+                   },
+                   %{
+                     departure_time: "18:12:00",
+                     arrival_time: "18:12:00",
+                     stop_id: "WR-0228-02",
+                     stop_sequence: "20",
+                     trip_id: "ERMLTieJob-819522-265"
+                   },
+                   %{
+                     departure_time: "18:19:00",
+                     arrival_time: "18:19:00",
+                     stop_id: "WR-0264-02",
+                     stop_sequence: "30",
+                     trip_id: "ERMLTieJob-819522-265"
+                   },
+                   %{
+                     departure_time: "18:28:00",
+                     arrival_time: "18:28:00",
+                     stop_id: "WR-0325-01",
+                     stop_sequence: "40",
+                     trip_id: "ERMLTieJob-819522-265"
+                   },
+                   %{
+                     departure_time: "18:37:00",
+                     arrival_time: "18:37:00",
+                     stop_id: "WR-0329-01",
+                     stop_sequence: "50",
+                     trip_id: "ERMLTieJob-819522-265"
+                   }
+                 ]
+               )
+    end
+
+    test "returns an error if multiple trip IDs are missing from stop times" do
+      expected_trip_ids_with_missing_stop_times = [
+        "ERMLTieJob-819522-2f65",
+        "ERMLTieJob-819522-000"
+      ]
+
+      assert {:error,
+              {:trips_missing_stop_times,
+               {
+                 "Export contains 2 trips with no corresponding stop times.",
+                 [items: ^expected_trip_ids_with_missing_stop_times]
+               }}} =
+               ExportUpload.validate_trips_in_stop_times(
+                 [
+                   %{
+                     service_id: "FALL 2025-NORTHWKD-Weekday-21A",
+                     route_id: "CR-Haverhill",
+                     trip_id: "ERMLTieJob-819522-2f65"
+                   },
+                   %{
+                     service_id: "FALL 2025-NORTHWKD-Weekday-21A",
+                     route_id: "CR-Haverhill",
+                     trip_id: "ERMLTieJob-819522-000"
+                   },
+                   %{
+                     service_id: "FALL 2025-NORTHWKD-Weekday-21A",
+                     route_id: "CR-Haverhill",
+                     trip_id: "ERMLTieJob-819523-266"
+                   }
+                 ],
+                 [
+                   %{
+                     departure_time: "17:35:00",
+                     arrival_time: "17:35:00",
+                     stop_id: "BNT-0000",
+                     stop_sequence: "00",
+                     trip_id: "ERMLTieJob-819522-265"
+                   },
+                   %{
+                     departure_time: "18:07:00",
+                     arrival_time: "18:07:00",
+                     stop_id: "WR-0205-02",
+                     stop_sequence: "10",
+                     trip_id: "ERMLTieJob-819522-265"
+                   },
+                   %{
+                     departure_time: "18:12:00",
+                     arrival_time: "18:12:00",
+                     stop_id: "WR-0228-02",
+                     stop_sequence: "20",
+                     trip_id: "ERMLTieJob-819522-265"
+                   },
+                   %{
+                     departure_time: "18:19:00",
+                     arrival_time: "18:19:00",
+                     stop_id: "WR-0264-02",
+                     stop_sequence: "30",
+                     trip_id: "ERMLTieJob-819522-265"
+                   },
+                   %{
+                     departure_time: "18:28:00",
+                     arrival_time: "18:28:00",
+                     stop_id: "WR-0325-01",
+                     stop_sequence: "40",
+                     trip_id: "ERMLTieJob-819522-265"
+                   },
+                   %{
+                     departure_time: "18:37:00",
+                     arrival_time: "18:37:00",
+                     stop_id: "WR-0329-01",
+                     stop_sequence: "50",
+                     trip_id: "ERMLTieJob-819522-265"
+                   },
+                   %{
+                     departure_time: "17:40:00",
+                     arrival_time: "17:40:00",
+                     stop_id: "BNT-0000",
+                     stop_sequence: "00",
+                     trip_id: "ERMLTieJob-819522-001"
+                   },
+                   %{
+                     departure_time: "17:30:00",
+                     arrival_time: "17:30:00",
+                     stop_id: "WR-0329-01",
+                     stop_sequence: "00",
+                     trip_id: "ERMLTieJob-819523-266"
+                   }
+                 ]
+               )
+    end
+  end
+
   describe "schedule_data_from_zip/3" do
     @tag export: "valid_export.zip"
     test "extracts schedule data", %{export: export} do
