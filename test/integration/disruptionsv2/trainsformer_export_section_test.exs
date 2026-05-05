@@ -234,7 +234,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       path: "test/support/fixtures/trainsformer/invalid_export_missing_transfers.zip"
     )
     |> assert_text(
-      "A train trip that does not serve North Station, South Station, or Foxboro lacks a transfer."
+      "A train trip that does not serve North Station, South Station, Foxboro, or Braintree lacks a transfer."
     )
     |> assert_text("Dec14PatsGame-781225-9731")
   end
