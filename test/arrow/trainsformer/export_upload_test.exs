@@ -499,7 +499,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
       assert {:warning,
               {:trips_missing_transfers,
                {
-                 "A train trip that does not serve North Station, South Station, or Foxboro lacks a transfer.",
+                 "A train trip that does not serve North Station, South Station, Foxboro, or Braintree lacks a transfer.",
                  [items: ^expected_trips_with_missing_transfers]
                }}} =
                ExportUpload.validate_transfers(

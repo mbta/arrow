@@ -371,7 +371,9 @@ defmodule Arrow.Trainsformer.ExportUpload do
               # South Station
               "NEC-2287",
               # Foxboro
-              "FS-0049-S"
+              "FS-0049-S",
+              # Braintree
+              "MM-0109-S"
             ],
             &1
           )
@@ -388,8 +390,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
       new_warning(
         :trips_missing_transfers,
         ngettext(
-          "A train trip that does not serve North Station, South Station, or Foxboro lacks a transfer.",
-          "%{count} train trips that do not serve North Station, South Station, or Foxboro lack transfers.",
+          "A train trip that does not serve North Station, South Station, Foxboro, or Braintree lacks a transfer.",
+          "%{count} train trips that do not serve North Station, South Station, Foxboro, or Braintree lack transfers.",
           MapSet.size(trips_needing_transfers_without_transfers)
         ),
         items: trips_needing_transfers_without_transfers
