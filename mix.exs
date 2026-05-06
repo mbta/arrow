@@ -79,7 +79,7 @@ defmodule Arrow.MixProject do
       {:phoenix_live_view, "~> 1.1.2"},
       {:phoenix_live_dashboard, "~> 0.7"},
       {:phoenix_pubsub, "~> 2.0"},
-      {:phoenix, "~> 1.8.0"},
+      {:phoenix, "~> 1.8.6"},
       {:plug_cowboy, "~> 2.1"},
       {:telemetry, "~> 1.2", override: true},
       {:telemetry_poller, "~> 1.1"},
