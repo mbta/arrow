@@ -340,6 +340,7 @@ defmodule ArrowWeb.CoreComponents do
     ~H"""
     <div class="mt-1">
       <div class="grid grid-cols-2 gap-1 text-sm items-baseline">
+        <input type="hidden" name={@name} value="" />
         <div :for={{label, value} <- @options}>
           <label for={"#{@name}-#{value}"}>
             <input

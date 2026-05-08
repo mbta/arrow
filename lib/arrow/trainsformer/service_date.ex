@@ -19,7 +19,9 @@ defmodule Arrow.Trainsformer.ServiceDate do
     with %{"service_date_days_of_week" => sddow} <- attrs,
          [_ | _] <- sddow do
       formatted_days =
-        Enum.map(sddow, fn day ->
+        sddow
+        |> Enum.filter(&(&1 != ""))
+        |> Enum.map(fn day ->
           %{
             "day_name" => day
           }
@@ -40,6 +42,7 @@ defmodule Arrow.Trainsformer.ServiceDate do
     |> cast_assoc(:service_date_days_of_week, with: &ServiceDateDayOfWeek.changeset/2)
     |> validate_required([:start_date, :end_date])
     |> Arrow.Util.Validation.validate_start_date_before_end_date()
+    |> validate_length(:service_date_days_of_week, min: 1)
     |> assoc_constraint(:service)
   end
 end
