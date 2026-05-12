@@ -188,6 +188,7 @@ defmodule ArrowWeb.EditTrainsformerExportForm do
                                 end
                               }
                             />
+                            <.errors field={f_date[:service_date_days_of_week]} always_show />
                           </div>
                         </div>
                         <div class="col">

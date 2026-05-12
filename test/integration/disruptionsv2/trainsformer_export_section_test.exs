@@ -41,6 +41,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       path: "test/support/fixtures/trainsformer/valid_export.zip"
     )
     |> assert_text("Successfully imported export valid_export.zip!")
+    |> click(Query.checkbox("Wednesday"))
     |> click(Query.css("#save-export-button"))
     |> assert_text("CR-Foxboro")
     |> assert_text("SPRING2025-SOUTHSS-Weekend-66")
@@ -64,6 +65,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> attach_file(file_field("trainsformer_export", visible: false),
       path: "test/support/fixtures/trainsformer/valid_export.zip"
     )
+    |> click(Query.checkbox("Wednesday"))
     |> click(Query.css("#save-export-button"))
     |> click(link("Timetable"))
     # Back Bay station
@@ -129,6 +131,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       |> attach_file(file_field("trainsformer_export", visible: false),
         path: "test/support/fixtures/trainsformer/valid_export.zip"
       )
+      |> click(Query.checkbox("Wednesday"))
       |> click(Query.css("#save-export-button"))
 
     # new disruption
@@ -383,5 +386,23 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
       with: "03/17/2026"
     )
     |> refute_has(text("Export must contain at least one route"))
+  end
+
+  feature "shows error when no days of week are selected", %{session: session} do
+    disruption = disruption_v2_fixture(%{mode: :commuter_rail})
+
+    session
+    |> visit("/disruptions/#{disruption.id}")
+    |> click(text("Upload Trainsformer export"))
+    |> assert_text("Upload Trainsformer .zip")
+    |> attach_file(file_field("trainsformer_export", visible: false),
+      path: "test/support/fixtures/trainsformer/valid_export.zip"
+    )
+    |> assert_text("Successfully imported export valid_export.zip!")
+    |> fill_in(
+      Query.fillable_field("End Date"),
+      with: "01/28/2026"
+    )
+    |> assert_text("should have at least 1 item(s)")
   end
 end
