@@ -16,6 +16,7 @@ defmodule ArrowWeb.EditReplacementServiceForm do
   attr :replacement_service, ReplacementService, required: true
   attr :icon_paths, :map, required: true
 
+  @impl true
   def render(assigns) do
     ~H"""
     <div class="mt-3 overflow-hidden">

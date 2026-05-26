@@ -12,6 +12,7 @@ defmodule ArrowWeb.EditLimitForm do
   attr :limit, Limit, required: true
   attr :icon_paths, :map, required: true
 
+  @impl true
   def render(assigns) do
     ~H"""
     <div
