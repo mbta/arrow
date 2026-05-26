@@ -14,31 +14,9 @@ defmodule ArrowWeb.API.ServiceScheduleController do
         for export <- hastus_exports do
           {:ok, download_url} = Arrow.Hastus.export_download_url(export)
 
-          trip_route_directions =
-            for trip_route_direction <- export.trip_route_directions do
-              %{
-                hastus_route_id: trip_route_direction.hastus_route_id,
-                via_variant: trip_route_direction.via_variant,
-                avi_code: trip_route_direction.avi_code,
-                route_id: trip_route_direction.route_id
-              }
-            end
+          trip_route_directions = trip_route_directions_for_export(export)
 
-          services =
-            for service <- export.services do
-              %{
-                service_id: service.id,
-                service_name: service.name,
-                date_ranges:
-                  Enum.map(
-                    service.service_dates,
-                    &%{
-                      start_date: &1.start_date,
-                      end_date: &1.end_date
-                    }
-                  )
-              }
-            end
+          services = services_for_export(export)
 
           %{
             hastus_export_id: export.id,
@@ -53,6 +31,34 @@ defmodule ArrowWeb.API.ServiceScheduleController do
 
       conn
       |> json(response_body)
+    end
+  end
+
+  defp trip_route_directions_for_export(export) do
+    for trip_route_direction <- export.trip_route_directions do
+      %{
+        hastus_route_id: trip_route_direction.hastus_route_id,
+        via_variant: trip_route_direction.via_variant,
+        avi_code: trip_route_direction.avi_code,
+        route_id: trip_route_direction.route_id
+      }
+    end
+  end
+
+  defp services_for_export(export) do
+    for service <- export.services do
+      %{
+        service_id: service.id,
+        service_name: service.name,
+        date_ranges:
+          Enum.map(
+            service.service_dates,
+            &%{
+              start_date: &1.start_date,
+              end_date: &1.end_date
+            }
+          )
+      }
     end
   end
 

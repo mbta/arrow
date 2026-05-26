@@ -4,8 +4,8 @@ defmodule ArrowWeb.DisruptionV2View.CalendarTest do
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
   alias Arrow.Limits.LimitDayOfWeek
   alias Arrow.Shuttles.Shuttle
-  alias ArrowWeb.DisruptionV2View.Calendar, as: DCalendar
   alias Arrow.Trainsformer.{Export, Service, ServiceDate, ServiceDateDayOfWeek}
+  alias ArrowWeb.DisruptionV2View.Calendar, as: DCalendar
 
   describe "props/1" do
     test "converts a list of Disruptions to DisruptionCalendar props" do
