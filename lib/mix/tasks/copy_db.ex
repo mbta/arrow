@@ -26,16 +26,7 @@ defmodule Mix.Tasks.CopyDb do
              ),
            {:ok, data} <- Jason.decode(body) do
         data =
-          Map.new(data, fn {table, data} ->
-            {table,
-             Enum.map(data, fn map ->
-               Map.new(map, fn {key, value} ->
-                 parsed_value = parse_json_value(value)
-
-                 {String.to_existing_atom(key), parsed_value}
-               end)
-             end)}
-          end)
+          Map.new(data, &parse_table_data/1)
 
         :ok = Arrow.DBStructure.load_data(repo, data)
       else
@@ -43,6 +34,17 @@ defmodule Mix.Tasks.CopyDb do
           Logger.error("Error parsing response data: #{get_error(err)}")
       end
     end)
+  end
+
+  defp parse_table_data({table, data}) do
+    {table,
+     Enum.map(data, fn map ->
+       Map.new(map, fn {key, value} ->
+         parsed_value = parse_json_value(value)
+
+         {String.to_existing_atom(key), parsed_value}
+       end)
+     end)}
   end
 
   defp get_error({:error, %Jason.DecodeError{}}), do: "invalid JSON"

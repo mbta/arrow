@@ -4,9 +4,9 @@ defmodule ArrowWeb.DisruptionV2View.Calendar do
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
   alias Arrow.Limits.LimitDayOfWeek
   alias Arrow.Shuttles.Shuttle
+  alias Arrow.Trainsformer.{ServiceDate, ServiceDateDayOfWeek}
   alias ArrowWeb.Endpoint
   alias ArrowWeb.Router.Helpers, as: Routes
-  alias Arrow.Trainsformer.{ServiceDate, ServiceDateDayOfWeek}
 
   @doc """
   Generates props for `DisruptionCalendar`, which has the same interface as `FullCalendar`.

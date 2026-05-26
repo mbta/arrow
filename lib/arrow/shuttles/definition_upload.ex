@@ -66,7 +66,9 @@ defmodule Arrow.Shuttles.DefinitionUpload do
   end
 
   defp parse_stop_ids([headers | _] = data, tab_name) do
-    if stop_id_col_index = Enum.find_index(headers, &(&1 == "Stop ID")) do
+    stop_id_col_index = Enum.find_index(headers, &(&1 == "Stop ID"))
+
+    if stop_id_col_index do
       stop_ids = data |> Enum.drop(1) |> Enum.map(&Enum.at(&1, stop_id_col_index))
 
       errors =

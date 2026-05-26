@@ -14,30 +14,9 @@ defmodule ArrowWeb.API.TrainsformerServiceScheduleController do
         for export <- trainsformer_exports do
           {:ok, download_url} = Arrow.Trainsformer.export_download_url(export)
 
-          services =
-            for service <- export.services do
-              %{
-                service_id: service.id,
-                service_name: service.name,
-                date_ranges:
-                  Enum.map(
-                    service.service_dates,
-                    &%{
-                      start_date: &1.start_date,
-                      end_date: &1.end_date,
-                      days_of_week: &1.service_date_days_of_week
-                    }
-                  )
-              }
-            end
+          services = services_for_export(export)
 
-          routes =
-            for route <- export.routes do
-              %{
-                id: route.id,
-                route_name: route.route_id
-              }
-            end
+          routes = routes_for_export(export)
 
           %{
             trainsformer_export_id: export.id,
@@ -51,6 +30,33 @@ defmodule ArrowWeb.API.TrainsformerServiceScheduleController do
 
       conn
       |> json(response_body)
+    end
+  end
+
+  defp services_for_export(export) do
+    for service <- export.services do
+      %{
+        service_id: service.id,
+        service_name: service.name,
+        date_ranges:
+          Enum.map(
+            service.service_dates,
+            &%{
+              start_date: &1.start_date,
+              end_date: &1.end_date,
+              days_of_week: &1.service_date_days_of_week
+            }
+          )
+      }
+    end
+  end
+
+  defp routes_for_export(export) do
+    for route <- export.routes do
+      %{
+        id: route.id,
+        route_name: route.route_id
+      }
     end
   end
 
