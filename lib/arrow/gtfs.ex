@@ -79,6 +79,7 @@ defmodule Arrow.Gtfs do
     Logger.info("GTFS validation job starting #{job_info}")
 
     with :ok <- validate_required_files(unzip),
+         # (Repo.rollback/1 wraps returned value in an error tuple.)
          {:error, :validation_success} <- validate_transaction(unzip) do
       Logger.info("GTFS validation success #{job_info}")
       :ok
