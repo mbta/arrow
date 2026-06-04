@@ -47,12 +47,14 @@ defmodule Arrow.Gtfs do
   end
 
   defp import_transaction(unzip) do
+    schemas = importable_schemas()
+
     transaction = fn ->
       external_fkeys = get_external_fkeys()
       drop_external_fkeys(external_fkeys)
 
-      truncate_all()
-      import_all(unzip)
+      truncate(schemas)
+      import_feed(unzip, schemas)
 
       add_external_fkeys(external_fkeys)
     end
@@ -67,8 +69,7 @@ defmodule Arrow.Gtfs do
   end
 
   @doc """
-  Validates a GTFS feed for internal consistency, and consistency with Arrow
-  disruption data that depends on it.
+  Validates a GTFS feed for relational consistency with Arrow's disruption data.
 
   `job` is the Oban job running this validation.
   """
@@ -90,17 +91,21 @@ defmodule Arrow.Gtfs do
   end
 
   defp validate_transaction(unzip) do
+    schemas = validation_schemas()
+
     transaction = fn ->
       external_fkeys = get_external_fkeys()
       drop_external_fkeys(external_fkeys)
+      drop_internal_fkeys()
 
-      truncate_all()
-      import_all(unzip)
+      truncate(schemas)
+      import_feed(unzip, schemas)
 
+      # Only re-add external FKs since we're not concerned with validating the internal consistency of the feed.
       add_external_fkeys(external_fkeys)
 
       # Set any deferred constraints to run now, instead of on transaction commit,
-      # since we don't actually commit the transaction in this case.
+      # since we don't actually commit the transaction for validations.
       _ = Repo.query!("SET CONSTRAINTS ALL IMMEDIATE")
       Repo.rollback(:validation_success)
     end
@@ -114,15 +119,15 @@ defmodule Arrow.Gtfs do
     result
   end
 
-  @spec truncate_all() :: :ok
-  defp truncate_all do
-    tables = Enum.map_join(importable_schemas(), ", ", & &1.__schema__(:source))
+  @spec truncate(list(module)) :: :ok
+  defp truncate(schemas) do
+    tables = Enum.map_join(schemas, ", ", & &1.__schema__(:source))
     _ = Repo.query!("TRUNCATE #{tables}")
     :ok
   end
 
-  defp import_all(unzip) do
-    Enum.each(importable_schemas(), &Importable.import(&1, unzip))
+  defp import_feed(unzip, schemas_to_import) do
+    Enum.each(schemas_to_import, &Importable.import(&1, unzip))
   end
 
   defp validate_required_files(unzip) do
@@ -151,6 +156,7 @@ defmodule Arrow.Gtfs do
   defp validate_version_change(_new_version, _current_version), do: :ok
 
   defp importable_schemas do
+    # All the Ecto schemas that represent GTFS feed tables.
     # Listed in the order in which they should be imported.
     [
       Arrow.Gtfs.FeedInfo,
@@ -172,6 +178,19 @@ defmodule Arrow.Gtfs do
     ]
   end
 
+  # For validation, only the feed tables that are referenced by FKs from
+  # Arrow disruption data tables are imported.
+  defp validation_schemas do
+    gtfs_tables_referenced_by_external_fkeys =
+      get_external_fkeys()
+      |> MapSet.new(& &1.referenced_table)
+
+    importable_schemas()
+    |> Enum.filter(fn schema ->
+      schema.__schema__(:source) in gtfs_tables_referenced_by_external_fkeys
+    end)
+  end
+
   defp required_files do
     importable_schemas()
     |> Enum.flat_map(& &1.filenames())
@@ -182,6 +201,12 @@ defmodule Arrow.Gtfs do
     importable_schemas()
     |> Enum.map(& &1.__schema__(:source))
     |> ForeignKeyConstraint.external_constraints_referencing_tables()
+  end
+
+  defp get_internal_fkeys do
+    importable_schemas()
+    |> Enum.map(& &1.__schema__(:source))
+    |> ForeignKeyConstraint.internal_constraints()
   end
 
   @spec drop_external_fkeys(list(ForeignKeyConstraint.t())) :: :ok
@@ -200,6 +225,15 @@ defmodule Arrow.Gtfs do
     Logger.info("finished dropping external foreign keys referencing GTFS tables")
 
     :ok
+  end
+
+  @spec drop_internal_fkeys() :: :ok
+  defp drop_internal_fkeys do
+    internal_fkeys = get_internal_fkeys()
+    fkey_names = Enum.map_join(internal_fkeys, ",", & &1.name)
+    Logger.info("temporarily dropping intra-feed internal foreign keys fkey_names=#{fkey_names}")
+
+    Enum.each(internal_fkeys, &ForeignKeyConstraint.drop/1)
   end
 
   @spec add_external_fkeys(list(ForeignKeyConstraint.t())) :: :ok
