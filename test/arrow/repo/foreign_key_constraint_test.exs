@@ -92,6 +92,27 @@ defmodule Arrow.Repo.ForeignKeyConstraintTest do
     end
   end
 
+  describe "constraints_referencing_internal_tables/1" do
+    test "returns fkeys both originating in and referencing the given tables" do
+      assert fkeys = ForeignKeyConstraint.internal_constraints(["a", "c"])
+      assert length(fkeys) == 2
+      [fkey1, fkey2] = Enum.sort_by(fkeys, & &1.name)
+
+      assert %ForeignKeyConstraint{name: "a_c_id_fkey", origin_table: "a", referenced_table: "c"} =
+               fkey1
+
+      assert %ForeignKeyConstraint{name: "c_a_id_fkey", origin_table: "c", referenced_table: "a"} =
+               fkey2
+
+      assert [fkey] = ForeignKeyConstraint.internal_constraints(["b", "c"])
+
+      assert %ForeignKeyConstraint{name: "b_c_id_fkey", origin_table: "b", referenced_table: "c"} =
+               fkey
+
+      assert [] = ForeignKeyConstraint.internal_constraints(["a"])
+    end
+  end
+
   describe "drop/1" do
     test "drops the given fkey" do
       assert [c_a_fkey] = ForeignKeyConstraint.external_constraints_referencing_tables(["a"])
