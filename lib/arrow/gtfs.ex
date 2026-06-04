@@ -84,7 +84,7 @@ defmodule Arrow.Gtfs do
       :ok
     else
       {:error, reason} = error ->
-        Logger.warning("GTFS validation failed reason=#{inspect(reason)} #{job_info}")
+        Logger.info("GTFS validation failed reason=#{inspect(reason)} #{job_info}")
         error
     end
   end
