@@ -1,6 +1,6 @@
 defmodule Arrow.Gtfs do
   @moduledoc """
-  GTFS import logic.
+  GTFS import and validation logic.
   """
   alias Arrow.Gtfs.Importable
   alias Arrow.Gtfs.JobHelper
@@ -13,68 +13,83 @@ defmodule Arrow.Gtfs do
   @import_timeout_ms :timer.minutes(10)
 
   @doc """
-  Loads a GTFS archive into Arrow's gtfs_* DB tables,
-  replacing the previous archive's data.
+  Loads a GTFS archive into Arrow's gtfs_* DB tables, replacing the previous
+  archive's data.
 
-  `job` is the Oban job running this import, or `nil` if the import is being
-  run directly, e.g. by `mix import_gtfs`.
-
-  Options:
-  - `:validate_only?` - Set true to have the transaction roll back
-    instead of committing, even if all queries succeed.
-
-  Returns:
-
-  - `:ok` on successful import or validation, or skipped import due to unchanged version.
-  - `{:error, reason}` if the import or validation failed.
+  `job` is the Oban job running this import, or `nil` if the import is being run
+  directly, e.g. by `mix import_gtfs`.
   """
-  @spec import(Unzip.t(), String.t(), Oban.Job.t() | nil, Keyword.t()) ::
-          :ok | {:error, term}
-  def import(unzip, new_version, job \\ nil, opts \\ []) do
-    validate_only? = Keyword.get(opts, :validate_only?, false)
+  @spec import(Unzip.t(), String.t(), Oban.Job.t() | nil) :: :ok | {:error, term}
+  def import(unzip, new_version, job \\ nil) do
     job_info = job && JobHelper.logging_params(job)
 
-    Logger.info("GTFS import or validation job starting #{job_info}")
+    Logger.info("GTFS import job starting #{job_info}")
 
     current_version =
-      if validate_only? do
-        "doesn't matter for validation"
-      else
-        Arrow.Repo.one(
-          from info in Arrow.Gtfs.FeedInfo, where: info.id == "mbta-ma-us", select: info.version
-        )
-      end
+      Arrow.Repo.one(
+        from info in Arrow.Gtfs.FeedInfo, where: info.id == "mbta-ma-us", select: info.version
+      )
 
     with :ok <- validate_required_files(unzip),
-         :ok <- validate_version_change(new_version, current_version) do
-      case import_transaction(unzip, validate_only?) do
-        {:ok, _} ->
-          Logger.info("GTFS import success #{job_info}")
-          :ok
-
-        {:error, :validation_success} ->
-          Logger.info("GTFS validation success #{job_info}")
-          :ok
-
-        {:error, reason} = error ->
-          Logger.warning("GTFS import or validation failed reason=#{inspect(reason)} #{job_info}")
-
-          error
-      end
+         :ok <- validate_version_change(new_version, current_version),
+         {:ok, _} <- import_transaction(unzip) do
+      Logger.info("GTFS import success #{job_info}")
+      :ok
     else
       :unchanged ->
         Logger.info("GTFS import skipped due to unchanged version #{job_info}")
-
         :ok
 
       {:error, reason} = error ->
-        Logger.warning("GTFS import or validation failed reason=#{inspect(reason)} #{job_info}")
-
+        Logger.warning("GTFS import failed reason=#{inspect(reason)} #{job_info}")
         error
     end
   end
 
-  defp import_transaction(unzip, validate_only?) do
+  defp import_transaction(unzip) do
+    transaction = fn ->
+      external_fkeys = get_external_fkeys()
+      drop_external_fkeys(external_fkeys)
+
+      truncate_all()
+      import_all(unzip)
+
+      add_external_fkeys(external_fkeys)
+    end
+
+    {elapsed_ms, result} =
+      fn -> Repo.transaction(transaction, timeout: @import_timeout_ms) end
+      |> :timer.tc(:millisecond)
+
+    Logger.info("GTFS archive import transaction completed elapsed_ms=#{elapsed_ms}")
+
+    result
+  end
+
+  @doc """
+  Validates a GTFS feed for internal consistency, and consistency with Arrow
+  disruption data that depends on it.
+
+  `job` is the Oban job running this validation.
+  """
+  @spec validate(Unzip.t(), Oban.Job.t()) :: :ok | {:error, term}
+  def validate(unzip, job) do
+    job_info = JobHelper.logging_params(job)
+
+    Logger.info("GTFS validation job starting #{job_info}")
+
+    with :ok <- validate_required_files(unzip),
+         {:error, :validation_success} <- validate_transaction(unzip) do
+      Logger.info("GTFS validation success #{job_info}")
+      :ok
+    else
+      {:error, reason} = error ->
+        Logger.warning("GTFS validation failed reason=#{inspect(reason)} #{job_info}")
+        error
+    end
+  end
+
+  defp validate_transaction(unzip) do
     transaction = fn ->
       external_fkeys = get_external_fkeys()
       drop_external_fkeys(external_fkeys)
@@ -84,20 +99,17 @@ defmodule Arrow.Gtfs do
 
       add_external_fkeys(external_fkeys)
 
-      if validate_only? do
-        # Set any deferred constraints to run now, instead of on transaction commit,
-        # since we don't actually commit the transaction in this case.
-        _ = Repo.query!("SET CONSTRAINTS ALL IMMEDIATE")
-        Repo.rollback(:validation_success)
-      end
+      # Set any deferred constraints to run now, instead of on transaction commit,
+      # since we don't actually commit the transaction in this case.
+      _ = Repo.query!("SET CONSTRAINTS ALL IMMEDIATE")
+      Repo.rollback(:validation_success)
     end
 
     {elapsed_ms, result} =
       fn -> Repo.transaction(transaction, timeout: @import_timeout_ms) end
       |> :timer.tc(:millisecond)
 
-    action = if validate_only?, do: "validation", else: "import"
-    Logger.info("GTFS archive #{action} transaction completed elapsed_ms=#{elapsed_ms}")
+    Logger.info("GTFS archive validation transaction completed elapsed_ms=#{elapsed_ms}")
 
     result
   end
