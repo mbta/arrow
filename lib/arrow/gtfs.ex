@@ -91,7 +91,7 @@ defmodule Arrow.Gtfs do
   end
 
   defp validate_transaction(unzip) do
-    schemas = validation_schemas()
+    schemas = validated_schemas()
 
     transaction = fn ->
       re_add_external_fkeys = drop_external_fkeys()
@@ -179,7 +179,7 @@ defmodule Arrow.Gtfs do
 
   # For validation, only the feed tables that are referenced by FKs from
   # Arrow disruption data tables are imported.
-  defp validation_schemas do
+  defp validated_schemas do
     gtfs_tables_referenced_by_external_fkeys =
       get_external_fkeys()
       |> MapSet.new(& &1.referenced_table)
