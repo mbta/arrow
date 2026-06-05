@@ -47,7 +47,7 @@ defmodule Arrow.Gtfs do
   end
 
   defp import_transaction(unzip) do
-    schemas = importable_schemas()
+    schemas = gtfs_schemas()
 
     transaction = fn ->
       re_add_external_fkeys = drop_external_fkeys()
@@ -154,7 +154,7 @@ defmodule Arrow.Gtfs do
   defp validate_version_change(version, version), do: :unchanged
   defp validate_version_change(_new_version, _current_version), do: :ok
 
-  defp importable_schemas do
+  defp gtfs_schemas do
     # All the Ecto schemas that represent GTFS feed tables.
     # Listed in the order in which they should be imported.
     [
@@ -184,26 +184,26 @@ defmodule Arrow.Gtfs do
       get_external_fkeys()
       |> MapSet.new(& &1.referenced_table)
 
-    importable_schemas()
+    gtfs_schemas()
     |> Enum.filter(fn schema ->
       schema.__schema__(:source) in gtfs_tables_referenced_by_external_fkeys
     end)
   end
 
   defp required_files do
-    importable_schemas()
+    gtfs_schemas()
     |> Enum.flat_map(& &1.filenames())
     |> MapSet.new()
   end
 
   defp get_external_fkeys do
-    importable_schemas()
+    gtfs_schemas()
     |> Enum.map(& &1.__schema__(:source))
     |> ForeignKeyConstraint.external_constraints_referencing_tables()
   end
 
   defp get_internal_fkeys do
-    importable_schemas()
+    gtfs_schemas()
     |> Enum.map(& &1.__schema__(:source))
     |> ForeignKeyConstraint.internal_constraints()
   end
