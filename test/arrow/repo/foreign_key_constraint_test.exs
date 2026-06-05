@@ -92,7 +92,7 @@ defmodule Arrow.Repo.ForeignKeyConstraintTest do
     end
   end
 
-  describe "constraints_referencing_internal_tables/1" do
+  describe "internal_constraints/1" do
     test "returns fkeys both originating in and referencing the given tables" do
       assert fkeys = ForeignKeyConstraint.internal_constraints(["a", "c"])
       assert length(fkeys) == 2
