@@ -26,10 +26,6 @@ defmodule Arrow.Gtfs.ImportWorker do
     end
   end
 
-  # A sane timeout to avoid buildup of stuck jobs. This is especially important
-  # for cases where our RDS instance runs out of credits--it stops the job from
-  # eating up additional credits as they recharge and keeping the server
-  # unresponsive for even longer.
   # Import jobs generally take around 5 minutes.
   @impl Oban.Worker
   def timeout(_job), do: :timer.minutes(10)

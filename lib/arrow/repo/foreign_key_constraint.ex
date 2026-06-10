@@ -46,6 +46,34 @@ defmodule Arrow.Repo.ForeignKeyConstraint do
   end
 
   @doc """
+  Returns foreign key constraints that both originate in, and reference, tables in `tables`.
+
+  For example, given the following foreign key relations:
+
+      foo.bar_id -> bar.id
+      foo.baz_id -> baz.id
+      baz.bar_id -> bar.id
+
+  Calling this:
+
+      internal_constraints(["bar", "baz"])
+
+  Would produce this:
+
+      [
+        %ForeignKeyConstraint{origin_table: "baz", referenced_table: "bar"}
+      ]
+  """
+  @spec internal_constraints(list(String.t() | atom)) :: list(t())
+  def internal_constraints(tables) when is_list(tables) do
+    from(fk in __MODULE__,
+      where: fk.referenced_table in ^tables,
+      where: fk.origin_table in ^tables
+    )
+    |> Repo.all()
+  end
+
+  @doc """
   Drops a foreign key constraint.
 
   This function should not be used to permanently drop a constraint--

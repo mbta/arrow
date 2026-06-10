@@ -20,19 +20,15 @@ defmodule Arrow.Gtfs.ValidationWorker do
     ]
 
   @impl Oban.Worker
-  def perform(%Oban.Job{args: %{"s3_uri" => s3_uri, "archive_version" => new_version}} = job) do
+  def perform(%Oban.Job{args: %{"s3_uri" => s3_uri}} = job) do
     with {:ok, unzip} <- Arrow.Gtfs.Archive.to_unzip_struct(s3_uri) do
-      Arrow.Gtfs.import(unzip, new_version, job, validate_only?: true)
+      Arrow.Gtfs.validate(unzip, job)
     end
   end
 
-  # A sane timeout to avoid buildup of stuck jobs. This is especially important
-  # for cases where our RDS instance runs out of credits--it stops the job from
-  # eating up additional credits as they recharge and keeping the server
-  # unresponsive for even longer.
-  # Validation jobs generally take around 2-3 minutes.
+  # Validation jobs generally take less than a minute.
   @impl Oban.Worker
-  def timeout(_job), do: :timer.minutes(10)
+  def timeout(_job), do: :timer.minutes(5)
 
   @spec check_jobs(Arrow.Gtfs.JobHelper.status_filter()) :: list(map)
   def check_jobs(status_filter) do
