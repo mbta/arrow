@@ -102,7 +102,8 @@ defmodule Arrow.Gtfs do
       truncate(schemas)
       import_feed(unzip, schemas)
 
-      # Only re-add external FKs since we're not concerned with validating the internal consistency of the feed.
+      # Re-add external FKs only, not internal FKs, since we're not concerned
+      # with validating the internal consistency of the feed.
       add_external_fkeys(external_fkeys)
 
       # Set any deferred constraints to run now, instead of on transaction commit,
@@ -212,9 +213,8 @@ defmodule Arrow.Gtfs do
 
   @spec drop_external_fkeys(list(ForeignKeyConstraint.t())) :: :ok
   defp drop_external_fkeys(external_fkeys) do
-    # To allow all GTFS tables to be truncated, we first need to
-    # temporarily drop all foreign key constraints referencing them
-    # from non-GTFS tables.
+    # To allow GTFS tables to be truncated, we first need to temporarily drop
+    # all foreign key constraints referencing them from non-GTFS tables.
     fkey_names = Enum.map_join(external_fkeys, ",", & &1.name)
 
     Logger.info(
