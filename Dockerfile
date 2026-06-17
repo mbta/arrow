@@ -1,5 +1,5 @@
 ARG ELIXIR_VERSION=1.18.1
-ARG ERLANG_VERSION=27.2
+ARG ERLANG_VERSION=27.3.4.13
 ARG DEBIAN_VERSION=bullseye-20241223
 
 FROM hexpm/elixir:$ELIXIR_VERSION-erlang-$ERLANG_VERSION-debian-$DEBIAN_VERSION AS elixir-builder
@@ -21,7 +21,7 @@ ADD \
 # Instructions from:
 # https://github.com/nodesource/distributions#debian-versions
 
-ARG NODE_MAJOR=20
+ARG NODE_MAJOR=24
 
 RUN mkdir -p /etc/apt/keyrings && \
   curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
