@@ -1,6 +1,6 @@
 name: Report Elixir Coverage
 
-on:
+on: # zizmor: ignore[dangerous-triggers]
   workflow_run:
     workflows:
       - CI
@@ -8,26 +8,43 @@ on:
       - completed
 
 permissions:
-  actions: read
+  actions: read # needed to download workflow run artifacts
   contents: read
-  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.id }}
+  cancel-in-progress: true
 
 jobs:
   report-coverage:
+    name: Report Coverage
     if: ${{ github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    permissions:
+      actions: read # needed to download workflow run artifacts
+      contents: read
+      pull-requests: write # needed to post coverage comments
 
     steps:
-      - run: mkdir -p ${{ runner.temp }}/cover
-      - run: echo Fetching artifacts for ${{ github.event.workflow_run.id }}, event name ${{ github.event_name }}, triggered by ${{ github.event.workflow_run.event }}
+      - run: mkdir -p "${RUNNER_TEMP}/cover"
+        env:
+          RUNNER_TEMP: ${{ runner.temp }}
+      - run: echo "Fetching artifacts for ${WORKFLOW_RUN_ID}, event name ${GITHUB_EVENT_NAME}, triggered by ${GITHUB_EVENT_WORKFLOW_RUN_EVENT}"
+        env:
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_EVENT_WORKFLOW_RUN_EVENT: ${{ github.event.workflow_run.event }}
       - name: Download artifact
-        uses: actions/github-script@v3.1.0
+        uses: actions/github-script@47f7cf65b5ced0830a325f705cad64f2f58dddf7 # v3.1.0
+        env:
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
+          RUNNER_TEMP: ${{ runner.temp }}
         with:
           script: |
             var artifacts = await github.actions.listWorkflowRunArtifacts({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              run_id: ${{github.event.workflow_run.id }},
+              run_id: process.env.WORKFLOW_RUN_ID,
             });
             var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "elixir-lcov"
@@ -39,17 +56,25 @@ jobs:
               archive_format: 'zip',
             });
             var fs = require('fs');
-            fs.writeFileSync('${{ runner.temp }}/cover/elixir-lcov.zip', Buffer.from(download.data));
-      - working-directory: ${{ runner.temp }}/cover
+            fs.writeFileSync(process.env.RUNNER_TEMP + '/cover/elixir-lcov.zip', Buffer.from(download.data));
+      - id: pr-info
+        working-directory: ${{ runner.temp }}/cover
         run: |
           unzip elixir-lcov.zip
-          echo "PR_SHA=$(cat PR_SHA)" >> $GITHUB_ENV
-          echo "PR_NUMBER=$(cat PR_NUMBER)" >> $GITHUB_ENV
-      - uses: actions/checkout@v2 # UNTRUSTED CODE - do not run scripts from it
+          # Sanitize artifact values: PR_SHA must be a hex SHA, PR_NUMBER must be numeric
+          PR_SHA_VAL=$(cat PR_SHA | tr -cd '[:xdigit:]' | head -c 40)
+          PR_NUMBER_VAL=$(cat PR_NUMBER | tr -cd '[:digit:]')
+          echo "PR_SHA=${PR_SHA_VAL}" >> $GITHUB_OUTPUT
+          echo "PR_NUMBER=${PR_NUMBER_VAL}" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3 - UNTRUSTED CODE - do not run scripts from it
         with:
-          ref: ${{ env.PR_SHA }}
+          ref: ${{ steps.pr-info.outputs.PR_SHA }}
+          persist-credentials: false
       - name: Upload coverage artifact and post comment
-        uses: mbta/github-actions-report-lcov@v1
+        uses: mbta/github-actions-report-lcov@9116c86aa5f59c26775d3b84c79ec5b2312301e5 # v1.4.1
+        env:
+          PR_SHA: ${{ steps.pr-info.outputs.PR_SHA }}
+          PR_NUMBER: ${{ steps.pr-info.outputs.PR_NUMBER }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           coverage-files: ${{ runner.temp }}/cover/lcov*.info
