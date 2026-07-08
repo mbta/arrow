@@ -12,6 +12,8 @@ updates:
         - "patch"
   ignore:
     - dependency-name: heroicons
+  cooldown:
+    default-days: 7
 - package-ecosystem: npm
   directory: "/assets"
   schedule:
@@ -29,3 +31,5 @@ updates:
     - dependency-name: phoenix_live_react
     - dependency-name: phoenix_live_view
     - dependency-name: react-phoenix
+  cooldown:
+    default-days: 7
