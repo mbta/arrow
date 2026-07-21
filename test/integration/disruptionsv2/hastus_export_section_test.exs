@@ -20,7 +20,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
   setup do
     reassign_env(
       :hastus_export_storage_request_fn,
-      {Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest.FakeRequestWithValidExport,
+      {Arrow.Integration.Disruptionsv2.HastusExportSectionTest.FakeRequestWithValidExport,
        :request}
     )
 
