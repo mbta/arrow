@@ -103,6 +103,15 @@ defmodule Arrow.Hastus.ExportUpload do
     end
   end
 
+  @spec delete_from_s3(String.t()) :: {:ok, binary() | {:error, term()}}
+  def delete_from_s3(s3_path) do
+    if Application.fetch_env!(:arrow, :hastus_export_storage_enabled?) do
+      do_delete(s3_path)
+    else
+      {:error, :disabled}
+    end
+  end
+
   # Detects service IDs in the export that are duplicates of existing
   # service IDs in hastus_services.
   # If any such service IDs exist, edits the export so that they are
@@ -212,6 +221,21 @@ defmodule Arrow.Hastus.ExportUpload do
 
     case apply(mod, fun, [upload_op]) do
       {:ok, _} -> {:ok, Path.join(["s3://", s3_bucket, path])}
+      {:error, _} = error -> error
+    end
+  end
+
+  defp do_delete(s3_path) do
+    s3_uri = URI.parse(s3_path)
+    s3_bucket = s3_uri.host
+    s3_path = s3_uri.path
+
+    delete_op = ExAws.S3.delete_object(s3_bucket, s3_path)
+
+    {mod, fun} = Application.fetch_env!(:arrow, :hastus_export_storage_request_fn)
+
+    case apply(mod, fun, [delete_op]) do
+      {:ok, %{body: body}} -> {:ok, body}
       {:error, _} = error -> error
     end
   end

@@ -126,6 +126,23 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     end
   end
 
+  describe "delete_from_s3/1" do
+    test "delete is disabled" do
+      assert {:error, :disabled} = ExportUpload.delete_from_s3("filename")
+    end
+
+    test "deletes uploaded file" do
+      reassign_env(:trainsformer_export_storage_enabled?, true)
+
+      upload_result = ExportUpload.upload_to_s3("file content", "export.zip", "12345")
+      {:ok, path} = upload_result
+
+      delete_result = ExportUpload.delete_from_s3(path)
+
+      assert {:ok, _} = delete_result
+    end
+  end
+
   describe "validate_stop_ids_in_gtfs/4" do
     defmodule FakeRepo do
       def all(_) do

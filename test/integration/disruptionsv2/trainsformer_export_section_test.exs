@@ -9,6 +9,14 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
 
   @moduletag :integration
 
+  defmodule FakeRequestWithValidExport do
+    @export_dir "test/support/fixtures/trainsformer"
+
+    def request(_) do
+      {:ok, %{body: File.read!("#{@export_dir}/valid_export.zip")}}
+    end
+  end
+
   setup do
     stops = [
       "NEC-2287",
@@ -26,6 +34,14 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     for stop <- stops do
       insert(:gtfs_stop, id: stop, name: stop, lat: 0, lon: 0, municipality: "Boston")
     end
+
+    reassign_env(
+      :trainsformer_export_storage_request_fn,
+      {Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest.FakeRequestWithValidExport,
+       :request}
+    )
+
+    reassign_env(:trainsformer_export_storage_enabled?, true)
 
     :ok
   end
@@ -49,14 +65,6 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
   end
 
   feature "can view a timetable and toggle directions", %{session: session} do
-    reassign_env(
-      :trainsformer_export_storage_request_fn,
-      {Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest.FakeRequestWithValidExport,
-       :request}
-    )
-
-    reassign_env(:trainsformer_export_storage_enabled?, true)
-
     disruption = disruption_v2_fixture(%{mode: :commuter_rail})
 
     session
@@ -290,14 +298,6 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     accept_prompt(session, fn s ->
       s |> click(text("Cancel")) |> assert_text("Upload Trainsformer export")
     end)
-  end
-
-  defmodule FakeRequestWithValidExport do
-    @export_dir "test/support/fixtures/trainsformer"
-
-    def request(_) do
-      {:ok, %{body: File.read!("#{@export_dir}/valid_export.zip")}}
-    end
   end
 
   feature "can edit an existing Trainsformer export", %{session: session} do

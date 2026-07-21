@@ -5,8 +5,27 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
   import Wallaby.Query
   import Arrow.{DisruptionsFixtures, HastusFixtures}
   import Arrow.Factory
+  import Test.Support.Helpers
 
   @moduletag :integration
+
+  defmodule FakeRequestWithValidExport do
+    @export_dir "test/support/fixtures/hastus"
+
+    def request(_) do
+      {:ok, %{body: File.read!("#{@export_dir}/valid_export.zip")}}
+    end
+  end
+
+  setup do
+    reassign_env(
+      :hastus_export_storage_request_fn,
+      {Arrow.Integration.Disruptionsv2.HastusExportSectionTest.FakeRequestWithValidExport,
+       :request}
+    )
+
+    reassign_env(:hastus_export_storage_enabled?, true)
+  end
 
   feature "can upload a HASTUS export", %{session: session} do
     disruption = disruption_v2_fixture()
