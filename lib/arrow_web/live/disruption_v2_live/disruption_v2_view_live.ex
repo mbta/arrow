@@ -5,8 +5,10 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
   alias Arrow.Hastus
   alias Arrow.Hastus.Export, as: HastusExport
+  alias Arrow.Hastus.ExportUpload, as: HastusExportUpload
   alias Arrow.Trainsformer
   alias Arrow.Trainsformer.Export, as: TrainsformerExport
+  alias Arrow.Trainsformer.ExportUpload, as: TrainsformerExportUpload
   alias ArrowWeb.DisruptionComponents
 
   @impl true
@@ -115,21 +117,29 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     {parsed_id, _} = Integer.parse(export_id)
     export = Hastus.get_export!(parsed_id)
 
-    case Hastus.delete_export(export) do
-      {:ok, _} ->
-        disruption = %{
-          socket.assigns.disruption
-          | hastus_exports:
-              Enum.reject(socket.assigns.disruption.hastus_exports, &(&1.id == parsed_id))
-        }
+    with {:ok, _} <- HastusExportUpload.delete_from_s3(export.s3_path),
+         {:ok, _} <- Hastus.delete_export(export) do
+      disruption = %{
+        socket.assigns.disruption
+        | hastus_exports:
+            Enum.reject(socket.assigns.disruption.hastus_exports, &(&1.id == parsed_id))
+      }
 
-        {:noreply,
-         socket
-         |> assign(:disruption, disruption)
-         |> put_flash(:info, "Export deleted successfully")}
-
+      {:noreply,
+       socket
+       |> assign(:disruption, disruption)
+       |> put_flash(:info, "Export deleted successfully")}
+    else
       {:error, %Ecto.Changeset{} = _changeset} ->
         {:noreply, put_flash(socket, :error, "Error when deleting export!")}
+
+      {:error, _} ->
+        {:noreply,
+         socket
+         |> update(
+           :errors,
+           &[{:error, {:s3_delete_failed, {"Failed to delete export in S3", []}}} | &1]
+         )}
     end
   end
 
@@ -137,21 +147,29 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
     {parsed_id, _} = Integer.parse(export_id)
     export = Trainsformer.get_export!(parsed_id)
 
-    case Trainsformer.delete_export(export) do
-      {:ok, _} ->
-        disruption = %{
-          socket.assigns.disruption
-          | trainsformer_exports:
-              Enum.reject(socket.assigns.disruption.trainsformer_exports, &(&1.id == parsed_id))
-        }
+    with {:ok, _} <- TrainsformerExportUpload.delete_from_s3(export.s3_path),
+         {:ok, _} <- Trainsformer.delete_export(export) do
+      disruption = %{
+        socket.assigns.disruption
+        | trainsformer_exports:
+            Enum.reject(socket.assigns.disruption.trainsformer_exports, &(&1.id == parsed_id))
+      }
 
-        {:noreply,
-         socket
-         |> assign(:disruption, disruption)
-         |> put_flash(:info, "Export deleted successfully")}
-
+      {:noreply,
+       socket
+       |> assign(:disruption, disruption)
+       |> put_flash(:info, "Export deleted successfully")}
+    else
       {:error, %Ecto.Changeset{} = _changeset} ->
         {:noreply, put_flash(socket, :error, "Error when deleting export!")}
+
+      {:error, _} ->
+        {:noreply,
+         socket
+         |> update(
+           :errors,
+           &[{:error, {:s3_delete_failed, {"Failed to delete export in S3", []}}} | &1]
+         )}
     end
   end
 

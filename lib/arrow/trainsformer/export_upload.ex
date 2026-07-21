@@ -565,6 +565,15 @@ defmodule Arrow.Trainsformer.ExportUpload do
     end
   end
 
+  @spec delete_from_s3(String.t()) :: {:ok, binary() | {:error, term()}}
+  def delete_from_s3(s3_path) do
+    if Application.fetch_env!(:arrow, :trainsformer_export_storage_enabled?) do
+      do_delete(s3_path)
+    else
+      {:error, :disabled}
+    end
+  end
+
   @type stop_time_info :: %{
           arrival_time: String.t(),
           departure_time: String.t(),
@@ -668,6 +677,21 @@ defmodule Arrow.Trainsformer.ExportUpload do
     {mod, fun} = Application.fetch_env!(:arrow, :trainsformer_export_storage_request_fn)
 
     case apply(mod, fun, [download_op]) do
+      {:ok, %{body: body}} -> {:ok, body}
+      {:error, _} = error -> error
+    end
+  end
+
+  defp do_delete(s3_path) do
+    s3_uri = URI.parse(s3_path)
+    s3_bucket = s3_uri.host
+    s3_path = s3_uri.path
+
+    delete_op = ExAws.S3.delete_object(s3_bucket, s3_path)
+
+    {mod, fun} = Application.fetch_env!(:arrow, :trainsformer_export_storage_request_fn)
+
+    case apply(mod, fun, [delete_op]) do
       {:ok, %{body: body}} -> {:ok, body}
       {:error, _} = error -> error
     end
