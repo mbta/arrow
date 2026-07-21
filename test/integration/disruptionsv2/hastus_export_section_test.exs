@@ -5,6 +5,7 @@ defmodule Arrow.Integration.Disruptionsv2.HastusExportSectionTest do
   import Wallaby.Query
   import Arrow.{DisruptionsFixtures, HastusFixtures}
   import Arrow.Factory
+  import Test.Support.Helpers
 
   @moduletag :integration
 
