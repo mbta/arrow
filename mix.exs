@@ -19,10 +19,13 @@ defmodule Arrow.MixProject do
           :unmatched_returns
         ]
       ],
-      preferred_cli_env: ["test.integration": :test],
       test_coverage: [tool: LcovEx, ignore_paths: ["deps/"]],
       listeners: [Phoenix.CodeReloader]
     ]
+  end
+
+  def cli do
+    [preferred_envs: ["test.integration": :test]]
   end
 
   # Configuration for the OTP application.
