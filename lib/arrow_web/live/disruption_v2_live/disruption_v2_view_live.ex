@@ -134,12 +134,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         {:noreply, put_flash(socket, :error, "Error when deleting export!")}
 
       {:error, _} ->
-        {:noreply,
-         socket
-         |> update(
-           :errors,
-           &[{:error, {:s3_delete_failed, {"Failed to delete export in S3", []}}} | &1]
-         )}
+        {:noreply, put_flash(socket, :error, "Failed to delete export in S3")}
     end
   end
 
@@ -164,12 +159,7 @@ defmodule ArrowWeb.DisruptionV2ViewLive do
         {:noreply, put_flash(socket, :error, "Error when deleting export!")}
 
       {:error, _} ->
-        {:noreply,
-         socket
-         |> update(
-           :errors,
-           &[{:error, {:s3_delete_failed, {"Failed to delete export in S3", []}}} | &1]
-         )}
+        {:noreply, put_flash(socket, :error, "Failed to delete export in S3")}
     end
   end
 
