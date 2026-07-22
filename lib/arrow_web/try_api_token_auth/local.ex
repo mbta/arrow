@@ -4,7 +4,6 @@ defmodule ArrowWeb.TryApiTokenAuth.Local do
   """
 
   alias Plug.Conn
-  require Logger
 
   @spec sign_in(Conn.t(), Arrow.AuthToken.t()) :: Conn.t()
   def sign_in(%Conn{} = conn, %Arrow.AuthToken{} = auth_token) do

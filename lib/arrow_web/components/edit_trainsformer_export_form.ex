@@ -1,6 +1,5 @@
 defmodule ArrowWeb.EditTrainsformerExportForm do
   @moduledoc false
-  require Logger
   use ArrowWeb, :live_component
 
   alias Arrow.Disruptions.DisruptionV2
