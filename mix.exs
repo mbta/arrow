@@ -16,6 +16,7 @@ defmodule Arrow.MixProject do
         plt_add_apps: [:mix],
         plt_add_deps: :app_tree,
         flags: [
+          :no_opaque,
           :unmatched_returns
         ]
       ],
