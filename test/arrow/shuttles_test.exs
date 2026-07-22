@@ -657,7 +657,7 @@ defmodule Arrow.ShuttlesTest do
     test "raises if a stop has missing lat/lon data" do
       stop2 =
         %{stop_lat: 42.373396, stop_lon: -70.1202}
-        |> stop_fixture
+        |> stop_fixture()
         |> Map.drop([:stop_lat, :stop_lon])
 
       assert {:error, error_message} = Shuttles.get_stop_coordinates(stop2)

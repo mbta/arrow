@@ -7,7 +7,7 @@ defmodule ArrowWeb.API.AdjustmentController do
 
   @spec index(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def index(conn, params) do
-    query = params |> take_filters |> format_filters |> build_query
+    query = params |> take_filters() |> format_filters() |> build_query()
 
     render(conn, "index.json-api", data: Repo.all(query))
   end
