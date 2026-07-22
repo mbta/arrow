@@ -489,8 +489,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
         new_warning(
           :missing_routes,
           ngettext(
-            "Export is missing a Southside route.",
-            "Export is missing %{count} Southside routes.",
+            "Export is missing a Southside route. Service will be removed from this route.",
+            "Export is missing %{count} Southside routes. Service will be removed from these routes.",
             num_southside_routes_missing
           ),
           items: southside_routes_missing
@@ -500,8 +500,8 @@ defmodule Arrow.Trainsformer.ExportUpload do
         new_warning(
           :missing_routes,
           ngettext(
-            "Export is missing a Northside route.",
-            "Export is missing %{count} Northside routes.",
+            "Export is missing a Northside route. Service will be removed from this route.",
+            "Export is missing %{count} Northside routes. Service will be removed from these routes.",
             num_northside_routes_missing
           ),
           items: northside_routes_missing
