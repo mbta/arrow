@@ -165,7 +165,7 @@ defmodule Arrow.ShuttlesTest do
     end
 
     test "update_shuttle/2 with valid route data updates the shuttle route" do
-      shuttle = shuttle_fixture()
+      %Shuttle{} = shuttle = shuttle_fixture()
       [route1, route2] = shuttle.routes
       destination = unique_shuttle_route_destination()
       updated_route1 = Map.merge(route1, %{destination: destination})
@@ -182,7 +182,7 @@ defmodule Arrow.ShuttlesTest do
     end
 
     test "update_shuttle/2 with valid shape_id updates the shuttle route shape" do
-      shuttle = shuttle_fixture()
+      %Shuttle{} = shuttle = shuttle_fixture()
       routes = shuttle.routes
       first_route = List.first(routes)
       new_shape = shape_fixture()

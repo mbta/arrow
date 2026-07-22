@@ -169,7 +169,7 @@ defmodule Arrow.DisruptionRevision do
           message: "is required without adjustments"
         )
 
-      adjustments != [] and kind not in [nil, ""] ->
+      kind not in [nil, ""] ->
         Changeset.add_error(changeset, :adjustment_kind, "cannot be set with adjustments")
 
       true ->
