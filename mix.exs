@@ -5,7 +5,7 @@ defmodule Arrow.MixProject do
     [
       app: :arrow,
       version: "0.1.0",
-      elixir: "~> 1.18",
+      elixir: "~> 1.20",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
@@ -16,13 +16,17 @@ defmodule Arrow.MixProject do
         plt_add_apps: [:mix],
         plt_add_deps: :app_tree,
         flags: [
+          :no_opaque,
           :unmatched_returns
         ]
       ],
-      preferred_cli_env: ["test.integration": :test],
       test_coverage: [tool: LcovEx, ignore_paths: ["deps/"]],
       listeners: [Phoenix.CodeReloader]
     ]
+  end
+
+  def cli do
+    [preferred_envs: ["test.integration": :test]]
   end
 
   # Configuration for the OTP application.

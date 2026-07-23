@@ -38,7 +38,7 @@ defmodule Arrow.Gtfs.ImportHelper do
       k
     else
       case k do
-        <<^prefix::binary-size(byte_size(prefix)), k::binary>> -> k
+        <<^prefix::binary-size(byte_size(^prefix)), k::binary>> -> k
         _ -> k
       end
     end

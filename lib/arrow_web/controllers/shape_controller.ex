@@ -1,5 +1,4 @@
 defmodule ArrowWeb.ShapeController do
-  require Logger
   alias Arrow.Shuttles.ShapesUpload
   alias ArrowWeb.ErrorHelpers
   alias Ecto.Changeset

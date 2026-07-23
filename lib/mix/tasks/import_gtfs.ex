@@ -4,8 +4,6 @@ defmodule Mix.Tasks.ImportGtfs do
   """
   use Mix.Task
 
-  require Logger
-
   @shortdoc "Imports MBTA_GTFS.zip"
 
   @impl Mix.Task

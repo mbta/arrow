@@ -6,8 +6,6 @@ defmodule Arrow.Trainsformer.ExportUpload do
   """
   alias Arrow.Gtfs.TimeHelper
 
-  require Logger
-
   use Gettext, backend: ArrowWeb.Gettext
 
   @type t :: %__MODULE__{
