@@ -361,7 +361,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                {
                  :missing_routes,
                  {
-                   "Export is missing 2 Northside routes.",
+                   "Export is missing 2 Northside routes. Service will be removed from these routes.",
                    [items: ["CR-Fitchburg", "CR-Lowell"]]
                  }
                }
@@ -386,7 +386,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                {
                  :missing_routes,
                  {
-                   "Export is missing 6 Southside routes.",
+                   "Export is missing 6 Southside routes. Service will be removed from these routes.",
                    [
                      items: [
                        "CR-Greenbush",
