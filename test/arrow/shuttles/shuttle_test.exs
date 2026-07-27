@@ -950,11 +950,11 @@ defmodule Arrow.Shuttles.ShuttleTest do
       assert [
                %Ecto.Changeset{
                  valid?: false,
-                 errors: [waypoint: {"if both waypoints are not blank, they must match", []}]
+                 errors: [waypoint: {"non-blank waypoints must match", []}]
                },
                %Ecto.Changeset{
                  valid?: false,
-                 errors: [waypoint: {"if both waypoints are not blank, they must match", []}]
+                 errors: [waypoint: {"non-blank waypoints must match", []}]
                }
              ] =
                Ecto.Changeset.get_assoc(changeset, :routes)

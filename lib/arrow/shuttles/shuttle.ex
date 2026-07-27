@@ -92,24 +92,27 @@ defmodule Arrow.Shuttles.Shuttle do
   end
 
   defp validate_zero_or_one_waypoint(changeset) do
-    changeset
-    |> get_assoc(:routes)
-    |> Enum.map(&get_field(&1, :waypoint, ""))
-    |> Enum.uniq()
-    |> case do
-      [waypoint1, waypoint2] when byte_size(waypoint1) > 0 and byte_size(waypoint2) > 0 ->
-        update_change(changeset, :routes, fn routes ->
-          Enum.map(routes, fn route_changeset ->
-            add_error(
-              route_changeset,
-              :waypoint,
-              "if both waypoints are not blank, they must match"
-            )
-          end)
-        end)
+    waypoints_mismatched? =
+      changeset
+      |> get_assoc(:routes)
+      |> Enum.map(&get_field(&1, :waypoint, ""))
+      |> Enum.uniq()
+      |> then(
+        &match?(
+          [waypoint1, waypoint2] when byte_size(waypoint1) > 0 and byte_size(waypoint2) > 0,
+          &1
+        )
+      )
 
-      _ ->
-        changeset
+    if waypoints_mismatched? do
+      update_change(changeset, :routes, fn route_changesets ->
+        Enum.map(
+          route_changesets,
+          &add_error(&1, :waypoint, "non-blank waypoints must match")
+        )
+      end)
+    else
+      changeset
     end
   end
 
