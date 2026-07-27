@@ -35,6 +35,7 @@ defmodule Arrow.Shuttles.Shuttle do
       )
     end)
     |> validate_required([:shuttle_name, :status])
+    |> validate_zero_or_one_waypoint()
     |> validate_required_for(:status, today)
     |> foreign_key_constraint(:disrupted_route_id)
     |> unique_constraint(:shuttle_name)
@@ -88,6 +89,28 @@ defmodule Arrow.Shuttles.Shuttle do
       do: add_error(changeset, :status, "all routes must have an associated shape"),
       else: changeset
     )
+  end
+
+  defp validate_zero_or_one_waypoint(changeset) do
+    changeset
+    |> get_assoc(:routes)
+    |> Enum.map(&get_field(&1, :waypoint, ""))
+    |> Enum.uniq()
+    |> case do
+      [waypoint1, waypoint2] when byte_size(waypoint1) > 0 and byte_size(waypoint2) > 0 ->
+        update_change(changeset, :routes, fn routes ->
+          Enum.map(routes, fn route_changeset ->
+            add_error(
+              route_changeset,
+              :waypoint,
+              "if both waypoints are not blank, they must match"
+            )
+          end)
+        end)
+
+      _ ->
+        changeset
+    end
   end
 
   defp validate_for_inactive_status(changeset, today) do

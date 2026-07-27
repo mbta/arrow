@@ -933,5 +933,68 @@ defmodule Arrow.Shuttles.ShuttleTest do
 
       assert %Ecto.Changeset{valid?: true} = inactive_changeset
     end
+
+    test "non-blank waypoints must match" do
+      shuttle = shuttle_fixture()
+      route_id0 = Enum.at(shuttle.routes, 0).id
+      route_id1 = Enum.at(shuttle.routes, 1).id
+
+      changeset =
+        Shuttle.changeset(shuttle, %{
+          routes: [
+            %{id: route_id0, waypoint: "Waypoint A"},
+            %{id: route_id1, waypoint: "Waypoint B"}
+          ]
+        })
+
+      assert [
+               %Ecto.Changeset{
+                 valid?: false,
+                 errors: [waypoint: {"if both waypoints are not blank, they must match", []}]
+               },
+               %Ecto.Changeset{
+                 valid?: false,
+                 errors: [waypoint: {"if both waypoints are not blank, they must match", []}]
+               }
+             ] =
+               Ecto.Changeset.get_assoc(changeset, :routes)
+    end
+
+    test "one non-blank waypoint is ok" do
+      shuttle1 = shuttle_fixture()
+      route_id0 = Enum.at(shuttle1.routes, 0).id
+      route_id1 = Enum.at(shuttle1.routes, 1).id
+
+      changeset1 =
+        Shuttle.changeset(shuttle1, %{
+          routes: [%{id: route_id0, waypoint: ""}, %{id: route_id1, waypoint: "A waypoint"}]
+        })
+
+      assert %Ecto.Changeset{valid?: true} = changeset1
+
+      shuttle2 = shuttle_fixture()
+      route_id0 = Enum.at(shuttle2.routes, 0).id
+      route_id1 = Enum.at(shuttle2.routes, 1).id
+
+      changeset2 =
+        Shuttle.changeset(shuttle2, %{
+          routes: [%{id: route_id0, waypoint: "A waypoint"}, %{id: route_id1, waypoint: ""}]
+        })
+
+      assert %Ecto.Changeset{valid?: true} = changeset2
+    end
+
+    test "two non-blank waypoints are ok" do
+      shuttle = shuttle_fixture()
+      route_id0 = Enum.at(shuttle.routes, 0).id
+      route_id1 = Enum.at(shuttle.routes, 1).id
+
+      changeset =
+        Shuttle.changeset(shuttle, %{
+          routes: [%{id: route_id0, waypoint: ""}, %{id: route_id1, waypoint: ""}]
+        })
+
+      assert %Ecto.Changeset{valid?: true} = changeset
+    end
   end
 end
