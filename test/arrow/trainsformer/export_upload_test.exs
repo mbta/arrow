@@ -303,7 +303,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
   end
 
   describe "validate_one_or_all_routes_from_one_side/3" do
-    test "returns empty error route lists if all Northside routes have a trip" do
+    test "returns empty error route lists if all North-Side routes have a trip" do
       assert :ok =
                ExportUpload.validate_one_or_all_routes_from_one_side([
                  %{
@@ -329,7 +329,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                ])
     end
 
-    test "returns empty error route lists if exactly one Northside route has a trip" do
+    test "returns empty error route lists if exactly one North-Side route has a trip" do
       assert :ok =
                ExportUpload.validate_one_or_all_routes_from_one_side([
                  %{
@@ -355,13 +355,13 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                ])
     end
 
-    test "returns missing routes if more than one but not all Northside routes have a trip" do
+    test "returns missing routes if more than one but not all North-Side routes have a trip" do
       assert {
                :warning,
                {
                  :missing_routes,
                  {
-                   "Export is missing 2 Northside routes. Service will be removed from these routes.",
+                   "Export is missing 2 North-Side routes. Service will be removed from these routes.",
                    [items: ["CR-Fitchburg", "CR-Lowell"]]
                  }
                }
@@ -380,13 +380,13 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                ])
     end
 
-    test "returns missing routes if more than one but not all Southside routes have a trip" do
+    test "returns missing routes if more than one but not all South-Side routes have a trip" do
       assert {
                :warning,
                {
                  :missing_routes,
                  {
-                   "Export is missing 6 Southside routes. Service will be removed from these routes.",
+                   "Export is missing 6 South-Side routes. Service will be removed from these routes.",
                    [
                      items: [
                        "CR-Greenbush",
@@ -433,7 +433,7 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
     test "returns invalid routes for multiple routes not in either side's required list" do
       assert {:warning,
               {:invalid_routes,
-               {"Multiple routes not north or southside.", [items: ["CR-Foxboro", "CR-Nowhere"]]}}} =
+               {"Multiple routes not north or south-side.", [items: ["CR-Foxboro", "CR-Nowhere"]]}}} =
                ExportUpload.validate_one_or_all_routes_from_one_side([
                  %{
                    route_id: "CR-Foxboro",
