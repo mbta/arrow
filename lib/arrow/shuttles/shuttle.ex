@@ -47,32 +47,47 @@ defmodule Arrow.Shuttles.Shuttle do
   end
 
   defp validate_for_active_status(changeset) do
-    routes = get_assoc(changeset, :routes)
+    changeset
+    |> validate_min_stops_on_routes()
+    |> validate_stop_times()
+    |> validate_route_shapes()
+  end
 
-    cond do
-      routes |> Enum.map(&get_assoc(&1, :route_stops)) |> Enum.any?(&(length(&1) < 2)) ->
-        add_error(changeset, :status, "must have at least two stops in each direction")
+  defp validate_min_stops_on_routes(changeset) do
+    changeset
+    |> get_assoc(:routes)
+    |> Enum.map(&get_assoc(&1, :route_stops))
+    |> Enum.any?(&(length(&1) < 2))
+    |> if(
+      do: add_error(changeset, :status, "must have at least two stops in each direction"),
+      else: changeset
+    )
+  end
 
-      routes
-      |> Enum.map(&get_assoc(&1, :route_stops))
-      |> Enum.any?(&route_stops_missing_time_to_next_stop?/1) ->
+  defp validate_stop_times(changeset) do
+    changeset
+    |> get_assoc(:routes)
+    |> Enum.map(&get_assoc(&1, :route_stops))
+    |> Enum.any?(&route_stops_missing_time_to_next_stop?/1)
+    |> if(
+      do:
         add_error(
           changeset,
           :status,
           "all stops except the last in each direction must have a time to next stop"
-        )
+        ),
+      else: changeset
+    )
+  end
 
-      routes
-      |> Enum.any?(fn route -> is_nil(route.data.shape) end) ->
-        add_error(
-          changeset,
-          :status,
-          "all routes must have an associated shape"
-        )
-
-      true ->
-        changeset
-    end
+  defp validate_route_shapes(changeset) do
+    changeset
+    |> get_assoc(:routes)
+    |> Enum.any?(fn route -> is_nil(route.data.shape) end)
+    |> if(
+      do: add_error(changeset, :status, "all routes must have an associated shape"),
+      else: changeset
+    )
   end
 
   defp validate_for_inactive_status(changeset, today) do
