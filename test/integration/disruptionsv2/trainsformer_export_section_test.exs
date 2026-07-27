@@ -212,11 +212,11 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> attach_file(file_field("trainsformer_export", visible: false),
       path: "test/support/fixtures/trainsformer/invalid_export_missing_south_side_routes.zip"
     )
-    |> assert_text("Export is missing 4 Southside routes.")
+    |> assert_text("Export is missing 4 South-Side routes.")
     |> assert_text("CR-Greenbush")
   end
 
-  feature "shows warning for trainsformer export containing multiple routes that are neither north nor southside",
+  feature "shows warning for trainsformer export containing multiple routes that are neither north nor south-side",
           %{
             session: session
           } do
@@ -229,7 +229,7 @@ defmodule Arrow.Integration.Disruptionsv2.TrainsformerExportSectionTest do
     |> attach_file(file_field("trainsformer_export", visible: false),
       path: "test/support/fixtures/trainsformer/invalid_export_multiple_no_side_routes.zip"
     )
-    |> assert_text("Multiple routes not north or southside.")
+    |> assert_text("Multiple routes not north or south-side.")
     |> assert_text("CR-Nowhere")
     |> assert_text("CR-Foxboro")
   end
