@@ -86,6 +86,9 @@ defmodule Arrow.Shuttles.ShapesUpload do
            %{name: pm["name"], coordinates: process_coordinates(pm["LineString"]["coordinates"])}
          end)}
 
+      nil ->
+        {:error, "Failed to parse shape from kml, placemarks are missing."}
+
       _ ->
         {:error,
          {"Failed to parse shape from kml, placemarks are of unexpected type.",
