@@ -6,6 +6,20 @@ defmodule ArrowWeb.ShapeView do
   alias Arrow.Shuttles.Stop, as: ArrowStop
   alias Phoenix.Controller
 
+  @colors [
+    "da291c",
+    "003da5",
+    "ffc72c",
+    "00843d",
+    "ed8b00",
+    "7c878e",
+    "494f5c",
+    "003383",
+    "80276c",
+    "008eaa",
+    "52bbc5"
+  ]
+
   embed_templates "shape_html/*"
 
   @doc """
@@ -101,4 +115,8 @@ defmodule ArrowWeb.ShapeView do
   end
 
   defp render_route_stops(_), do: []
+
+  attr :colors, :list, default: @colors
+
+  def select(assigns)
 end

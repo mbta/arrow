@@ -26,13 +26,18 @@
           as={:shapes}
           skip_hidden={true}
         >
-          <.input field={f_nested[:name]} class="flex align-items-center" disabled />
-          <.input field={f_nested[:start_location]} class="flex align-items-center" />
-          <span>To</span>
-          <.input field={f_nested[:end_location]} class="flex align-items-center" />
-          <span>Via</span>
-          <.input field={f_nested[:suffix]} class="flex align-items-center" />
-          <.input field={f_nested[:save]} type="checkbox" />
+          <span class="text-sm my-auto">
+            <div class={"legend-square color-#{Enum.at(@colors, f_nested.index)}"}></div>
+            {input_value(f_nested, :name)}
+          </span>
+          <.input field={f_nested[:start_location]} class="flex align-items-center mt-3" />
+          <span class="flex align-items-center">To</span>
+          <.input field={f_nested[:end_location]} class="flex align-items-center mt-3" />
+          <span class="flex align-items-center">Via</span>
+          <.input field={f_nested[:suffix]} class="flex align-items-center mt-3" />
+          <div class="flex align-items-center pt-[23px]">
+            <.input field={f_nested[:save]} type="checkbox" />
+          </div>
           <div class="hidden">
             <.input
               field={f_nested[:coordinates]}
