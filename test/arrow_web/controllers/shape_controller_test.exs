@@ -34,6 +34,13 @@ defmodule ArrowWeb.ShapeControllerTest do
       filename: "some_file.kml"
     }
   }
+  @missing_placemarks_upload_attrs %{
+    name: nil,
+    filename: %Plug.Upload{
+      path: "test/support/fixtures/kml/missing_placemarks.kml",
+      filename: "missing_placemarks.kml"
+    }
+  }
 
   @create_attrs [
     {0,
@@ -138,6 +145,14 @@ defmodule ArrowWeb.ShapeControllerTest do
       assert html_response(conn, 200) =~ "Failed to upload shapes from invalid_file.kml"
       assert html_response(conn, 200) =~ "xml was invalid"
       assert html_response(conn, 200) =~ "unexpected end of input, expected token:"
+      assert html_response(conn, 200) =~ "new shapes"
+      assert html_response(conn, 200) =~ "Components.ShapeViewMap"
+    end
+
+    @tag :authenticated_admin
+    test "renders errors when data is missing", %{conn: conn} do
+      conn = post(conn, ~p"/shapes_upload", shapes_upload: @missing_placemarks_upload_attrs)
+      assert html_response(conn, 200) =~ "Failed to parse shape from kml, placemarks are missing."
       assert html_response(conn, 200) =~ "new shapes"
       assert html_response(conn, 200) =~ "Components.ShapeViewMap"
     end
