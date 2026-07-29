@@ -77,7 +77,7 @@ defmodule Arrow.Shuttles.ShapesUpload do
 
         {:error, error}
 
-      _ ->
+      _ when is_list(placemarks) ->
         # Multiple placemarks, only capture Placemarks with LineString
         placemarks = Enum.filter(placemarks, fn pm -> pm["LineString"] end)
 
@@ -85,6 +85,14 @@ defmodule Arrow.Shuttles.ShapesUpload do
          Enum.map(placemarks, fn pm ->
            %{name: pm["name"], coordinates: process_coordinates(pm["LineString"]["coordinates"])}
          end)}
+
+      nil ->
+        {:error, "Failed to parse shape from kml, placemarks are missing."}
+
+      _ ->
+        {:error,
+         {"Failed to parse shape from kml, placemarks are of unexpected type.",
+          [inspect(placemarks)]}}
     end
   end
 
