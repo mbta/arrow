@@ -35,6 +35,7 @@ defmodule Arrow.Shuttles.Shuttle do
       )
     end)
     |> validate_required([:shuttle_name, :status])
+    |> validate_zero_or_one_waypoint()
     |> validate_required_for(:status, today)
     |> foreign_key_constraint(:disrupted_route_id)
     |> unique_constraint(:shuttle_name)
@@ -47,31 +48,71 @@ defmodule Arrow.Shuttles.Shuttle do
   end
 
   defp validate_for_active_status(changeset) do
-    routes = get_assoc(changeset, :routes)
+    changeset
+    |> validate_min_stops_on_routes()
+    |> validate_stop_times()
+    |> validate_route_shapes()
+  end
 
-    cond do
-      routes |> Enum.map(&get_assoc(&1, :route_stops)) |> Enum.any?(&(length(&1) < 2)) ->
-        add_error(changeset, :status, "must have at least two stops in each direction")
+  defp validate_min_stops_on_routes(changeset) do
+    changeset
+    |> get_assoc(:routes)
+    |> Enum.map(&get_assoc(&1, :route_stops))
+    |> Enum.any?(&(length(&1) < 2))
+    |> if(
+      do: add_error(changeset, :status, "must have at least two stops in each direction"),
+      else: changeset
+    )
+  end
 
-      routes
-      |> Enum.map(&get_assoc(&1, :route_stops))
-      |> Enum.any?(&route_stops_missing_time_to_next_stop?/1) ->
+  defp validate_stop_times(changeset) do
+    changeset
+    |> get_assoc(:routes)
+    |> Enum.map(&get_assoc(&1, :route_stops))
+    |> Enum.any?(&route_stops_missing_time_to_next_stop?/1)
+    |> if(
+      do:
         add_error(
           changeset,
           :status,
           "all stops except the last in each direction must have a time to next stop"
-        )
+        ),
+      else: changeset
+    )
+  end
 
-      routes
-      |> Enum.any?(fn route -> is_nil(route.data.shape) end) ->
-        add_error(
-          changeset,
-          :status,
-          "all routes must have an associated shape"
-        )
+  defp validate_route_shapes(changeset) do
+    changeset
+    |> get_assoc(:routes)
+    |> Enum.any?(fn route -> is_nil(route.data.shape) end)
+    |> if(
+      do: add_error(changeset, :status, "all routes must have an associated shape"),
+      else: changeset
+    )
+  end
 
-      true ->
-        changeset
+  defp validate_zero_or_one_waypoint(changeset) do
+    waypoints_mismatched? =
+      changeset
+      |> get_assoc(:routes)
+      |> Enum.map(&get_field(&1, :waypoint, ""))
+      |> Enum.uniq()
+      |> then(
+        &match?(
+          [waypoint1, waypoint2] when byte_size(waypoint1) > 0 and byte_size(waypoint2) > 0,
+          &1
+        )
+      )
+
+    if waypoints_mismatched? do
+      update_change(changeset, :routes, fn route_changesets ->
+        Enum.map(
+          route_changesets,
+          &add_error(&1, :waypoint, "non-blank waypoints must match")
+        )
+      end)
+    else
+      changeset
     end
   end
 
