@@ -1,4 +1,6 @@
-name: Deploy to ECS
+name: Deploy to lower environment (dev etc)
+
+permissions: {}
 
 on:
   schedule:
@@ -12,11 +14,21 @@ on:
   push:
     branches: master
 
-permissions:
-  contents: read
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: true
 
 jobs:
+  check-env:
+    name: Fail if production environment
+    if: ${{ inputs.environment == 'prod' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Failing intentionally. Please use the 'Deploy to production' workflow."
+          exit 1
   call-workflow:
+    if: ${{ inputs.environment != 'prod' }}
     permissions:
       contents: read
       id-token: write # needed for AWS OIDC authentication
