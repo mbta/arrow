@@ -157,6 +157,7 @@ defmodule ArrowWeb.Router do
 
     post("/publish_notice", NoticeController, :publish)
     get("/db_dump", DBDumpController, :show)
+    get("/disruption/:id", DisruptionV2Controller, :show)
 
     scope "/gtfs", alias: false do
       post("/import", GtfsImportController, :enqueue_import)
