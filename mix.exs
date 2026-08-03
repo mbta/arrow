@@ -95,7 +95,7 @@ defmodule Arrow.MixProject do
       {:ueberauth_oidcc, "~> 0.4.0"},
       {:ueberauth, "~> 0.10"},
       {:wallaby, "~> 0.30", runtime: false, only: :test},
-      {:sentry, "~> 10.7"},
+      {:sentry, "~> 13.2"},
       {:tailwind, "~> 0.2", runtime: Mix.env() == :dev},
       {:heroicons,
        github: "tailwindlabs/heroicons",
