@@ -2,7 +2,6 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
   use ArrowWeb, :controller
   import Ecto.Query, only: [from: 2]
 
-  alias Arrow.Repo
   alias Arrow.Disruptions.DisruptionV2
   alias Plug.Conn
 
@@ -32,7 +31,7 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
           }
         ]
       )
-      |> Repo.one!()
+      |> Arrow.Repo.one!()
 
     render(conn, "index.json-api", data: data)
   end
