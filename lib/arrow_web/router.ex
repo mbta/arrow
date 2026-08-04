@@ -147,6 +147,7 @@ defmodule ArrowWeb.Router do
     get("/adjustments", AdjustmentController, :index)
     get("/shuttle-stops", StopsController, :index)
     get("/shapes", ShapesController, :index)
+    get("/disruption/:id", DisruptionV2Controller, :index)
 
     get "/service-schedules", ServiceScheduleController, :index
     get "/trainsformer-service-schedules", TrainsformerServiceScheduleController, :index
@@ -157,7 +158,6 @@ defmodule ArrowWeb.Router do
 
     post("/publish_notice", NoticeController, :publish)
     get("/db_dump", DBDumpController, :show)
-    get("/disruption/:id", DisruptionV2Controller, :show)
 
     scope "/gtfs", alias: false do
       post("/import", GtfsImportController, :enqueue_import)

@@ -1,13 +1,31 @@
 defmodule ArrowWeb.API.DisruptionV2Controller do
   use ArrowWeb, :controller
-  alias Arrow.Disruptions
-  alias ArrowWeb.Plug.Authorize
+  import Ecto.Query, only: [from: 2]
 
-  plug(Authorize, :view_disruption when action in [:show])
+  alias Arrow.Repo
+  alias Arrow.Disruptions.DisruptionV2
+  alias Plug.Conn
 
-  @spec show(Plug.Conn.t(), map()) :: Plug.Conn.t()
-  def show(conn, %{"id" => id}) do
-    data = Disruptions.get_disruption_v2!(id)
-    json(conn, data)
+  @spec index(Conn.t(), map()) :: Conn.t()
+  def index(conn, %{"id" => id}) do
+    data =
+      from(d in DisruptionV2,
+        where: d.id == ^id,
+        left_join: l in assoc(d, :limits),
+        left_join: rs in assoc(d, :replacement_services),
+        left_join: he in assoc(d, :hastus_exports),
+        left_join: te in assoc(d, :trainsformer_exports),
+        left_join: sh in assoc(rs, :shuttle),
+        preload: [
+          limits: l,
+          replacement_services: {rs, [shuttle: sh]},
+          hastus_exports: he,
+          trainsformer_exports: te,
+          shuttles: sh
+        ]
+      )
+      |> Repo.one!()
+
+    render(conn, "index.json-api", data: data)
   end
 end
