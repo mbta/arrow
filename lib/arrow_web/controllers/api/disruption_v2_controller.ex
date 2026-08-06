@@ -22,13 +22,16 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
         left_join: stop in assoc(route_stops, :stop),
         preload: [
           limits: limit,
-          replacement_services: {replacement_service, [shuttle: shuttle]},
+          replacement_services:
+            {replacement_service,
+             [
+               shuttle: {
+                 shuttle,
+                 [routes: {route, route_stops: {route_stops, [:gtfs_stop, :stop]}, shape: shape}]
+               }
+             ]},
           hastus_exports: hastus,
-          trainsformer_exports: trainsformer,
-          shuttles: {
-            shuttle,
-            [routes: {route, route_stops: {route_stops, [:gtfs_stop, :stop]}, shape: shape}]
-          }
+          trainsformer_exports: trainsformer
         ]
       )
       |> Arrow.Repo.one!()

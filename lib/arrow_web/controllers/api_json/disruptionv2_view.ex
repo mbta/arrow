@@ -28,7 +28,9 @@ defmodule ArrowWeb.API.DisruptionV2View do
     serializer: ArrowWeb.API.ReplacementServiceView,
     include: true
 
-  has_many :shuttles,
-    serializer: ArrowWeb.API.ShuttleView,
-    include: true
+  @relations [
+    {:has_many, :shuttles, [serializer: ArrowWeb.API.ShuttleView, include: true]}
+    | @relations
+  ]
+  def shuttles(disruption, _conn), do: disruption.replacement_services |> Enum.map(& &1.shuttle)
 end
