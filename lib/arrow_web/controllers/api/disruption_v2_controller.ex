@@ -35,9 +35,25 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
         ]
       )
       |> Arrow.Repo.one!()
-      |> Map.update!(:replacement_services, fn services ->
-        Enum.map(services, &ReplacementService.add_timetable/1)
-      end)
+
+    data = %{
+      data
+      | replacement_services:
+          data.replacement_services |> Enum.map(&ReplacementService.add_timetable/1),
+        hastus_exports:
+          data.hastus_exports
+          |> Enum.map(fn export ->
+            {:ok, download_url} = Arrow.Hastus.export_download_url(export)
+            download_url
+          end),
+        trainsformer_exports:
+          data.trainsformer_exports
+          |> Enum.map(fn export ->
+            {:ok, download_url} = Arrow.Trainsformer.export_download_url(export)
+            download_url
+          end),
+        shuttles: data.replacement_services |> Enum.map(& &1.shuttle)
+    }
 
     render(conn, "index.json-api", data: data)
   end

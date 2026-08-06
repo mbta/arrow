@@ -4,22 +4,6 @@ defmodule ArrowWeb.API.DisruptionV2View do
 
   attributes([:title, :mode, :status, :description, :hastus_exports, :trainsformer_exports])
 
-  def hastus_exports(disruption, _conn) do
-    disruption.hastus_exports
-    |> Enum.map(fn export ->
-      {:ok, download_url} = Arrow.Hastus.export_download_url(export)
-      download_url
-    end)
-  end
-
-  def trainsformer_exports(disruption, _conn) do
-    disruption.trainsformer_exports
-    |> Enum.map(fn export ->
-      {:ok, download_url} = Arrow.Trainsformer.export_download_url(export)
-      download_url
-    end)
-  end
-
   has_many :limits,
     serializer: ArrowWeb.API.LimitView,
     include: true
@@ -28,9 +12,7 @@ defmodule ArrowWeb.API.DisruptionV2View do
     serializer: ArrowWeb.API.ReplacementServiceView,
     include: true
 
-  @relations [
-    {:has_many, :shuttles, [serializer: ArrowWeb.API.ShuttleView, include: true]}
-    | @relations
-  ]
-  def shuttles(disruption, _conn), do: disruption.replacement_services |> Enum.map(& &1.shuttle)
+  has_many :shuttles,
+    serializer: ArrowWeb.API.ShuttleView,
+    include: true
 end
