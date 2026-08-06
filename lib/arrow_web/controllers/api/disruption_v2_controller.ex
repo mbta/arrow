@@ -42,16 +42,10 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
           data.replacement_services |> Enum.map(&ReplacementService.add_timetable/1),
         hastus_exports:
           data.hastus_exports
-          |> Enum.map(fn export ->
-            {:ok, download_url} = Arrow.Hastus.export_download_url(export)
-            download_url
-          end),
+          |> Enum.map(& &1.s3_path),
         trainsformer_exports:
           data.trainsformer_exports
-          |> Enum.map(fn export ->
-            {:ok, download_url} = Arrow.Trainsformer.export_download_url(export)
-            download_url
-          end),
+          |> Enum.map(& &1.s3_path),
         shuttles: data.replacement_services |> Enum.map(& &1.shuttle)
     }
 
