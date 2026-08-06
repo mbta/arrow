@@ -11,27 +11,21 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
       from(d in DisruptionV2,
         where: d.id == ^id,
         left_join: limit in assoc(d, :limits),
-        left_join: replacement_service in assoc(d, :replacement_services),
-        left_join: hastus in assoc(d, :hastus_exports),
-        left_join: trainsformer in assoc(d, :trainsformer_exports),
-        left_join: shuttle in assoc(replacement_service, :shuttle),
-        left_join: route in assoc(shuttle, :routes),
-        left_join: route_stops in assoc(route, :route_stops),
-        left_join: shape in assoc(route, :shape),
-        left_join: gtfs_stop in assoc(route_stops, :gtfs_stop),
-        left_join: stop in assoc(route_stops, :stop),
         preload: [
-          limits: limit,
-          replacement_services:
-            {replacement_service,
+          :hastus_exports,
+          :trainsformer_exports,
+          limits:
+            {limit,
              [
-               shuttle: {
-                 shuttle,
-                 [routes: {route, route_stops: {route_stops, [:gtfs_stop, :stop]}, shape: shape}]
-               }
+               :route,
+               :start_stop,
+               :end_stop,
+               limit_day_of_weeks: :limit,
+               disruption: d
              ]},
-          hastus_exports: hastus,
-          trainsformer_exports: trainsformer
+          replacement_services: [
+            shuttle: [routes: [:shape, route_stops: [:gtfs_stop, :stop]]]
+          ]
         ]
       )
       |> Arrow.Repo.one!()
