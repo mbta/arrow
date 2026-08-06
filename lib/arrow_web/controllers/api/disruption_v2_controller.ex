@@ -2,7 +2,7 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
   use ArrowWeb, :controller
   import Ecto.Query, only: [from: 2]
 
-  alias Arrow.Disruptions.DisruptionV2
+  alias Arrow.Disruptions.{DisruptionV2, ReplacementService}
   alias Plug.Conn
 
   @spec index(Conn.t(), map()) :: Conn.t()
@@ -32,6 +32,9 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
         ]
       )
       |> Arrow.Repo.one!()
+      |> Map.update!(:replacement_services, fn services ->
+        Enum.map(services, &ReplacementService.add_timetable/1)
+      end)
 
     render(conn, "index.json-api", data: data)
   end
