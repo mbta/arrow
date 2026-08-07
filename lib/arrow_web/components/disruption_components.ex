@@ -72,6 +72,15 @@ defmodule ArrowWeb.DisruptionComponents do
             <.icon name="hero-pencil-solid" class="bg-primary" />
           </.link>
         </div>
+        <div class="flex flex-col flex-shrink justify-end">
+          <a
+            href={~p"/api/disruption/#{@disruption.id}"}
+            id="download-disruption-description"
+            download={"disruption-#{@disruption.id}.json"}
+          >
+            Download disruption description
+          </a>
+        </div>
       </div>
     </div>
     """
