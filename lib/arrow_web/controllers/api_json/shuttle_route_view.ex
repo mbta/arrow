@@ -10,5 +10,5 @@ defmodule ArrowWeb.API.ShuttleRouteView do
 
   def shape_id(route, _conn), do: route.shape.name
 
-  def shape_uri(route, _conn), do: "s3://#{route.shape.bucket}/#{route.shape.path}"
+  def shape_uri(route, _conn), do: Arrow.Shuttles.Route.get_shape_uri(route.shape)
 end

@@ -111,8 +111,9 @@ defmodule ArrowWeb.API.DisruptionV2ControllerTest do
             route = routes[id]
             assert to_string(route.destination) == attributes["destination"]
             assert to_string(route.direction_id) == attributes["direction_id"]
+            assert route.shape.name == attributes["shape_id"]
             # Will always be disabled in test because we don't actually upload shape files
-            assert "disabled" == attributes["shape_id"]
+            assert "disabled" == attributes["shape_uri"]
 
           %{
             "type" => "shuttle_route_stop",

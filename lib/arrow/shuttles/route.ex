@@ -91,4 +91,15 @@ defmodule Arrow.Shuttles.Route do
         error
     end
   end
+
+  @spec get_shape_uri(t) :: String.t()
+  def get_shape_uri(shape) do
+    enabled? = Application.get_env(:arrow, :shape_storage_enabled?)
+
+    if enabled? do
+      Path.join(["s3://", shape.bucket, shape.path])
+    else
+      "disabled"
+    end
+  end
 end
