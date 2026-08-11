@@ -32,7 +32,7 @@ defmodule ArrowWeb.API.DisruptionV2ControllerTest do
       limit_id = to_string(limit.id)
       shuttle_id = to_string(shuttle.id)
 
-      routes = shuttle.routes |> Map.new(&{to_string(&1.id), &1})
+      routes = Map.new(shuttle.routes, &{to_string(&1.id), &1})
 
       stops =
         shuttle.routes
@@ -68,9 +68,8 @@ defmodule ArrowWeb.API.DisruptionV2ControllerTest do
                "jsonapi" => _
              } = res
 
-      Enum.each(
-        included,
-        fn
+      for include <- included do
+        case include do
           %{"type" => "replacement_service", "id" => ^replacement_service_id} ->
             nil
 
@@ -135,7 +134,7 @@ defmodule ArrowWeb.API.DisruptionV2ControllerTest do
           } ->
             assert %{lat: ^lat, lon: ^lon, name: ^name} = stops[id]
         end
-      )
+      end
     end
   end
 end

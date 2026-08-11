@@ -33,14 +33,10 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
     data = %{
       data
       | replacement_services:
-          data.replacement_services |> Enum.map(&ReplacementService.add_timetable/1),
-        hastus_exports:
-          data.hastus_exports
-          |> Enum.map(& &1.s3_path),
-        trainsformer_exports:
-          data.trainsformer_exports
-          |> Enum.map(& &1.s3_path),
-        shuttles: data.replacement_services |> Enum.map(& &1.shuttle)
+          Enum.map(data.replacement_services, &ReplacementService.add_timetable/1),
+        hastus_exports: Enum.map(data.hastus_exports, & &1.s3_path),
+        trainsformer_exports: Enum.map(data.trainsformer_exports, & &1.s3_path),
+        shuttles: Enum.map(data.replacement_services, & &1.shuttle)
     }
 
     render(conn, "index.json-api", data: data)
