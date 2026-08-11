@@ -78,7 +78,7 @@ defmodule ArrowWeb.DisruptionComponents do
             id="download-disruption-description"
             download={"disruption-#{@disruption.id}.json"}
           >
-            Download disruption description
+            Download disruption description for GTFS Creator
           </a>
         </div>
       </div>
