@@ -17,12 +17,19 @@ defmodule Arrow.ShuttlesTest do
       coordinates: "-71.14163,42.39551 -71.14163,42.39551 -71.14163,42.39551"
     }
 
+    def fake_aws_request_for_test1(_aws_op) do
+      {:ok, %{body: %{contents: []}}}
+    end
+
     test "create_shape/1 with valid data creates a shape when shape storage is enabled" do
       reassign_env(:shape_storage_enabled?, true)
       reassign_env(:shape_storage_prefix, "prefix/#{Ecto.UUID.generate()}/")
+      reassign_env(:shape_storage_request_fn, {Arrow.ShuttlesTest, :fake_aws_request_for_test1})
+      reassign_env(:shape_storage_prefix_env, "test")
 
       assert {:ok, %Shape{} = shape} = Shuttles.create_shape(@valid_shape)
       assert shape.name == "FromPlaceAToPlaceBViaC-S"
+      assert shape.path =~ ~r/(?P<timestamp>\d+)__FromPlaceAToPlaceBViaC-S.kml$/
       Application.put_env(:arrow, :shape_storage_enabled?, false)
     end
 

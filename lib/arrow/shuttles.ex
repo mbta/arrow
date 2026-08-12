@@ -224,6 +224,7 @@ defmodule Arrow.Shuttles do
   end
 
   defp get_shape_upload_path(filename) do
+    timestamped_filename = "#{System.system_time(:second)}__#{filename}"
     prefix_env = Application.get_env(:arrow, :shape_storage_prefix_env)
     s3_prefix = Application.get_env(:arrow, :shape_storage_prefix)
 
@@ -233,7 +234,7 @@ defmodule Arrow.Shuttles do
         String.trim(username)
       end
 
-    [prefix_env, username_prefix, s3_prefix, filename]
+    [prefix_env, username_prefix, s3_prefix, timestamped_filename]
     |> Enum.reject(&is_nil/1)
     |> Path.join()
   end
