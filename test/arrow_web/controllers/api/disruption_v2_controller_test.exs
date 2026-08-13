@@ -18,6 +18,8 @@ defmodule ArrowWeb.API.DisruptionV2ControllerTest do
       Arrow.HastusFixtures.export_fixture(disruption_id: disruption.id)
       Arrow.TrainsformerFixtures.export_fixture(disruption_id: disruption.id)
 
+      shuttle_name = shuttle.shuttle_name
+
       res =
         conn
         |> get(~p"/api/disruption/#{disruption.id}")
@@ -46,45 +48,7 @@ defmodule ArrowWeb.API.DisruptionV2ControllerTest do
                    "start_date" => _,
                    "end_date" => _,
                    "reason" => _,
-                   "shuttle" => %{
-                     "disrupted_route_id" => _,
-                     "routes" => [
-                       %{
-                         "destination" => _,
-                         "waypoint" => _,
-                         "direction_desc" => _,
-                         "direction_id" => "0",
-                         "shape_id" => _,
-                         "shape_uri" => "disabled",
-                         "route_stops" => [
-                           %{
-                             "stop_id" => _,
-                             "stop_sequence" => 1,
-                             "time_to_next_stop" => _
-                           }
-                           | _
-                         ]
-                       },
-                       %{
-                         "destination" => _,
-                         "waypoint" => _,
-                         "direction_desc" => _,
-                         "direction_id" => "1",
-                         "shape_id" => _,
-                         "shape_uri" => "disabled",
-                         "route_stops" => [
-                           %{
-                             "stop_id" => _,
-                             "stop_sequence" => 1,
-                             "time_to_next_stop" => _
-                           }
-                           | _
-                         ]
-                       }
-                     ],
-                     "shuttle_name" => _,
-                     "suffix" => _
-                   },
+                   "shuttle_name" => ^shuttle_name,
                    "timetable" => %{
                      "weekday" => %{"0" => [[_ | _] | _], "1" => [[_ | _] | _]},
                      "friday" => nil,

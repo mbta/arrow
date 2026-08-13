@@ -4,7 +4,6 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
 
   alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
   alias Arrow.{Hastus, Trainsformer}
-  alias Arrow.Shuttles.{Route, RouteStop, Shuttle}
   alias Plug.Conn
 
   @spec index(Conn.t(), map()) :: Conn.t()
@@ -50,36 +49,8 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
   defp replacement_service_data(%ReplacementService{} = replacement_service) do
     replacement_service
     |> ReplacementService.add_timetable()
-    |> Map.update!(:shuttle, &shuttle_data/1)
-    |> Map.take([:reason, :start_date, :end_date, :timetable, :shuttle])
-  end
-
-  defp shuttle_data(%Shuttle{} = shuttle) do
-    shuttle
-    |> update_in([Access.key(:routes), Access.all()], &shuttle_route_data/1)
-    |> Map.take([:shuttle_name, :suffix, :routes, :disrupted_route_id, :routes])
-  end
-
-  defp shuttle_route_data(%Route{} = route) do
-    route
-    |> update_in([Access.key(:route_stops), Access.all()], &route_stop_data/1)
-    |> Map.take([
-      :destination,
-      :direction_id,
-      :direction_desc,
-      :waypoint,
-      :route_stops
-    ])
-    |> Map.merge(%{
-      shape_id: route.shape.name,
-      shape_uri: Arrow.Shuttles.Route.get_shape_uri(route.shape)
-    })
-  end
-
-  defp route_stop_data(%RouteStop{} = route_stop) do
-    route_stop
-    |> Map.take([:direction_id, :stop_sequence, :time_to_next_stop])
-    |> Map.put(:stop_id, route_stop.gtfs_stop_id || route_stop.stop_id)
+    |> Map.take([:reason, :start_date, :end_date, :timetable])
+    |> Map.put(:shuttle_name, replacement_service.shuttle.shuttle_name)
   end
 
   defp hastus_export_data(%Hastus.Export{} = export) do
