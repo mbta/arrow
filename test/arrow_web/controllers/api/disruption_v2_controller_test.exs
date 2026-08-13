@@ -49,12 +49,7 @@ defmodule ArrowWeb.API.DisruptionV2ControllerTest do
                    "end_date" => _,
                    "reason" => _,
                    "shuttle_name" => ^shuttle_name,
-                   "timetable" => %{
-                     "weekday" => %{"0" => [[_ | _] | _], "1" => [[_ | _] | _]},
-                     "friday" => nil,
-                     "saturday" => %{"0" => [[_ | _] | _], "1" => [[_ | _] | _]},
-                     "sunday" => nil
-                   }
+                   "timetable" => timetables
                  }
                ],
                "limits" => [
@@ -68,6 +63,15 @@ defmodule ArrowWeb.API.DisruptionV2ControllerTest do
                  }
                ]
              } = res
+
+      active_timetables =
+        for {_day, %{"0" => [_ | _] = d0_timetable, "1" => [_ | _] = d1_timetable}} <- timetables,
+            trip <- d0_timetable ++ d1_timetable,
+            %{"stop_id" => stop_id, "stop_time" => _} <- trip do
+          assert not is_nil(stop_id)
+        end
+
+      assert [_ | _] = active_timetables
     end
   end
 end
