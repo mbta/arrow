@@ -2,9 +2,9 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
   use ArrowWeb, :controller
   import Ecto.Query, only: [from: 2]
 
-  alias Arrow.Disruptions.{DisruptionV2, ReplacementService, Limit}
-  alias Arrow.Shuttles.{Shuttle, Route, RouteStop}
+  alias Arrow.Disruptions.{DisruptionV2, Limit, ReplacementService}
   alias Arrow.{Hastus, Trainsformer}
+  alias Arrow.Shuttles.{Route, RouteStop, Shuttle}
   alias Plug.Conn
 
   @spec index(Conn.t(), map()) :: Conn.t()
