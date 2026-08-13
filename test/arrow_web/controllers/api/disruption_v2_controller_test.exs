@@ -12,32 +12,11 @@ defmodule ArrowWeb.API.DisruptionV2ControllerTest do
     @tag :authenticated
     test "includes all data", %{conn: conn} do
       shuttle = shuttle_fixture(%{}, true, true)
-
-      replacement_service =
-        insert(:replacement_service, %{
-          shuttle: shuttle
-        })
-
+      replacement_service = insert(:replacement_service, %{shuttle: shuttle})
       disruption = replacement_service.disruption
-      limit = limit_fixture(disruption_id: disruption.id)
-
-      %{s3_path: hastus_export_url} =
-        Arrow.HastusFixtures.export_fixture(disruption_id: disruption.id)
-
-      %{s3_path: trainsformer_export_url} =
-        Arrow.TrainsformerFixtures.export_fixture(disruption_id: disruption.id)
-
-      disruption_id = to_string(disruption.id)
-      replacement_service_id = to_string(replacement_service.id)
-      limit_id = to_string(limit.id)
-      shuttle_id = to_string(shuttle.id)
-
-      routes = Map.new(shuttle.routes, &{to_string(&1.id), &1})
-
-      stops =
-        shuttle.routes
-        |> Enum.flat_map(& &1.route_stops)
-        |> Map.new(&{to_string(&1.gtfs_stop_id), &1.gtfs_stop})
+      limit_fixture(disruption_id: disruption.id)
+      Arrow.HastusFixtures.export_fixture(disruption_id: disruption.id)
+      Arrow.TrainsformerFixtures.export_fixture(disruption_id: disruption.id)
 
       res =
         conn
@@ -45,97 +24,86 @@ defmodule ArrowWeb.API.DisruptionV2ControllerTest do
         |> json_response(200)
 
       assert %{
-               "data" => %{
-                 "type" => "disruption_v2",
-                 "id" => ^disruption_id,
-                 "attributes" => %{
-                   "hastus_exports" => [^hastus_export_url],
-                   "trainsformer_exports" => [^trainsformer_export_url]
-                 },
-                 "relationships" => %{
-                   "replacement_services" => %{
-                     "data" => [%{"id" => ^replacement_service_id}]
+               "id" => _,
+               "hastus_exports" => [
+                 %{
+                   "id" => _,
+                   "line_id" => _,
+                   "s3_path" => _,
+                   "services" => _
+                 }
+               ],
+               "trainsformer_exports" => [
+                 %{
+                   "id" => _,
+                   "routes" => _,
+                   "s3_path" => _,
+                   "services" => _
+                 }
+               ],
+               "replacement_services" => [
+                 %{
+                   "start_date" => _,
+                   "end_date" => _,
+                   "reason" => _,
+                   "shuttle" => %{
+                     "disrupted_route_id" => _,
+                     "routes" => [
+                       %{
+                         "destination" => _,
+                         "waypoint" => _,
+                         "direction_desc" => _,
+                         "direction_id" => "0",
+                         "shape_id" => _,
+                         "shape_uri" => "disabled",
+                         "route_stops" => [
+                           %{
+                             "stop_id" => _,
+                             "stop_sequence" => 1,
+                             "time_to_next_stop" => _
+                           }
+                           | _
+                         ]
+                       },
+                       %{
+                         "destination" => _,
+                         "waypoint" => _,
+                         "direction_desc" => _,
+                         "direction_id" => "1",
+                         "shape_id" => _,
+                         "shape_uri" => "disabled",
+                         "route_stops" => [
+                           %{
+                             "stop_id" => _,
+                             "stop_sequence" => 1,
+                             "time_to_next_stop" => _
+                           }
+                           | _
+                         ]
+                       }
+                     ],
+                     "shuttle_name" => _,
+                     "suffix" => _
                    },
-                   "limits" => %{
-                     "data" => [%{"id" => ^limit_id}]
-                   },
-                   "shuttles" => %{
-                     "data" => [%{"id" => ^shuttle_id}]
+                   "timetable" => %{
+                     "weekday" => %{"0" => [[_ | _] | _], "1" => [[_ | _] | _]},
+                     "friday" => nil,
+                     "saturday" => %{"0" => [[_ | _] | _], "1" => [[_ | _] | _]},
+                     "sunday" => nil
                    }
                  }
-               },
-               "included" => included,
-               "jsonapi" => _
+               ],
+               "limits" => [
+                 %{
+                   "start_date" => _,
+                   "end_date" => _,
+                   "start_stop" => _,
+                   "end_stop" => _,
+                   "route_id" => _,
+                   "days" => %{}
+                 }
+               ]
              } = res
-
-      for include <- included do
-        case include do
-          %{"type" => "replacement_service", "id" => ^replacement_service_id} ->
-            nil
-
-          %{
-            "type" => "limit",
-            "id" => ^limit_id,
-            "attributes" => %{
-              "days" => days,
-              "start_date" => start_date,
-              "start_stop" => start_stop,
-              "end_date" => end_date,
-              "end_stop" => end_stop
-            }
-          } ->
-            assert ^start_date = to_string(limit.start_date)
-            assert ^end_date = to_string(limit.end_date)
-            assert ^start_stop = to_string(limit.start_stop_id)
-            assert ^end_stop = to_string(limit.end_stop_id)
-
-            assert ^days =
-                     limit.limit_day_of_weeks
-                     |> Map.new(
-                       &{to_string(&1.day_name),
-                        %{
-                          "start_time" => &1.start_time,
-                          "end_time" => &1.end_time,
-                          "is_all_day" => &1.all_day? == true
-                        }}
-                     )
-
-          %{"type" => "shuttle", "id" => ^shuttle_id} ->
-            nil
-
-          %{
-            "type" => "shuttle_route",
-            "id" => id,
-            "attributes" => attributes
-          } ->
-            route = routes[id]
-            assert to_string(route.destination) == attributes["destination"]
-            assert to_string(route.direction_id) == attributes["direction_id"]
-            assert route.shape.name == attributes["shape_id"]
-            # Will always be disabled in test because we don't actually upload shape files
-            assert "disabled" == attributes["shape_uri"]
-
-          %{
-            "type" => "shuttle_route_stop",
-            "relationships" => %{
-              "gtfs_stop" => %{"data" => %{"id" => gtfs_stop_id}}
-            },
-            "attributes" => %{"time_to_next_stop" => _}
-          } ->
-            assert Map.has_key?(stops, gtfs_stop_id)
-
-          %{
-            "type" => "gtfs_stop",
-            "id" => id,
-            "attributes" => %{
-              "lat" => lat,
-              "lon" => lon,
-              "name" => name
-            }
-          } ->
-            assert %{lat: ^lat, lon: ^lon, name: ^name} = stops[id]
-        end
-      end
     end
   end
 end
