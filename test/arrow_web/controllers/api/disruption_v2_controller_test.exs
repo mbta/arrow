@@ -63,6 +63,7 @@ defmodule ArrowWeb.API.DisruptionV2ControllerTest do
                ],
                "replacement_services" => [
                  %{
+                   "id" => _,
                    "start_date" => _,
                    "end_date" => _,
                    "reason" => _,
@@ -72,6 +73,7 @@ defmodule ArrowWeb.API.DisruptionV2ControllerTest do
                ],
                "limits" => [
                  %{
+                   "id" => _,
                    "start_date" => _,
                    "end_date" => _,
                    "start_stop" => _,

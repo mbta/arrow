@@ -49,7 +49,7 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
   defp replacement_service_data(%ReplacementService{} = replacement_service) do
     replacement_service
     |> ReplacementService.add_timetable()
-    |> Map.take([:reason, :start_date, :end_date, :timetable])
+    |> Map.take([:id, :reason, :start_date, :end_date, :timetable])
     |> Map.put(:shuttle_name, replacement_service.shuttle.shuttle_name)
   end
 
