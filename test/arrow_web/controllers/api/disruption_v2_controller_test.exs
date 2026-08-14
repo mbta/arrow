@@ -32,7 +32,16 @@ defmodule ArrowWeb.API.DisruptionV2ControllerTest do
                    "id" => _,
                    "line_id" => _,
                    "s3_path" => _,
-                   "services" => _
+                   "services" => [
+                     %{
+                       "id" => _,
+                       "name" => _,
+                       "service_dates" => [
+                         %{"start_date" => _, "end_date" => _} | _
+                       ]
+                     }
+                     | _
+                   ]
                  }
                ],
                "trainsformer_exports" => [
@@ -40,7 +49,16 @@ defmodule ArrowWeb.API.DisruptionV2ControllerTest do
                    "id" => _,
                    "routes" => _,
                    "s3_path" => _,
-                   "services" => _
+                   "services" => [
+                     %{
+                       "id" => _,
+                       "name" => _,
+                       "service_dates" => [
+                         %{"start_date" => _, "end_date" => _, "days_of_week" => [_ | _]} | _
+                       ]
+                     }
+                     | _
+                   ]
                  }
                ],
                "replacement_services" => [
