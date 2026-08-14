@@ -83,7 +83,13 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
     service
     |> update_in(
       [Access.key(:service_dates), Access.all()],
-      &Map.take(&1, [:start_date, :end_date, :service_date_days_of_week])
+      fn %Trainsformer.ServiceDate{} = service_dates ->
+        %{
+          start_date: service_dates.start_date,
+          end_date: service_dates.end_date,
+          days_of_week: Enum.map(service_dates.service_date_days_of_week, & &1.day_name)
+        }
+      end
     )
     |> Map.take([:id, :name, :service_dates])
   end
@@ -91,6 +97,7 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
   defp limit_data(%Limit{} = limit) do
     limit
     |> Map.take([
+      :id,
       :route_id,
       :start_date,
       :end_date
