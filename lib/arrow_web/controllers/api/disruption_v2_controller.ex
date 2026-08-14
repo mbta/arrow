@@ -22,7 +22,7 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
           ],
           limits: [:limit_day_of_weeks],
           replacement_services: [
-            shuttle: [routes: [:shape, route_stops: [:stop]]]
+            shuttle: [routes: [route_stops: [:stop]]]
           ]
         ]
       )
