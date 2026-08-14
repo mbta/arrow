@@ -50,7 +50,13 @@ defmodule ArrowWeb.API.DisruptionV2Controller do
     replacement_service
     |> ReplacementService.add_timetable()
     |> Map.take([:id, :reason, :start_date, :end_date, :timetable])
-    |> Map.put(:shuttle_name, replacement_service.shuttle.shuttle_name)
+    |> Map.merge(%{
+      shuttle_name: replacement_service.shuttle.shuttle_name,
+      # shuttle_id is currently used as a key in GTFS creator, but in the
+      # future once we've fully migrated over to this API, we should use
+      # shuttle_name as the key
+      shuttle_id: replacement_service.shuttle.id
+    })
   end
 
   defp hastus_export_data(%Hastus.Export{} = export) do

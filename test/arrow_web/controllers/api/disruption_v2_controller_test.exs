@@ -18,6 +18,7 @@ defmodule ArrowWeb.API.DisruptionV2ControllerTest do
       Arrow.HastusFixtures.export_fixture(disruption_id: disruption.id)
       Arrow.TrainsformerFixtures.export_fixture(disruption_id: disruption.id)
 
+      shuttle_id = shuttle.id
       shuttle_name = shuttle.shuttle_name
 
       res =
@@ -67,6 +68,7 @@ defmodule ArrowWeb.API.DisruptionV2ControllerTest do
                    "start_date" => _,
                    "end_date" => _,
                    "reason" => _,
+                   "shuttle_id" => ^shuttle_id,
                    "shuttle_name" => ^shuttle_name,
                    "timetable" => timetables
                  }
