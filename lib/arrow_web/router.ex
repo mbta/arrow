@@ -147,6 +147,7 @@ defmodule ArrowWeb.Router do
     get("/adjustments", AdjustmentController, :index)
     get("/shuttle-stops", StopsController, :index)
     get("/shapes", ShapesController, :index)
+    get("/disruption/:id", DisruptionV2Controller, :index)
 
     get "/service-schedules", ServiceScheduleController, :index
     get "/trainsformer-service-schedules", TrainsformerServiceScheduleController, :index
