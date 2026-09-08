@@ -1,6 +1,6 @@
 ARG ELIXIR_VERSION=1.20.2
 ARG ERLANG_VERSION=29.0.3
-ARG DEBIAN_VERSION=bullseye-20260713
+ARG DEBIAN_VERSION=trixie-20260713
 
 FROM hexpm/elixir:$ELIXIR_VERSION-erlang-$ERLANG_VERSION-debian-$DEBIAN_VERSION AS elixir-builder
 
@@ -62,7 +62,7 @@ FROM debian:$DEBIAN_VERSION
 
 RUN apt-get update --allow-releaseinfo-change && \
   apt-get install -y --no-install-recommends \
-  libssl1.1 libsctp1 curl ca-certificates && \
+  libssl3 libsctp1 curl ca-certificates && \
   rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
