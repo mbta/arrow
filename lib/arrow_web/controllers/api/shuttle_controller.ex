@@ -32,7 +32,7 @@ defmodule ArrowWeb.API.ShuttleController do
       )
       |> Repo.one!()
       |> update_in([Access.key(:routes), Access.all()], &shuttle_route_data/1)
-      |> Map.take([:shuttle_name, :status, :suffix, :routes, :disrupted_route_id, :routes])
+      |> Map.take([:shuttle_name, :status, :suffix, :disrupted_route_id, :routes])
 
     json(conn, data)
   end
