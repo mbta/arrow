@@ -122,7 +122,7 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
 
   describe "get/2" do
     @tag :authenticated
-    test "single shuttle API returns all expected data", %{conn: conn} do
+    test "get single shuttle", %{conn: conn} do
       shuttle = shuttle_fixture()
       shuttle_name = shuttle.shuttle_name
       status = to_string(shuttle.status)
@@ -222,6 +222,11 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
                  ]
                } = res_route
       end
+    end
+
+    @tag :authenticated
+    test "gives 404 for non-existing shuttle", %{conn: conn} do
+      assert_error_sent 404, fn -> get(conn, "/api/shuttle/0") end
     end
   end
 end
