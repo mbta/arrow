@@ -23,8 +23,8 @@ defmodule ArrowWeb.API.ShuttleController do
     render(conn, "index.json-api", data: data)
   end
 
-  @spec get(Conn.t(), map()) :: Conn.t()
-  def get(conn, %{"id" => id}) do
+  @spec show(Conn.t(), map()) :: Conn.t()
+  def show(conn, %{"id" => id}) do
     data =
       from(s in Shuttle,
         where: s.id == ^id,
