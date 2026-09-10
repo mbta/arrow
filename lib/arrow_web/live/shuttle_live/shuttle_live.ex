@@ -161,6 +161,16 @@ defmodule ArrowWeb.ShuttleViewLive do
             Cancel
           </.link_button>
         </div>
+        <div class="w-25 mr-2">
+          <.link_button
+            href={~p"/api/shuttle/#{@form.data.id}"}
+            class="btn-outline-primary w-100"
+            id="download-shuttle-description"
+            download={"shuttle-#{@form.data.id}.json"}
+          >
+            Download shuttle description for GTFS Creator
+          </.link_button>
+        </div>
       </:actions>
     </.simple_form>
     """
