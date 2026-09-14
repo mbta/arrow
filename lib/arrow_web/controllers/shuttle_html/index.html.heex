@@ -18,4 +18,12 @@
   <:action :let={shuttle}>
     <.link navigate={~p"/shuttles/#{shuttle}/edit"}>Edit</.link>
   </:action>
+  <:action :let={shuttle}>
+    <.link
+      href={~p"/api/shuttle/#{shuttle}"}
+      download={"#{shuttle.shuttle_name}.json"}
+    >
+      Download for GTFS Creator
+    </.link>
+  </:action>
 </.table>
