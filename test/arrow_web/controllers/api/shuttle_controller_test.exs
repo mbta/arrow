@@ -191,7 +191,6 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
         shape_id = route.shape.name
 
         [rs1, rs2] = route.route_stops
-        # TODO: should we be serializing this in json as a number?
         time_to_next_stop = to_string(rs1.time_to_next_stop)
         # we set the first stop in each route to be a GTFS stop and the second
         # to be an Arrow stop, we can just hard-code those values
