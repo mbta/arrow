@@ -9,6 +9,6 @@ defmodule ArrowWeb.API.ShuttleRouteView do
     include: true
 
   def shape_id(route, _conn) do
-    route.shape.path |> String.split("/") |> List.last("") |> String.replace(".kml", "")
+    route.shape.name
   end
 end
