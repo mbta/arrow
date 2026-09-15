@@ -28,6 +28,7 @@ defmodule ArrowWeb.API.ShuttleController do
     data =
       from(s in Shuttle,
         where: s.id == ^id,
+        where: s.status == :active,
         preload: [routes: [:shape, route_stops: [:gtfs_stop, :stop]]]
       )
       |> Repo.one!()

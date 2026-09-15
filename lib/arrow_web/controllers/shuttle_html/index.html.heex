@@ -16,14 +16,15 @@
   <:col :let={shuttle} label="Disrupted route">{shuttle.disrupted_route_id}</:col>
   <:col :let={shuttle} label="Status">{shuttle.status}</:col>
   <:action :let={shuttle}>
-    <.link navigate={~p"/shuttles/#{shuttle}/edit"}>Edit</.link>
-  </:action>
-  <:action :let={shuttle}>
     <.link
+      :if={shuttle.status == :active}
       href={~p"/api/shuttle/#{shuttle}"}
       download={"#{shuttle.shuttle_name}.json"}
     >
       Download for GTFS Creator
     </.link>
+  </:action>
+  <:action :let={shuttle}>
+    <.link navigate={~p"/shuttles/#{shuttle}/edit"}>Edit</.link>
   </:action>
 </.table>
