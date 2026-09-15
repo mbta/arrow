@@ -124,7 +124,6 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
     test "get single shuttle", %{conn: conn} do
       shuttle = shuttle_fixture()
       shuttle_name = shuttle.shuttle_name
-      status = to_string(shuttle.status)
       suffix = shuttle.suffix
       disrupted_route_id = shuttle.disrupted_route_id
       [route0, route1] = shuttle.routes
@@ -172,11 +171,16 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
         |> Arrow.Repo.update!()
         |> Arrow.Repo.preload(route_stops: :stop)
 
+      shuttle.id
+      |> Arrow.Shuttles.get_shuttle!()
+      |> Arrow.Shuttles.Shuttle.changeset(%{status: :active})
+      |> Arrow.Repo.update!()
+
       res = conn |> get("/api/shuttle/#{shuttle.id}") |> json_response(200)
 
       assert %{
                "shuttle_name" => ^shuttle_name,
-               "status" => ^status,
+               "status" => "active",
                "suffix" => ^suffix,
                "disrupted_route_id" => ^disrupted_route_id,
                "routes" => [res_route0, res_route1]
@@ -225,6 +229,14 @@ defmodule ArrowWeb.API.ShuttleControllerTest do
     @tag :authenticated
     test "gives 404 for non-existing shuttle", %{conn: conn} do
       assert_error_sent 404, fn -> get(conn, "/api/shuttle/0") end
+    end
+
+    @tag :authenticated
+    test "gives 404 for non-active shuttle", %{conn: conn} do
+      shuttle_inactive = shuttle_fixture(%{status: :inactive})
+      shuttle_draft = shuttle_fixture(%{status: :draft})
+      assert_error_sent 404, fn -> get(conn, "/api/shuttle/#{shuttle_inactive.id}") end
+      assert_error_sent 404, fn -> get(conn, "/api/shuttle/#{shuttle_draft.id}") end
     end
   end
 end
