@@ -21,6 +21,11 @@ defmodule ArrowWeb.Router do
     plug(JaSerializer.ContentTypeNegotiation)
   end
 
+  pipeline :csv_api do
+    plug(:fetch_session)
+    plug(:put_format, "csv")
+  end
+
   pipeline :api do
     plug(:put_format, "json")
     plug(:fetch_session)
@@ -153,6 +158,13 @@ defmodule ArrowWeb.Router do
     get "/service-schedules", ServiceScheduleController, :index
     get "/trainsformer-service-schedules", TrainsformerServiceScheduleController, :index
   end
+
+  scope "/api/csv", as: :csv_api, alias: ArrowWeb.API.CSV do
+    pipe_through([:redirect_prod_http, :csv_api, :authenticate_api])
+
+    get("/shuttle-stops", StopsController, :index)
+  end
+
 
   scope "/api", ArrowWeb.API do
     pipe_through([:redirect_prod_http, :api, :authenticate_api])
