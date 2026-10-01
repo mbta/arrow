@@ -22,6 +22,6 @@ defmodule ArrowWeb.API.CSV.StopsView do
   ]
 
   def index(%{stops: data}) do
-    data |> CSV.encode(headers: @fields) |> Enum.to_list
+    data |> CSV.encode(headers: @fields) |> Enum.to_list()
   end
 end

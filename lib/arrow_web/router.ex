@@ -165,7 +165,6 @@ defmodule ArrowWeb.Router do
     get("/shuttle-stops", StopsController, :index)
   end
 
-
   scope "/api", ArrowWeb.API do
     pipe_through([:redirect_prod_http, :api, :authenticate_api])
 
