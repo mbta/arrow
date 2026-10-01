@@ -725,7 +725,7 @@ defmodule Arrow.Trainsformer.ExportUpload do
         "stop_times.txt" -> :stop_times
       end
 
-    {errors, Map.put(result, data_type, rows)}
+    {errors, Map.update(result, data_type, rows, &(&1 ++ rows))}
   rescue
     e ->
       {

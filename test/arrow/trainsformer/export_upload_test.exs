@@ -73,6 +73,23 @@ defmodule Arrow.Trainsformer.ExportUploadTest do
                ]}} = data
     end
 
+    @tag export: "valid_multiple_subdirectories.zip"
+    test "extracts all data from export with multiple subdirectories", %{export: export} do
+      data =
+        ExportUpload.extract_data_from_upload(%{path: "#{@export_dir}/#{export}"})
+
+      assert {:ok,
+              {:ok,
+               %ExportUpload{
+                 zip_binary: _binary,
+                 services: [
+                   %{"name" => "SPRING2025-SOUTHSS-Weekday-66"},
+                   %{"name" => "SPRING2025-SOUTHSS-Weekend-66"}
+                 ],
+                 routes: [%{"route_id" => "CR-Foxboro"}]
+               }}} = data
+    end
+
     @tag export: "invalid_csv.zip"
     test "error on invalid csv", %{export: export} do
       data =
