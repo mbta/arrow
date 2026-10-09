@@ -558,7 +558,7 @@ defmodule Arrow.Hastus.ExportUpload do
     Arrow.Repo.all(
       from r in Arrow.Gtfs.Route,
         where: r.line_id == ^line_id,
-        where: r.network_id in ["rapid_transit", "commuter_rail"],
+        where: r.type in [:light_rail, :heavy_rail, :commuter_rail],
         select: r.id
     )
   end
