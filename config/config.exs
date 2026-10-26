@@ -29,7 +29,7 @@ config :arrow,
   },
   time_zone: "America/New_York",
   ex_aws_requester: {Fake.ExAws, :admin_group_request},
-  http_client: HTTPoison,
+  http_client: Req,
   shape_storage_enabled?: false,
   shape_storage_bucket: "mbta-arrow",
   shape_storage_prefix: "shape-uploads/",
@@ -143,6 +143,9 @@ config :ja_serializer,
   key_format: :underscored
 
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
+
+config :sentry,
+  client: Sentry.HackneyClient
 
 #  https://hexdocs.pm/excellent_migrations/readme.html#existing-migrations
 # Ignore migrations added before `excellent_migrations` was added
