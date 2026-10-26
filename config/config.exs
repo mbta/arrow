@@ -144,6 +144,9 @@ config :ja_serializer,
 
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
+config :sentry,
+  client: Sentry.HackneyClient
+
 #  https://hexdocs.pm/excellent_migrations/readme.html#existing-migrations
 # Ignore migrations added before `excellent_migrations` was added
 config :excellent_migrations, start_after: "20260108201439"
